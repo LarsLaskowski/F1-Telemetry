@@ -1,4 +1,4 @@
-ARG BASE_SDK="node:25-alpine"
+ARG BASE_SDK="node:26-alpine"
 ARG BASE_NGINX="nginx:1-alpine"
 ARG BASE_NGINX_DIGEST
 
