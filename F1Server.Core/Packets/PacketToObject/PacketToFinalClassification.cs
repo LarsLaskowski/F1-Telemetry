@@ -50,6 +50,7 @@ internal class PacketToFinalClassification(PacketHeader packetHeader) : PacketTo
                                                                        };
 
             if (packetDataBase != null
+                && HasValidPacketLength(dataPacket.Length, GetExpectedPayloadSize())
                 && ExtractFinalClassificationData(ref memRef, dataPacket.Length, HeaderSize, packetDataBase.PacketData))
             {
                 finalClassObject = packetDataBase;
@@ -71,6 +72,25 @@ internal class PacketToFinalClassification(PacketHeader packetHeader) : PacketTo
     #region Private methods
 
     /// <summary>
+    /// Returns the expected final classification payload size for the current game version
+    /// </summary>
+    /// <returns>Expected payload size in bytes without the packet header</returns>
+    private int GetExpectedPayloadSize()
+    {
+        return GameVersion switch
+               {
+                   2020 => ConstData.F12020FinalClassificationSize,
+                   2021 => ConstData.F12021FinalClassificationSize,
+                   2022 => ConstData.F12022FinalClassificationSize,
+                   2023 => ConstData.F12023FinalClassificationSize,
+                   2024 => ConstData.F12024FinalClassificationSize,
+                   2025 => ConstData.F12025FinalClassificationSize,
+                   2026 => ConstData.F12026FinalClassificationSize,
+                   _ => 0
+               };
+    }
+
+    /// <summary>
     /// Extract all final classification data from received data packet
     /// </summary>
     /// <param name="dataPacket">Received data packet</param>
@@ -82,7 +102,7 @@ internal class PacketToFinalClassification(PacketHeader packetHeader) : PacketTo
     {
         var retValue = false;
 
-        if (packetLength > 0 && offsetToStart > 0 && finalClassificationData?.FinalClassifications != null)
+        if (offsetToStart > 0 && packetLength >= offsetToStart + ConstData.TypeUInt8 && finalClassificationData?.FinalClassifications != null)
         {
             try
             {

@@ -47,6 +47,7 @@ internal class PacketToSessionHistoryData(PacketHeader packetHeader) : PacketToX
                                                      };
 
             if (sessionHistoryData != null
+                && HasValidPacketLength(dataPacket.Length, GetExpectedPayloadSize())
                 && ExtractSessionHistoryData(ref memRef, HeaderSize, sessionHistoryData.PacketData))
             {
                 sessionHistory = sessionHistoryData;
@@ -66,6 +67,24 @@ internal class PacketToSessionHistoryData(PacketHeader packetHeader) : PacketToX
     #endregion // Methods
 
     #region Private methods
+
+    /// <summary>
+    /// Returns the expected session history payload size for the current game version
+    /// </summary>
+    /// <returns>Expected payload size in bytes without the packet header</returns>
+    private int GetExpectedPayloadSize()
+    {
+        return GameVersion switch
+               {
+                   2021 => ConstData.F12021SessionHistorySize,
+                   2022 => ConstData.F12022SessionHistorySize,
+                   2023 => ConstData.F12023SessionHistorySize,
+                   2024 => ConstData.F12024SessionHistorySize,
+                   2025 => ConstData.F12025SessionHistorySize,
+                   2026 => ConstData.F12026SessionHistorySize,
+                   _ => 0
+               };
+    }
 
     /// <summary>
     /// Extract session history

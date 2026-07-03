@@ -50,6 +50,7 @@ internal class PacketToCarTelemetry(PacketHeader packetHeader) : PacketToXBase(p
                                                                 };
 
             if (packetDataBase != null
+                && HasValidPacketLength(dataPacket.Length, GetExpectedPayloadSize())
                 && ExtractCarTelemetry(ref memRef, HeaderSize, dataPacket.Length, packetDataBase.PacketData))
             {
                 carTelemetryObject = packetDataBase;
@@ -69,6 +70,26 @@ internal class PacketToCarTelemetry(PacketHeader packetHeader) : PacketToXBase(p
     #endregion // Methods
 
     #region Private methods
+
+    /// <summary>
+    /// Returns the expected car telemetry payload size for the current game version
+    /// </summary>
+    /// <returns>Expected payload size in bytes without the packet header</returns>
+    private int GetExpectedPayloadSize()
+    {
+        return GameVersion switch
+               {
+                   2019 => ConstData.F12019CarTelemetrySize,
+                   2020 => ConstData.F12020CarTelemetrySize,
+                   2021 => ConstData.F12021CarTelemetrySize,
+                   2022 => ConstData.F12022CarTelemetrySize,
+                   2023 => ConstData.F12023CarTelemetrySize,
+                   2024 => ConstData.F12024CarTelemetrySize,
+                   2025 => ConstData.F12025CarTelemetrySize,
+                   2026 => ConstData.F12026CarTelemetrySize,
+                   _ => 0
+               };
+    }
 
     /// <summary>
     /// Converts received data to a car telemetry object

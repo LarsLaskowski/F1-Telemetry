@@ -94,6 +94,25 @@ internal abstract class PacketToXBase
     }
 
     /// <summary>
+    /// Validates the actual packet length against the expected packet size (header plus payload)
+    /// so that no extraction reads past the end of truncated or manipulated packets
+    /// </summary>
+    /// <param name="packetLength">Length of the received packet</param>
+    /// <param name="expectedPayloadSize">Expected payload size in bytes without the packet header</param>
+    /// <returns>True when the packet contains at least the expected number of bytes, otherwise false</returns>
+    protected bool HasValidPacketLength(int packetLength, int expectedPayloadSize)
+    {
+        var isValid = packetLength >= HeaderSize + expectedPayloadSize;
+
+        if (isValid == false)
+        {
+            LastError = $"Packet too short: received {packetLength} bytes, expected at least {HeaderSize + expectedPayloadSize} bytes";
+        }
+
+        return isValid;
+    }
+
+    /// <summary>
     /// Returns packet header size game version dependent
     /// </summary>
     /// <returns>Header size</returns>

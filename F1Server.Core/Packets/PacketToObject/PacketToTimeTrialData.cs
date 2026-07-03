@@ -45,6 +45,7 @@ internal class PacketToTimeTrialData(PacketHeader packetHeader) : PacketToXBase(
                                            };
 
             if (timeTrialData != null
+                && HasValidPacketLength(dataPacket.Length, GetExpectedPayloadSize())
                 && ExtractTimeTrialData(ref memRef, HeaderSize, timeTrialData.PacketData))
             {
                 timeTrial = timeTrialData;
@@ -64,6 +65,21 @@ internal class PacketToTimeTrialData(PacketHeader packetHeader) : PacketToXBase(
     #endregion // Methods
 
     #region Private methods
+
+    /// <summary>
+    /// Returns the expected time trial payload size for the current game version
+    /// </summary>
+    /// <returns>Expected payload size in bytes without the packet header</returns>
+    private int GetExpectedPayloadSize()
+    {
+        return GameVersion switch
+               {
+                   2024 => ConstData.F12024TimeTrialSize,
+                   2025 => ConstData.F12025TimeTrialSize,
+                   2026 => ConstData.F12026TimeTrialSize,
+                   _ => 0
+               };
+    }
 
     /// <summary>
     /// Extract time trial data

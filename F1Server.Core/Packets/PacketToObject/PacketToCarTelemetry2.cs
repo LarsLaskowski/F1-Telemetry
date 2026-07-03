@@ -42,6 +42,7 @@ internal class PacketToCarTelemetry2(PacketHeader packetHeader) : PacketToXBase(
                                                                  };
 
             if (packetDataBase != null
+                && HasValidPacketLength(dataPacket.Length, ConstData.F12026CarTelemetry2Size)
                 && ExtractCarTelemetry2(ref memRef, HeaderSize, dataPacket.Length, packetDataBase.PacketData))
             {
                 carTelemetry2Object = packetDataBase;
