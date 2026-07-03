@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "F1ReplayClient": {
+      "commandName": "Project",
+      "commandLineArgs": "--host=192.168.0.10:20778"
+    }
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "F1Server.WebApi": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:4812"
+    }
+  }
+}

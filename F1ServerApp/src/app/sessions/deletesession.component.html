@@ -1,0 +1,25 @@
+<mat-dialog-content>
+  <div style="margin: 20px; position: center">
+    <mat-form-field appearance="fill" style="width: 100%; top: 0; left: 0">
+      @if (session != null) {
+        <mat-label>Delete session {{session.track}} - {{session.sessionType}} ({{session.gameVersion}})</mat-label>
+      }
+      @if (!session) {
+        <mat-label>Delete session - unknown</mat-label>
+      }
+      <input matInput placeholder="Session code" [(ngModel)]="sessionCode" cdkFocusInitial>
+      @if (!isDeleting) {
+        <mat-hint>Enter session code</mat-hint>
+      }
+      @if (isDeleting) {
+        <mat-hint>Deleting session...</mat-hint>
+      }
+    </mat-form-field>
+
+  </div>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button="elevated" [hidden]="isDeleting" color="primary" (click)="deleteSession()" [disabled]="!sessionCode || isDeleting">Delete</button>
+  <mat-spinner [hidden]="!isDeleting" diameter="52" strokeWidth="2" style="top: 14px; right: 0; margin-left: 20px; display: inline-flex" />
+  <button matButton mat-dialog-close>Cancel</button>
+</mat-dialog-actions>

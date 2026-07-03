@@ -1,0 +1,160 @@
+session-table {
+  width: 100%;
+}
+
+.mat-mdc-form-field {
+  font-size: 14px;
+  width: 100%;
+}
+.mat-mdc-row:hover .mat-mdc-cell {
+  background: whitesmoke;
+  cursor: pointer;
+}
+
+.laptime-cell {
+  min-width: 180px;
+  vertical-align: middle;
+  display: table-cell
+}
+
+.game-cell {
+  min-width: 60px;
+}
+
+.ai-cell {
+   width: 32px;
+}
+
+.telemetry-cell {
+   width: 64px;
+   padding-left: 0px;
+   padding-right: 0px;
+}
+
+.championship-cell {
+  width: 64px;
+  padding-left: 0px;
+  padding-right: 0px;
+}
+
+.delete-cell {
+   width: 64px;
+   padding-left: 0px;
+}
+
+.weather-icon {
+  position: relative;
+  margin-left: 12px;
+  color: #BDBDBD;
+}
+
+.additional-icon {
+   position: relative;
+   color: #BDBDBD;
+}
+
+tr.times-detail-row {
+  height: 0;
+}
+
+.session-row td {
+  border-bottom-width: 0;
+}
+
+tr.session-row:not(.expanded-row):hover {
+  background: whitesmoke;
+}
+
+tr.session-row:not(.expanded-row):active {
+  background: #efefef;
+}
+
+/* Session not expand, human player drives the fastest lap */
+.icon-times-not-expanded-human-fastest {
+  /* gray */
+  color: #BDBDBDAA;
+}
+
+/* Session not expand, human player drives the fastest lap and all fastest sectors are from fastest lap */
+.icon-times-not-expanded-human-fastest-overall {
+  /* green */
+  color: #388E3CAA;
+}
+
+/* Session not expand, ai player drives the fastest lap */
+.icon-times-not-expanded-ai-fastest {
+  /* orange */
+  color: #FB8C00AA;
+}
+
+/* Session not expand, ai player drives the fastest lap and all fastest sectors are from fastest lap */
+.icon-times-not-expanded-ai-fastest-overall {
+  /* red */
+  color: #D32F2FAA;
+}
+
+/* Session expanded */
+.icon-times-expanded {
+  /* blue */
+  color: #039BE5AA;
+}
+
+.fastestSectors-detail {
+  overflow: hidden;
+  display: flex;
+}
+
+.fastestSector-fastestLap {
+  padding-left: 5px;
+  padding-right: 16px;
+  display: block;
+}
+
+.fastestSector-fastestSectors {
+  padding-left: 24px;
+  display: block;
+}
+
+.fastestSector-theoretical {
+  padding-left: 24px;
+  display: block;
+}
+
+.fastestSector-entry {
+   display: flex;
+}
+
+.fastestSector-title {
+   padding-right: 16px;
+}
+
+.fastestSector-data {
+   padding-left: 10px;
+   color: black;
+   font-weight: normal;
+}
+
+.fastestSector-data-ai {
+  padding-left: 10px;
+  color: #E53935;
+  font-weight: 500;
+}
+
+.fastestSector-time-fastest {
+  padding-left: 10px;
+  font-weight: 500;
+  color: #7E57C2;
+}
+
+.fastestSector-time-equal {
+  padding-left: 10px;
+  font-weight: normal;
+  color: #4CAF50;
+}
+
+.fastestSector-time {
+  padding-left: 10px;
+  font-weight: 500;
+  color: black;
+  margin-left: auto;
+}

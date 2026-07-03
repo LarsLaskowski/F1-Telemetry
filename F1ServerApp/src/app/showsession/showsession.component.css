@@ -1,0 +1,29 @@
+.fastestTime {
+   color: rebeccapurple;
+   font-weight: bold;
+   vertical-align: middle;
+}
+
+.normalTime {
+  color: black;
+  font-weight: normal;
+  vertical-align: middle;
+}
+
+.td-position {
+  vertical-align: middle;
+  padding-right: 10px;
+  font-weight: 500;
+  font-size: 18px;
+  width: 30px;
+}
+
+.img-position {
+  vertical-align: middle;
+  height: 14px;
+  margin-left: 10px;
+}
+
+.td-text {
+  vertical-align: middle;
+}

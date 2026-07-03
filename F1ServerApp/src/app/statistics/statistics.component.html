@@ -1,0 +1,428 @@
+<h1 id="tableLabel">Statistics</h1>
+
+@if (!stats) {
+  <p><em>Waiting...</em></p>
+}
+
+@if (stats) {
+  <div class="status-row">
+    <div class="status-column">
+      <table class="status-table">
+        <tr class="status-tr">
+          <td class="status-td">Packets received total:</td>
+          <td class="status-td">{{ stats.packetsReceivedTotal }}</td>
+        </tr>
+        <tr class="status-tr">
+          <td class="status-td">Packets received in current session:</td>
+          <td class="status-td">{{ stats.packetsReceivedCurrentSession }}</td>
+        </tr>
+        <tr class="status-tr">
+          <td class="status-td">Packets received in last session:</td>
+          <td class="status-td">{{ stats.packetsReceivedLastSession }}</td>
+        </tr>
+        <tr class="status-tr">
+          <td class="status-td">Packets in queue:</td>
+          <td class="status-td">{{ stats.packetsInQueue }}</td>
+        </tr>
+        <tr class="status-tr">
+          <td class="status-td">Packets in processor queue:</td>
+          <td class="status-td">{{ stats.packetsInProcessorQueue }}</td>
+        </tr>
+        <tr class="status-tr">
+          <td class="status-td">Total packets processed:</td>
+          <td class="status-td">{{ stats.totalPacketsProcessed }}</td>
+        </tr>
+        @if (stats.totalPacketsProcessed > 0) {
+          <tr class="status-tr">
+            <td class="status-td">Average packet processing time:</td>
+            <td class="status-td">{{ stats != undefined ? (stats.totalPacketProcessingTime / stats.totalPacketsProcessed).toFixed(3) + 'ms' : 'N/A' }}</td>
+          </tr>
+        }
+        <tr class="status-tr">
+          <td class="status-td">Total packets logged:</td>
+          <td class="status-td">{{ stats.totalPacketsLogged }}</td>
+        </tr>
+        @if (stats.totalPacketsLogged > 0) {
+          <tr class="status-tr">
+            <td class="status-td">Average packet logging time:</td>
+            <td class="status-td">{{ stats != undefined ? (stats.totalPacketLogTime / stats.totalPacketsLogged).toFixed(3) + 'ms' : 'N/A' }}</td>
+          </tr>
+        }
+      </table>
+    </div>
+  </div>
+}
+
+@if (stats) {
+  <div>
+    <br />
+    <div class="status-row">
+      @if (stats.packetsReceivedCurrentSession != null) {
+        <div class="status-column">
+          <h2 id="tableLabel">Current session</h2>
+          <table class="status-table">
+            <tr class="status-tr">
+              <td class="status-td">Game version:</td>
+              <td class="status-td">{{ stats.currentSessionGameVersion }}</td>
+            </tr>
+            <tr class="status-tr">
+              <td class="status-td">Session packets:</td>
+              @if (stats.currentSessionMetrics.session.received != null) {
+                <td class="status-td">
+                  {{ stats.currentSessionMetrics.session.received }}
+                </td>
+              }
+              @if (stats.currentSessionMetrics.session.received != null && stats.currentSessionMetrics.session.avgProcessingTime != null) {
+                <td class="status-td-avg">
+                  (avg: {{ stats.currentSessionMetrics.session.avgProcessingTime.toFixed(3) }}ms)
+                </td>
+              }
+            </tr>
+            <tr class="status-tr">
+              <td class="status-td">Lap data packets:</td>
+              @if (stats.currentSessionMetrics.lapData.received != null) {
+                <td class="status-td">
+                  {{ stats.currentSessionMetrics.lapData.received }}
+                </td>
+              }
+              @if (stats.currentSessionMetrics.lapData.received != null && stats.currentSessionMetrics.lapData.avgProcessingTime != null) {
+                <td class="status-td-avg">
+                  (avg: {{ stats.currentSessionMetrics.lapData.avgProcessingTime.toFixed(3) }}ms)
+                </td>
+              }
+            </tr>
+            <tr class="status-tr">
+              <td class="status-td">Event packets:</td>
+              @if (stats.currentSessionMetrics.event.received != null) {
+                <td class="status-td">
+                  {{ stats.currentSessionMetrics.event.received }}
+                </td>
+              }
+              @if (stats.currentSessionMetrics.event.received != null && stats.currentSessionMetrics.event.avgProcessingTime != null) {
+                <td class="status-td-avg">
+                  (avg: {{ stats.currentSessionMetrics.event.avgProcessingTime.toFixed(3) }}ms)
+                </td>
+              }
+            </tr>
+            <tr class="status-tr">
+              <td class="status-td">Participants packets:</td>
+              @if (stats.currentSessionMetrics.participants.received != null) {
+                <td class="status-td">
+                  {{ stats.currentSessionMetrics.participants.received }}
+                </td>
+              }
+              @if (stats.currentSessionMetrics.participants.received != null && stats.currentSessionMetrics.participants.avgProcessingTime != null) {
+                <td class="status-td-avg">
+                  (avg: {{ stats.currentSessionMetrics.participants.avgProcessingTime.toFixed(3) }}ms)
+                </td>
+              }
+            </tr>
+            <tr class="status-tr">
+              <td class="status-td">Car telemetry packets:</td>
+              @if (stats.currentSessionMetrics.carTelemetry.received != null) {
+                <td class="status-td">
+                  {{ stats.currentSessionMetrics.carTelemetry.received }}
+                </td>
+              }
+              @if (stats.currentSessionMetrics.carTelemetry.received != null && stats.currentSessionMetrics.carTelemetry.avgProcessingTime != null) {
+                <td class="status-td-avg">
+                  (avg: {{ stats.currentSessionMetrics.carTelemetry.avgProcessingTime.toFixed(3) }}ms)
+                </td>
+              }
+            </tr>
+            <tr class="status-tr">
+              <td class="status-td">Car status packets:</td>
+              @if (stats.currentSessionMetrics.carStatus.received != null) {
+                <td class="status-td">
+                  {{ stats.currentSessionMetrics.carStatus.received }}
+                </td>
+              }
+              @if (stats.currentSessionMetrics.carStatus.received != null && stats.currentSessionMetrics.carStatus.avgProcessingTime != null) {
+                <td class="status-td-avg">
+                  (avg: {{ stats.currentSessionMetrics.carStatus.avgProcessingTime.toFixed(3) }}ms)
+                </td>
+              }
+            </tr>
+            <tr class="status-tr">
+              <td class="status-td">Car damage packets:</td>
+              @if (stats.currentSessionMetrics.carDamage.received != null) {
+                <td class="status-td">
+                  {{ stats.currentSessionMetrics.carDamage.received }}
+                </td>
+              }
+              @if (stats.currentSessionMetrics.carDamage.received != null && stats.currentSessionMetrics.carDamage.avgProcessingTime != null) {
+                <td class="status-td-avg">
+                  (avg: {{ stats.currentSessionMetrics.carDamage.avgProcessingTime.toFixed(3) }}ms)
+                </td>
+              }
+            </tr>
+            <tr class="status-tr">
+              <td class="status-td">Car setup packets:</td>
+              @if (stats.currentSessionMetrics.carSetups.received != null) {
+                <td class="status-td">
+                  {{ stats.currentSessionMetrics.carSetups.received }}
+                </td>
+              }
+              @if (stats.currentSessionMetrics.carSetups.received != null && stats.currentSessionMetrics.carSetups.avgProcessingTime != null) {
+                <td class="status-td-avg">
+                  (avg: {{ stats.currentSessionMetrics.carSetups.avgProcessingTime.toFixed(3) }}ms)
+                </td>
+              }
+            </tr>
+            <tr class="status-tr">
+              <td class="status-td">Lap positions packets:</td>
+              @if (stats.currentSessionMetrics.lapPositions.received != null) {
+                <td class="status-td">
+                  {{ stats.currentSessionMetrics.lapPositions.received }}
+                </td>
+              }
+              @if (stats.currentSessionMetrics.lapPositions.received != null && stats.currentSessionMetrics.lapPositions.avgProcessingTime != null) {
+                <td class="status-td-avg">
+                  (avg: {{ stats.currentSessionMetrics.lapPositions.avgProcessingTime.toFixed(3) }}ms)
+                </td>
+              }
+            </tr>
+            <tr class="status-tr">
+              <td class="status-td">Tyre sets packets:</td>
+              @if (stats.currentSessionMetrics.tyreSets.received != null) {
+                <td class="status-td">
+                  {{ stats.currentSessionMetrics.tyreSets.received }}
+                </td>
+              }
+              @if (stats.currentSessionMetrics.tyreSets.received != null && stats.currentSessionMetrics.tyreSets.avgProcessingTime != null) {
+                <td class="status-td-avg">
+                  (avg: {{ stats.currentSessionMetrics.tyreSets.avgProcessingTime.toFixed(3) }}ms)
+                </td>
+              }
+            </tr>
+            <tr class="status-tr">
+              <td class="status-td">Session history packets:</td>
+              @if (stats.currentSessionMetrics.sessionHistory.received != null) {
+                <td class="status-td">
+                  {{ stats.currentSessionMetrics.sessionHistory.received }}
+                </td>
+              }
+              @if (stats.currentSessionMetrics.sessionHistory.received != null && stats.currentSessionMetrics.sessionHistory.avgProcessingTime != null) {
+                <td class="status-td-avg">
+                  (avg: {{ stats.currentSessionMetrics.sessionHistory.avgProcessingTime.toFixed(3) }}ms)
+                </td>
+              }
+            </tr>
+            <tr class="status-tr">
+              <td class="status-td">Final classification packets:</td>
+              @if (stats.currentSessionMetrics.finalClassification.received != null) {
+                <td class="status-td">
+                  {{ stats.currentSessionMetrics.finalClassification.received }}
+                </td>
+              }
+              @if (stats.currentSessionMetrics.finalClassification.received != null && stats.currentSessionMetrics.finalClassification.avgProcessingTime != null) {
+                <td class="status-td-avg">
+                  (avg: {{ stats.currentSessionMetrics.finalClassification.avgProcessingTime.toFixed(3) }}ms)
+                </td>
+              }
+            </tr>
+            <tr class="status-tr">
+              <td class="status-td">Unsuccessfully processed:</td>
+              @if (stats.currentSessionMetrics.unsuccessfullyProcessed != null) {
+                <td class="status-td">
+                  {{ stats.currentSessionMetrics.unsuccessfullyProcessed }}
+                </td>
+              }
+            </tr>
+            <tr class="status-tr">
+              <td class="status-td">Errors:</td>
+              @if (stats.currentSessionMetrics.errors != null) {
+                <td class="status-td">
+                  {{ stats.currentSessionMetrics.errors }}
+                </td>
+              }
+            </tr>
+          </table>
+        </div>
+      }
+      @if (stats.packetsReceivedLastSession > 0) {
+        <div class="status-column" style="padding-left: 70px">
+          <h2 id="tableLabel">Last session</h2>
+          <table class="status-table">
+            <tr class="status-tr">
+              <td class="status-td">Game version:</td>
+              <td class="status-td">{{ stats.lastSessionGameVersion }}</td>
+            </tr>
+            <tr class="status-tr">
+              <td class="status-td">Session packets:</td>
+              @if (stats.lastSessionMetrics.session.received != null) {
+                <td class="status-td">
+                  {{ stats.lastSessionMetrics.session.received }}
+                </td>
+              }
+              @if (stats.lastSessionMetrics.session.received != null && stats.lastSessionMetrics.session.avgProcessingTime != null) {
+                <td class="status-td-avg">
+                  (avg: {{ stats.lastSessionMetrics.session.avgProcessingTime.toFixed(3) }}ms)
+                </td>
+              }
+            </tr>
+            <tr class="status-tr">
+              <td class="status-td">Lap data packets:</td>
+              @if (stats.lastSessionMetrics.lapData.received != null) {
+                <td class="status-td">
+                  {{ stats.lastSessionMetrics.lapData.received }}
+                </td>
+              }
+              @if (stats.lastSessionMetrics.lapData.received != null && stats.lastSessionMetrics.lapData.avgProcessingTime != null) {
+                <td class="status-td-avg">
+                  (avg: {{ stats.lastSessionMetrics.lapData.avgProcessingTime.toFixed(3) }}ms)
+                </td>
+              }
+            </tr>
+            <tr class="status-tr">
+              <td class="status-td">Event packets:</td>
+              @if (stats.lastSessionMetrics.event.received != null) {
+                <td class="status-td">
+                  {{ stats.lastSessionMetrics.event.received }}
+                </td>
+              }
+              @if (stats.lastSessionMetrics.event.received != null && stats.lastSessionMetrics.event.avgProcessingTime != null) {
+                <td class="status-td-avg">
+                  (avg: {{ stats.lastSessionMetrics.event.avgProcessingTime.toFixed(3) }}ms)
+                </td>
+              }
+            </tr>
+            <tr class="status-tr">
+              <td class="status-td">Participants packets:</td>
+              @if (stats.lastSessionMetrics.participants.received != null) {
+                <td class="status-td">
+                  {{ stats.lastSessionMetrics.participants.received }}
+                </td>
+              }
+              @if (stats.lastSessionMetrics.participants.received != null && stats.lastSessionMetrics.participants.avgProcessingTime != null) {
+                <td class="status-td-avg">
+                  (avg: {{ stats.lastSessionMetrics.participants.avgProcessingTime.toFixed(3) }}ms)
+                </td>
+              }
+            </tr>
+            <tr class="status-tr">
+              <td class="status-td">Car telemetry packets:</td>
+              @if (stats.lastSessionMetrics.carTelemetry.received != null) {
+                <td class="status-td">
+                  {{ stats.lastSessionMetrics.carTelemetry.received }}
+                </td>
+              }
+              @if (stats.lastSessionMetrics.carTelemetry.received != null && stats.lastSessionMetrics.carTelemetry.avgProcessingTime != null) {
+                <td class="status-td-avg">
+                  (avg: {{ stats.lastSessionMetrics.carTelemetry.avgProcessingTime.toFixed(3) }}ms)
+                </td>
+              }
+            </tr>
+            <tr class="status-tr">
+              <td class="status-td">Car status packets:</td>
+              @if (stats.lastSessionMetrics.carStatus.received != null) {
+                <td class="status-td">
+                  {{ stats.lastSessionMetrics.carStatus.received }}
+                </td>
+              }
+              @if (stats.lastSessionMetrics.carStatus.received != null && stats.lastSessionMetrics.carStatus.avgProcessingTime != null) {
+                <td class="status-td-avg">
+                  (avg: {{ stats.lastSessionMetrics.carStatus.avgProcessingTime.toFixed(3) }}ms)
+                </td>
+              }
+            </tr>
+            <tr class="status-tr">
+              <td class="status-td">Car damage packets:</td>
+              @if (stats.lastSessionMetrics.carDamage.received != null) {
+                <td class="status-td">
+                  {{ stats.lastSessionMetrics.carDamage.received }}
+                </td>
+              }
+              @if (stats.lastSessionMetrics.carDamage.received != null && stats.lastSessionMetrics.carDamage.avgProcessingTime != null) {
+                <td class="status-td-avg">
+                  (avg: {{ stats.lastSessionMetrics.carDamage.avgProcessingTime.toFixed(3) }}ms)
+                </td>
+              }
+            </tr>
+            <tr class="status-tr">
+              <td class="status-td">Car setup packets:</td>
+              @if (stats.lastSessionMetrics.carSetups.received != null) {
+                <td class="status-td">
+                  {{ stats.lastSessionMetrics.carSetups.received }}
+                </td>
+              }
+              @if (stats.lastSessionMetrics.carSetups.received != null && stats.lastSessionMetrics.carSetups.avgProcessingTime != null) {
+                <td class="status-td-avg">
+                  (avg: {{ stats.lastSessionMetrics.carSetups.avgProcessingTime.toFixed(3) }}ms)
+                </td>
+              }
+            </tr>
+            <tr class="status-tr">
+              <td class="status-td">Lap positions packets:</td>
+              @if (stats.lastSessionMetrics.lapPositions.received != null) {
+                <td class="status-td">
+                  {{ stats.lastSessionMetrics.lapPositions.received }}
+                </td>
+              }
+              @if (stats.lastSessionMetrics.lapPositions.received != null && stats.lastSessionMetrics.lapPositions.avgProcessingTime != null) {
+                <td class="status-td-avg">
+                  (avg: {{ stats.lastSessionMetrics.lapPositions.avgProcessingTime.toFixed(3) }}ms)
+                </td>
+              }
+            </tr>
+            <tr class="status-tr">
+              <td class="status-td">Tyre sets packets:</td>
+              @if (stats.lastSessionMetrics.tyreSets.received != null) {
+                <td class="status-td">
+                  {{ stats.lastSessionMetrics.tyreSets.received }}
+                </td>
+              }
+              @if (stats.lastSessionMetrics.tyreSets.received != null && stats.lastSessionMetrics.tyreSets.avgProcessingTime != null) {
+                <td class="status-td-avg">
+                  (avg: {{ stats.lastSessionMetrics.tyreSets.avgProcessingTime.toFixed(3) }}ms)
+                </td>
+              }
+            </tr>
+            <tr class="status-tr">
+              <td class="status-td">Session history packets:</td>
+              @if (stats.lastSessionMetrics.sessionHistory.received != null) {
+                <td class="status-td">
+                  {{ stats.lastSessionMetrics.sessionHistory.received }}
+                </td>
+              }
+              @if (stats.lastSessionMetrics.sessionHistory.received != null && stats.lastSessionMetrics.sessionHistory.avgProcessingTime != null) {
+                <td class="status-td-avg">
+                  (avg: {{ stats.lastSessionMetrics.sessionHistory.avgProcessingTime.toFixed(3) }}ms)
+                </td>
+              }
+            </tr>
+            <tr class="status-tr">
+              <td class="status-td">Final classification packets:</td>
+              @if (stats.lastSessionMetrics.finalClassification.received != null) {
+                <td class="status-td">
+                  {{ stats.lastSessionMetrics.finalClassification.received }}
+                </td>
+              }
+              @if (stats.lastSessionMetrics.finalClassification.received != null && stats.lastSessionMetrics.finalClassification.avgProcessingTime != null) {
+                <td class="status-td-avg">
+                  (avg: {{ stats.lastSessionMetrics.finalClassification.avgProcessingTime.toFixed(3) }}ms)
+                </td>
+              }
+            </tr>
+            <tr class="status-tr">
+              <td class="status-td">Unsuccessfully processed:</td>
+              @if (stats.lastSessionMetrics.unsuccessfullyProcessed != null) {
+                <td class="status-td">
+                  {{ stats.lastSessionMetrics.unsuccessfullyProcessed }}
+                </td>
+              }
+            </tr>
+            <tr class="status-tr">
+              <td class="status-td">Errors:</td>
+              @if (stats.lastSessionMetrics.errors != null) {
+                <td class="status-td">
+                  {{ stats.lastSessionMetrics.errors }}
+                </td>
+              }
+            </tr>
+          </table>
+        </div>
+      }
+    </div>
+  </div>
+}

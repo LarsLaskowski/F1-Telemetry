@@ -1,0 +1,59 @@
+@if (!liveSession) {
+  <p><em>Loading...</em></p>
+}
+
+@if (liveSession) {
+  <h1>{{liveSession.gameVersion}} - {{ liveSession.formulaType }} - {{ liveSession.track }} - {{ liveSession.sessionType }}</h1>
+}
+@if (liveSession) {
+  <h4>Weather: {{liveSession.weatherCondition }} | Air temperature: {{ liveSession.airTemperature }} °C | Track temperature: {{ liveSession.trackTemperature }} °C</h4>
+}
+@if (liveSession) {
+  <h4>Fastest lap: {{ liveSession.fastestLap }} - driver: {{ liveSession.fastestLapDriver }} - Session time left: {{ liveSession.sessionTimeLeft}}</h4>
+}
+<br/>
+@if (liveSession) {
+  <table class='table table-striped' aria-labelledby="tableLabel">
+    <thead>
+      <tr>
+        <th>Position</th>
+        <th>Driver</th>
+        <th>Sector 1</th>
+        <th>Sector 2</th>
+        <th>Sector 3</th>
+        <th>Fastest lap time</th>
+        <th>Current lap time</th>
+        <th>Laps driven</th>
+        <th>Driver status</th>
+        <th>Current tyre</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (driver of getTimeTable(); track driver) {
+        <tr>
+          <td class='td-position'>{{ driver.position }}</td>
+          <td>
+            <table>
+              <tr>
+                <td>{{ driver.name }} ({{ driver.carNumber }})</td>
+              </tr>
+              <tr>
+                <td>{{ driver.teamName }}</td>
+              </tr>
+            </table>
+          </td>
+          <td [ngClass]="getTimeColor(driver, 1)">{{ driver.fastestSector1 }}</td>
+          <td [ngClass]="getTimeColor(driver, 2)">{{ driver.fastestSector2 }}</td>
+          <td [ngClass]="getTimeColor(driver, 3)">{{ driver.fastestSector3 }}</td>
+          <td [ngClass]="getTimeColor(driver, 4)">{{ driver.fastestLaptime }}</td>
+          <td class='td-text'>{{ driver.currentLapTime }}</td>
+          <td class='td-text'>{{ driver.lapsDriven }}</td>
+          <td class='td-text'>{{ driver.currentDriverStatus }}</td>
+          <td>@if (driver.currentTyre) {
+            <img src={{driver.currentTyre}} height="54" style="vertical-align:middle" alt="Current tyre type" />
+          }</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+}

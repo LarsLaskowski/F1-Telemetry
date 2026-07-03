@@ -1,0 +1,100 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write
+
+env:
+  SERVER_REPOSITORY: networlddev/f1-telemetry
+  SERVER_DOCKERFILE: Dockerfile
+  APP_REPOSITORY: networlddev/f1-telemetry-app
+  APP_DOCKERFILE: F1ServerApp/Dockerfile
+  APP_CONTEXT: F1ServerApp
+
+jobs:
+  release:
+    name: Build, Push & Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - name: Derive version from tag
+        id: version
+        run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Install .NET 10 SDK
+        uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore
+        run: dotnet restore F1Server.slnx
+
+      - name: Build
+        run: dotnet build F1Server.slnx -c Release --no-restore
+
+      - name: Test
+        run: >
+          dotnet test F1Server.slnx
+          -c Release --no-build
+          --logger trx
+          --results-directory ${{ runner.temp }}/TestResults
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee # v4.2.0
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Extract base image digests
+        id: basedigest
+        run: |
+          docker pull mcr.microsoft.com/dotnet/aspnet:10.0-alpine
+          docker pull nginx:1-alpine
+          RUNTIME_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' mcr.microsoft.com/dotnet/aspnet:10.0-alpine)
+          NGINX_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' nginx:1-alpine)
+          echo "runtime=$RUNTIME_DIGEST" >> "$GITHUB_OUTPUT"
+          echo "nginx=$NGINX_DIGEST" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@d7f5e7f509e45cec5c76c4d5afdd7de93d0b3df5 # v4.1.0
+
+      - name: Build & push server image
+        uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf # v7.2.0
+        with:
+          context: .
+          file: ${{ env.SERVER_DOCKERFILE }}
+          push: true
+          build-args: |
+            BASE_RUNTIME_DIGEST=${{ steps.basedigest.outputs.runtime }}
+          tags: |
+            ${{ env.SERVER_REPOSITORY }}:${{ steps.version.outputs.version }}
+            ${{ env.SERVER_REPOSITORY }}:latest
+
+      - name: Build & push web app image
+        uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf # v7.2.0
+        with:
+          context: ${{ env.APP_CONTEXT }}
+          file: ${{ env.APP_DOCKERFILE }}
+          push: true
+          build-args: |
+            BASE_NGINX_DIGEST=${{ steps.basedigest.outputs.nginx }}
+          tags: |
+            ${{ env.APP_REPOSITORY }}:${{ steps.version.outputs.version }}
+            ${{ env.APP_REPOSITORY }}:latest
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@718ea10b132b3b2eba29c1007bb80653f286566b # v3.0.1
+        with:
+          tag_name: ${{ github.ref_name }}
+          generate_release_notes: true
+          body: |
+            Docker images:
+
+            - Server: `${{ env.SERVER_REPOSITORY }}:${{ steps.version.outputs.version }}`
+            - Web app: `${{ env.APP_REPOSITORY }}:${{ steps.version.outputs.version }}`

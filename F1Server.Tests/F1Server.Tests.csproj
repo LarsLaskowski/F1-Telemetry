@@ -1,0 +1,394 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="SampleData\F1-2020-CarStatus.packet" />
+    <None Remove="SampleData\F1-2020-CarTelemetry.packet" />
+    <None Remove="SampleData\F1-2020-Event-TopSpeed.packet" />
+    <None Remove="SampleData\F1-2020-HeaderCheck.packet" />
+    <None Remove="SampleData\F1-2020-LapData.packet" />
+    <None Remove="SampleData\F1-2020-MontrealPractice-Session.packet" />
+    <None Remove="SampleData\F1-2020-MontrealPractice-SessionFirst.packet" />
+    <None Remove="SampleData\F1-2020-Participants.packet" />
+    <None Remove="SampleData\F1-2020-Session.packet" />
+    <None Remove="SampleData\F1-2021-CarStatus.packet" />
+    <None Remove="SampleData\F1-2021-CarTelemetry.packet" />
+    <None Remove="SampleData\F1-2021-Event-Flashback.packet" />
+    <None Remove="SampleData\F1-2021-Event-Penalty.packet" />
+    <None Remove="SampleData\F1-2021-Event-TopSpeed.packet" />
+    <None Remove="SampleData\F1-2021-EventPena41" />
+    <None Remove="SampleData\F1-2021-FinalClassification.packet" />
+    <None Remove="SampleData\F1-2021-HeaderCheck.packet" />
+    <None Remove="SampleData\F1-2021-LapData.packet" />
+    <None Remove="SampleData\F1-2021-MonzaRace-Session.packet" />
+    <None Remove="SampleData\F1-2021-MonzaRace-SessionFirst.packet" />
+    <None Remove="SampleData\F1-2021-Participants.packet" />
+    <None Remove="SampleData\F1-2021-Session.packet" />
+    <None Remove="SampleData\F1-2021-SessionHistory.packet" />
+    <None Remove="SampleData\F1-2022-CarStatus.packet" />
+    <None Remove="SampleData\F1-2022-CarTelemetry.packet" />
+    <None Remove="SampleData\F1-2022-Event-Flashback.packet" />
+    <None Remove="SampleData\F1-2022-Event-Penalty.packet" />
+    <None Remove="SampleData\F1-2022-Event-TopSpeed.packet" />
+    <None Remove="SampleData\F1-2022-FinalClassification.packet" />
+    <None Remove="SampleData\F1-2022-HeaderCheck.packet" />
+    <None Remove="SampleData\F1-2022-MiamiQ1-Session.packet" />
+    <None Remove="SampleData\F1-2022-MiamiQ1-SessionFirst.packet" />
+    <None Remove="SampleData\F1-2022-SessionHistory.packet" />
+    <None Remove="SampleData\F1-2023-CarTelemetry.packet" />
+    <None Remove="SampleData\F1-2023-Event-Flashback.packet" />
+    <None Remove="SampleData\F1-2023-Event-Penalty.packet" />
+    <None Remove="SampleData\F1-2023-Event-TopSpeed.packet" />
+    <None Remove="SampleData\F1-2023-FinalClassification.packet" />
+    <None Remove="SampleData\F1-2023-HeaderCheck.packet" />
+    <None Remove="SampleData\F1-2023-JeddahQ3-Event-SessionEnd.packet" />
+    <None Remove="SampleData\F1-2023-JeddahQ3-Event-SessionStart.packet" />
+    <None Remove="SampleData\F1-2023-JeddahQ3-Session.packet" />
+    <None Remove="SampleData\F1-2023-JeddahQ3-SessionFirst.packet" />
+    <None Remove="SampleData\F1-2023-LapData.packet" />
+    <None Remove="SampleData\F1-2023-Participants.packet" />
+    <None Remove="SampleData\F1-2023-Session.packet" />
+    <None Remove="SampleData\F1-2023-SessionHistory.packet" />
+    <None Remove="SampleData\F1-2023-TyreSets.packet" />
+    <None Remove="SampleData\F1-2024-CarStatus.packet" />
+    <None Remove="SampleData\F1-2024-CarTelemetry.packet" />
+    <None Remove="SampleData\F1-2024-Event-Flashback.packet" />
+    <None Remove="SampleData\F1-2024-Event-Penalty.packet" />
+    <None Remove="SampleData\F1-2024-Event-TopSpeed.packet" />
+    <None Remove="SampleData\F1-2024-FinalClassification.packet" />
+    <None Remove="SampleData\F1-2024-HeaderCheck.packet" />
+    <None Remove="SampleData\F1-2024-LapData.packet" />
+    <None Remove="SampleData\F1-2024-Participants.packet" />
+    <None Remove="SampleData\F1-2024-Session.packet" />
+    <None Remove="SampleData\F1-2024-SessionHistory.packet" />
+    <None Remove="SampleData\F1-2024-ShanghaiSprint-Session.packet" />
+    <None Remove="SampleData\F1-2024-ShanghaiSprint-SessionFirst.packet" />
+    <None Remove="SampleData\F1-2024-TimeTrial.packet" />
+    <None Remove="SampleData\F1-2025-CarStatus.packet" />
+    <None Remove="SampleData\F1-2025-CarTelemetry.packet" />
+    <None Remove="SampleData\F1-2025-Event-Flashback.packet" />
+    <None Remove="SampleData\F1-2025-Event-Penalty.packet" />
+    <None Remove="SampleData\F1-2025-Event-TopSpeed.packet" />
+    <None Remove="SampleData\F1-2025-FinalClassification.packet" />
+    <None Remove="SampleData\F1-2025-HeaderCheck.packet" />
+    <None Remove="SampleData\F1-2025-LapData.packet" />
+    <None Remove="SampleData\F1-2025-MelbourneQ3-Session.packet" />
+    <None Remove="SampleData\F1-2025-MelbourneQ3-SessionFirst.packet" />
+    <None Remove="SampleData\F1-2025-MelbourneRace-Event-SessionStart.packet" />
+    <None Remove="SampleData\F1-2025-MelbourneRace-Session.packet" />
+    <None Remove="SampleData\F1-2025-MelbourneRace-SessionFirst.packet" />
+    <None Remove="SampleData\F1-2025-Participants.packet" />
+    <None Remove="SampleData\F1-2025-Session.packet" />
+    <None Remove="SampleData\F1-2025-SessionHistory.packet" />
+    <None Remove="SampleData\F1-2025-ShanghaiPractice-Session.packet" />
+    <None Remove="SampleData\F1-2025-ShanghaiPractice-SessionFirst.packet" />
+    <None Remove="SampleData\F1-2026-FinalClassification.packet" />
+    <None Remove="SampleData\F1-2026-Session.packet" />
+    <None Remove="SampleData\F1-2026-SessionHistory.packet" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="SampleData\F1-2022-CarTelemetry.packet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\GlobalSuppressions.cs" Link="GlobalSuppressions.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="SampleData\F1-2020-CarStatus.packet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2020-CarTelemetry.packet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2020-Event-TopSpeed.packet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2020-HeaderCheck.packet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2020-LapData.packet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2020-MontrealPractice-Session.packet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2020-MontrealPractice-SessionFirst.packet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2020-Participants.packet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2020-Session.packet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2021-CarStatus.packet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2021-CarTelemetry.packet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2021-Event-Flashback.packet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2021-Event-Penalty.packet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2021-Event-TopSpeed.packet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2021-FinalClassification.packet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2021-HeaderCheck.packet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2021-LapData.packet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2021-MonzaRace-Session.packet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2021-MonzaRace-SessionFirst.packet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2021-Participants.packet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2021-Session.packet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2021-SessionHistory.packet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2022-Event-Flashback.packet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2022-Event-Penalty.packet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2022-Event-TopSpeed.packet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2022-HeaderCheck.packet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2022-CarStatus.packet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2022-LapData.packet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2022-Participants.packet">
+       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2022-FinalClassification.packet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2022-Session.packet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2022-MiamiQ1-Session.packet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2022-MiamiQ1-SessionFirst.packet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2022-SessionHistory.packet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2023-CarTelemetry.packet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2023-Event-Flashback.packet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2023-Event-Penalty.packet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2023-Event-TopSpeed.packet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2023-FinalClassification.packet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2023-HeaderCheck.packet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2023-JeddahQ3-Session.packet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2023-JeddahQ3-SessionFirst.packet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2023-LapData.packet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2023-Participants.packet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2023-Session.packet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2023-SessionHistory.packet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2023-TyreSets.packet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2023-CarStatus.packet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2024-CarStatus.packet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2024-CarTelemetry.packet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2024-Event-Flashback.packet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2024-Event-Penalty.packet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2024-Event-TopSpeed.packet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2024-FinalClassification.packet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2024-HeaderCheck.packet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2024-LapData.packet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2024-Participants.packet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2024-Session.packet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2024-SessionHistory.packet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2024-ShanghaiSprint-Session.packet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2024-ShanghaiSprint-SessionFirst.packet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2024-TimeTrial.packet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2025-CarStatus.packet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2025-CarTelemetry.packet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2025-Event-Flashback.packet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2025-Event-Penalty.packet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2025-Event-TopSpeed.packet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2025-FinalClassification.packet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2025-HeaderCheck.packet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2025-LapData.packet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2025-MelbourneQ3-Session.packet">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2025-MelbourneQ3-SessionFirst.packet">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2025-MelbourneRace-Event-SessionStart.packet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2025-MelbourneRace-Session.packet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2025-MelbourneRace-SessionFirst.packet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2025-Participants.packet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2025-Session.packet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2025-SessionHistory.packet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2026-CarStatus.packet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2026-CarTelemetry.packet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2026-FinalClassification.packet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2026-HeaderCheck.packet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2026-LapData.packet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2026-MelbourneQ3-Session.packet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2026-MelbourneQ3-SessionFirst.packet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2026-MelbourneRace-Event-SessionStart.packet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2026-MelbourneRace-SessionFirst.packet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2026-Participants.packet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2026-Session.packet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\F1-2026-SessionHistory.packet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="MSTest.TestAdapter" />
+    <PackageReference Include="MSTest.TestFramework" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\F1Server.Core\F1Server.Core.csproj" />
+    <ProjectReference Include="..\F1Server.Service\F1Server.Service.csproj" />
+  </ItemGroup>
+
+</Project>

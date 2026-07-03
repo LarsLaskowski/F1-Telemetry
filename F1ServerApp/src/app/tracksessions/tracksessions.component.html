@@ -1,0 +1,62 @@
+<h1 id="tableLabel">Sessions of track {{ trackName }}</h1>
+
+@if (!sessions) {
+  <p><em>Loading...</em></p>
+}
+
+<h4><a class="nav-link text-dark" [routerLink]="['/tracks']">Back</a></h4>
+
+@if (sessions) {
+  <table class='table table-striped' aria-labelledby="tableLabel">
+    <thead>
+      <tr>
+        <th>Game version</th>
+        <th>Track</th>
+        <th>Formula type</th>
+        <th>Session type</th>
+        <th>Cars</th>
+        <th>AI difficulty</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (session of sessions; track session) {
+        <tr (click)="expandSession(session)" onkeydown="expandSession(session)" tabindex="0">
+          <td>{{ session.gameVersion }}</td>
+          <td>{{ session.track }}</td>
+          <td>{{ session.formulaType }}</td>
+          <td>{{ session.sessionType }}</td>
+          <td>{{ session.cars }}</td>
+          <td>{{ session.aiDifficulty }}</td>
+        </tr>
+        @if (session.isExpanded) {
+          <tr [@detailExpand]="expanded[session.sessionId] ? 'expanded' : 'collapsed'">
+            <td colspan="7" class="session-td">
+              @if (session.isExpanded) {
+                <table class='table' aria-labelledby="tableLabel">
+                  <thead>
+                    <tr>
+                      <th>Car number</th>
+                      <th>Driver</th>
+                      <th>Team</th>
+                      <th>Nationality</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (participant of session.participants; track participant) {
+                      <tr>
+                        <td>{{ participant.carRaceNumber }}</td>
+                        <td>{{ participant.driverName }}</td>
+                        <td>{{ participant.teamName }}</td>
+                        <td>{{ participant.driverNationality }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              }
+            </td>
+          </tr>
+        }
+      }
+    </tbody>
+  </table>
+}

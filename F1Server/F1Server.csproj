@@ -1,0 +1,35 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+    <DockerfileContext>.</DockerfileContext>
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\GlobalSuppressions.cs" Link="GlobalSuppressions.cs" />
+    <Compile Include="..\SharedAssemblyInfo.cs" Link="Properties\SharedAssemblyInfo.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\F1Server.Core\F1Server.Core.csproj" />
+    <ProjectReference Include="..\F1Server.Db.MsSqlMigrations\F1Server.Db.MsSqlMigrations.csproj" />
+    <ProjectReference Include="..\F1Server.Db.MySqlMigrations\F1Server.Db.MySqlMigrations.csproj" />
+    <ProjectReference Include="..\F1Server.Db.PostgreSqlMigrations\F1Server.Db.PostgreSqlMigrations.csproj" />
+    <ProjectReference Include="..\F1Server.Observability\F1Server.Observability.csproj" />
+    <ProjectReference Include="..\F1Server.Service\F1Server.Service.csproj" />
+    <ProjectReference Include="..\F1Server.Telemetry\F1Server.Telemetry.csproj" />
+  </ItemGroup>
+
+</Project>

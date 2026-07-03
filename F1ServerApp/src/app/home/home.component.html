@@ -1,0 +1,65 @@
+<div class="title-row">
+  <div class="title-column">
+    <table class="title-table">
+      <tr class="title-tr">
+        <td class="title-td">
+          <img src="../../assets/formula-1-logo.png" class="title-imgleft" alt="Formel 1 logo" />
+        </td>
+        <td class="title-td">
+          <h1 style="text-align: center">F1 Telemetry</h1>
+        </td>
+        <td class="title-td">
+          <img src="../../assets/f1-silhouette.png" class="title-imgright" alt="Formel 1 car silhouttte"/>
+        </td>
+      </tr>
+    </table>
+  </div>
+</div>
+
+<br/>
+
+<div class="status-row">
+  <div class="status-column">
+    <table class="status-table">
+      <tr class="status-tr">
+        <td class="status-th">Status WebAPI:</td>
+        <td class="status-td">
+          @if (isApiOnline()) {
+            <img src="../../assets/online.png" height="16" alt="WebAPI is online"/>
+          }
+          @if (!isApiOnline()) {
+            <img src="../../assets/offline.png" height="16" alt="WebAPI is offline" />
+          }
+        </td>
+      </tr>
+      <tr class="status-tr">
+        <td class="status-th">Status Live-Session:</td>
+        <td class="status-td">
+          @if (isHubOnline()) {
+            <img src="../../assets/online.png" height="16" alt="Live session is online"/>
+          }
+          @if (!isHubOnline()) {
+            <img src="../../assets/offline.png" height="16" alt="Live session is offline"/>
+          }
+        </td>
+      </tr>
+    </table>
+  </div>
+</div>
+
+<br/>
+
+<div>
+  @if (games.size>0) {
+    <div class="chart-container chart-position">
+      <h4 style="text-align: center">Total sessions</h4>
+      <canvas baseChart class="chart"
+        [data]="gameChartData"
+        [type]="gameChartType"
+        [options]="gameChartOptions"
+        (chartHover)="chartHovered($event)"
+        (chartClick)="chartClicked($event)">
+      </canvas>
+    </div>
+  }
+</div>

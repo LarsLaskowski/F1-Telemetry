@@ -1,0 +1,72 @@
+<Solution>
+  <Folder Name="/00 Solution Items/">
+    <File Path=".dockerignore" />
+    <File Path=".editorconfig" />
+    <File Path=".github/copilot-instructions.md" />
+    <File Path=".gitignore" />
+    <File Path="azure-pipelines.yml" />
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Packages.props" />
+    <File Path="Dockerfile" />
+    <File Path="GlobalSuppressions.cs" />
+    <File Path="nuget.config" />
+    <File Path="README.md" />
+    <File Path="SharedAssemblyInfo.cs" />
+  </Folder>
+  <Folder Name="/00 Solution Items/Documentation/">
+    <File Path="docs/F1 2019 Telemetry.docx" />
+    <File Path="docs/F1 2020 Telemetry.docx" />
+    <File Path="docs/F1 2021 Telemetry.docx" />
+    <File Path="docs/F1 2022 Telemetry.docx" />
+    <File Path="docs/F1 2023 Telemetry.docx" />
+    <File Path="docs/F1 2024 Telemetry.docx" />
+    <File Path="docs/F1 2025 Telemetry.pdf" />
+    <File Path="docs/F1 2026 Telemetry.pdf" />
+  </Folder>
+  <Folder Name="/01 Server/">
+    <Project Path="F1Server.Core/F1Server.Core.csproj" />
+    <Project Path="F1Server.Data/F1Server.Data.csproj" />
+    <Project Path="F1Server.Service/F1Server.Service.csproj" />
+    <Project Path="F1Server.Shared/F1Server.Shared.csproj" />
+    <Project Path="F1Server/F1Server.csproj">
+      <BuildDependency Project="F1Server.Data/F1Server.Data.csproj" />
+      <BuildDependency Project="F1Server.Db/F1Server.Db.csproj" />
+      <BuildDependency Project="F1Server.WebApi/F1Server.WebApi.csproj" />
+    </Project>
+  </Folder>
+  <Folder Name="/02 Database/">
+    <Project Path="F1Server.Db.MsSqlMigrations/F1Server.Db.MsSqlMigrations.csproj" />
+    <Project Path="F1Server.Db.MySqlMigrations/F1Server.Db.MySqlMigrations.csproj" />
+    <Project Path="F1Server.Db.PostgreSqlMigrations/F1Server.Db.PostgreSqlMigrations.csproj" />
+    <Project Path="F1Server.Db/F1Server.Db.csproj" />
+  </Folder>
+  <Folder Name="/03 Observability/">
+    <Project Path="F1Server.Observability/F1Server.Observability.csproj" />
+  </Folder>
+  <Folder Name="/04 Telemetry/">
+    <Project Path="F1Server.Telemetry/F1Server.Telemetry.csproj" />
+  </Folder>
+  <Folder Name="/05 WebApi/">
+    <Project Path="F1Server.WebApi/F1Server.WebApi.csproj" />
+  </Folder>
+  <Folder Name="/10 WebApp/">
+    <Project Path="F1ServerApp/F1ServerApp.esproj">
+      <Build />
+      <Deploy />
+    </Project>
+  </Folder>
+  <Folder Name="/25 ReplayClient/">
+    <Project Path="F1ReplayClient/F1ReplayClient.csproj">
+      <Build Solution="Release|*" Project="false" />
+    </Project>
+  </Folder>
+  <Folder Name="/30 F1SessionFolderRename/">
+    <Project Path="F1SessionFolderRename/F1SessionFolderRename.csproj" />
+  </Folder>
+  <Folder Name="/31 Tools/">
+    <Project Path="F1PacketTester/F1PacketTester.csproj" />
+  </Folder>
+  <Folder Name="/99 UnitTests/">
+    <Project Path="F1Server.Tests/F1Server.Tests.csproj" />
+  </Folder>
+</Solution>

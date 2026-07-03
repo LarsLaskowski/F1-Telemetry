@@ -1,0 +1,53 @@
+<h3 mat-dialog-title>Telemetry view</h3>
+<mat-dialog-content>
+  @if (isLoadingData) {
+    <div>
+      <mat-spinner style="margin: auto;" diameter="128" strokeWidth="2"></mat-spinner>
+    </div>
+  }
+  <div style="margin-left: 20px; margin-right: 20px; margin-bottom: 20px;">
+    @if (!isLoadingData) {
+      <div mat-dialog-content style="position: relative; display: contents;">
+        @if (telemetries.size>0) {
+          <div class="chart-speed-container">
+            <h4 style="text-align: center; font-weight: 500">Speed</h4>
+            <canvas baseChart
+              [data]="chartSpeedData"
+              [type]="chartType"
+              [options]="chartSpeedOptions"
+              (chartHover)="chartSpeedHovered($event)"
+              (chartClick)="chartSpeedClicked($event)">
+            </canvas>
+          </div>
+        }
+        @if (telemetries.size>0) {
+          <div class="chart-additional-container">
+            <h4 style="text-align: center; font-weight: 500">Throttle</h4>
+            <canvas baseChart
+              [data]="chartThrottleData"
+              [type]="chartType"
+              [options]="chartThrottleOptions"
+              (chartHover)="chartThrottleHovered($event)"
+              (chartClick)="chartThrottleClicked($event)">
+            </canvas>
+          </div>
+        }
+        @if (telemetries.size>0) {
+          <div class="chart-additional-container">
+            <h4 style="text-align: center; font-weight: 500">Brake</h4>
+            <canvas baseChart
+              [data]="chartBrakeData"
+              [type]="chartType"
+              [options]="chartBrakeOptions"
+              (chartHover)="chartBrakeHovered($event)"
+              (chartClick)="chartBrakeClicked($event)">
+            </canvas>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button matButton mat-dialog-close>Close</button>
+</mat-dialog-actions>

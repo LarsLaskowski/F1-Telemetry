@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.VisualStudio.JavaScript.Sdk/1.0.4991845">
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>3e7dd05b-4ce4-4bd1-a2e7-f34d80b57925</ProjectGuid>
+  </PropertyGroup>
+  <PropertyGroup>
+    <StartupCommand>npm start</StartupCommand>
+    <JavaScriptTestFramework>Jasmine</JavaScriptTestFramework>
+    <!-- Command to run on project build -->
+    <BuildCommand>
+    </BuildCommand>
+    <!-- Command to create an optimized build of the project that's ready for publishing -->
+    <ProductionBuildCommand>npm run build</ProductionBuildCommand>
+    <ShouldRunNpmAudit>false</ShouldRunNpmAudit>
+    <!-- Folder where production build objects will be placed -->
+    <BuildOutputFolder>$(MSBuildProjectDirectory)\dist\f1serverapp</BuildOutputFolder>
+  </PropertyGroup>
+  <ItemGroup>
+    <Folder Include="src\app\utils\" />
+  </ItemGroup>
+</Project>

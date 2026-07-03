@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <BaseOutputPath>..\F1Server.Db\bin\</BaseOutputPath>
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+  </PropertyGroup>
+
+   <ItemGroup>
+      <Compile Include="..\GlobalSuppressions.cs" Link="GlobalSuppressions.cs" />
+      <Compile Include="..\SharedAssemblyInfo.cs" Link="SharedAssemblyInfo.cs" />
+   </ItemGroup>
+
+   <ItemGroup>
+     <PackageReference Include="Microsoft.EntityFrameworkCore" />
+   </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\F1Server.Db\F1Server.Db.csproj" />
+  </ItemGroup>
+
+</Project>

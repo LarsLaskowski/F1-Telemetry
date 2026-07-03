@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows7.0</TargetFramework>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Images\F1.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\GlobalSuppressions.cs" Link="GlobalSuppressions.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Ookii.Dialogs.Wpf" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\F1Server.Core\F1Server.Core.csproj" />
+    <ProjectReference Include="..\F1Server.Shared\F1Server.Shared.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Images\F1.png" />
+  </ItemGroup>
+
+</Project>

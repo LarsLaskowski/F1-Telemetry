@@ -1,0 +1,11 @@
+<Project>
+  <!--
+    F1ServerApp is an Angular (JavaScript SDK) project built with npm.
+    It must not inherit the .NET build props from the repository root
+    (TargetFramework, PackageReference for analyzers, etc.). Without this
+    file, the inherited PackageReference triggers a NuGet restore for the
+    .esproj and fails with "does not reference .NETCoreApp,Version=v6.0".
+    An empty Directory.Build.props stops the MSBuild lookup from walking
+    further up the directory tree.
+  -->
+</Project>

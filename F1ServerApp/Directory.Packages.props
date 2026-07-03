@@ -1,0 +1,10 @@
+<Project>
+  <!--
+    Opt the JavaScript SDK project out of central package management so the
+    inherited NuGet restore configuration does not apply to this npm-based
+    project. Stops the Directory.Packages.props lookup at this directory.
+  -->
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+</Project>

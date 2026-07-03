@@ -1,0 +1,26 @@
+<h1 id="tableLabel">Games</h1>
+
+@if (!games) {
+  <p><em>Loading...</em></p>
+}
+
+@if (games) {
+  <table class='table table-striped' aria-labelledby="tableLabel">
+    <thead>
+      <tr>
+        <th>Game version</th>
+        <th>Version code</th>
+        <th>Last used</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (game of games; track game) {
+        <tr>
+          <td>{{ game.gameVersion }}</td>
+          <td>{{ game.gameVersionCode }}</td>
+          <td>{{ game.lastUsed }}</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+}

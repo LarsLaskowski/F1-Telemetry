@@ -1,0 +1,88 @@
+<h1 id="tableLabel">Championships</h1>
+<div style="float: right">
+  <button mat-flat-button (click)="createChampionship();$event.stopPropagation()">Create championship</button>
+</div>
+<div>
+  <mat-form-field>
+    <mat-label>Select championship</mat-label>
+    <mat-select [(value)]="selectedChampionship" (selectionChange)="onChampionshipChanged()">
+      <mat-option>None</mat-option>
+      @for (cs of championships; track cs)
+        {
+        <mat-option [value]="cs">
+          {{cs.championshipName}}
+        </mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+</div>
+
+@if (selectedChampionship) {
+  <div>
+    @if (!selectedChampionship.isTracksLoaded) {
+      <mat-spinner diameter="60" strokeWidth="1" style="margin-top: 24px; justify-self: center" />
+    }
+    @if (selectedChampionship.isTracksLoaded) {
+      <table mat-table [dataSource]="dataSource">
+        <!-- Track -->
+        <ng-container matColumnDef="track">
+          <th mat-header-cell *matHeaderCellDef> Track </th>
+          <td mat-cell *matCellDef="let entry"> {{ entry.trackName }} </td>
+        </ng-container>
+        <!-- Race -->
+        <ng-container matColumnDef="race">
+          <th mat-header-cell *matHeaderCellDef> Race </th>
+          <td mat-cell *matCellDef="let entry">
+            @if (entry.racePosition > 0) {
+              {{ entry.racePosition }}
+            }
+          </td>
+        </ng-container>
+        <!-- Qualy -->
+        <ng-container matColumnDef="quali">
+          <th mat-header-cell *matHeaderCellDef> Qualification </th>
+          <td mat-cell *matCellDef="let entry">
+            @if (entry.qualifyingPosition > 0) {
+              {{ entry.qualifyingPosition }}
+            }
+          </td>
+        </ng-container>
+        <!-- Sprint -->
+        <ng-container matColumnDef="sprint">
+          <th mat-header-cell *matHeaderCellDef> Sprint </th>
+          <td mat-cell *matCellDef="let entry">
+            @if (entry.sprintQualifyingPosition > 0) {
+              {{ entry.sprintQualifyingPosition }}
+            }
+          </td>
+        </ng-container>
+        <!-- Sprint shootout -->
+        <ng-container matColumnDef="sprintShootout">
+          <th mat-header-cell *matHeaderCellDef> Sprint shootout </th>
+          <td mat-cell *matCellDef="let entry">
+            @if (entry.sprintQualifyingPosition > 0) {
+              {{ entry.sprintQualifyingPosition }}
+            }
+          </td>
+        </ng-container>
+        <!-- Difficulty -->
+        <ng-container matColumnDef="difficulty">
+          <th mat-header-cell *matHeaderCellDef> Difficulty </th>
+          <td mat-cell *matCellDef="let entry"></td>
+        </ng-container>
+        <!-- Points -->
+        <ng-container matColumnDef="points">
+          <th mat-header-cell *matHeaderCellDef> Points </th>
+          <td mat-cell *matCellDef="let entry">
+            @if (entry.racePoints > 0 || entry.sprintPoints > 0) {
+              {{ entry.racePoints + entry.sprintPoints }}
+            }
+          </td>
+        </ng-container>
+        <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+    }
+  </div>
+}
+

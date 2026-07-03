@@ -1,0 +1,69 @@
+@if (!lastSession) {
+  <p><em>Loading...</em></p>
+}
+
+@if (lastSession) {
+  <h2>{{lastSession.gameVersion}} - {{ lastSession.formulaType }} - {{ lastSession.track }} - {{ lastSession.sessionType }}</h2>
+}
+<h5>AI Difficulty: {{ lastSession.aiDifficulty}}</h5>
+<!--<h6 *ngIf="lastSession">Fastest lap: {{ lastSession.fastestLap }} - driver: {{ lastSession.fastestLapDriver }}</h6>-->
+
+<table mat-table [dataSource]="dataSource">
+
+  <!-- Position -->
+  <ng-container matColumnDef="position">
+    <th mat-header-cell *matHeaderCellDef> Position </th>
+    <td mat-cell *matCellDef="let entry" class="td-position"> {{ entry.finishPosition }} <img class="img-position" [hidden]="!isRaceSession()" [src]="getPositionChangeIndicator(entry)" alt="Position changed indicator" /></td>
+  </ng-container>
+
+  <!-- Driver -->
+  <ng-container matColumnDef="driver">
+    <th mat-header-cell *matHeaderCellDef> Driver </th>
+    <td mat-cell *matCellDef="let entry"> {{ entry.driverName }} ({{ entry.carNumber }})</td>
+  </ng-container>
+
+  <!-- Team -->
+  <ng-container matColumnDef="team">
+    <th mat-header-cell *matHeaderCellDef> Team </th>
+    <td mat-cell *matCellDef="let entry"> {{ entry.teamName }} </td>
+  </ng-container>
+
+  <!-- Grid -->
+  <ng-container matColumnDef="gridPosition">
+    <th mat-header-cell *matHeaderCellDef> Grid </th>
+    <td mat-cell *matCellDef="let entry" class="td-text"> {{ entry.startingPosition }} </td>
+  </ng-container>
+
+  <!-- Fastest lap time -->
+  <ng-container matColumnDef="fastestLaptime">
+    <th mat-header-cell *matHeaderCellDef> Fastest lap time </th>
+    <td mat-cell *matCellDef="let entry" [ngClass]="getTimeColor(entry)"> {{ entry.fastestLapTime }} </td>
+  </ng-container>
+
+  <ng-container matColumnDef="fastestLaptimeDiff">
+    <th mat-header-cell *matHeaderCellDef> Difference </th>
+    <td mat-cell *matCellDef="let entry" [ngClass]="getTimeColor(entry)"> {{ entry.fastestLapTimeDifference }} </td>
+  </ng-container>
+
+  <!-- Pit stops -->
+  <ng-container matColumnDef="pitStops">
+    <th mat-header-cell *matHeaderCellDef> Pit stops </th>
+    <td mat-cell *matCellDef="let entry" class="td-text"> {{ entry.pitStops }} </td>
+  </ng-container>
+
+  <!-- Laps driven -->
+  <ng-container matColumnDef="lapsDriven">
+    <th mat-header-cell *matHeaderCellDef> Laps driven </th>
+    <td mat-cell *matCellDef="let entry" class="td-text"> {{ entry.lapsDriven }} </td>
+  </ng-container>
+
+  <!-- Total race time -->
+  <ng-container matColumnDef="totalRacetime">
+    <th mat-header-cell *matHeaderCellDef> Total race time </th>
+    <td mat-cell *matCellDef="let entry" class="td-text"> {{ getRaceTime(entry) }} </td>
+  </ng-container>
+
+  <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+  <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+</table>

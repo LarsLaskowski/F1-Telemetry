@@ -1,0 +1,53 @@
+<h1 id="tableLabel">Tracks</h1>
+
+@if (!tracks) {
+  <mat-spinner diameter="60" strokeWidth="2" style="margin: 0 auto;"></mat-spinner>
+}
+
+<mat-slide-toggle style="margin-bottom: 20px;" [checked]="onlyTracksWithSessions" (change)="trackSessionToggled($event)">Tracks with sessions</mat-slide-toggle>
+<mat-slide-toggle style="margin-left: 20px; margin-bottom: 20px;" [checked]="withReferenceTime" (change)="trackReferenceTimeToggled($event)">With reference time</mat-slide-toggle>
+
+<!-- Cards with material --->
+@if (tracks) {
+  <div layout="row">
+    @for (track of tracks; track track) {
+      <mat-card class="track-card-material">
+        <mat-card-header>
+          <mat-card-title-group>
+            <mat-card-title>{{ track.trackName }}</mat-card-title>
+            <mat-card-subtitle>
+              <div>{{ track.sessions }} Sessions</div>
+              @if (withReferenceTime) {
+                <div>Reference lap time: {{ track.referenceLapTime }}</div>
+              }
+            </mat-card-subtitle>
+            <img [src]="track.imagePath" alt="View of track {{ track.trackName }}">
+          </mat-card-title-group>
+        </mat-card-header>
+        <mat-card-content style="margin-top: 35px;">
+          @if (trackIsLoadingLaps(track)) {
+            <mat-spinner diameter="50" strokeWidth="2" style="margin: 0 auto;"></mat-spinner>
+          }
+          @if (!trackIsLoadingLaps(track)) {
+            <div>
+              @for (fastestLap of track.fastestLaps; track fastestLap) {
+                <div class="top">
+                  <div class="fastestLap">
+                    <div class="fastestLapTitle">Game: {{ fastestLap.gameVersionName }} - {{ fastestLap.formulaType }} - {{ fastestLap.sessionLapType }}:</div>
+                    <div class="fastestLapName">{{ fastestLap.driverName }}</div>
+                    @if (withReferenceTime) {
+                      <div class="fastestLapTime">{{ fastestLap.lapTime }} ({{ fastestLap.diffReference }})</div>
+                    }
+                    @if (!withReferenceTime) {
+                      <div class="fastestLapTime">{{ fastestLap.lapTime }}</div>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </mat-card-content>
+      </mat-card>
+    }
+  </div>
+}

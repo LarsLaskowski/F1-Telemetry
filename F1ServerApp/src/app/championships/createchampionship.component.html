@@ -1,0 +1,52 @@
+<div style="margin-top: 10px; display: flex; width: 90%; align-items: center; flex-wrap: nowrap; margin-left: 5px; margin-right: 5px; justify-content: center">
+  <mat-form-field>
+    <mat-label>Select game version</mat-label>
+    <mat-select [(value)]="selectedGame" (selectionChange)="onGameChanged($event)">
+      <mat-option>None</mat-option>
+      @for (game of games; track game)
+        {
+        <mat-option [value]="game">
+          {{game.gameVersion}}
+        </mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field style="margin-left: 30px">
+    <mat-label>Select carreer mode</mat-label>
+    <mat-select [(value)]="careerMode" (selectionChange)="onCareerModeChanged($event)">
+      <mat-option value="-1">None</mat-option>
+      <mat-option value="0">Career</mat-option>
+      <mat-option value="1">My team</mat-option>
+      <mat-option value="2">Solo championship</mat-option>
+    </mat-select>
+  </mat-form-field>
+</div>
+
+@if (selectedGame) {
+  <div style="height: -webkit-fill-available">
+    @for (gameTrack of gameTracks; track gameTrack; let i = $index)
+      {
+      <div>
+        <mat-checkbox [checked]="gameTrack.selected" (change)="onTrackSelected($event.checked, gameTrack.mapIndex)">
+          {{gameTrack.name}} (Game index: {{gameTrack.index}} | Map index: {{gameTrack.mapIndex}})
+        </mat-checkbox>
+      </div>
+    }
+  </div>
+}
+
+@if (!selectedGame) {
+  <div style="height: -webkit-fill-available">
+  </div>
+}
+
+<div style="margin: 20px; position: center">
+  <div style="display: flex; justify-content: center;">
+    <button mat-flat-button [hidden]="isCreating" mat-fab extended disabled [disabled]="!isCreateable" aria-label="Create championship" (click)="createChampionship()">
+      <mat-icon>add_circle</mat-icon>
+      Create championship
+    </button>
+  </div>
+  <mat-spinner [hidden]="!isCreating" diameter="52" strokeWidth="2" style="top: 14px; right: 0; margin-left: 20px; display: inline-flex" />
+</div>

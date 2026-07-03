@@ -1,0 +1,15 @@
+./node_modules/
+.angular/
+
+**/.dockerignore
+**/.gitignore
+**/.vscode
+**/*.*proj.user
+**/bin
+**/obj
+**/build
+**/docker-compose*
+**/.git
+**/.vs
+LICENSE
+README.md
