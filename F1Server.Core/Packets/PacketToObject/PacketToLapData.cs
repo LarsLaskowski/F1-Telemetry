@@ -94,7 +94,7 @@ internal class PacketToLapData(PacketHeader packetHeader) : PacketToXBase(packet
                     ExtractLapDataByGameVersion(ref dataPacket, packetLength, lapDataComplete, ref actOffset, carIndex);
                 }
 
-                ExtractAdditionalData(ref dataPacket, lapDataComplete, actOffset);
+                ExtractAdditionalData(ref dataPacket, packetLength, lapDataComplete, actOffset);
 
                 retValue = true;
             }
@@ -111,10 +111,17 @@ internal class PacketToLapData(PacketHeader packetHeader) : PacketToXBase(packet
     /// Additional data extraction
     /// </summary>
     /// <param name="dataPacket">Received data</param>
+    /// <param name="packetLength">Size of received packet</param>
     /// <param name="lapDataComplete">Complete lap data interface</param>
     /// <param name="actOffset">Current offset</param>
-    private void ExtractAdditionalData(ref byte dataPacket, ILapDataComplete? lapDataComplete, int actOffset)
+    private void ExtractAdditionalData(ref byte dataPacket, int packetLength, ILapDataComplete? lapDataComplete, int actOffset)
     {
+        // The trailing time trial car indexes (2 x uint8) must fit into the received packet
+        if (packetLength < actOffset + (2 * ConstData.TypeUInt8))
+        {
+            return;
+        }
+
         if (GameVersion == 2022 && lapDataComplete is ILapDataComplete2022 lapData2022)
         {
             lapData2022.TimeTrialPersonalBestCarIndex = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));

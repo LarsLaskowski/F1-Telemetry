@@ -406,6 +406,11 @@ public static class ConstData
     /// </summary>
     public const int F12024FinalClassificationSize = 991;
 
+    /// <summary>
+    /// Size of one time trial packet (three data sets)
+    /// </summary>
+    public const int F12024TimeTrialSize = 72;
+
     #endregion // Consts F1 2024
 
     #region Consts F1 2025
@@ -499,6 +504,11 @@ public static class ConstData
     /// Size of one lap position packet
     /// </summary>
     public const int F12025LapPositionSize = 1102;
+
+    /// <summary>
+    /// Size of one time trial packet (three data sets)
+    /// </summary>
+    public const int F12025TimeTrialSize = 72;
 
     #endregion // Consts F1 2025
 
@@ -603,6 +613,11 @@ public static class ConstData
     /// Size of one car telemetry 2 packet (24 cars)
     /// </summary>
     public const int F12026CarTelemetry2Size = 240;
+
+    /// <summary>
+    /// Size of one time trial packet (three data sets)
+    /// </summary>
+    public const int F12026TimeTrialSize = 72;
 
     #endregion // Consts F1 2026
 

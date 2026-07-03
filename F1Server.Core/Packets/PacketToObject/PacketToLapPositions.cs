@@ -43,6 +43,7 @@ internal class PacketToLapPositions(PacketHeader packetHeader) : PacketToXBase(p
                                              };
 
             if (lapPositionsData != null
+                && HasValidPacketLength(dataPacket.Length, GetExpectedPayloadSize())
                 && ExtractLapPositions(ref memRef, HeaderSize, lapPositionsData.PacketData))
             {
                 lapPositions = lapPositionsData;
@@ -62,6 +63,20 @@ internal class PacketToLapPositions(PacketHeader packetHeader) : PacketToXBase(p
     #endregion // Methods
 
     #region Private methods
+
+    /// <summary>
+    /// Returns the expected lap positions payload size for the current game version
+    /// </summary>
+    /// <returns>Expected payload size in bytes without the packet header</returns>
+    private int GetExpectedPayloadSize()
+    {
+        return GameVersion switch
+               {
+                   2025 => ConstData.F12025LapPositionSize,
+                   2026 => ConstData.F12026LapPositionSize,
+                   _ => 0
+               };
+    }
 
     /// <summary>
     /// Extract session history
@@ -108,7 +123,10 @@ internal class PacketToLapPositions(PacketHeader packetHeader) : PacketToXBase(p
 
             lapPositions2025.LapStartIndex = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-            for (var lap = 0; lap < lapPositions2025.NumberOfLaps; lap++)
+            // Clamp the packet-provided lap count to the fixed packet layout so manipulated values cannot cause reads past the packet
+            var lapCount = Math.Min(lapPositions2025.NumberOfLaps, ConstData.F12025MaxLapPositions);
+
+            for (var lap = 0; lap < lapCount; lap++)
             {
                 for (var car = 0; car < ConstData.F12025MaxCars; ++car)
                 {
@@ -149,7 +167,10 @@ internal class PacketToLapPositions(PacketHeader packetHeader) : PacketToXBase(p
 
             lapPositions2026.LapStartIndex = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-            for (var lap = 0; lap < lapPositions2026.NumberOfLaps; lap++)
+            // Clamp the packet-provided lap count to the fixed packet layout so manipulated values cannot cause reads past the packet
+            var lapCount = Math.Min(lapPositions2026.NumberOfLaps, ConstData.F12026MaxLapPositions);
+
+            for (var lap = 0; lap < lapCount; lap++)
             {
                 for (var car = 0; car < ConstData.F12026MaxCars; ++car)
                 {

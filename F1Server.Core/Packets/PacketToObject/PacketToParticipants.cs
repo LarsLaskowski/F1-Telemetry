@@ -51,6 +51,7 @@ internal class PacketToParticipants(PacketHeader packetHeader) : PacketToXBase(p
                                                                 };
 
             if (packetDataBase != null
+                && HasValidPacketLength(dataPacket.Length, GetExpectedPayloadSize())
                 && ExtractParticipantsData(ref memRef, HeaderSize, packetDataBase.PacketData))
             {
                 particpantsData = packetDataBase;
@@ -70,6 +71,26 @@ internal class PacketToParticipants(PacketHeader packetHeader) : PacketToXBase(p
     #endregion // Methods
 
     #region Private methods
+
+    /// <summary>
+    /// Returns the expected participants payload size for the current game version
+    /// </summary>
+    /// <returns>Expected payload size in bytes without the packet header</returns>
+    private int GetExpectedPayloadSize()
+    {
+        return GameVersion switch
+               {
+                   2019 => ConstData.F12019ParticipantsSize,
+                   2020 => ConstData.F12020ParticipantsSize,
+                   2021 => ConstData.F12021ParticipantsSize,
+                   2022 => ConstData.F12022ParticipantsSize,
+                   2023 => ConstData.F12023ParticipantsSize,
+                   2024 => ConstData.F12024ParticipantsSize,
+                   2025 => ConstData.F12025ParticipantsSize,
+                   2026 => ConstData.F12026ParticipantsSize,
+                   _ => 0
+               };
+    }
 
     /// <summary>
     /// Extract all data from received packet

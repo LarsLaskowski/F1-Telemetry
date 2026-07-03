@@ -32,7 +32,7 @@ internal class PacketToSessionData(PacketHeader packetHeader) : PacketToXBase(pa
 
         LastError = string.Empty;
 
-        if (dataPacket.Length > 0)
+        if (dataPacket.Length > 0 && HasValidPacketLength(dataPacket.Length, GetExpectedPayloadSize()))
         {
             ref var memRef = ref MemoryMarshal.GetReference(dataPacket);
 
@@ -63,6 +63,26 @@ internal class PacketToSessionData(PacketHeader packetHeader) : PacketToXBase(pa
     #endregion // Methods
 
     #region Private methods
+
+    /// <summary>
+    /// Returns the expected session payload size for the current game version
+    /// </summary>
+    /// <returns>Expected payload size in bytes without the packet header</returns>
+    private int GetExpectedPayloadSize()
+    {
+        return GameVersion switch
+               {
+                   2019 => ConstData.F12019SessionSize,
+                   2020 => ConstData.F12020SessionSize,
+                   2021 => ConstData.F12021SessionSize,
+                   2022 => ConstData.F12022SessionSize,
+                   2023 => ConstData.F12023SessionSize,
+                   2024 => ConstData.F12024SessionSize,
+                   2025 => ConstData.F12025SessionSize,
+                   2026 => ConstData.F12026SessionSize,
+                   _ => 0
+               };
+    }
 
     /// <summary>
     /// Get session data from F1 2019 session packet
@@ -358,7 +378,10 @@ internal class PacketToSessionData(PacketHeader packetHeader) : PacketToXBase(pa
 
             var zoneOffset = actOffset;
 
-            for (int marshalZoneIndex = 0; marshalZoneIndex < sessionData.MarshalZones; ++marshalZoneIndex)
+            // Clamp the packet-provided zone count to the fixed packet layout so manipulated values cannot cause reads past the packet
+            var marshalZoneCount = Math.Min(sessionData.MarshalZones, sessionData.MarshalZone.Length);
+
+            for (int marshalZoneIndex = 0; marshalZoneIndex < marshalZoneCount; ++marshalZoneIndex)
             {
                 MarshalZone? marshalZone = new()
                                            {

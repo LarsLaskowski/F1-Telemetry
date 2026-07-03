@@ -51,6 +51,7 @@ internal class PacketToEventData(PacketHeader packetHeader) : PacketToXBase(pack
                                                              };
 
             if (packetDataBase != null
+                && HasValidPacketLength(dataPacket.Length, GetExpectedPayloadSize())
                 && ExtractEventData(ref memRef, HeaderSize, dataPacket.Length, packetDataBase.PacketData))
             {
                 eventDataObject = packetDataBase;
@@ -72,6 +73,26 @@ internal class PacketToEventData(PacketHeader packetHeader) : PacketToXBase(pack
     #endregion // Methods
 
     #region Private methods
+
+    /// <summary>
+    /// Returns the expected event payload size for the current game version
+    /// </summary>
+    /// <returns>Expected payload size in bytes without the packet header</returns>
+    private int GetExpectedPayloadSize()
+    {
+        return GameVersion switch
+               {
+                   2019 => ConstData.F12019EventSize,
+                   2020 => ConstData.F12020EventSize,
+                   2021 => ConstData.F12021EventSize,
+                   2022 => ConstData.F12022EventSize,
+                   2023 => ConstData.F12023EventSize,
+                   2024 => ConstData.F12024EventSize,
+                   2025 => ConstData.F12025EventSize,
+                   2026 => ConstData.F12026EventSize,
+                   _ => 0
+               };
+    }
 
     /// <summary>
     /// Converts received data to a event object
