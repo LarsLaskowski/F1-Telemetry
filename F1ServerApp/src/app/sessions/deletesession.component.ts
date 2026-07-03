@@ -48,7 +48,7 @@ export class DeleteSessionComponent
     {
       this.isDeleting = true;
 
-      this.http.get<boolean>(this.baseUrl + 'api/sessions/deletesession/' + this.sessionId + '/' + this.sessionCode).subscribe(
+      this.http.delete<boolean>(this.baseUrl + 'api/sessions/deletesession/' + this.sessionId + '/' + this.sessionCode).subscribe(
       {
         next: (result) =>
         {
