@@ -141,13 +141,16 @@ jobs:
           cache: npm
           cache-dependency-path: F1ServerApp/package-lock.json
 
+      # npm ci installs strictly from package-lock.json instead of resolving
+      # ranges from package.json, so builds only ever use the verified,
+      # locked dependency versions (Sonar S8543).
       # --force mirrors the frontend Dockerfile, which installs with the same
       # flag to tolerate the peer-dependency ranges of the Angular 22 stack.
       # --ignore-scripts is intentionally used to prevent arbitrary npm script
       # execution. The Angular 21+ dependency tree is well-known and audited,
       # and all pinned versions are locked in package-lock.json.
       - name: Install dependencies
-        run: npm install --force --ignore-scripts
+        run: npm ci --force --ignore-scripts
 
       - name: Build
         run: npm run build
