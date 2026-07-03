@@ -7,14 +7,14 @@ WORKDIR /app
 
 ENV PATH /app/node_modules/.bin:$PATH
 
-COPY ./package.json /app/package.json
+COPY ./package.json ./package-lock.json /app/
 
 RUN npm install -g npm@latest
 
 RUN echo "NODE Version: " && node --version
 RUN echo "NPM  Version: " && npm --version
 
-RUN npm install --force
+RUN npm ci --force
 
 COPY . /app
 
