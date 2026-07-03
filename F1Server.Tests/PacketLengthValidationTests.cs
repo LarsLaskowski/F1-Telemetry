@@ -44,6 +44,28 @@ public class PacketLengthValidationTests
         return receivedData.PacketHeader;
     }
 
+    /// <summary>
+    /// Creates a synthetic packet header for game versions without sample packet files
+    /// </summary>
+    /// <param name="gameVersion">Game version to encode in the header</param>
+    /// <param name="headerSize">Header size of the game version</param>
+    /// <returns>Parsed packet header</returns>
+    private static PacketHeader CreatePacketHeader(int gameVersion, int headerSize)
+    {
+        var rawData = new byte[headerSize];
+
+        rawData[0] = (byte)(gameVersion & 0xFF);
+        rawData[1] = (byte)((gameVersion >> 8) & 0xFF);
+
+        var receivedData = new ReceivedPacketData();
+
+        receivedData.SetRawData(rawData);
+
+        Assert.IsNotNull(receivedData.PacketHeader, $"Synthetic header for game version {gameVersion} could not be created!");
+
+        return receivedData.PacketHeader;
+    }
+
     #endregion // Static methods
 
     #region Methods
@@ -417,6 +439,204 @@ public class PacketLengthValidationTests
         var lapData = packetAnalyzer.GetLapData(packetHeader, packetContent);
 
         Assert.IsNotNull(lapData, $"Full size lap data packet {fileName} must produce an object!");
+    }
+
+    /// <summary>
+    /// Test to verify that lap data conversion tolerates truncated packets via the per car checks
+    /// and skips the trailing time trial car indexes without reading past the packet end
+    /// </summary>
+    [TestMethod]
+    public void GetLapDataTruncatedPacketReturnsObjectWithDefaults()
+    {
+        var packetHeader = GetPacketHeader("F1-2025-LapData.packet", out var packetContent);
+
+        var packetAnalyzer = new PacketAnalyzer();
+
+        var lapData = packetAnalyzer.GetLapData(packetHeader, packetContent[..TruncatedPacketLength]);
+
+        Assert.IsNotNull(lapData, "Truncated lap data packet must still produce an object with default entries!");
+    }
+
+    /// <summary>
+    /// Test to verify that a truncated F1 2019 packet is rejected by every converter with 2019 support
+    /// </summary>
+    [TestMethod]
+    public void Get2019DataTruncatedPacketReturnsNull()
+    {
+        var packetHeader = CreatePacketHeader(2019, ConstData.F12019HeaderSize);
+
+        var packetAnalyzer = new PacketAnalyzer();
+
+        var truncatedContent = new byte[TruncatedPacketLength];
+
+        Assert.IsNull(packetAnalyzer.GetCarStatus(packetHeader, truncatedContent), "Truncated F1 2019 car status packet must not produce an object!");
+        Assert.IsNull(packetAnalyzer.GetCarTelemetry(packetHeader, truncatedContent), "Truncated F1 2019 car telemetry packet must not produce an object!");
+        Assert.IsNull(packetAnalyzer.GetParticipantsData(packetHeader, truncatedContent), "Truncated F1 2019 participants packet must not produce an object!");
+        Assert.IsNull(packetAnalyzer.GetSessionData(packetHeader, truncatedContent), "Truncated F1 2019 session packet must not produce an object!");
+        Assert.IsNull(packetAnalyzer.GetEventData(packetHeader, new byte[ConstData.F12019HeaderSize]), "Truncated F1 2019 event packet must not produce an object!");
+    }
+
+    /// <summary>
+    /// Test to verify that full size F1 2019 packets are still converted successfully
+    /// </summary>
+    [TestMethod]
+    public void Get2019DataFullPacketReturnsObject()
+    {
+        var packetHeader = CreatePacketHeader(2019, ConstData.F12019HeaderSize);
+
+        var packetAnalyzer = new PacketAnalyzer();
+
+        var carStatusContent = new byte[ConstData.F12019HeaderSize + ConstData.F12019CarStatusSize];
+        var participantsContent = new byte[ConstData.F12019HeaderSize + ConstData.F12019ParticipantsSize];
+        var sessionContent = new byte[ConstData.F12019HeaderSize + ConstData.F12019SessionSize];
+        var eventContent = new byte[ConstData.F12019HeaderSize + ConstData.F12019EventSize];
+
+        Assert.IsNotNull(packetAnalyzer.GetCarStatus(packetHeader, carStatusContent), "Full size F1 2019 car status packet must produce an object!");
+        Assert.IsNotNull(packetAnalyzer.GetParticipantsData(packetHeader, participantsContent), "Full size F1 2019 participants packet must produce an object!");
+        Assert.IsNotNull(packetAnalyzer.GetSessionData(packetHeader, sessionContent), "Full size F1 2019 session packet must produce an object!");
+        Assert.IsNotNull(packetAnalyzer.GetEventData(packetHeader, eventContent), "Full size F1 2019 event packet must produce an object!");
+    }
+
+    /// <summary>
+    /// Test to verify that a truncated lap positions packet is rejected instead of reading past the packet end
+    /// </summary>
+    /// <param name="gameVersion">Game version to encode in the header</param>
+    /// <param name="headerSize">Header size of the game version</param>
+    [TestMethod]
+    [DataRow(2025, ConstData.F12025HeaderSize)]
+    [DataRow(2026, ConstData.F12026HeaderSize)]
+    public void GetLapPositionsDataTruncatedPacketReturnsNull(int gameVersion, int headerSize)
+    {
+        var packetHeader = CreatePacketHeader(gameVersion, headerSize);
+
+        var packetAnalyzer = new PacketAnalyzer();
+
+        var lapPositions = packetAnalyzer.GetLapPositionsData(packetHeader, new byte[TruncatedPacketLength]);
+
+        Assert.IsNull(lapPositions, $"Truncated F1 {gameVersion} lap positions packet must not produce an object!");
+    }
+
+    /// <summary>
+    /// Test to verify that a manipulated lap count in a lap positions packet is clamped to the fixed packet layout
+    /// </summary>
+    [TestMethod]
+    public void GetLapPositionsDataManipulatedLapCountReturnsObject()
+    {
+        var packetHeader = CreatePacketHeader(2025, ConstData.F12025HeaderSize);
+
+        var packetContent = new byte[ConstData.F12025HeaderSize + ConstData.F12025LapPositionSize];
+
+        // Lap count far above the fixed 50 lap layout of the packet
+        packetContent[ConstData.F12025HeaderSize] = byte.MaxValue;
+
+        var packetAnalyzer = new PacketAnalyzer();
+
+        var lapPositions = packetAnalyzer.GetLapPositionsData(packetHeader, packetContent);
+
+        Assert.IsNotNull(lapPositions, "Lap positions packet with a manipulated lap count must be clamped and still produce an object!");
+    }
+
+    /// <summary>
+    /// Test to verify that a truncated additional car telemetry packet is rejected instead of reading past the packet end
+    /// </summary>
+    [TestMethod]
+    public void GetCarTelemetry2TruncatedPacketReturnsNull()
+    {
+        var packetHeader = CreatePacketHeader(2026, ConstData.F12026HeaderSize);
+
+        var packetAnalyzer = new PacketAnalyzer();
+
+        var carTelemetry2 = packetAnalyzer.GetCarTelemetry2(packetHeader, new byte[TruncatedPacketLength]);
+
+        Assert.IsNull(carTelemetry2, "Truncated additional car telemetry packet must not produce an object!");
+    }
+
+    /// <summary>
+    /// Test to verify that a full size additional car telemetry packet is still converted successfully
+    /// </summary>
+    [TestMethod]
+    public void GetCarTelemetry2FullPacketReturnsObject()
+    {
+        var packetHeader = CreatePacketHeader(2026, ConstData.F12026HeaderSize);
+
+        var packetAnalyzer = new PacketAnalyzer();
+
+        var packetContent = new byte[ConstData.F12026HeaderSize + ConstData.F12026CarTelemetry2Size];
+
+        var carTelemetry2 = packetAnalyzer.GetCarTelemetry2(packetHeader, packetContent);
+
+        Assert.IsNotNull(carTelemetry2, "Full size additional car telemetry packet must produce an object!");
+    }
+
+    /// <summary>
+    /// Test to verify that a truncated time trial packet is rejected for the game versions without sample packet files
+    /// </summary>
+    /// <param name="gameVersion">Game version to encode in the header</param>
+    /// <param name="headerSize">Header size of the game version</param>
+    [TestMethod]
+    [DataRow(2025, ConstData.F12025HeaderSize)]
+    [DataRow(2026, ConstData.F12026HeaderSize)]
+    public void GetTimeTrialDataTruncatedSyntheticPacketReturnsNull(int gameVersion, int headerSize)
+    {
+        var packetHeader = CreatePacketHeader(gameVersion, headerSize);
+
+        var packetAnalyzer = new PacketAnalyzer();
+
+        var timeTrial = packetAnalyzer.GetTimeTrialData(packetHeader, new byte[TruncatedPacketLength]);
+
+        Assert.IsNull(timeTrial, $"Truncated F1 {gameVersion} time trial packet must not produce an object!");
+    }
+
+    /// <summary>
+    /// Test to verify that a full size time trial packet is still converted for the game versions without sample packet files
+    /// </summary>
+    /// <param name="gameVersion">Game version to encode in the header</param>
+    /// <param name="headerSize">Header size of the game version</param>
+    /// <param name="payloadSize">Time trial payload size of the game version</param>
+    [TestMethod]
+    [DataRow(2025, ConstData.F12025HeaderSize, ConstData.F12025TimeTrialSize)]
+    [DataRow(2026, ConstData.F12026HeaderSize, ConstData.F12026TimeTrialSize)]
+    public void GetTimeTrialDataFullSyntheticPacketReturnsObject(int gameVersion, int headerSize, int payloadSize)
+    {
+        var packetHeader = CreatePacketHeader(gameVersion, headerSize);
+
+        var packetAnalyzer = new PacketAnalyzer();
+
+        var timeTrial = packetAnalyzer.GetTimeTrialData(packetHeader, new byte[headerSize + payloadSize]);
+
+        Assert.IsNotNull(timeTrial, $"Full size F1 {gameVersion} time trial packet must produce an object!");
+    }
+
+    /// <summary>
+    /// Test to verify that a truncated F1 2020 final classification packet is rejected instead of reading past the packet end
+    /// </summary>
+    [TestMethod]
+    public void GetFinalClassificationDataTruncated2020PacketReturnsNull()
+    {
+        var packetHeader = CreatePacketHeader(2020, ConstData.F12020HeaderSize);
+
+        var packetAnalyzer = new PacketAnalyzer();
+
+        var finalClassification = packetAnalyzer.GetFinalClassificationData(packetHeader, new byte[TruncatedPacketLength]);
+
+        Assert.IsNull(finalClassification, "Truncated F1 2020 final classification packet must not produce an object!");
+    }
+
+    /// <summary>
+    /// Test to verify that a full size F1 2020 final classification packet is still converted successfully
+    /// </summary>
+    [TestMethod]
+    public void GetFinalClassificationDataFull2020PacketReturnsObject()
+    {
+        var packetHeader = CreatePacketHeader(2020, ConstData.F12020HeaderSize);
+
+        var packetAnalyzer = new PacketAnalyzer();
+
+        var packetContent = new byte[ConstData.F12020HeaderSize + ConstData.F12020FinalClassificationSize];
+
+        var finalClassification = packetAnalyzer.GetFinalClassificationData(packetHeader, packetContent);
+
+        Assert.IsNotNull(finalClassification, "Full size F1 2020 final classification packet must produce an object!");
     }
 
     #endregion // Methods
