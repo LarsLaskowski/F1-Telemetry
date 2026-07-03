@@ -183,7 +183,7 @@ messages, scopes and parsed state values) while also writing to the console.
 
 ## Project stats
 
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=LarsLaskowski_F1-Telemetry&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=LarsLaskowski_F1-Telemetry)
-[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=LarsLaskowski_F1-Telemetry&metric=bugs)](https://sonarcloud.io/summary/new_code?id=LarsLaskowski_F1-Telemetry)
-[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=LarsLaskowski_F1-Telemetry&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=LarsLaskowski_F1-Telemetry)
-[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=LarsLaskowski_F1-Telemetry&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=LarsLaskowski_F1-Telemetry)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=networlddev_f1-telemetry&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=networlddev_f1-telemetry)
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=networlddev_f1-telemetry&metric=bugs)](https://sonarcloud.io/summary/new_code?id=networlddev_f1-telemetry)
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=networlddev_f1-telemetry&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=networlddev_f1-telemetry)
+[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=networlddev_f1-telemetry&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=networlddev_f1-telemetry)

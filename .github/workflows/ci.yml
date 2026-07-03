@@ -71,7 +71,7 @@ jobs:
         if: ${{ env.SONAR_TOKEN != '' }}
         run: |
           ${{ runner.temp }}/scanner/dotnet-sonarscanner begin \
-            /k:"LarsLaskowski_F1-Telemetry" \
+            /k:"networlddev_f1-telemetry" \
             /o:"networlddev" \
             /d:sonar.token="$SONAR_TOKEN" \
             /d:sonar.exclusions="**/Migrations/**,F1ServerApp/**" \
