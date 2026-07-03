@@ -540,13 +540,13 @@ public class SessionsController : ControllerBase
     }
 
     /// <summary>
-    /// Get fastest lap from a specific session
+    /// Delete a specific session including its participants, laps and telemetry
     /// </summary>
     /// <param name="sessionId">Id of session</param>
     /// <param name="sessionCode">Session code</param>
-    /// <returns>Data of fastest lap</returns>
+    /// <returns>Status whether the session was deleted</returns>
     [Route("DeleteSession/{sessionId}/{sessionCode}")]
-    [HttpGet]
+    [HttpDelete]
     public IActionResult DeleteSession(long sessionId, ulong sessionCode)
     {
         var isDeleted = false;

@@ -69,8 +69,7 @@ public class WebHosting : IDisposable
             builder.Services.AddCors(options => options.AddPolicy("F1ServerAllowSpecification",
                                                                   build => build.AllowAnyMethod()
                                                                                 .AllowAnyHeader()
-                                                                                .SetIsOriginAllowed(_ => true)
-                                                                                .AllowCredentials()));
+                                                                                .AllowAnyOrigin()));
 
             builder.Services.AddControllersWithViews().AddApplicationPart(typeof(WebHosting).Assembly);
             builder.Services.AddEndpointsApiExplorer();

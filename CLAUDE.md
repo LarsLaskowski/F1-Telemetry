@@ -200,8 +200,13 @@ attribute or class name. Verify `.cs` and `.Designer.cs` are consistent.
 - SignalR hubs in `F1Server.WebApi\Hubs`; hosting config in `F1Server.WebApi\WebHosting.cs`.
 - Keep Swagger, CORS, authentication, SignalR, and cache wiring consistent with existing setup.
 - The app uses `HybridCache` and `IMemoryCache`; reuse existing cache patterns.
-- Cookie authentication configured in `WebHosting`; external providers: Google, Facebook, Microsoft.
-  Credentials are read from Docker secrets or environment variables.
+- No authentication or authorization is currently implemented; every controller action and the `/live`
+  SignalR hub are anonymously reachable. Do not describe cookie or OAuth (Google/Facebook/Microsoft)
+  authentication as configured — it is not.
+- Mutating actions must use the matching HTTP verb (`HttpPost`/`HttpPut`/`HttpDelete`), never `HttpGet`,
+  so state-changing calls cannot be triggered by a plain link, `<img>` tag, or cross-site request.
+- CORS must not combine a wildcard/any-origin policy with `AllowCredentials()`; keep them mutually
+  exclusive unless real credentialed cross-origin requests are introduced.
 
 ---
 

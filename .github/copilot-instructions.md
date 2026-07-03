@@ -187,9 +187,11 @@ When creating a new migration:
 
 ### Authentication
 
-- Cookie authentication is configured in `WebHosting`
-- External providers currently include Google, Facebook, and Microsoft
-- Credentials are read from Docker secrets or environment variables
+- No authentication or authorization is currently implemented; every controller action and the `/live`
+  SignalR hub are anonymously reachable
+- Do not describe cookie or OAuth (Google/Facebook/Microsoft) authentication as configured — it is not
+- Mutating endpoints must use the appropriate HTTP verb (`HttpPost`/`HttpPut`/`HttpDelete`) instead of
+  `HttpGet`, so they cannot be triggered by a simple link or cross-site request
 
 ---
 
