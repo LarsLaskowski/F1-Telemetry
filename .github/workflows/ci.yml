@@ -57,8 +57,15 @@ jobs:
           mkdir -p ${{ runner.temp }}/scanner
           dotnet tool update dotnet-sonarscanner --tool-path ${{ runner.temp }}/scanner
 
+      # The solution also contains a Windows-only WPF client (F1ReplayClient) and
+      # the Angular .esproj, which a solution-wide restore would pull in and fail
+      # on Linux. Restore/build the backend entry points explicitly instead; the
+      # F1Server project graph covers all backend libraries and is the same set
+      # the Dockerfile builds.
       - name: Restore
-        run: dotnet restore F1Server.slnx
+        run: |
+          dotnet restore F1Server/F1Server.csproj
+          dotnet restore F1Server.Tests/F1Server.Tests.csproj
 
       - name: Begin SonarQube analysis
         if: ${{ env.SONAR_TOKEN != '' }}
@@ -71,11 +78,13 @@ jobs:
             /d:sonar.cs.opencover.reportsPaths="${{ runner.temp }}/TestResults/**/coverage.opencover.xml"
 
       - name: Build
-        run: dotnet build F1Server.slnx -c Release --no-restore
+        run: |
+          dotnet build F1Server/F1Server.csproj -c Release --no-restore
+          dotnet build F1Server.Tests/F1Server.Tests.csproj -c Release --no-restore
 
       - name: Test
         run: >
-          dotnet test F1Server.slnx
+          dotnet test F1Server.Tests/F1Server.Tests.csproj
           -c Release --no-build
           --logger trx
           --collect:"XPlat Code Coverage"

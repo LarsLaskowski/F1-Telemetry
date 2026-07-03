@@ -30,11 +30,15 @@ jobs:
         with:
           languages: csharp
 
+      # Build the backend entry point rather than the whole solution: the latter
+      # pulls in the Windows-only WPF client and the Angular .esproj, which fail
+      # to restore/build on the Linux runner. The F1Server project graph covers
+      # all backend libraries (same set the Dockerfile builds).
       - name: Restore
-        run: dotnet restore F1Server.slnx
+        run: dotnet restore F1Server/F1Server.csproj
 
       - name: Build
-        run: dotnet build F1Server.slnx -c Release --no-restore
+        run: dotnet build F1Server/F1Server.csproj -c Release --no-restore
 
       - name: Perform CodeQL analysis
         uses: github/codeql-action/analyze@v4
