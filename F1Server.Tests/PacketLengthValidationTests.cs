@@ -88,7 +88,7 @@ public class PacketLengthValidationTests
 
         var packetAnalyzer = new PacketAnalyzer();
 
-        var carStatus = packetAnalyzer.GetCarStatus(packetHeader, packetContent[..TruncatedPacketLength]);
+        var carStatus = packetAnalyzer.GetCarStatus(packetHeader, packetContent.AsSpan(0, TruncatedPacketLength));
 
         Assert.IsNull(carStatus, $"Truncated car status packet {fileName} must not produce an object!");
     }
@@ -134,7 +134,7 @@ public class PacketLengthValidationTests
 
         var packetAnalyzer = new PacketAnalyzer();
 
-        var carTelemetry = packetAnalyzer.GetCarTelemetry(packetHeader, packetContent[..TruncatedPacketLength]);
+        var carTelemetry = packetAnalyzer.GetCarTelemetry(packetHeader, packetContent.AsSpan(0, TruncatedPacketLength));
 
         Assert.IsNull(carTelemetry, $"Truncated car telemetry packet {fileName} must not produce an object!");
     }
@@ -180,7 +180,7 @@ public class PacketLengthValidationTests
 
         var packetAnalyzer = new PacketAnalyzer();
 
-        var eventData = packetAnalyzer.GetEventData(packetHeader, packetContent[..TruncatedPacketLength]);
+        var eventData = packetAnalyzer.GetEventData(packetHeader, packetContent.AsSpan(0, TruncatedPacketLength));
 
         Assert.IsNull(eventData, $"Truncated event packet {fileName} must not produce an object!");
     }
@@ -226,7 +226,7 @@ public class PacketLengthValidationTests
 
         var packetAnalyzer = new PacketAnalyzer();
 
-        var participants = packetAnalyzer.GetParticipantsData(packetHeader, packetContent[..TruncatedPacketLength]);
+        var participants = packetAnalyzer.GetParticipantsData(packetHeader, packetContent.AsSpan(0, TruncatedPacketLength));
 
         Assert.IsNull(participants, $"Truncated participants packet {fileName} must not produce an object!");
     }
@@ -272,7 +272,7 @@ public class PacketLengthValidationTests
 
         var packetAnalyzer = new PacketAnalyzer();
 
-        var sessionData = packetAnalyzer.GetSessionData(packetHeader, packetContent[..TruncatedPacketLength]);
+        var sessionData = packetAnalyzer.GetSessionData(packetHeader, packetContent.AsSpan(0, TruncatedPacketLength));
 
         Assert.IsNull(sessionData, $"Truncated session packet {fileName} must not produce an object!");
     }
@@ -317,7 +317,7 @@ public class PacketLengthValidationTests
 
         var packetAnalyzer = new PacketAnalyzer();
 
-        var sessionHistory = packetAnalyzer.GetSessionHistoryData(packetHeader, packetContent[..TruncatedPacketLength]);
+        var sessionHistory = packetAnalyzer.GetSessionHistoryData(packetHeader, packetContent.AsSpan(0, TruncatedPacketLength));
 
         Assert.IsNull(sessionHistory, $"Truncated session history packet {fileName} must not produce an object!");
     }
@@ -361,7 +361,7 @@ public class PacketLengthValidationTests
 
         var packetAnalyzer = new PacketAnalyzer();
 
-        var finalClassification = packetAnalyzer.GetFinalClassificationData(packetHeader, packetContent[..TruncatedPacketLength]);
+        var finalClassification = packetAnalyzer.GetFinalClassificationData(packetHeader, packetContent.AsSpan(0, TruncatedPacketLength));
 
         Assert.IsNull(finalClassification, $"Truncated final classification packet {fileName} must not produce an object!");
     }
@@ -398,7 +398,7 @@ public class PacketLengthValidationTests
 
         var packetAnalyzer = new PacketAnalyzer();
 
-        var timeTrial = packetAnalyzer.GetTimeTrialData(packetHeader, packetContent[..TruncatedPacketLength]);
+        var timeTrial = packetAnalyzer.GetTimeTrialData(packetHeader, packetContent.AsSpan(0, TruncatedPacketLength));
 
         Assert.IsNull(timeTrial, "Truncated time trial packet must not produce an object!");
     }
@@ -452,7 +452,7 @@ public class PacketLengthValidationTests
 
         var packetAnalyzer = new PacketAnalyzer();
 
-        var lapData = packetAnalyzer.GetLapData(packetHeader, packetContent[..TruncatedPacketLength]);
+        var lapData = packetAnalyzer.GetLapData(packetHeader, packetContent.AsSpan(0, TruncatedPacketLength));
 
         Assert.IsNotNull(lapData, "Truncated lap data packet must still produce an object with default entries!");
     }
