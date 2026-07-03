@@ -6,9 +6,6 @@ on:
       - main
   pull_request:
 
-permissions:
-  contents: read
-
 jobs:
   build-test-analyze:
     name: Build, Test & Analyze
@@ -125,6 +122,8 @@ jobs:
   build-frontend:
     name: Build Angular app (Node.js ${{ matrix.node-version }})
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     strategy:
       matrix:
         node-version: [24, 25, 26]
