@@ -100,13 +100,23 @@ public sealed class ReceivedPacketData
             {
                 var contentOffset = 0;
 
+                var gameVersion = Unsafe.ReadUnaligned<ushort>(ref memRef);
+
+                contentOffset += ConstData.TypeUInt16;
+
+                // From 2023 the header carries additional fields (GameYear, OverallFrameIdentifier)
+                // that are read further below without their own bounds check; reject undersized
+                // packets here so those reads cannot go past the end of the array.
+                if (gameVersion >= 2023 && dataPacket.Length < ConstData.F12023HeaderSize)
+                {
+                    return;
+                }
+
                 PacketHeader = new()
                                {
                                    // Format - uint16
-                                   GameVersion = Unsafe.ReadUnaligned<ushort>(ref memRef)
+                                   GameVersion = gameVersion
                                };
-
-                contentOffset += ConstData.TypeUInt16;
 
                 // Game year (since 2023) - uint8
                 if (PacketHeader.GameVersion >= 2023)
