@@ -127,7 +127,31 @@ private readonly ILogger<MyClass> _logger;
 - One or two parameters stay on a single line.
 - Wrap only when **more than two** parameters; first parameter on the same line, the rest
   aligned under the first parameter.
-- Method chaining: first call on the same line, subsequent calls aligned **under the dot**.
+- Method chaining: first call on the same line as the receiver; every subsequent line's dot
+  must align exactly under the dot of that **first** chained call (Reihitsu rule `RH5201`), e.g.:
+
+  ```csharp
+  var updatedNames = query.Where(n => n.Id == 1)
+                          .Select(n => n.Name)
+                          .ToList();
+  ```
+
+  Off-by-one indentation triggers `RH5201` — when unsure, run `reihitsu-format` (see
+  [Build warnings and formatting](#build-warnings-and-formatting)) instead of counting columns by hand.
+- Object initializers with more than one member are written one property per line, braces on
+  their own line (`RH5301`); array/collection initializers never have a trailing comma on the
+  last element (`RH5410`). Example:
+
+  ```csharp
+  var entities = new[]
+                 {
+                     new NationalityEntity
+                     {
+                         NationalityGameId = 9001,
+                         Name = "Example"
+                     }
+                 };
+  ```
 
 ### Null handling & boolean checks
 
@@ -157,6 +181,28 @@ private readonly ILogger<MyClass> _logger;
 - Every method parameter documented with `<param>`; every method with a return type (including
   `Task`, `Task<T>`, `ValueTask`) has a `<returns>` tag.
 - Use `/// <inheritdoc/>` for interface implementations. Documentation language: **English**.
+
+---
+
+## Build warnings and formatting
+
+- The `Reihitsu.Analyzer` NuGet package runs during every build (`packages/Reihitsu.Analyzer.*`).
+  A clean build must show **0 warnings** from any `RH####` rule — do not leave `RH5201`
+  (chain alignment), `RH5301`/`RH5410` (initializer formatting), `RH4103` (member naming), or
+  any other `RH` diagnostic unresolved. Always run a full rebuild (delete `obj`/`bin` if in
+  doubt, since Roslyn does not always re-emit analyzer warnings for unchanged files) before
+  declaring a change warning-free.
+- `.editorconfig` currently has **no** `RH####` suppressions — every rule is active project-wide.
+- The `reihitsu-format` global dotnet tool auto-fixes layout-only findings (chain alignment,
+  initializer formatting, spacing, etc.). Prefer it over hand-formatting:
+
+  ```bash
+  reihitsu-format --check <path>     # exit code 1 if formatting is needed, no changes written
+  reihitsu-format --dry-run <path>   # show the diff without writing
+  reihitsu-format <path>             # apply the fix
+  ```
+
+  It does **not** fix naming rules (e.g. `RH4103`) — those need a manual rename.
 
 ---
 
@@ -234,12 +280,20 @@ attribute or class name. Verify `.cs` and `.Designer.cs` are consistent.
 
 - Project `F1Server.Tests`, framework **MSTest**, MSTest `Assert` APIs only. Do **not** introduce FluentAssertions.
 - Coverage via `coverlet.collector`; test initialization via `[AssemblyInitialize]` in `TestInitializer`.
-- Test class `{Feature}Tests`; test method `{Class}_{Scenario}_{ExpectedResult}`.
+- Test class `{Feature}Tests`; test method `{Class}{Scenario}{ExpectedResult}` — **PascalCase,
+  concatenated, no underscores.** The `_`-separated pattern shown in older docs does not match
+  the actual codebase and is rejected by the `RH4103` analyzer (member names must be PascalCase).
 - Always provide assert messages. For async exception checks use `Assert.ThrowsExceptionAsync<T>(...)`.
+- `F1Server.Tests` has `<ImplicitUsings>enable</ImplicitUsings>` plus the MSTest SDK's own global
+  usings, so `System`, `System.Collections.Generic`, `System.IO`, `System.Linq`, `System.Net.Http`,
+  `System.Threading`, `System.Threading.Tasks`, and `Microsoft.VisualStudio.TestTools.UnitTesting`
+  are already available everywhere in that project. Do not add explicit `using` directives for
+  them in new test files; only add `using` for namespaces that are not implicitly global
+  (e.g. `F1Server.Db.Entity`, `F1Server.Db.Entity.Repositories`).
 
 ```csharp
 [TestMethod]
-public void PacketHeader_CheckGameVersion_Returns2025()
+public void PacketHeaderCheckGameVersionReturns2025()
 ```
 
 ---

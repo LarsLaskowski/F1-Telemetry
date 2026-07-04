@@ -91,6 +91,12 @@ F1-Telemetry is a multi-project .NET and Angular solution for receiving, process
 - Do not use primary constructors
 - Do not use `this.`
 - Prefer explicit `using (...) { }` blocks
+- Method chaining: first call on the same line as the receiver; every subsequent line's dot must
+  align exactly under the dot of that first chained call (Reihitsu rule `RH5201`)
+- Object initializers with more than one member go one property per line with braces on their own
+  line (`RH5301`); array/collection initializers never end with a trailing comma (`RH5410`)
+- Run `reihitsu-format <path>` to auto-fix layout-only findings instead of hand-formatting; it does
+  not fix naming rules such as `RH4103`
 - Regions are used extensively and should match the surrounding file style, for example:
   - `#region Fields`
   - `#region Constructors`
@@ -118,6 +124,19 @@ F1-Telemetry is a multi-project .NET and Angular solution for receiving, process
 - Use `string.IsNullOrEmpty(...)` or `string.IsNullOrWhiteSpace(...)` for string checks
 - Keep async I/O operations async end-to-end
 - Avoid broad catches and silent fallbacks unless an existing surrounding pattern requires them
+
+---
+
+## Build warnings and formatting
+
+- The `Reihitsu.Analyzer` NuGet package runs during every build. A clean build must show **0
+  warnings** from any `RH####` rule (chain alignment `RH5201`, initializer formatting
+  `RH5301`/`RH5410`, member naming `RH4103`, etc.) — `.editorconfig` has no `RH####` suppressions,
+  every rule is active project-wide
+- Rebuild fully (delete `obj`/`bin` if in doubt) before concluding a change is warning-free, since
+  Roslyn does not always re-emit analyzer warnings for unchanged files
+- Use the `reihitsu-format` global dotnet tool (`reihitsu-format --check|--dry-run|<path>`) to
+  auto-fix layout-only findings instead of formatting by hand; it does not fix naming rules
 
 ---
 
@@ -229,14 +248,24 @@ When creating a new migration:
 ### Naming
 
 - Test class: `{Feature}Tests`
-- Test method: `{Class}_{Scenario}_{ExpectedResult}`
+- Test method: `{Class}{Scenario}{ExpectedResult}` — PascalCase, concatenated, no underscores;
+  the `RH4103` analyzer rejects underscores in member names
 
 Example:
 
 ```csharp
 [TestMethod]
-public void PacketHeader_CheckGameVersion_Returns2025()
+public void PacketHeaderCheckGameVersionReturns2025()
 ```
+
+### Usings in F1Server.Tests
+
+- The project has `<ImplicitUsings>enable</ImplicitUsings>` plus the MSTest SDK's own global
+  usings, so `System`, `System.Collections.Generic`, `System.IO`, `System.Linq`, `System.Net.Http`,
+  `System.Threading`, `System.Threading.Tasks`, and `Microsoft.VisualStudio.TestTools.UnitTesting`
+  are already available everywhere in this project
+- Do not add explicit `using` directives for those namespaces in new test files; only add `using`
+  for namespaces that are not implicitly global (e.g. `F1Server.Db.Entity`)
 
 ### Assertions
 

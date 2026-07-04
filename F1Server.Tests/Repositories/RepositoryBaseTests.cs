@@ -1,11 +1,6 @@
-using System.Linq;
-using System.Threading.Tasks;
-
 using F1Server.Db.Entity;
 using F1Server.Db.Entity.Repositories;
 using F1Server.Db.Entity.Tables;
-
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace F1Server.Tests.Repositories;
 
@@ -30,18 +25,18 @@ public class RepositoryBaseTests
             Assert.IsNotNull(repository, "Repository should be resolvable!");
 
             var entities = new[]
-            {
-                new NationalityEntity
-                {
-                    NationalityGameId = 9001,
-                    Name = "UpdateRangeTestA"
-                },
-                new NationalityEntity
-                {
-                    NationalityGameId = 9002,
-                    Name = "UpdateRangeTestB"
-                }
-            };
+                           {
+                               new NationalityEntity
+                               {
+                                   NationalityGameId = 9001,
+                                   Name = "UpdateRangeTestA"
+                               },
+                               new NationalityEntity
+                               {
+                                   NationalityGameId = 9002,
+                                   Name = "UpdateRangeTestB"
+                               }
+                           };
 
             var isAdded = repository.AddRange(entities);
 
@@ -83,18 +78,18 @@ public class RepositoryBaseTests
             Assert.IsNotNull(repository, "Repository should be resolvable!");
 
             var entities = new[]
-            {
-                new NationalityEntity
-                {
-                    NationalityGameId = 9003,
-                    Name = "UpdateRangeAsyncTestA"
-                },
-                new NationalityEntity
-                {
-                    NationalityGameId = 9004,
-                    Name = "UpdateRangeAsyncTestB"
-                }
-            };
+                           {
+                               new NationalityEntity
+                               {
+                                   NationalityGameId = 9003,
+                                   Name = "UpdateRangeAsyncTestA"
+                               },
+                               new NationalityEntity
+                               {
+                                   NationalityGameId = 9004,
+                                   Name = "UpdateRangeAsyncTestB"
+                               }
+                           };
 
             var isAdded = repository.AddRange(entities);
 
