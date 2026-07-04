@@ -36,12 +36,12 @@ public class SessionData2021 : ISessionData2021
     /// <summary>
     /// Track temperature
     /// </summary>
-    public ushort TrackTemperature { get; set; }
+    public short TrackTemperature { get; set; }
 
     /// <summary>
     /// Air temperature
     /// </summary>
-    public ushort AirTemperature { get; set; }
+    public short AirTemperature { get; set; }
 
     /// <summary>
     /// Total laps

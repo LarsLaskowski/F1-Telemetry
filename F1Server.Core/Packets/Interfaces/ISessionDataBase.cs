@@ -23,12 +23,12 @@ public interface ISessionDataBase
     /// <summary>
     /// Track temperature
     /// </summary>
-    ushort TrackTemperature { get; set; }
+    short TrackTemperature { get; set; }
 
     /// <summary>
     /// Air temperature
     /// </summary>
-    ushort AirTemperature { get; set; }
+    short AirTemperature { get; set; }
 
     /// <summary>
     /// Total laps
