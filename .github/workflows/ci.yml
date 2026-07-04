@@ -75,7 +75,7 @@ jobs:
             /k:"networlddev_f1-telemetry" \
             /o:"networlddev" \
             /d:sonar.token="$SONAR_TOKEN" \
-            /d:sonar.exclusions="**/Migrations/**,F1ServerApp/**" \
+            /d:sonar.exclusions="**/Migrations/**,F1ServerApp/**,**/*.packet" \
             /d:sonar.cs.opencover.reportsPaths="${{ runner.temp }}/TestResults/**/coverage.opencover.xml"
 
       - name: Build
