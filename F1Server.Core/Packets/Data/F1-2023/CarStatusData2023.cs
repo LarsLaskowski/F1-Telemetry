@@ -8,7 +8,7 @@ namespace F1Server.Core.Packets.Data;
 /// </summary>
 public class CarStatusData2023 : ICarStatusData2023
 {
-    #region ICarStatusBase
+    #region ICarStatusDataBase
 
     /// <summary>
     /// Traction control 0 - off - 2 - high
@@ -110,9 +110,9 @@ public class CarStatusData2023 : ICarStatusData2023
     /// </summary>
     public float ERSDeployedThisLap { get; set; }
 
-    #endregion // ICarStatusBase
+    #endregion // ICarStatusDataBase
 
-    #region ICarStatus2023
+    #region ICarStatusData2023
 
     /// <summary>
     /// Engine power output of ICE (W)
@@ -139,5 +139,5 @@ public class CarStatusData2023 : ICarStatusData2023
     /// </summary>
     public ushort NetworkPaused { get; set; }
 
-    #endregion // ICarStatus2023
+    #endregion // ICarStatusData2023
 }

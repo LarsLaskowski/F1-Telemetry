@@ -56,7 +56,7 @@ public class SessionHistoryLapData2024 : ILapHistoryDataBase, ILapHistoryData202
 
     #endregion // ILapHistoryDataBase
 
-    #region ILapHistoryData2024
+    #region ILapHistoryData2023
 
     /// <summary>
     /// Sector 1 whole minute part
@@ -73,5 +73,5 @@ public class SessionHistoryLapData2024 : ILapHistoryDataBase, ILapHistoryData202
     /// </summary>
     public ushort Sector3TimeMinutes { get; set; }
 
-    #endregion // ILapHistoryData2024
+    #endregion // ILapHistoryData2023
 }

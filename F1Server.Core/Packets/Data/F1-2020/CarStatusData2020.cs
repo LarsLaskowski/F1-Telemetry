@@ -8,7 +8,7 @@ namespace F1Server.Core.Packets.Data;
 /// </summary>
 public class CarStatusData2020 : ICarStatusData2020
 {
-    #region ICarStatusBase
+    #region ICarStatusDataBase
 
     /// <summary>
     /// Traction control 0 - off - 2 - high
@@ -70,10 +70,18 @@ public class CarStatusData2020 : ICarStatusData2020
     /// </summary>
     public short DRSAllowed { get; set; }
 
+    #endregion // ICarStatusDataBase
+
+    #region ICarStatusData2020
+
     /// <summary>
     /// Tyres wear percentage
     /// </summary>
     public ushort[] TyresWear { get; set; }
+
+    #endregion // ICarStatusData2020
+
+    #region ICarStatusDataBase
 
     /// <summary>
     /// Tyre compound
@@ -115,9 +123,9 @@ public class CarStatusData2020 : ICarStatusData2020
     /// </summary>
     public float ERSDeployedThisLap { get; set; }
 
-    #endregion // ICarStatusBase
+    #endregion // ICarStatusDataBase
 
-    #region ICarStatus2020
+    #region ICarStatusData2020
 
     /// <summary>
     /// DRS activation distance - 0 - DRS not available - non-zero - DRS will be available
@@ -164,5 +172,5 @@ public class CarStatusData2020 : ICarStatusData2020
     /// </summary>
     public ushort DRSFault { get; set; }
 
-    #endregion // ICarStatus2020
+    #endregion // ICarStatusData2020
 }

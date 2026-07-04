@@ -7,12 +7,16 @@ namespace F1Server.Data;
 /// </summary>
 public class LiveGameData : ILiveGameData
 {
-    #region IRuntimeGameData
+    #region ILiveBaseData
 
     /// <summary>
     /// Database id
     /// </summary>
     public long DbId { get; set; }
+
+    #endregion // ILiveBaseData
+
+    #region ILiveGameData
 
     /// <summary>
     /// Actual game version
@@ -39,5 +43,5 @@ public class LiveGameData : ILiveGameData
     /// </summary>
     public DateTime? LastTimeUsed { get; set; }
 
-    #endregion // IRuntimeGameData
+    #endregion // ILiveGameData
 }

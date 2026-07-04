@@ -22,7 +22,7 @@ public class FinalClassificationCarData2025 : IFinalClassificationCarBase, IFina
 
     #endregion // Constructor
 
-    #region IFinalClassificationBase
+    #region IFinalClassificationCarBase
 
     /// <inheritdoc/>
     public ushort Position { get; set; }
@@ -63,7 +63,7 @@ public class FinalClassificationCarData2025 : IFinalClassificationCarBase, IFina
     /// <inheritdoc/>
     public ushort[] TyreStintsVisual { get; set; }
 
-    #endregion // IFinalClassificationBase
+    #endregion // IFinalClassificationCarBase
 
     #region IFinalClassification2024
 

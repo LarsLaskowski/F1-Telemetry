@@ -38,7 +38,7 @@ public class SessionHistoryLapData2025 : ILapHistoryDataBase, ILapHistoryData202
 
     #endregion // ILapHistoryDataBase
 
-    #region ILapHistoryData2025
+    #region ILapHistoryData2023
 
     /// <inheritdoc/>
     public ushort Sector1TimeMinutes { get; set; }
@@ -49,5 +49,5 @@ public class SessionHistoryLapData2025 : ILapHistoryDataBase, ILapHistoryData202
     /// <inheritdoc/>
     public ushort Sector3TimeMinutes { get; set; }
 
-    #endregion // ILapHistoryData2025
+    #endregion // ILapHistoryData2023
 }

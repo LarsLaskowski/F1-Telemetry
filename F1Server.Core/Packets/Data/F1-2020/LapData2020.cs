@@ -8,12 +8,16 @@ namespace F1Server.Core.Packets.Data;
 /// </summary>
 public class LapData2020 : ILapData2020
 {
-    #region IPacketLapData2020
+    #region ILapDataBase
 
     /// <summary>
     /// Flag if there is no car available (is nothing from the game)
     /// </summary>
     public bool IsEmpty => CurrentLapNumber == 0 && CarPosition == 0 && GridPosition == 0 && TotalDistance <= 0.0;
+
+    #endregion // ILapDataBase
+
+    #region ILapData2020
 
     /// <summary>
     /// Last lap time
@@ -90,6 +94,10 @@ public class LapData2020 : ILapData2020
     /// </summary>
     public ushort BestOverallSector3LapNumber { get; set; }
 
+    #endregion // ILapData2020
+
+    #region ILapDataBase
+
     /// <summary>
     /// Distance vehicle is around current lap in meters, negativ is finish line not crossed yet
     /// </summary>
@@ -150,5 +158,5 @@ public class LapData2020 : ILapData2020
     /// </summary>
     public ResultStatus CurrentResultStatus { get; set; }
 
-    #endregion // IPacketLapData2020
+    #endregion // ILapDataBase
 }

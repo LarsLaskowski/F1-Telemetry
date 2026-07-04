@@ -140,7 +140,7 @@ public class AppMetrics : IAppMetrics
 
     #endregion // Methods
 
-    #region IAppMetrics properties
+    #region IAppMetrics
 
     /// <inheritdoc/>
     public Counter<long> PacketsReceived { get; }
@@ -250,9 +250,9 @@ public class AppMetrics : IAppMetrics
     /// <inheritdoc/>
     public Gauge<double> LapPositionsPacketProcessingTime { get; }
 
-    #endregion // IAppMetrics properties
+    #endregion // IAppMetrics
 
-    #region IAppMetrics methods
+    #region IAppMetrics
 
     /// <inheritdoc/>
     public void RecordProcessedPacket(PacketTypes? packetType, double processingTimeMs)
@@ -365,5 +365,5 @@ public class AppMetrics : IAppMetrics
         }
     }
 
-    #endregion // IAppMetrics methods
+    #endregion // IAppMetrics
 }

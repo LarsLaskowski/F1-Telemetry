@@ -7,7 +7,7 @@ namespace F1Server.Core.Packets.Data;
 /// </summary>
 public class ParticipantData2022 : IParticipantData2022
 {
-    #region IParticipantData2021
+    #region IParticipantDataBase
 
     /// <summary>
     /// Is AI controlled or human
@@ -43,6 +43,10 @@ public class ParticipantData2022 : IParticipantData2022
     /// Is telemetry restricted or public?
     /// </summary>
     public bool IsPublicTelemetry { get; set; }
+
+    #endregion // IParticipantDataBase
+
+    #region IParticipantData2021
 
     /// <summary>
     /// Identifier for network players

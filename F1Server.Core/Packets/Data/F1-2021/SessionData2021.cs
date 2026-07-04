@@ -21,7 +21,7 @@ public class SessionData2021 : ISessionData2021
 
     #endregion // Constructors
 
-    #region IPacketSessionData
+    #region ISessionDataBase
 
     /// <summary>
     /// Is session recordable? Network games or time trial are not
@@ -128,9 +128,9 @@ public class SessionData2021 : ISessionData2021
     /// </summary>
     public bool IsNetworkGame { get; set; }
 
-    #endregion // IPacketSessionData
+    #endregion // ISessionDataBase
 
-    #region IPacketSessionData2020
+    #region ISessionData2020
 
     /// <summary>
     /// Number of weather samples to follow
@@ -142,9 +142,9 @@ public class SessionData2021 : ISessionData2021
     /// </summary>
     public WeatherForecastSample[] WeatherForecastSamples { get; }
 
-    #endregion // IPacketSessionData2020
+    #endregion // ISessionData2020
 
-    #region IPacketSessionData2021
+    #region ISessionData2021
 
     /// <summary>
     /// Forecast accuracy
@@ -231,5 +231,5 @@ public class SessionData2021 : ISessionData2021
     /// </summary>
     public DynamicRaceLineType DynamicRaceLineType { get; set; }
 
-    #endregion // IPacketSessionData2021
+    #endregion // ISessionData2021
 }

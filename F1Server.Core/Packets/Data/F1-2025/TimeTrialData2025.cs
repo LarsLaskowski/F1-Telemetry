@@ -21,7 +21,7 @@ public class TimeTrialData2025 : ITimeTrialData2025
 
     #endregion // Constructors
 
-    #region ITimeTrialData2025
+    #region ITimeTrialDataBase
 
     /// <inheritdoc/>
     public ITimeTrialDataSetBase PlayerSessionBestDataSet { get; }
@@ -32,5 +32,5 @@ public class TimeTrialData2025 : ITimeTrialData2025
     /// <inheritdoc/>
     public ITimeTrialDataSetBase RivalDataSet { get; }
 
-    #endregion // ITimeTrialData2025
+    #endregion // ITimeTrialDataBase
 }

@@ -7,7 +7,7 @@ namespace F1Server.Data;
 /// </summary>
 public class IndependentLapData : IIndependentLapData
 {
-    #region IIndependentLapData properties
+    #region IIndependentLapData
 
     /// <summary>
     /// Current lap time
@@ -34,5 +34,5 @@ public class IndependentLapData : IIndependentLapData
     /// </summary>
     public uint Sector3Time { get; set; }
 
-    #endregion // IIndependentLapData properties
+    #endregion // IIndependentLapData
 }

@@ -31,9 +31,7 @@ public class SessionRuntimeData : ISessionRuntimeData
 
     #endregion // Constructors
 
-    #region Properties
-
-    #region ISessionRuntimeData properties
+    #region ISessionRuntimeData
 
     /// <inheritdoc/>
     public long SessionDbId { get; set; }
@@ -71,7 +69,9 @@ public class SessionRuntimeData : ISessionRuntimeData
     /// <inheritdoc/>
     public uint FastestLap => CurrentSession?.FastestLap ?? 0;
 
-    #endregion // ISessionRuntimeData properties
+    #endregion // ISessionRuntimeData
+
+    #region Properties
 
     /// <summary>
     /// Session information

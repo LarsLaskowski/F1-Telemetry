@@ -7,7 +7,7 @@ namespace F1Server.Core.Packets.Data;
 /// </summary>
 public class ParticipantData2020 : IParticipantData2020
 {
-    #region IParticipantData2020
+    #region IParticipantDataBase
 
     /// <summary>
     /// Is AI controlled or human
@@ -44,5 +44,5 @@ public class ParticipantData2020 : IParticipantData2020
     /// </summary>
     public bool IsPublicTelemetry { get; set; }
 
-    #endregion // IParticipantData2020
+    #endregion // IParticipantDataBase
 }

@@ -8,7 +8,7 @@ namespace F1Server.Core.Packets.Data;
 /// </summary>
 public class CarStatusData2021 : ICarStatusData2021
 {
-    #region ICarStatusBase
+    #region ICarStatusDataBase
 
     /// <summary>
     /// Traction control 0 - off - 2 - high
@@ -110,9 +110,9 @@ public class CarStatusData2021 : ICarStatusData2021
     /// </summary>
     public float ERSDeployedThisLap { get; set; }
 
-    #endregion // ICarStatusBase
+    #endregion // ICarStatusDataBase
 
-    #region ICarStatus2021
+    #region ICarStatusData2021
 
     /// <summary>
     /// DRS activation distance - 0 - DRS not available - non-zero - DRS will be available
@@ -129,5 +129,5 @@ public class CarStatusData2021 : ICarStatusData2021
     /// </summary>
     public ushort NetworkPaused { get; set; }
 
-    #endregion // ICarStatus2021
+    #endregion // ICarStatusData2021
 }

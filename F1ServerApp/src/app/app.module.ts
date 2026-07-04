@@ -4,7 +4,6 @@ import { FormsModule } from '@angular/forms';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { Routes, RouterModule } from '@angular/router';
 import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MaterialModule } from './material.module';
 
 import { SignalrService } from './services/signalr.service';
@@ -31,7 +30,6 @@ export const routes: Routes = [
     BrowserModule,
     FormsModule,
     RouterModule.forRoot(routes, { useHash: true }),
-    BrowserAnimationsModule,
     MaterialModule
   ],
   providers: [

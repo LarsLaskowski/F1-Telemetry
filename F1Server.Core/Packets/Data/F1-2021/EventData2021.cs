@@ -19,7 +19,7 @@ public class EventData2021 : IEventDataBase
 
     #endregion // Constructors
 
-    #region Properties
+    #region IEventDataBase
 
     /// <summary>
     /// Event code
@@ -31,5 +31,5 @@ public class EventData2021 : IEventDataBase
     /// </summary>
     public IEventDataDetailsBase EventDetails { get; }
 
-    #endregion // Properties
+    #endregion // IEventDataBase
 }

@@ -128,55 +128,57 @@
   <!-- Expanded content -->
   <ng-container matColumnDef="expandedTimes">
     <td mat-cell *matCellDef="let session" [attr.colspan]="displayedColumns.length">
-      <div [@detailExpand]="session == expandedSession ? 'expanded' : 'collapsed'" class="fastestSectors-detail">
-        <!-- Sector times of fastest lap -->
-        <div class="fastestSector-fastestLap">
-          <!-- Sector 1 -->
-          <div class="fastestSector-entry">
-            <div class="fastestSector-title">Fastest lap sector 1:</div>
-            <div [ngClass]="session.getFastestLapSectorTimeClass(1)">{{ session.fastestLapSector1 }}s</div>
+      <div class="fastestSectors-detail" [class.expanded]="session == expandedSession">
+        <div class="fastestSectors-detail-inner">
+          <!-- Sector times of fastest lap -->
+          <div class="fastestSector-fastestLap">
+            <!-- Sector 1 -->
+            <div class="fastestSector-entry">
+              <div class="fastestSector-title">Fastest lap sector 1:</div>
+              <div [ngClass]="session.getFastestLapSectorTimeClass(1)">{{ session.fastestLapSector1 }}s</div>
+            </div>
+            <!-- Sector 2 -->
+            <div class="fastestSector-entry">
+              <div class="fastestSector-title">Fastest lap sector 2:</div>
+              <div [ngClass]="session.getFastestLapSectorTimeClass(2)">{{ session.fastestLapSector2 }}s</div>
+            </div>
+            <!-- Sector 3 -->
+            <div class="fastestSector-entry">
+              <div class="fastestSector-title">Fastest lap sector 3:</div>
+              <div [ngClass]="session.getFastestLapSectorTimeClass(3)">{{ session.fastestLapSector3 }}s</div>
+            </div>
           </div>
-          <!-- Sector 2 -->
-          <div class="fastestSector-entry">
-            <div class="fastestSector-title">Fastest lap sector 2:</div>
-            <div [ngClass]="session.getFastestLapSectorTimeClass(2)">{{ session.fastestLapSector2 }}s</div>
+          <!-- Fastest sector times -->
+          <div class="fastestSector-fastestSectors">
+            <!-- Sector 1 -->
+            <div class="fastestSector-entry">
+              <div class="fastestSector-title">Fastest sector 1:</div>
+              <div [ngClass]="session.getOverallFastestSectorTimeClass(1)">{{ session.fastestSector1 }}s</div>
+              <div [ngClass]="session.getFastestSectorDriverClass(1)">{{ session.fastestSector1Driver }}</div>
+            </div>
+            <!-- Sector 2 -->
+            <div class="fastestSector-entry">
+              <div class="fastestSector-title">Fastest sector 2:</div>
+              <div [ngClass]="session.getOverallFastestSectorTimeClass(2)">{{ session.fastestSector2 }}s</div>
+              <div [ngClass]="session.getFastestSectorDriverClass(2)">{{ session.fastestSector2Driver }}</div>
+            </div>
+            <!-- Sector 3 -->
+            <div class="fastestSector-entry">
+              <div class="fastestSector-title">Fastest sector 3:</div>
+              <div [ngClass]="session.getOverallFastestSectorTimeClass(3)">{{ session.fastestSector3 }}s</div>
+              <div [ngClass]="session.getFastestSectorDriverClass(3)">{{ session.fastestSector3Driver }}</div>
+            </div>
           </div>
-          <!-- Sector 3 -->
-          <div class="fastestSector-entry">
-            <div class="fastestSector-title">Fastest lap sector 3:</div>
-            <div [ngClass]="session.getFastestLapSectorTimeClass(3)">{{ session.fastestLapSector3 }}s</div>
-          </div>
-        </div>
-        <!-- Fastest sector times -->
-        <div class="fastestSector-fastestSectors">
-          <!-- Sector 1 -->
-          <div class="fastestSector-entry">
-            <div class="fastestSector-title">Fastest sector 1:</div>
-            <div [ngClass]="session.getOverallFastestSectorTimeClass(1)">{{ session.fastestSector1 }}s</div>
-            <div [ngClass]="session.getFastestSectorDriverClass(1)">{{ session.fastestSector1Driver }}</div>
-          </div>
-          <!-- Sector 2 -->
-          <div class="fastestSector-entry">
-            <div class="fastestSector-title">Fastest sector 2:</div>
-            <div [ngClass]="session.getOverallFastestSectorTimeClass(2)">{{ session.fastestSector2 }}s</div>
-            <div [ngClass]="session.getFastestSectorDriverClass(2)">{{ session.fastestSector2Driver }}</div>
-          </div>
-          <!-- Sector 3 -->
-          <div class="fastestSector-entry">
-            <div class="fastestSector-title">Fastest sector 3:</div>
-            <div [ngClass]="session.getOverallFastestSectorTimeClass(3)">{{ session.fastestSector3 }}s</div>
-            <div [ngClass]="session.getFastestSectorDriverClass(3)">{{ session.fastestSector3Driver }}</div>
-          </div>
-        </div>
-        <!-- Theoretical fastest lap time -->
-        <div class="fastestSector-theoretical">
-          <div class="fastestSector-entry">
-            <div class="fastestSector-title">Theoretical fastest lap:</div>
-            <div class="fastestSector-time">{{ session.theoreticalFastestLap }}</div>
-          </div>
-          <div class="fastestSector-entry" [hidden]="session.fastestLapDriverIsHuman">
-            <div class="fastestSector-title">Fastest lap of human player:</div>
-            <div class="fastestSector-time">{{ session.humanPlayersFastestLap }}</div>
+          <!-- Theoretical fastest lap time -->
+          <div class="fastestSector-theoretical">
+            <div class="fastestSector-entry">
+              <div class="fastestSector-title">Theoretical fastest lap:</div>
+              <div class="fastestSector-time">{{ session.theoreticalFastestLap }}</div>
+            </div>
+            <div class="fastestSector-entry" [hidden]="session.fastestLapDriverIsHuman">
+              <div class="fastestSector-title">Fastest lap of human player:</div>
+              <div class="fastestSector-time">{{ session.humanPlayersFastestLap }}</div>
+            </div>
           </div>
         </div>
       </div>

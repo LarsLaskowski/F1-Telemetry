@@ -8,7 +8,7 @@ namespace F1Server.Core.Packets.Data;
 /// </summary>
 public class CarStatusData2019 : ICarStatusData2019
 {
-    #region ICarStatusBase
+    #region ICarStatusDataBase
 
     /// <summary>
     /// Traction control 0 - off - 2 - high
@@ -70,10 +70,18 @@ public class CarStatusData2019 : ICarStatusData2019
     /// </summary>
     public short DRSAllowed { get; set; }
 
+    #endregion // ICarStatusDataBase
+
+    #region ICarStatusData2019
+
     /// <summary>
     /// Tyres wear percentage
     /// </summary>
     public ushort[] TyresWear { get; set; }
+
+    #endregion // ICarStatusData2019
+
+    #region ICarStatusDataBase
 
     /// <summary>
     /// Tyre compound
@@ -115,9 +123,9 @@ public class CarStatusData2019 : ICarStatusData2019
     /// </summary>
     public float ERSDeployedThisLap { get; set; }
 
-    #endregion // ICarStatusBase
+    #endregion // ICarStatusDataBase
 
-    #region ICarStatus2019
+    #region ICarStatusData2019
 
     /// <summary>
     /// Tyre damage in percent
@@ -149,5 +157,5 @@ public class CarStatusData2019 : ICarStatusData2019
     /// </summary>
     public ushort GearBoxDamage { get; set; }
 
-    #endregion // ICarStatus2019
+    #endregion // ICarStatusData2019
 }

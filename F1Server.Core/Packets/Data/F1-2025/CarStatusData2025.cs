@@ -8,7 +8,7 @@ namespace F1Server.Core.Packets.Data;
 /// </summary>
 public class CarStatusData2025 : ICarStatusData2025
 {
-    #region ICarStatusData2025
+    #region ICarStatusDataBase
 
     /// <inheritdoc/>
     public ushort TractionControl { get; set; }
@@ -70,6 +70,10 @@ public class CarStatusData2025 : ICarStatusData2025
     /// <inheritdoc/>
     public float ERSDeployedThisLap { get; set; }
 
+    #endregion // ICarStatusDataBase
+
+    #region ICarStatusData2023
+
     /// <inheritdoc/>
     public float EnginePowerICE { get; set; }
 
@@ -85,5 +89,5 @@ public class CarStatusData2025 : ICarStatusData2025
     /// <inheritdoc/>
     public ushort NetworkPaused { get; set; }
 
-    #endregion // ICarStatusData2025
+    #endregion // ICarStatusData2023
 }

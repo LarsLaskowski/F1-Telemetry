@@ -26,7 +26,7 @@ public class LapDataComplete2025 : ILapDataComplete, ILapDataComplete2025
 
     #endregion // ILapDataComplete
 
-    #region ILapDataComplete2025
+    #region ILapDataComplete2023
 
     /// <inheritdoc/>
     public ushort TimeTrialPersonalBestCarIndex { get; set; }
@@ -34,5 +34,5 @@ public class LapDataComplete2025 : ILapDataComplete, ILapDataComplete2025
     /// <inheritdoc/>
     public ushort TimeTrialRivalCarIndex { get; set; }
 
-    #endregion // ILapDataComplete2025
+    #endregion // ILapDataComplete2023
 }

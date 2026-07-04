@@ -8,12 +8,16 @@ namespace F1Server.Data;
 /// </summary>
 public class LiveDriverData : ILiveDriverData
 {
-    #region ILiveParticipantData
+    #region ILiveBaseData
 
     /// <summary>
     /// Database id
     /// </summary>
     public long DbId { get; set; }
+
+    #endregion // ILiveBaseData
+
+    #region ILiveDriverData
 
     /// <summary>
     /// Index in game packet
@@ -90,5 +94,5 @@ public class LiveDriverData : ILiveDriverData
     /// </summary>
     public VisualTyreCompound CurrentUsedTyre { get; set; }
 
-    #endregion // ILiveParticipantData
+    #endregion // ILiveDriverData
 }
