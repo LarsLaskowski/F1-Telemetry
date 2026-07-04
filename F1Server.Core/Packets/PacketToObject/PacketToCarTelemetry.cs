@@ -182,7 +182,7 @@ internal class PacketToCarTelemetry(PacketHeader packetHeader) : PacketToXBase(p
     {
         bool isExtracted = false;
 
-        if (actOffset < ConstData.F12019CarTelemetrySize)
+        if (actOffset < HeaderSize + ConstData.F12019CarTelemetrySize)
         {
             carTelemetry2019.ButtonStatus = Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref dataPacket, actOffset));
 
@@ -472,7 +472,7 @@ internal class PacketToCarTelemetry(PacketHeader packetHeader) : PacketToXBase(p
 
                 actOffset += ConstData.TypeUInt16;
 
-                if (carTelemetryData is CarTelemetry2019)
+                if (carTelemetryData is CarTelemetryData2019)
                 {
                     // Tyres surface temperature
                     carTelemetryData.TyresSurfaceTemperature.RearLeft = Unsafe.ReadUnaligned<ushort>(ref Unsafe.Add(ref dataPacket, actOffset));
