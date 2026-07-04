@@ -199,6 +199,11 @@ internal static class Program
         var fInfo = new FileInfo(file);
         var data = File.ReadAllBytes(file).AsSpan();
 
+        if (data.Length < packetHeaderSize + 4)
+        {
+            return;
+        }
+
         ref var memRef = ref MemoryMarshal.GetReference(data);
 
         var eventCodeSpan = MemoryMarshal.CreateReadOnlySpan<byte>(ref Unsafe.Add(ref memRef, packetHeaderSize), 4);
@@ -229,25 +234,34 @@ internal static class Program
 
         if (gameVersion == 2024)
         {
-            ushort marshalZones = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref memRef, packetHeaderSize + 19));
-
-            if (marshalZones > 0)
+            if (data.Length > packetHeaderSize + 19)
             {
-                progressBar.WriteLine($"Marshal zones ({marshalZones}) found in {fInfo.Name}");
+                ushort marshalZones = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref memRef, packetHeaderSize + 19));
+
+                if (marshalZones > 0)
+                {
+                    progressBar.WriteLine($"Marshal zones ({marshalZones}) found in {fInfo.Name}");
+                }
             }
 
-            ushort saftyCarStatus = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref memRef, packetHeaderSize + 124));
-
-            if (saftyCarStatus == 0)
+            if (data.Length > packetHeaderSize + 124)
             {
-                progressBar.WriteLine($"Safety car status ({saftyCarStatus}) found in {fInfo.Name}");
+                ushort saftyCarStatus = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref memRef, packetHeaderSize + 124));
+
+                if (saftyCarStatus == 0)
+                {
+                    progressBar.WriteLine($"Safety car status ({saftyCarStatus}) found in {fInfo.Name}");
+                }
             }
 
-            ushort aiDifficulty = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref memRef, packetHeaderSize + 640));
-
-            if (aiDifficulty > 0)
+            if (data.Length > packetHeaderSize + 640)
             {
-                progressBar.WriteLine($"AI difficulty ({aiDifficulty}) found in {fInfo.Name}");
+                ushort aiDifficulty = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref memRef, packetHeaderSize + 640));
+
+                if (aiDifficulty > 0)
+                {
+                    progressBar.WriteLine($"AI difficulty ({aiDifficulty}) found in {fInfo.Name}");
+                }
             }
         }
     }
