@@ -192,6 +192,8 @@ public abstract class RepositoryBase<TQueryable, TEntity> : RepositoryBase
             _dbContext.UpdateRange(entities);
 
             _dbContext.SaveChanges();
+
+            success = true;
         }
         catch (Exception ex)
         {
@@ -219,6 +221,8 @@ public abstract class RepositoryBase<TQueryable, TEntity> : RepositoryBase
             _dbContext.UpdateRange(entities);
 
             await _dbContext.SaveChangesAsync().ConfigureAwait(false);
+
+            success = true;
         }
         catch (Exception ex)
         {
