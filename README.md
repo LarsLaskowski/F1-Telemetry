@@ -88,6 +88,7 @@ The database schema is created and migrated automatically on startup.
 | `F1SERVER_DB_NAME` | Database name. |
 | `F1SERVER_DB_USER` | Database user. |
 | `F1SERVER_DB_PASSWORD` | Database password. |
+| `F1SERVER_DB_MSSQL_TRUST_SERVER_CERTIFICATE` | MSSQL only. Set to `false` to validate the server's TLS certificate instead of trusting it unconditionally. Defaults to `true`. |
 | `F1SERVER_WEB` | Set to `true` to enable the REST API used by the web interface (port `80`). |
 | `F1SERVER_RUN_TELEMETRY_LOGGING` | Set to `true` to write raw packet logs. Requires a volume mounted at `/var/f1-telemetry`. |
 | `TZ` | Time zone used for timestamps (e.g. `Europe/Berlin`). |
