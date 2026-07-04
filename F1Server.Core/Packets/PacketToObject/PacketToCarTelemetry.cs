@@ -434,7 +434,7 @@ internal class PacketToCarTelemetry(PacketHeader packetHeader) : PacketToXBase(p
 
                 actOffset += ConstData.TypeUInt8;
 
-                carTelemetryData.Gear = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
+                carTelemetryData.Gear = (sbyte)Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
                 actOffset += ConstData.TypeInt8;
 

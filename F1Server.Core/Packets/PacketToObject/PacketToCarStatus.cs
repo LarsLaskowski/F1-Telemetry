@@ -229,7 +229,7 @@ internal class PacketToCarStatus(PacketHeader packetHeader) : PacketToXBase(pack
 
                     actOffset += ConstData.TypeUInt8;
 
-                    var flagsByte = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
+                    var flagsByte = (sbyte)Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
                     status2019.FiaFlags = (VehicleFiaFlagColor)Enum.ToObject(typeof(VehicleFiaFlagColor), flagsByte);
 
@@ -330,7 +330,7 @@ internal class PacketToCarStatus(PacketHeader packetHeader) : PacketToXBase(pack
 
                     actOffset += ConstData.TypeUInt8;
 
-                    var flagsByte = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
+                    var flagsByte = (sbyte)Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
                     status2020.FiaFlags = (VehicleFiaFlagColor)Enum.ToObject(typeof(VehicleFiaFlagColor), flagsByte);
 
@@ -375,7 +375,7 @@ internal class PacketToCarStatus(PacketHeader packetHeader) : PacketToXBase(pack
 
                     actOffset += ConstData.TypeUInt8;
 
-                    var flagsByte = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
+                    var flagsByte = (sbyte)Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
                     status2021.FiaFlags = (VehicleFiaFlagColor)Enum.ToObject(typeof(VehicleFiaFlagColor), flagsByte);
 
@@ -424,7 +424,7 @@ internal class PacketToCarStatus(PacketHeader packetHeader) : PacketToXBase(pack
 
                     actOffset += ConstData.TypeUInt8;
 
-                    var flagsByte = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
+                    var flagsByte = (sbyte)Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
                     status2022.FiaFlags = (VehicleFiaFlagColor)Enum.ToObject(typeof(VehicleFiaFlagColor), flagsByte);
 
@@ -473,7 +473,7 @@ internal class PacketToCarStatus(PacketHeader packetHeader) : PacketToXBase(pack
 
                     actOffset += ConstData.TypeUInt8;
 
-                    var flagsByte = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
+                    var flagsByte = (sbyte)Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
                     status2023.FiaFlags = (VehicleFiaFlagColor)Enum.ToObject(typeof(VehicleFiaFlagColor), flagsByte);
 
@@ -522,7 +522,7 @@ internal class PacketToCarStatus(PacketHeader packetHeader) : PacketToXBase(pack
 
                     actOffset += ConstData.TypeUInt8;
 
-                    var flagsByte = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
+                    var flagsByte = (sbyte)Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
                     status2024.FiaFlags = (VehicleFiaFlagColor)Enum.ToObject(typeof(VehicleFiaFlagColor), flagsByte);
 
@@ -571,7 +571,7 @@ internal class PacketToCarStatus(PacketHeader packetHeader) : PacketToXBase(pack
 
                     actOffset += ConstData.TypeUInt8;
 
-                    var flagsByte = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
+                    var flagsByte = (sbyte)Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
                     status2025.FiaFlags = (VehicleFiaFlagColor)Enum.ToObject(typeof(VehicleFiaFlagColor), flagsByte);
 
@@ -620,7 +620,7 @@ internal class PacketToCarStatus(PacketHeader packetHeader) : PacketToXBase(pack
 
                     actOffset += ConstData.TypeUInt8;
 
-                    var flagsByte = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
+                    var flagsByte = (sbyte)Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
                     status2026.FiaFlags = (VehicleFiaFlagColor)Enum.ToObject(typeof(VehicleFiaFlagColor), flagsByte);
 
@@ -697,7 +697,7 @@ internal class PacketToCarStatus(PacketHeader packetHeader) : PacketToXBase(pack
 
             actOffset += ConstData.TypeUInt8;
 
-            carStatusData.DRSAllowed = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
+            carStatusData.DRSAllowed = (sbyte)Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
             actOffset += ConstData.TypeUInt8;
         }

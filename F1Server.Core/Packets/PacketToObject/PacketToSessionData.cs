@@ -308,11 +308,11 @@ internal class PacketToSessionData(PacketHeader packetHeader) : PacketToXBase(pa
 
             actOffset += ConstData.TypeUInt8;
 
-            sessionData.TrackTemperature = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
+            sessionData.TrackTemperature = (sbyte)Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
             actOffset += ConstData.TypeInt8;
 
-            sessionData.AirTemperature = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
+            sessionData.AirTemperature = (sbyte)Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
             actOffset += ConstData.TypeInt8;
 
@@ -390,7 +390,7 @@ internal class PacketToSessionData(PacketHeader packetHeader) : PacketToXBase(pa
 
                 zoneOffset += ConstData.TypeFloat;
 
-                var zoneFlag = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, zoneOffset));
+                var zoneFlag = (sbyte)Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, zoneOffset));
 
                 marshalZone.ZoneFlag = (ZoneFlagColor)Enum.ToObject(typeof(ZoneFlagColor), zoneFlag);
 
@@ -1318,11 +1318,11 @@ internal class PacketToSessionData(PacketHeader packetHeader) : PacketToXBase(pa
 
                     actOffset += ConstData.TypeUInt8;
 
-                    sessionData20.WeatherForecastSamples[weatherSample].TrackTemperature = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
+                    sessionData20.WeatherForecastSamples[weatherSample].TrackTemperature = (sbyte)Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
                     actOffset += ConstData.TypeInt8;
 
-                    sessionData20.WeatherForecastSamples[weatherSample].AirTemperature = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
+                    sessionData20.WeatherForecastSamples[weatherSample].AirTemperature = (sbyte)Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
                     actOffset += ConstData.TypeInt8;
                 }
@@ -1367,7 +1367,7 @@ internal class PacketToSessionData(PacketHeader packetHeader) : PacketToXBase(pa
 
                     actOffset += ConstData.TypeUInt8;
 
-                    sessionData21.WeatherForecastSamples[weatherSampleIndex].TrackTemperature = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
+                    sessionData21.WeatherForecastSamples[weatherSampleIndex].TrackTemperature = (sbyte)Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
                     actOffset += ConstData.TypeInt8;
 
@@ -1377,7 +1377,7 @@ internal class PacketToSessionData(PacketHeader packetHeader) : PacketToXBase(pa
 
                     actOffset += ConstData.TypeInt8;
 
-                    sessionData21.WeatherForecastSamples[weatherSampleIndex].AirTemperature = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
+                    sessionData21.WeatherForecastSamples[weatherSampleIndex].AirTemperature = (sbyte)Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
                     actOffset += ConstData.TypeInt8;
 
@@ -1434,7 +1434,7 @@ internal class PacketToSessionData(PacketHeader packetHeader) : PacketToXBase(pa
 
                     actOffset += ConstData.TypeUInt8;
 
-                    sessionData22.WeatherForecastSamples[forecastSample].TrackTemperature = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
+                    sessionData22.WeatherForecastSamples[forecastSample].TrackTemperature = (sbyte)Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
                     actOffset += ConstData.TypeInt8;
 
@@ -1444,7 +1444,7 @@ internal class PacketToSessionData(PacketHeader packetHeader) : PacketToXBase(pa
 
                     actOffset += ConstData.TypeInt8;
 
-                    sessionData22.WeatherForecastSamples[forecastSample].AirTemperature = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
+                    sessionData22.WeatherForecastSamples[forecastSample].AirTemperature = (sbyte)Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
                     actOffset += ConstData.TypeInt8;
 
@@ -1501,7 +1501,7 @@ internal class PacketToSessionData(PacketHeader packetHeader) : PacketToXBase(pa
 
                     actOffset += ConstData.TypeUInt8;
 
-                    sessionData23.WeatherForecastSamples[forecastSample].TrackTemperature = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
+                    sessionData23.WeatherForecastSamples[forecastSample].TrackTemperature = (sbyte)Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
                     actOffset += ConstData.TypeInt8;
 
@@ -1511,7 +1511,7 @@ internal class PacketToSessionData(PacketHeader packetHeader) : PacketToXBase(pa
 
                     actOffset += ConstData.TypeInt8;
 
-                    sessionData23.WeatherForecastSamples[forecastSample].AirTemperature = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
+                    sessionData23.WeatherForecastSamples[forecastSample].AirTemperature = (sbyte)Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
                     actOffset += ConstData.TypeInt8;
 

@@ -27,7 +27,7 @@ public class WeatherForecastSample
     /// <summary>
     /// Track temperature
     /// </summary>
-    public ushort TrackTemperature { get; set; }
+    public short TrackTemperature { get; set; }
 
     /// <summary>
     /// Change indicator of track temperature (since F1 2021)
@@ -37,7 +37,7 @@ public class WeatherForecastSample
     /// <summary>
     /// Air temperature
     /// </summary>
-    public ushort AirTemperature { get; set; }
+    public short AirTemperature { get; set; }
 
     /// <summary>
     /// Change indicator of air temperature (since F1 2021)
