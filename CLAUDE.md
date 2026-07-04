@@ -30,6 +30,8 @@ conventions from `.github/copilot-instructions.md` and `.github/instructions/csh
   Code" and session URLs.
 - Follow the repository's PR template if one exists; otherwise use a concise Summary and Test
   plan structure.
+- This applies to every PR created for this repository, whether opened directly or through a
+  skill (see `fix-issue`, `publish-pr`, `review-pr` in `.claude/skills`).
 
 ---
 
