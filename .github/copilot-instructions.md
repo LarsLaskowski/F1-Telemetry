@@ -16,6 +16,18 @@ These instructions apply to the F1-Telemetry solution. Keep suggestions aligned 
 - Do not end the subject line with a period
 - Do not write the message in the first person
 - Keep the body concise, usually 3-5 sentences
+- Do not add AI-attribution trailers (e.g. `Co-Authored-By: Claude`, session URLs) unless the
+  user explicitly asks for them
+
+### Pull requests
+
+- Always write the PR title and description in English, regardless of the language used in the
+  conversation, issue, or user request
+- Never mention Claude, Copilot, Anthropic, "Claude Code", AI assistance, or any session/
+  co-authorship link in the PR title or description. This includes footers such as "Generated
+  with Claude Code" and session URLs
+- Follow the repository's PR template if one exists; otherwise use a concise Summary and Test
+  plan structure
 
 ---
 
