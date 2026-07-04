@@ -170,7 +170,7 @@ internal class SessionHistoryProcessor : BaseProcessor
                     lapEntity.IsFinished = true;
 
                     participantRuntimeData.CompleteLap(lapNumber);
-                    participantRuntimeData.CompleteTelemetryData(lapNumber).ConfigureAwait(false);
+                    participantRuntimeData.CompleteTelemetryData(lapNumber).GetAwaiter().GetResult();
                 }
                 else
                 {
@@ -183,7 +183,7 @@ internal class SessionHistoryProcessor : BaseProcessor
                         lapEntity.IsFinished = true;
                         lapEntity.IsCompleted = true;
 
-                        participantRuntimeData.CompleteTelemetryData(lapNumber).ConfigureAwait(false);
+                        participantRuntimeData.CompleteTelemetryData(lapNumber).GetAwaiter().GetResult();
                     }
                 }
 
