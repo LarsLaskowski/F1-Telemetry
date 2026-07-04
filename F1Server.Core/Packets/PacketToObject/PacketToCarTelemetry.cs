@@ -113,49 +113,49 @@ internal class PacketToCarTelemetry(PacketHeader packetHeader) : PacketToXBase(p
                 {
                     actOffset = ExtractSingleCarTelemetry(ref dataPacket, offsetToStart, carTelemetry2019.CarTelemetryData);
 
-                    retValue = ExtractCarTelemetryParameters2019(ref dataPacket, actOffset, carTelemetry2019);
+                    retValue = ExtractCarTelemetryParameters2019(ref dataPacket, actOffset, packetLength, carTelemetry2019);
                 }
                 else if (carTelemetryData is CarTelemetry2020 carTelemetry2020)
                 {
                     actOffset = ExtractSingleCarTelemetry(ref dataPacket, offsetToStart, carTelemetry2020.CarTelemetryData);
 
-                    retValue = ExtractCarTelemetryParameters2020(ref dataPacket, actOffset, carTelemetry2020);
+                    retValue = ExtractCarTelemetryParameters2020(ref dataPacket, actOffset, packetLength, carTelemetry2020);
                 }
                 else if (carTelemetryData is CarTelemetry2021 carTelemetry2021)
                 {
                     actOffset = ExtractSingleCarTelemetry(ref dataPacket, offsetToStart, carTelemetry2021.CarTelemetryData);
 
-                    retValue = ExtractCarTelemetryParameters2021(ref dataPacket, actOffset, carTelemetry2021);
+                    retValue = ExtractCarTelemetryParameters2021(ref dataPacket, actOffset, packetLength, carTelemetry2021);
                 }
                 else if (carTelemetryData is CarTelemetry2022 carTelemetry2022)
                 {
                     actOffset = ExtractSingleCarTelemetry(ref dataPacket, offsetToStart, carTelemetry2022.CarTelemetryData);
 
-                    retValue = ExtractCarTelemetryParameters2022(ref dataPacket, actOffset, carTelemetry2022);
+                    retValue = ExtractCarTelemetryParameters2022(ref dataPacket, actOffset, packetLength, carTelemetry2022);
                 }
                 else if (carTelemetryData is CarTelemetry2023 carTelemetry2023)
                 {
                     actOffset = ExtractSingleCarTelemetry(ref dataPacket, offsetToStart, carTelemetry2023.CarTelemetryData);
 
-                    retValue = ExtractCarTelemetryParameters2023(ref dataPacket, actOffset, carTelemetry2023);
+                    retValue = ExtractCarTelemetryParameters2023(ref dataPacket, actOffset, packetLength, carTelemetry2023);
                 }
                 else if (carTelemetryData is CarTelemetry2024 carTelemetry2024)
                 {
                     actOffset = ExtractSingleCarTelemetry(ref dataPacket, offsetToStart, carTelemetry2024.CarTelemetryData);
 
-                    retValue = ExtractCarTelemetryParameters2024(ref dataPacket, actOffset, carTelemetry2024);
+                    retValue = ExtractCarTelemetryParameters2024(ref dataPacket, actOffset, packetLength, carTelemetry2024);
                 }
                 else if (carTelemetryData is CarTelemetry2025 carTelemetry2025)
                 {
                     actOffset = ExtractSingleCarTelemetry(ref dataPacket, offsetToStart, carTelemetry2025.CarTelemetryData);
 
-                    retValue = ExtractCarTelemetryParameters2025(ref dataPacket, actOffset, carTelemetry2025);
+                    retValue = ExtractCarTelemetryParameters2025(ref dataPacket, actOffset, packetLength, carTelemetry2025);
                 }
                 else if (carTelemetryData is CarTelemetry2026 carTelemetry2026)
                 {
                     actOffset = ExtractSingleCarTelemetry(ref dataPacket, offsetToStart, carTelemetry2026.CarTelemetryData);
 
-                    retValue = ExtractCarTelemetryParameters2026(ref dataPacket, actOffset, carTelemetry2026);
+                    retValue = ExtractCarTelemetryParameters2026(ref dataPacket, actOffset, packetLength, carTelemetry2026);
                 }
                 else
                 {
@@ -176,13 +176,14 @@ internal class PacketToCarTelemetry(PacketHeader packetHeader) : PacketToXBase(p
     /// </summary>
     /// <param name="dataPacket">Received packet</param>
     /// <param name="actOffset">Current offset</param>
+    /// <param name="packetLength">Size of received packet</param>
     /// <param name="carTelemetry2019">Car telemetry data class</param>
     /// <returns>Extracted?</returns>
-    private bool ExtractCarTelemetryParameters2019(ref byte dataPacket, int actOffset, CarTelemetry2019 carTelemetry2019)
+    private bool ExtractCarTelemetryParameters2019(ref byte dataPacket, int actOffset, int packetLength, CarTelemetry2019 carTelemetry2019)
     {
         bool isExtracted = false;
 
-        if (actOffset < HeaderSize + ConstData.F12019CarTelemetrySize)
+        if (packetLength >= actOffset + ConstData.TypeUInt32)
         {
             carTelemetry2019.ButtonStatus = Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref dataPacket, actOffset));
 
@@ -197,13 +198,14 @@ internal class PacketToCarTelemetry(PacketHeader packetHeader) : PacketToXBase(p
     /// </summary>
     /// <param name="dataPacket">Received packet</param>
     /// <param name="actOffset">Current offset</param>
+    /// <param name="packetLength">Size of received packet</param>
     /// <param name="carTelemetry2020">Car telemetry data class</param>
     /// <returns>Extracted?</returns>
-    private bool ExtractCarTelemetryParameters2020(ref byte dataPacket, int actOffset, CarTelemetry2020 carTelemetry2020)
+    private bool ExtractCarTelemetryParameters2020(ref byte dataPacket, int actOffset, int packetLength, CarTelemetry2020 carTelemetry2020)
     {
         var isExtracted = false;
 
-        if (actOffset > ConstData.F12020CarTelemetrySize)
+        if (packetLength >= actOffset + ConstData.TypeUInt32 + (3 * ConstData.TypeUInt8))
         {
             carTelemetry2020.ButtonStatus = Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref dataPacket, actOffset));
 
@@ -230,13 +232,14 @@ internal class PacketToCarTelemetry(PacketHeader packetHeader) : PacketToXBase(p
     /// </summary>
     /// <param name="dataPacket">Received packet</param>
     /// <param name="actOffset">Current offset</param>
+    /// <param name="packetLength">Size of received packet</param>
     /// <param name="carTelemetry2021">Car telemetry data class</param>
     /// <returns>Extracted?</returns>
-    private bool ExtractCarTelemetryParameters2021(ref byte dataPacket, int actOffset, CarTelemetry2021 carTelemetry2021)
+    private bool ExtractCarTelemetryParameters2021(ref byte dataPacket, int actOffset, int packetLength, CarTelemetry2021 carTelemetry2021)
     {
         var isExtracted = false;
 
-        if (actOffset > ConstData.F12021CarTelemetrySize)
+        if (packetLength >= actOffset + (3 * ConstData.TypeUInt8))
         {
             carTelemetry2021.MfdPanelIndex = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
@@ -259,13 +262,14 @@ internal class PacketToCarTelemetry(PacketHeader packetHeader) : PacketToXBase(p
     /// </summary>
     /// <param name="dataPacket">Received packet</param>
     /// <param name="actOffset">Current offset</param>
+    /// <param name="packetLength">Size of received packet</param>
     /// <param name="carTelemetry2022">Car telemetry data class</param>
     /// <returns>Extracted?</returns>
-    private bool ExtractCarTelemetryParameters2022(ref byte dataPacket, int actOffset, CarTelemetry2022 carTelemetry2022)
+    private bool ExtractCarTelemetryParameters2022(ref byte dataPacket, int actOffset, int packetLength, CarTelemetry2022 carTelemetry2022)
     {
         var isExtracted = false;
 
-        if (actOffset > ConstData.F12022CarTelemetrySize)
+        if (packetLength >= actOffset + (3 * ConstData.TypeUInt8))
         {
             carTelemetry2022.MfdPanelIndex = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
@@ -288,13 +292,14 @@ internal class PacketToCarTelemetry(PacketHeader packetHeader) : PacketToXBase(p
     /// </summary>
     /// <param name="dataPacket">Received packet</param>
     /// <param name="actOffset">Current offset</param>
+    /// <param name="packetLength">Size of received packet</param>
     /// <param name="carTelemetry2023">Car telemetry data class</param>
     /// <returns>Extracted?</returns>
-    private bool ExtractCarTelemetryParameters2023(ref byte dataPacket, int actOffset, CarTelemetry2023 carTelemetry2023)
+    private bool ExtractCarTelemetryParameters2023(ref byte dataPacket, int actOffset, int packetLength, CarTelemetry2023 carTelemetry2023)
     {
         var isExtracted = false;
 
-        if (actOffset > ConstData.F12023CarTelemetrySize)
+        if (packetLength >= actOffset + (3 * ConstData.TypeUInt8))
         {
             carTelemetry2023.MfdPanelIndex = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
@@ -317,13 +322,14 @@ internal class PacketToCarTelemetry(PacketHeader packetHeader) : PacketToXBase(p
     /// </summary>
     /// <param name="dataPacket">Received packet</param>
     /// <param name="actOffset">Current offset</param>
+    /// <param name="packetLength">Size of received packet</param>
     /// <param name="carTelemetry2024">Car telemetry data class</param>
     /// <returns>Extracted?</returns>
-    private bool ExtractCarTelemetryParameters2024(ref byte dataPacket, int actOffset, CarTelemetry2024 carTelemetry2024)
+    private bool ExtractCarTelemetryParameters2024(ref byte dataPacket, int actOffset, int packetLength, CarTelemetry2024 carTelemetry2024)
     {
         var isExtracted = false;
 
-        if (actOffset > ConstData.F12024CarTelemetrySize)
+        if (packetLength >= actOffset + (3 * ConstData.TypeUInt8))
         {
             carTelemetry2024.MfdPanelIndex = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
@@ -346,13 +352,14 @@ internal class PacketToCarTelemetry(PacketHeader packetHeader) : PacketToXBase(p
     /// </summary>
     /// <param name="dataPacket">Received packet</param>
     /// <param name="actOffset">Current offset</param>
+    /// <param name="packetLength">Size of received packet</param>
     /// <param name="carTelemetry2025">Car telemetry data class</param>
     /// <returns>Extracted?</returns>
-    private bool ExtractCarTelemetryParameters2025(ref byte dataPacket, int actOffset, CarTelemetry2025 carTelemetry2025)
+    private bool ExtractCarTelemetryParameters2025(ref byte dataPacket, int actOffset, int packetLength, CarTelemetry2025 carTelemetry2025)
     {
         var isExtracted = false;
 
-        if (actOffset > ConstData.F12025CarTelemetrySize)
+        if (packetLength >= actOffset + (3 * ConstData.TypeUInt8))
         {
             carTelemetry2025.MfdPanelIndex = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
@@ -375,13 +382,14 @@ internal class PacketToCarTelemetry(PacketHeader packetHeader) : PacketToXBase(p
     /// </summary>
     /// <param name="dataPacket">Received packet</param>
     /// <param name="actOffset">Current offset</param>
+    /// <param name="packetLength">Size of received packet</param>
     /// <param name="carTelemetry2026">Car telemetry data class</param>
     /// <returns>Extracted?</returns>
-    private bool ExtractCarTelemetryParameters2026(ref byte dataPacket, int actOffset, CarTelemetry2026 carTelemetry2026)
+    private bool ExtractCarTelemetryParameters2026(ref byte dataPacket, int actOffset, int packetLength, CarTelemetry2026 carTelemetry2026)
     {
         var isExtracted = false;
 
-        if (actOffset > ConstData.F12026CarTelemetrySize)
+        if (packetLength >= actOffset + (3 * ConstData.TypeUInt8))
         {
             carTelemetry2026.MfdPanelIndex = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
