@@ -123,6 +123,8 @@ internal class PacketToLapPositions(PacketHeader packetHeader) : PacketToXBase(p
 
             lapPositions2025.LapStartIndex = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
+            actOffset += ConstData.TypeUInt8;
+
             // Clamp the packet-provided lap count to the fixed packet layout so manipulated values cannot cause reads past the packet
             var lapCount = Math.Min(lapPositions2025.NumberOfLaps, ConstData.F12025MaxLapPositions);
 
@@ -166,6 +168,8 @@ internal class PacketToLapPositions(PacketHeader packetHeader) : PacketToXBase(p
             actOffset += ConstData.TypeUInt8;
 
             lapPositions2026.LapStartIndex = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
+
+            actOffset += ConstData.TypeUInt8;
 
             // Clamp the packet-provided lap count to the fixed packet layout so manipulated values cannot cause reads past the packet
             var lapCount = Math.Min(lapPositions2026.NumberOfLaps, ConstData.F12026MaxLapPositions);

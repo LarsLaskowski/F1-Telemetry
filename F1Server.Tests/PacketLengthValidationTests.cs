@@ -2,6 +2,7 @@ using System.IO;
 
 using F1Server.Core;
 using F1Server.Core.Data;
+using F1Server.Core.PacketData;
 using F1Server.Core.Packets.Data;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -556,6 +557,39 @@ public class PacketLengthValidationTests
         var lapPositions = packetAnalyzer.GetLapPositionsData(packetHeader, packetContent);
 
         Assert.IsNotNull(lapPositions, "Lap positions packet with a manipulated lap count must be clamped and still produce an object!");
+    }
+
+    /// <summary>
+    /// Test to verify that car positions are read from the byte right after LapStartIndex instead of overlapping it
+    /// </summary>
+    /// <param name="gameVersion">Game version to encode in the header</param>
+    /// <param name="headerSize">Header size of the game version</param>
+    /// <param name="lapPositionSize">Expected lap positions payload size of the game version</param>
+    [TestMethod]
+    [DataRow(2025, ConstData.F12025HeaderSize, ConstData.F12025LapPositionSize)]
+    [DataRow(2026, ConstData.F12026HeaderSize, ConstData.F12026LapPositionSize)]
+    public void GetLapPositionsDataFirstCarPositionIsNotShiftedByLapStartIndex(int gameVersion, int headerSize, int lapPositionSize)
+    {
+        var packetHeader = CreatePacketHeader(gameVersion, headerSize);
+
+        var packetContent = new byte[headerSize + lapPositionSize];
+
+        packetContent[headerSize] = 1;
+        packetContent[headerSize + 1] = 99;
+        packetContent[headerSize + 2] = 5;
+
+        var packetAnalyzer = new PacketAnalyzer();
+
+        var lapPositions = packetAnalyzer.GetLapPositionsData(packetHeader, packetContent);
+
+        var carPosition = lapPositions switch
+                          {
+                              LapPositions { PacketData: LapPositions2025 lapPositions2025 } => lapPositions2025.CarPositionOnLaps[0, 0],
+                              LapPositions { PacketData: LapPositions2026 lapPositions2026 } => lapPositions2026.CarPositionOnLaps[0, 0],
+                              _ => -1
+                          };
+
+        Assert.AreEqual(5, carPosition, $"First car position of F1 {gameVersion} lap positions packet must not be shifted by the LapStartIndex byte!");
     }
 
     /// <summary>
