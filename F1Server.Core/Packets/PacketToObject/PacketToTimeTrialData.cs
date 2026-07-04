@@ -172,7 +172,7 @@ internal class PacketToTimeTrialData(PacketHeader packetHeader) : PacketToXBase(
 
                 actOffset += ConstData.TypeUInt32;
 
-                timeTrialData.Sector3Time = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
+                timeTrialData.Sector3Time = Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref dataPacket, actOffset));
 
                 actOffset += ConstData.TypeUInt32;
 
