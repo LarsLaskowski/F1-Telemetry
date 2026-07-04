@@ -857,7 +857,7 @@ internal class PacketToLapData(PacketHeader packetHeader) : PacketToXBase(packet
 
             actOffset += ConstData.TypeUInt16;
 
-            lapData.DeltaToCarInFrontMinutes = Unsafe.ReadUnaligned<ushort>(ref Unsafe.Add(ref dataPacket, actOffset));
+            lapData.DeltaToCarInFrontMinutes = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
             actOffset += ConstData.TypeUInt8;
 
@@ -865,7 +865,7 @@ internal class PacketToLapData(PacketHeader packetHeader) : PacketToXBase(packet
 
             actOffset += ConstData.TypeUInt16;
 
-            lapData.DeltaToRaceLeaderMinutes = Unsafe.ReadUnaligned<ushort>(ref Unsafe.Add(ref dataPacket, actOffset));
+            lapData.DeltaToRaceLeaderMinutes = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
             actOffset += ConstData.TypeUInt8;
 
@@ -1014,7 +1014,7 @@ internal class PacketToLapData(PacketHeader packetHeader) : PacketToXBase(packet
 
             actOffset += ConstData.TypeUInt16;
 
-            lapData.DeltaToCarInFrontMinutes = Unsafe.ReadUnaligned<ushort>(ref Unsafe.Add(ref dataPacket, actOffset));
+            lapData.DeltaToCarInFrontMinutes = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
             actOffset += ConstData.TypeUInt8;
 
@@ -1022,7 +1022,7 @@ internal class PacketToLapData(PacketHeader packetHeader) : PacketToXBase(packet
 
             actOffset += ConstData.TypeUInt16;
 
-            lapData.DeltaToRaceLeaderMinutes = Unsafe.ReadUnaligned<ushort>(ref Unsafe.Add(ref dataPacket, actOffset));
+            lapData.DeltaToRaceLeaderMinutes = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
             actOffset += ConstData.TypeUInt8;
 
@@ -1171,7 +1171,7 @@ internal class PacketToLapData(PacketHeader packetHeader) : PacketToXBase(packet
 
             actOffset += ConstData.TypeUInt16;
 
-            lapData.DeltaToCarInFrontMinutes = Unsafe.ReadUnaligned<ushort>(ref Unsafe.Add(ref dataPacket, actOffset));
+            lapData.DeltaToCarInFrontMinutes = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
             actOffset += ConstData.TypeUInt8;
 
@@ -1179,7 +1179,7 @@ internal class PacketToLapData(PacketHeader packetHeader) : PacketToXBase(packet
 
             actOffset += ConstData.TypeUInt16;
 
-            lapData.DeltaToRaceLeaderMinutes = Unsafe.ReadUnaligned<ushort>(ref Unsafe.Add(ref dataPacket, actOffset));
+            lapData.DeltaToRaceLeaderMinutes = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
             actOffset += ConstData.TypeUInt8;
 
