@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "F1ServerApp",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "F1ServerApp", "start"],
+      "port": 4810
+    }
+  ]
+}

@@ -7,14 +7,14 @@ namespace F1ReplayClient.Data.Base;
 /// </summary>
 internal class NotifyPropertyBase : INotifyPropertyChanged
 {
-    #region Events
+    #region INotifyPropertyChanged
 
     /// <summary>
     /// PropertyChanged event
     /// </summary>
     public event PropertyChangedEventHandler? PropertyChanged;
 
-    #endregion // Events
+    #endregion // INotifyPropertyChanged
 
     #region Methods
 
