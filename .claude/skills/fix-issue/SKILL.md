@@ -1,0 +1,70 @@
+---
+name: fix-issue
+description: Takes a GitHub issue number, fixes the issue in the codebase, creates a branch, opens a pull request that closes the issue, and switches back to main. Use this whenever the user wants an issue resolved end-to-end, e.g. "fix issue 42", "work on #42", or passes a bare issue number to be handled.
+---
+
+Use this skill when the user gives you a GitHub issue number (e.g. "fix issue 42", "#42", or just "42") and wants it resolved end-to-end: understand the issue, implement the fix, and publish it as a pull request.
+
+All user-facing output you create — branch name, commit message, PR title and body, code comments, and UI text — must be written in **English**, regardless of the language the user wrote in.
+
+## Workflow
+
+### 1. Read and understand the issue
+
+- Confirm the issue number from the user's request. If no number was given, stop and ask for one.
+- Fetch the issue (use `gh issue view <number> --json number,title,body,labels,state,comments` if the GitHub CLI is available; otherwise use the equivalent GitHub MCP tool, e.g. `issue_read`).
+- Read the title, body, and comments to understand what is actually being asked. If the issue is already `closed`, stop and report that instead of starting work.
+- If the issue is ambiguous, underspecified, or could be solved several materially different ways, ask the user a focused clarifying question before writing code. Do not guess on decisions that are expensive to reverse.
+
+### 2. Prepare a clean starting point
+
+- Verify the working tree is clean with `git status --short --branch`. If there are unrelated uncommitted changes, stop and report them — do not bundle them into this fix.
+- Make sure you start from an up-to-date base branch (`main` unless the user says otherwise): switch to it and `git pull` so the branch and PR are based on current code.
+- Confirm the `origin` remote exists.
+
+### 3. Create the branch
+
+- Derive the branch type from the issue labels and content: use `fix/` for bugs, `feat/` for new functionality, `chore/`/`docs/`/`build/` where appropriate.
+- Name the branch `<type>/<number>-<short-kebab-slug>`, e.g. `fix/42-penalty-type-off-by-one`. If the user supplied a branch name, use theirs.
+- Create and switch to the branch from the base branch.
+
+### 4. Implement the fix
+
+- Follow the conventions in `CLAUDE.md` and `.github/copilot-instructions.md` (and `.github/instructions/csharp.instructions.md` for C# details). In particular: keep controllers thin, keep database access inside repositories, reuse `RepositoryFactory`/`RepositoryBase`, preserve multi-database support, and write all comments and UI text in English.
+- Follow the layering in "Common change patterns": core/data/entity types → repositories → services/processors → Web API controllers/hubs (transport only) → observability → tests. For frontend changes: typed models → existing HTTP/SignalR services → feature component state → keep contract names synchronized with the backend `Data`/`ViewData` models.
+- Read the surrounding code and match its existing style, naming, and region layout (`#region ... #endregion // ...`).
+
+### 5. Validate
+
+- Backend: `dotnet build F1Server.slnx`, then `reihitsu-format --check <changed-path>` for every changed `.cs` file, then `dotnet test F1Server.Tests` (MSTest). A clean build must show 0 `RH####` warnings.
+- Frontend (only if `F1ServerApp` changed): `cd F1ServerApp && npm run build`, and `npm test` if the change affects testable logic.
+- If validation fails, fix the cause before continuing — do not push broken code. If you cannot make it pass, stop and report clearly.
+
+### 6. Commit
+
+- Stage only the files relevant to this fix. Do not include unrelated changes.
+- Write a concise commit message that matches the repo history: subject line max 80 characters, no trailing period, not in the first person, body concise (3-5 sentences) when needed.
+- Do not add any `Co-Authored-By` trailer, session link, or other note attributing the work to an AI/assistant.
+
+### 7. Push and open the pull request
+
+- Push the branch to `origin` with upstream tracking (`git push -u origin <branch>`).
+- Open the pull request (use `gh pr create` if available, otherwise the equivalent GitHub MCP tool, e.g. `create_pull_request`):
+  - base branch: `main`, unless the user requested a different base
+  - title: concise English summary of the fix
+  - body: a short English summary of the problem and the fix, following the repository's PR template if one exists, plus a line `Closes #<number>` so the issue auto-closes on merge
+  - Do not add any attribution, "Generated with" footer, session link, or other note referencing an AI/assistant in the PR title or body.
+
+### 8. Finish
+
+- After the PR is created, switch back to the base branch (`main`).
+- Report the issue number, branch name, and pull request URL clearly.
+
+## Rules
+
+- Prefer non-interactive commands only.
+- If push or PR creation fails, stop and report the failure clearly — do not continue as if it succeeded.
+- Do not amend existing commits unless the user explicitly asks.
+- If switching back to `main` would discard or conflict with uncommitted work, stop and explain the blocker.
+- Never close the issue manually; let `Closes #<number>` in the PR body do it on merge.
+- Never run `git commit`, `git push`, or create branches without the user having asked for this issue to be fixed end-to-end — invoking this skill with an issue number is the explicit approval for that specific workflow.

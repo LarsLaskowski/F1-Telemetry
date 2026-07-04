@@ -18,6 +18,20 @@ conventions from `.github/copilot-instructions.md` and `.github/instructions/csh
 - Subject line: maximum 80 characters, no trailing period.
 - Do not write the message in the first person.
 - Keep the body concise, usually 3-5 sentences.
+- Do not add AI-attribution trailers (e.g. `Co-Authored-By: Claude`, session URLs) unless the
+  user explicitly asks for them.
+
+### Pull requests
+
+- Always write the PR title and description in English, regardless of the language used in the
+  conversation, issue, or user request.
+- Never mention Claude, Anthropic, "Claude Code", AI assistance, or any session/co-authorship
+  link in the PR title or description. This includes footers such as "Generated with Claude
+  Code" and session URLs.
+- Follow the repository's PR template if one exists; otherwise use a concise Summary and Test
+  plan structure.
+- This applies to every PR created for this repository, whether opened directly or through a
+  skill (see `fix-issue`, `publish-pr`, `review-pr` in `.claude/skills`).
 
 ---
 
