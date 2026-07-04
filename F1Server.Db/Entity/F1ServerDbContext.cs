@@ -148,7 +148,10 @@ public sealed class F1ServerDbContext : DbContext
             }
             else if (DbServerType == SqlServerType.MsSqlServer)
             {
-                ConfigureMicrosoftSql(optionsBuilder, database, server ?? Localhost, userId, passwd ?? string.Empty);
+                var trustServerCertificate = Environment.GetEnvironmentVariable("F1SERVER_DB_MSSQL_TRUST_SERVER_CERTIFICATE");
+                var trustServerCertificateValue = bool.TryParse(trustServerCertificate, out var parsedTrustServerCertificate) == false || parsedTrustServerCertificate;
+
+                ConfigureMicrosoftSql(optionsBuilder, database, server ?? Localhost, userId, passwd ?? string.Empty, trustServerCertificateValue);
             }
             else if (DbServerType == SqlServerType.PostgreSql)
             {
@@ -5854,7 +5857,8 @@ public sealed class F1ServerDbContext : DbContext
     /// <param name="server">Database server</param>
     /// <param name="user">Database user</param>
     /// <param name="passwd">Password</param>
-    private void ConfigureMicrosoftSql(DbContextOptionsBuilder optionsBuilder, string database, string server, string user, string passwd)
+    /// <param name="trustServerCertificate">Whether the server certificate is trusted without validation</param>
+    private void ConfigureMicrosoftSql(DbContextOptionsBuilder optionsBuilder, string database, string server, string user, string passwd, bool trustServerCertificate)
     {
         if (Logger is not null && ShouldLogConfiguration())
         {
@@ -5870,7 +5874,7 @@ public sealed class F1ServerDbContext : DbContext
                                           Password = passwd,
                                           MultipleActiveResultSets = false,
                                           IntegratedSecurity = false,
-                                          TrustServerCertificate = true
+                                          TrustServerCertificate = trustServerCertificate
                                       };
 
         ConnectionString = connectionStringBuilder.ConnectionString;
