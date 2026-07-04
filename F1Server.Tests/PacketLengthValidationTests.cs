@@ -517,6 +517,28 @@ public class PacketLengthValidationTests
     }
 
     /// <summary>
+    /// Test to verify that full size lap positions packets are converted successfully
+    /// </summary>
+    /// <param name="gameVersion">Game version to encode in the header</param>
+    /// <param name="headerSize">Header size of the game version</param>
+    /// <param name="lapPositionSize">Expected lap positions payload size of the game version</param>
+    [TestMethod]
+    [DataRow(2025, ConstData.F12025HeaderSize, ConstData.F12025LapPositionSize)]
+    [DataRow(2026, ConstData.F12026HeaderSize, ConstData.F12026LapPositionSize)]
+    public void GetLapPositionsDataFullPacketReturnsObject(int gameVersion, int headerSize, int lapPositionSize)
+    {
+        var packetHeader = CreatePacketHeader(gameVersion, headerSize);
+
+        var packetAnalyzer = new PacketAnalyzer();
+
+        var packetContent = new byte[headerSize + lapPositionSize];
+
+        var lapPositions = packetAnalyzer.GetLapPositionsData(packetHeader, packetContent);
+
+        Assert.IsNotNull(lapPositions, $"Full size F1 {gameVersion} lap positions packet must produce an object!");
+    }
+
+    /// <summary>
     /// Test to verify that a manipulated lap count in a lap positions packet is clamped to the fixed packet layout
     /// </summary>
     [TestMethod]
