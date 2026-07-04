@@ -217,7 +217,7 @@ internal class PacketToFinalClassification(PacketHeader packetHeader) : PacketTo
 
             var bestLapTime = Unsafe.ReadUnaligned<float>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-            finalClassData.BestLapTimeInMs = (uint)bestLapTime * 1000;
+            finalClassData.BestLapTimeInMs = (uint)(bestLapTime * 1000);
 
             actOffset += ConstData.TypeFloat;
 
