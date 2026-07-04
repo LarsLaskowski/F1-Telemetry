@@ -60,7 +60,7 @@ public class SessionAttributesEntity
     public bool SteeringAssistFirst
     {
         get => DbSteeringAssistFirst != 0;
-        set => DbSteeringAssistChanged = value ? 1 : 0;
+        set => DbSteeringAssistFirst = value ? 1 : 0;
     }
 
     /// <summary>
