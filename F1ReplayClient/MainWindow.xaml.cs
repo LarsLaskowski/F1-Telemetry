@@ -536,9 +536,9 @@ public partial class MainWindow : Window, IDisposable
                                      }
                                  }
 
-                                 ++processedFiles;
+                                 var updatedProcessedFiles = Interlocked.Increment(ref processedFiles);
 
-                                 _viewData.ProcessedFiles = processedFiles;
+                                 _viewData.ProcessedFiles = updatedProcessedFiles;
                              });
 
             CurrentFolderFiles = CurrentFolderFiles.OrderBy(f => f.SessionTime).ToList();
