@@ -199,7 +199,10 @@ internal class PacketToEventData(PacketHeader packetHeader) : PacketToXBase(pack
         {
             if (eventData.EventCode == "PENA")
             {
-                var penaltyType = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
+                ushort penaltyType = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
+
+                // First value of game is zero based, enumeration zero value is a default value, corresponding type is one for first value and so on
+                penaltyType += 1;
 
                 eventDetailsData.PenaltyType = (PenaltyType)Enum.ToObject(typeof(PenaltyType), penaltyType);
 
@@ -725,7 +728,10 @@ internal class PacketToEventData(PacketHeader packetHeader) : PacketToXBase(pack
     /// <param name="eventDetails21Data">Eventdata</param>
     private void ExtractPenalty2021(ref byte dataPacket, int actOffset, EventDataDetails2021 eventDetails21Data)
     {
-        var penaltyType = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
+        ushort penaltyType = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
+
+        // First value of game is zero based, enumeration zero value is a default value, corresponding type is one for first value and so on
+        penaltyType += 1;
 
         eventDetails21Data.PenaltyType = (PenaltyType)Enum.ToObject(typeof(PenaltyType), penaltyType);
 
@@ -780,7 +786,10 @@ internal class PacketToEventData(PacketHeader packetHeader) : PacketToXBase(pack
     /// <param name="eventDetails22Data">Eventdata</param>
     private void ExtractPenalty2022(ref byte dataPacket, int actOffset, EventDataDetails2022 eventDetails22Data)
     {
-        var penaltyType = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
+        ushort penaltyType = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
+
+        // First value of game is zero based, enumeration zero value is a default value, corresponding type is one for first value and so on
+        penaltyType += 1;
 
         eventDetails22Data.PenaltyType = (PenaltyType)Enum.ToObject(typeof(PenaltyType), penaltyType);
 
@@ -822,7 +831,10 @@ internal class PacketToEventData(PacketHeader packetHeader) : PacketToXBase(pack
     /// <param name="eventDetails23Data">Eventdata</param>
     private void ExtractPenalty2023(ref byte dataPacket, int actOffset, EventDataDetails2023 eventDetails23Data)
     {
-        var penaltyType = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
+        ushort penaltyType = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
+
+        // First value of game is zero based, enumeration zero value is a default value, corresponding type is one for first value and so on
+        penaltyType += 1;
 
         eventDetails23Data.PenaltyType = (PenaltyType)Enum.ToObject(typeof(PenaltyType), penaltyType);
 
@@ -864,7 +876,10 @@ internal class PacketToEventData(PacketHeader packetHeader) : PacketToXBase(pack
     /// <param name="eventDetails24Data">Eventdata</param>
     private void ExtractPenalty2024(ref byte dataPacket, int actOffset, EventDataDetails2024 eventDetails24Data)
     {
-        var penaltyType = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
+        ushort penaltyType = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
+
+        // First value of game is zero based, enumeration zero value is a default value, corresponding type is one for first value and so on
+        penaltyType += 1;
 
         eventDetails24Data.PenaltyType = (PenaltyType)Enum.ToObject(typeof(PenaltyType), penaltyType);
 
@@ -906,7 +921,10 @@ internal class PacketToEventData(PacketHeader packetHeader) : PacketToXBase(pack
     /// <param name="eventDetails25Data">Eventdata</param>
     private void ExtractPenalty2025(ref byte dataPacket, int actOffset, EventDataDetails2025 eventDetails25Data)
     {
-        var penaltyType = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
+        ushort penaltyType = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
+
+        // First value of game is zero based, enumeration zero value is a default value, corresponding type is one for first value and so on
+        penaltyType += 1;
 
         eventDetails25Data.PenaltyType = (PenaltyType)Enum.ToObject(typeof(PenaltyType), penaltyType);
 

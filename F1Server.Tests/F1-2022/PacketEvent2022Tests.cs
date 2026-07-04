@@ -285,7 +285,7 @@ public class PacketEvent2022Tests
 
             if (packetData is EventData eventData && eventData.PacketData?.EventDetails is IEventDataDetails2022 eventDetails)
             {
-                Assert.AreEqual(PenaltyType.ThisAndPreviousLapInvalidWithoutReason, eventDetails.PenaltyType, "Incorrect penalty type value!");
+                Assert.AreEqual(PenaltyType.Retired, eventDetails.PenaltyType, "Incorrect penalty type value!");
             }
             else
             {
