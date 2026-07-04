@@ -271,6 +271,9 @@ public void PacketHeaderCheckGameVersionReturns2025()
 
 - Always provide assert messages
 - For async exception checks, use `Assert.ThrowsExceptionAsync<T>(...)`
+- Prefer the specific MSTest `Assert`/`CollectionAssert` method over `Assert.IsTrue`/`Assert.IsFalse`
+  wrapping a boolean expression, e.g. `Assert.Contains(expected, collection, message)` instead of
+  `Assert.IsTrue(collection.Contains(expected), message)` — SonarQube flags the latter
 
 ---
 

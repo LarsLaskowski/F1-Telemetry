@@ -59,8 +59,8 @@ public class RepositoryBaseTests
                                     .Select(n => n.Name)
                                     .ToList();
 
-            Assert.IsTrue(updatedNames.Contains("UpdateRangeTestA-Updated"), "Updated name for entity A should be persisted!");
-            Assert.IsTrue(updatedNames.Contains("UpdateRangeTestB-Updated"), "Updated name for entity B should be persisted!");
+            Assert.Contains("UpdateRangeTestA-Updated", updatedNames, "Updated name for entity A should be persisted!");
+            Assert.Contains("UpdateRangeTestB-Updated", updatedNames, "Updated name for entity B should be persisted!");
         }
     }
 
@@ -112,8 +112,8 @@ public class RepositoryBaseTests
                                     .Select(n => n.Name)
                                     .ToList();
 
-            Assert.IsTrue(updatedNames.Contains("UpdateRangeAsyncTestA-Updated"), "Updated name for entity A should be persisted!");
-            Assert.IsTrue(updatedNames.Contains("UpdateRangeAsyncTestB-Updated"), "Updated name for entity B should be persisted!");
+            Assert.Contains("UpdateRangeAsyncTestA-Updated", updatedNames, "Updated name for entity A should be persisted!");
+            Assert.Contains("UpdateRangeAsyncTestB-Updated", updatedNames, "Updated name for entity B should be persisted!");
         }
     }
 

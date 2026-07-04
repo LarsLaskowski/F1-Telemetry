@@ -284,6 +284,9 @@ attribute or class name. Verify `.cs` and `.Designer.cs` are consistent.
   concatenated, no underscores.** The `_`-separated pattern shown in older docs does not match
   the actual codebase and is rejected by the `RH4103` analyzer (member names must be PascalCase).
 - Always provide assert messages. For async exception checks use `Assert.ThrowsExceptionAsync<T>(...)`.
+- Prefer the specific MSTest `Assert`/`CollectionAssert` method over `Assert.IsTrue`/`Assert.IsFalse`
+  wrapping a boolean expression, e.g. `Assert.Contains(expected, collection, message)` instead of
+  `Assert.IsTrue(collection.Contains(expected), message)` — SonarQube flags the latter.
 - `F1Server.Tests` has `<ImplicitUsings>enable</ImplicitUsings>` plus the MSTest SDK's own global
   usings, so `System`, `System.Collections.Generic`, `System.IO`, `System.Linq`, `System.Net.Http`,
   `System.Threading`, `System.Threading.Tasks`, and `Microsoft.VisualStudio.TestTools.UnitTesting`
