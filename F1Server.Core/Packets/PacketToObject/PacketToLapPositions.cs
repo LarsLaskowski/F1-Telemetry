@@ -181,6 +181,8 @@ internal class PacketToLapPositions(PacketHeader packetHeader) : PacketToXBase(p
                     actOffset += ConstData.TypeUInt8;
                 }
             }
+
+            retValue = true;
         }
         catch (Exception ex)
         {
