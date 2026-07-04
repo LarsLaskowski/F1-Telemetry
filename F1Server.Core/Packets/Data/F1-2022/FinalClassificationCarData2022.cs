@@ -22,7 +22,7 @@ public class FinalClassificationCarData2022 : IFinalClassificationCarBase, IFina
 
     #endregion // Constructor
 
-    #region IFinalClassificationBase
+    #region IFinalClassificationCarBase
 
     /// <summary>
     /// Finishing position
@@ -89,7 +89,7 @@ public class FinalClassificationCarData2022 : IFinalClassificationCarBase, IFina
     /// </summary>
     public ushort[] TyreStintsVisual { get; set; }
 
-    #endregion // IFinalClassificationBase
+    #endregion // IFinalClassificationCarBase
 
     #region IFinalClassification2022
 

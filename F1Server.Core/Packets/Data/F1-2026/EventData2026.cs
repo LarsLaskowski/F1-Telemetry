@@ -19,7 +19,7 @@ public class EventData2026 : IEventDataBase
 
     #endregion // Constructors
 
-    #region Properties
+    #region IEventDataBase
 
     /// <inheritdoc/>
     public string EventCode { get; set; }
@@ -27,5 +27,5 @@ public class EventData2026 : IEventDataBase
     /// <inheritdoc/>
     public IEventDataDetailsBase EventDetails { get; }
 
-    #endregion // Properties
+    #endregion // IEventDataBase
 }

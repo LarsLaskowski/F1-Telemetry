@@ -21,7 +21,7 @@ public class SessionData2025 : SessionData2023, ISessionData2025
 
     #endregion // Constructors
 
-    #region ISessionData2025 implemenation
+    #region ISessionData2024
 
     /// <inheritdoc/>
     public bool EqualCarPerformance { get; set; }
@@ -107,5 +107,5 @@ public class SessionData2025 : SessionData2023, ISessionData2025
     /// <inheritdoc/>
     public float Sector3LapDistanceStart { get; set; }
 
-    #endregion // ISessionData2025 implemenation
+    #endregion // ISessionData2024
 }

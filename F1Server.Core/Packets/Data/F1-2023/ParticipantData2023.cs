@@ -8,7 +8,7 @@ namespace F1Server.Core.Packets.Data;
 /// </summary>
 public class ParticipantData2023 : IParticipantData2023
 {
-    #region IParticipantData2023
+    #region IParticipantDataBase
 
     /// <summary>
     /// Is AI controlled or human
@@ -45,6 +45,10 @@ public class ParticipantData2023 : IParticipantData2023
     /// </summary>
     public bool IsPublicTelemetry { get; set; }
 
+    #endregion // IParticipantDataBase
+
+    #region IParticipantData2021
+
     /// <summary>
     /// Identifier for network players
     /// </summary>
@@ -54,6 +58,10 @@ public class ParticipantData2023 : IParticipantData2023
     /// Is my team?
     /// </summary>
     public bool IsMyTeam { get; set; }
+
+    #endregion // IParticipantData2021
+
+    #region IParticipantData2023
 
     /// <summary>
     /// Players show online name setting

@@ -8,12 +8,16 @@ namespace F1Server.Data;
 /// </summary>
 public class LiveSessionData : ILiveSessionData
 {
-    #region ILiveSessionData
+    #region ILiveBaseData
 
     /// <summary>
     /// Database id
     /// </summary>
     public long DbId { get; set; }
+
+    #endregion // ILiveBaseData
+
+    #region ILiveSessionData
 
     /// <summary>
     /// Current session game id from game

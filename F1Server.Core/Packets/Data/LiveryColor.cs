@@ -7,7 +7,7 @@ namespace F1Server.Core.Packets.Data;
 /// </summary>
 public class LiveryColor : ILiveryColor
 {
-    #region ILivery
+    #region ILiveryColor
 
     /// <inheritdoc/>
     public ushort Red { get; set; }
@@ -18,5 +18,5 @@ public class LiveryColor : ILiveryColor
     /// <inheritdoc/>
     public ushort Blue { get; set; }
 
-    #endregion // ILivery
+    #endregion // ILiveryColor
 }

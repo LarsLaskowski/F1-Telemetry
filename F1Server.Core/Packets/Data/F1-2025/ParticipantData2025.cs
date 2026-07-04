@@ -20,7 +20,7 @@ public class ParticipantData2025 : IParticipantData2025
 
     #endregion // Constructor
 
-    #region IParticipantData2025
+    #region IParticipantDataBase
 
     /// <inheritdoc/>
     public bool IsAIControlled { get; set; }
@@ -43,11 +43,19 @@ public class ParticipantData2025 : IParticipantData2025
     /// <inheritdoc/>
     public bool IsPublicTelemetry { get; set; }
 
+    #endregion // IParticipantDataBase
+
+    #region IParticipantData2021
+
     /// <inheritdoc/>
     public ushort NetworkId { get; set; }
 
     /// <inheritdoc/>
     public bool IsMyTeam { get; set; }
+
+    #endregion // IParticipantData2021
+
+    #region IParticipantData2023
 
     /// <inheritdoc/>
     public bool IsShowOnlineNames { get; set; }
@@ -55,8 +63,16 @@ public class ParticipantData2025 : IParticipantData2025
     /// <inheritdoc/>
     public Platforms Platform { get; set; }
 
+    #endregion // IParticipantData2023
+
+    #region IParticipantData2024
+
     /// <inheritdoc/>
     public ushort TechLevel { get; set; }
+
+    #endregion // IParticipantData2024
+
+    #region IParticipantData2025
 
     /// <inheritdoc/>
     public ushort NumColors { get; set; }

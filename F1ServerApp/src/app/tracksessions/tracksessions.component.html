@@ -29,7 +29,7 @@
           <td>{{ session.aiDifficulty }}</td>
         </tr>
         @if (session.isExpanded) {
-          <tr [@detailExpand]="expanded[session.sessionId] ? 'expanded' : 'collapsed'">
+          <tr>
             <td colspan="7" class="session-td">
               @if (session.isExpanded) {
                 <table class='table' aria-labelledby="tableLabel">

@@ -100,8 +100,19 @@ tr.session-row:not(.expanded-row):active {
 }
 
 .fastestSectors-detail {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 225ms cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+.fastestSectors-detail.expanded {
+  grid-template-rows: 1fr;
+}
+
+.fastestSectors-detail-inner {
   overflow: hidden;
   display: flex;
+  min-height: 0;
 }
 
 .fastestSector-fastestLap {

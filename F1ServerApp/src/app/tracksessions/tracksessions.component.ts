@@ -4,7 +4,6 @@ import { HttpClient } from '@angular/common/http';
 import { SessionViewApiData } from '../data/sessiondata_api';
 import { SessionViewData } from '../data/sessionviewdata';
 import { ActivatedRoute, RouterModule } from '@angular/router';
-import { animate, state, style, transition, trigger } from '@angular/animations';
 
 @Component(
 {
@@ -12,13 +11,6 @@ import { animate, state, style, transition, trigger } from '@angular/animations'
   imports: [RouterModule],
   templateUrl: './tracksessions.component.html',
   styleUrls: ['./tracksessions.component.css'],
-    animations: [
-    trigger('detailExpand', [
-      state('collapsed', style({ height: '0px', minHeight: '0' })),
-      state('expanded', style({ height: '*' })),
-      transition('expanded <==> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1')),
-    ]),
-    ],
 })
 
 export class TrackSessionsComponent
@@ -27,7 +19,6 @@ export class TrackSessionsComponent
   trackId: number = 0;
   trackName: string = "";
   currentSelectedSession: SessionViewData | undefined;
-  expanded: { [key: number]: boolean } = {};
 
   constructor(http: HttpClient, private route: ActivatedRoute, @Inject('BASE_URL') baseUrl: string, private readonly changeDetector: ChangeDetectorRef)
   {

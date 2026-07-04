@@ -8,10 +8,14 @@ namespace F1Server.Core.Packets.Data;
 /// </summary>
 public class LapData2025 : ILapData2023, ILapData2025
 {
-    #region IPacketLapData2023
+    #region ILapDataBase
 
     /// <inheritdoc/>
     public bool IsEmpty => GridPosition == 0 && CurrentLapTime == 0;
+
+    #endregion // ILapDataBase
+
+    #region ILapData2023
 
     /// <inheritdoc/>
     public uint LastLapTime { get; set; }
@@ -37,6 +41,10 @@ public class LapData2025 : ILapData2023, ILapData2025
     /// <inheritdoc/>
     public ushort DeltaToRaceLeader { get; set; }
 
+    #endregion // ILapData2023
+
+    #region ILapDataBase
+
     /// <inheritdoc/>
     public float LapDistance { get; set; }
 
@@ -55,8 +63,16 @@ public class LapData2025 : ILapData2023, ILapData2025
     /// <inheritdoc/>
     public PitStatus CurrentPitStatus { get; set; }
 
+    #endregion // ILapDataBase
+
+    #region ILapData2023
+
     /// <inheritdoc/>
     public ushort NumberPitStops { get; set; }
+
+    #endregion // ILapData2023
+
+    #region ILapDataBase
 
     /// <inheritdoc/>
     public Sector CurrentSector { get; set; }
@@ -66,6 +82,10 @@ public class LapData2025 : ILapData2023, ILapData2025
 
     /// <inheritdoc/>
     public ushort TimePenalties { get; set; }
+
+    #endregion // ILapDataBase
+
+    #region ILapData2023
 
     /// <inheritdoc/>
     public ushort Warnings { get; set; }
@@ -79,6 +99,10 @@ public class LapData2025 : ILapData2023, ILapData2025
     /// <inheritdoc/>
     public ushort NumberUnservedStopAndGoPenalties { get; set; }
 
+    #endregion // ILapData2023
+
+    #region ILapDataBase
+
     /// <inheritdoc/>
     public ushort GridPosition { get; set; }
 
@@ -87,6 +111,10 @@ public class LapData2025 : ILapData2023, ILapData2025
 
     /// <inheritdoc/>
     public ResultStatus CurrentResultStatus { get; set; }
+
+    #endregion // ILapDataBase
+
+    #region ILapData2023
 
     /// <inheritdoc/>
     public bool IsPitLaneTimerActive { get; set; }
@@ -100,9 +128,9 @@ public class LapData2025 : ILapData2023, ILapData2025
     /// <inheritdoc/>
     public bool PitStopShouldServePenalty { get; set; }
 
-    #endregion // IPacketLapData2023
+    #endregion // ILapData2023
 
-    #region IPacketLapData2025
+    #region ILapData2024
 
     /// <inheritdoc/>
     public ushort DeltaToCarInFrontMinutes { get; set; }
@@ -116,5 +144,5 @@ public class LapData2025 : ILapData2023, ILapData2025
     /// <inheritdoc/>
     public ushort SpeedTrapFastestLap { get; set; }
 
-    #endregion // IPacketLapData2025
+    #endregion // ILapData2024
 }

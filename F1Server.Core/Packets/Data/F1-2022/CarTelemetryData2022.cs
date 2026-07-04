@@ -7,7 +7,7 @@ namespace F1Server.Core.Packets.Data;
 /// </summary>
 public class CarTelemetryData2022 : ICarTelemetryData2022
 {
-    #region ICarTelemetryBase
+    #region ICarTelemetryDataBase
 
     /// <summary>
     /// Speed
@@ -84,14 +84,14 @@ public class CarTelemetryData2022 : ICarTelemetryData2022
     /// </summary>
     public WheelSurface SurfaceType { get; set; }
 
-    #endregion // ICarTelemetryBase
+    #endregion // ICarTelemetryDataBase
 
-    #region ICarTelemetry2022
+    #region ICarTelemetryData2022
 
     /// <summary>
     /// Rev lights bit
     /// </summary>
     public ushort RevLightsBitValue { get; set; }
 
-    #endregion // ICarTelemetry2022
+    #endregion // ICarTelemetryData2022
 }

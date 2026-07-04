@@ -5,7 +5,6 @@ import { bootstrapApplication } from '@angular/platform-browser';
 import { AppComponent } from './app/app.component';
 import { provideRouter, withHashLocation } from '@angular/router';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
-import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
 import { routes } from './app/app.module';
 
@@ -30,7 +29,6 @@ bootstrapApplication(AppComponent,
     [
       provideZoneChangeDetection(),provideRouter(routes, withHashLocation()),
       provideHttpClient(withInterceptorsFromDi()),
-      provideAnimations(),
       provideCharts(withDefaultRegisterables()),
       { provide: 'BASE_URL', useFactory: getBaseUrl, deps: [] }
     ]

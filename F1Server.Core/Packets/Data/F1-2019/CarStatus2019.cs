@@ -30,12 +30,12 @@ public class CarStatus2019 : ICarStatus2019
 
     #endregion // Constructors
 
-    #region ICarStatus2019
+    #region ICarStatusBase
 
     /// <summary>
     /// Car status of all cars
     /// </summary>
     public ICarStatusDataBase[] CarStatusData { get; }
 
-    #endregion // ICarStatus2019
+    #endregion // ICarStatusBase
 }

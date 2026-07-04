@@ -8,12 +8,16 @@ namespace F1Server.Core.Packets.Data;
 /// </summary>
 public class LapData2022 : ILapData2022
 {
-    #region IPacketLapData2022
+    #region ILapDataBase
 
     /// <summary>
     /// Flag if there is no car available (is nothing from the game)
     /// </summary>
     public bool IsEmpty => GridPosition == 0 && CurrentLapTime == 0;
+
+    #endregion // ILapDataBase
+
+    #region ILapData2022
 
     /// <summary>
     /// Last lap time in milliseconds
@@ -34,6 +38,10 @@ public class LapData2022 : ILapData2022
     /// Sector 2 time in milliseconds
     /// </summary>
     public ushort Sector2Time { get; set; }
+
+    #endregion // ILapData2022
+
+    #region ILapDataBase
 
     /// <summary>
     /// Distance vehicle is around current lap in meters, negativ is finish line not crossed yet
@@ -65,10 +73,18 @@ public class LapData2022 : ILapData2022
     /// </summary>
     public PitStatus CurrentPitStatus { get; set; }
 
+    #endregion // ILapDataBase
+
+    #region ILapData2022
+
     /// <summary>
     /// Number of pit stops
     /// </summary>
     public ushort NumberPitStops { get; set; }
+
+    #endregion // ILapData2022
+
+    #region ILapDataBase
 
     /// <summary>
     /// Current sector
@@ -85,6 +101,10 @@ public class LapData2022 : ILapData2022
     /// </summary>
     public ushort TimePenalties { get; set; }
 
+    #endregion // ILapDataBase
+
+    #region ILapData2022
+
     /// <summary>
     /// Accumulated number of warnings
     /// </summary>
@@ -100,6 +120,10 @@ public class LapData2022 : ILapData2022
     /// </summary>
     public ushort NumberUnservedStopAndGoPenalties { get; set; }
 
+    #endregion // ILapData2022
+
+    #region ILapDataBase
+
     /// <summary>
     /// Grid start position
     /// </summary>
@@ -114,6 +138,10 @@ public class LapData2022 : ILapData2022
     /// Current result status
     /// </summary>
     public ResultStatus CurrentResultStatus { get; set; }
+
+    #endregion // ILapDataBase
+
+    #region ILapData2022
 
     /// <summary>
     /// Pit lane timing active flag
@@ -135,5 +163,5 @@ public class LapData2022 : ILapData2022
     /// </summary>
     public bool PitStopShouldServePenalty { get; set; }
 
-    #endregion // IPacketLapData2022
+    #endregion // ILapData2022
 }

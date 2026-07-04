@@ -28,7 +28,7 @@ public class LapDataComplete2024 : ILapDataComplete, ILapDataComplete2024
 
     #endregion // ILapDataComplete
 
-    #region ILapDataComplete2024
+    #region ILapDataComplete2023
 
     /// <summary>
     /// Index of personal best car in time trial (255 - invalid)
@@ -40,5 +40,5 @@ public class LapDataComplete2024 : ILapDataComplete, ILapDataComplete2024
     /// </summary>
     public ushort TimeTrialRivalCarIndex { get; set; }
 
-    #endregion // ILapDataComplete2024
+    #endregion // ILapDataComplete2023
 }

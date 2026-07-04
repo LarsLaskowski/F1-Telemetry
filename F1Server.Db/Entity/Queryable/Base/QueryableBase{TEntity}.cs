@@ -31,9 +31,7 @@ public class QueryableBase<TEntity> : IQueryable<TEntity>
 
     #endregion // Properties
 
-    #region IQeryable
-
-    #region Properties
+    #region IQueryable
 
     /// <summary>
     /// Element type
@@ -50,9 +48,9 @@ public class QueryableBase<TEntity> : IQueryable<TEntity>
     /// </summary>
     public IQueryProvider Provider => QueryableInternal.Provider;
 
-    #endregion // Properties
+    #endregion // IQueryable
 
-    #region Methods
+    #region IEnumerable
 
     /// <summary>
     /// Returns an enumerator
@@ -72,7 +70,5 @@ public class QueryableBase<TEntity> : IQueryable<TEntity>
         return ((IEnumerable)QueryableInternal).GetEnumerator();
     }
 
-    #endregion // Methods
-
-    #endregion // IQeryable
+    #endregion // IEnumerable
 }

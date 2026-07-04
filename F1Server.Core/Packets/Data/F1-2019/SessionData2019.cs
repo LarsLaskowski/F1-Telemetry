@@ -20,7 +20,7 @@ public class SessionData2019 : ISessionData2019
 
     #endregion // Constructors
 
-    #region IPacketSessionData
+    #region ISessionDataBase
 
     /// <summary>
     /// Is session recordable? Network games or time trial are not
@@ -127,5 +127,5 @@ public class SessionData2019 : ISessionData2019
     /// </summary>
     public bool IsNetworkGame { get; set; }
 
-    #endregion // IPacketSessionData
+    #endregion // ISessionDataBase
 }
