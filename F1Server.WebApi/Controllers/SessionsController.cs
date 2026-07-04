@@ -23,6 +23,8 @@ public class SessionsController : ControllerBase
 
     private const string CacheKeySessions = "Sessions";
 
+    private const int MaxPageSize = 100;
+
     #endregion // Constants
 
     #region Fields
@@ -58,6 +60,11 @@ public class SessionsController : ControllerBase
     [HttpGet]
     public ActionResult<PageResultData<SessionViewData>> GetSessions([FromQuery] int pageIndex = 0, [FromQuery] int pageSize = 15)
     {
+        if (pageIndex < 0 || pageSize <= 0 || pageSize > MaxPageSize)
+        {
+            return BadRequest($"Invalid paging parameters. pageIndex must be >= 0 and pageSize must be between 1 and {MaxPageSize}.");
+        }
+
         if (_cache.TryGetValue(CacheKeySessions, out List<SessionViewData>? sessions) == false)
         {
             sessions = [];
@@ -118,14 +125,17 @@ public class SessionsController : ControllerBase
             _cache.Set(CacheKeySessions, sessions, TimeSpan.FromMinutes(5));
         }
 
-        var pagedSessions = sessions?.Skip(pageIndex * pageSize)
+        var totalCount = sessions?.Count ?? 0;
+        var skip = (int)Math.Min((long)pageIndex * pageSize, totalCount);
+
+        var pagedSessions = sessions?.Skip(skip)
                                     .Take(pageSize)
                                     .ToList();
 
         var pageResult = new PageResultData<SessionViewData>
                          {
                              Items = pagedSessions ?? [],
-                             TotalCount = sessions?.Count ?? 0
+                             TotalCount = totalCount
                          };
 
         _logger?.LogInformation("Sessions loaded for page {PageIndex} - page size: {PageSize} - total sessions: {Sessions}", pageIndex, pageSize, sessions?.Count);
@@ -382,19 +392,22 @@ public class SessionsController : ControllerBase
                 var fastestLap = lapQuery.Include(l => l.Participant)
                                          .Where(l => l.SessionId == sessionId && l.LapTime > 0 && l.DbIsCompleted == 1 && l.DbIsInvalidLapTime == 0)
                                          .OrderBy(l => l.LapTime)
-                                         .First();
+                                         .FirstOrDefault();
 
-                fastestLapData.DriverName = fastestLap.Participant.Driver.Name;
-                fastestLapData.LapTime = fastestLap.LapTime;
-                fastestLapData.LapTimeSector1 = fastestLap.Sector1Time;
-                fastestLapData.LapTimeSector2 = fastestLap.Sector2Time;
-                fastestLapData.LapTimeSector3 = fastestLap.Sector3Time;
-                fastestLapData.LapNumber = fastestLap.LapNumber;
-                fastestLapData.CarPosition = fastestLap.CarPosition;
-                fastestLapData.SessionId = fastestLap.SessionId;
-                fastestLapData.LapId = fastestLap.Id;
-                fastestLapData.ParticipantId = fastestLap.ParticipantId;
-                fastestLapData.DriverId = fastestLap.Participant.DriverId;
+                if (fastestLap != null)
+                {
+                    fastestLapData.DriverName = fastestLap.Participant.Driver.Name;
+                    fastestLapData.LapTime = fastestLap.LapTime;
+                    fastestLapData.LapTimeSector1 = fastestLap.Sector1Time;
+                    fastestLapData.LapTimeSector2 = fastestLap.Sector2Time;
+                    fastestLapData.LapTimeSector3 = fastestLap.Sector3Time;
+                    fastestLapData.LapNumber = fastestLap.LapNumber;
+                    fastestLapData.CarPosition = fastestLap.CarPosition;
+                    fastestLapData.SessionId = fastestLap.SessionId;
+                    fastestLapData.LapId = fastestLap.Id;
+                    fastestLapData.ParticipantId = fastestLap.ParticipantId;
+                    fastestLapData.DriverId = fastestLap.Participant.DriverId;
+                }
             }
 
             currentActivity?.SetStatus(ActivityStatusCode.Ok);

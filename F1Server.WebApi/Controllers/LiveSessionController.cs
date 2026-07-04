@@ -55,7 +55,22 @@ public class LiveSessionController : ControllerBase
 
         if (_timerManager?.IsTimerStarted == false)
         {
-            _timerManager.PrepareTimer(() => _hub.Clients.All.SendAsync("IsLiveSession", _appData?.IsLiveSession == true, _appData?.LiveSessionId));
+            bool? lastIsLiveSession = null;
+            long? lastLiveSessionId = null;
+
+            _timerManager.PrepareTimer(() =>
+                                       {
+                                           var isLiveSession = _appData?.IsLiveSession == true;
+                                           var liveSessionId = _appData?.LiveSessionId;
+
+                                           if (isLiveSession != lastIsLiveSession || liveSessionId != lastLiveSessionId)
+                                           {
+                                               lastIsLiveSession = isLiveSession;
+                                               lastLiveSessionId = liveSessionId;
+
+                                               _hub.Clients.All.SendAsync("IsLiveSession", isLiveSession, liveSessionId);
+                                           }
+                                       });
         }
 
         return Ok();

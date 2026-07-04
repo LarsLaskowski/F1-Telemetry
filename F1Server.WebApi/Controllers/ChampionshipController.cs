@@ -100,47 +100,60 @@ public class ChampionshipController : ControllerBase
 
         _logger?.LogInformation("Create championship...");
 
-        if (championshipCreateData.GameVersionId > 0 && championshipCreateData.Tracks.Count > 5)
+        if (championshipCreateData is null
+            || championshipCreateData.Tracks is null
+            || championshipCreateData.GameVersionId <= 0
+            || championshipCreateData.Tracks.Count <= 5)
         {
-            using (var dbFactory = RepositoryFactory.CreateInstance())
+            currentActivity?.SetStatus(ActivityStatusCode.Error);
+
+            return BadRequest("Invalid championship data. GameVersionId must be greater than 0 and at least 6 tracks are required.");
+        }
+
+        IActionResult result;
+
+        using (var dbFactory = RepositoryFactory.CreateInstance())
+        {
+            ushort seasonNumber = 1;
+            var championships = dbFactory.GetRepository<ChampionshipRepository>()
+                                         ?.GetQuery()
+                                         ?.Count(c => c.Mode == (ChampionshipMode)championshipCreateData.Mode
+                                                      && c.GameVersionId == championshipCreateData.GameVersionId);
+
+            if (championships > 0)
             {
-                ushort seasonNumber = 1;
-                var championships = dbFactory.GetRepository<ChampionshipRepository>()
-                                             ?.GetQuery()
-                                             ?.Count(c => c.Mode == (ChampionshipMode)championshipCreateData.Mode
-                                                          && c.GameVersionId == championshipCreateData.GameVersionId);
+                seasonNumber = (ushort)(championships + 1);
+            }
 
-                if (championships > 0)
-                {
-                    seasonNumber = (ushort)(championships + 1);
-                }
+            dbFactory.GetRepository<ChampionshipRepository>()?.Add(new ChampionshipEntity
+                                                                   {
+                                                                       GameVersionId = championshipCreateData.GameVersionId,
+                                                                       Mode = (ChampionshipMode)championshipCreateData.Mode,
+                                                                       Number = seasonNumber
+                                                                   });
 
-                dbFactory.GetRepository<ChampionshipRepository>()?.Add(new ChampionshipEntity
-                                                                       {
-                                                                           GameVersionId = championshipCreateData.GameVersionId,
-                                                                           Mode = (ChampionshipMode)championshipCreateData.Mode,
-                                                                           Number = seasonNumber
-                                                                       });
+            var championship = dbFactory.GetRepository<ChampionshipRepository>()
+                                        ?.GetQuery()
+                                        ?.FirstOrDefault(c => c.Mode == (ChampionshipMode)championshipCreateData.Mode
+                                                              && c.GameVersionId == championshipCreateData.GameVersionId);
 
-                var championship = dbFactory.GetRepository<ChampionshipRepository>()
-                                            ?.GetQuery()
-                                            ?.FirstOrDefault(c => c.Mode == (ChampionshipMode)championshipCreateData.Mode
-                                                                  && c.GameVersionId == championshipCreateData.GameVersionId);
+            if (championship != null)
+            {
+                AddTracksToChampionship(championshipCreateData.Tracks, dbFactory, championship);
 
-                if (championship != null)
-                {
-                    AddTracksToChampionship(championshipCreateData.Tracks, dbFactory, championship);
+                currentActivity?.SetStatus(ActivityStatusCode.Ok);
 
-                    currentActivity?.SetStatus(ActivityStatusCode.Ok);
-                }
-                else
-                {
-                    currentActivity?.SetStatus(ActivityStatusCode.Error);
-                }
+                result = Ok(true);
+            }
+            else
+            {
+                currentActivity?.SetStatus(ActivityStatusCode.Error);
+
+                result = StatusCode(500, false);
             }
         }
 
-        return Ok(true);
+        return result;
     }
 
     /// <summary>
