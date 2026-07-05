@@ -6,6 +6,8 @@ using System.Text;
 using F1Server.Core.Data;
 using F1Server.Core.Enumerations;
 
+[assembly: InternalsVisibleToAttribute("F1Server.Tests")]
+
 namespace F1PacketTester;
 
 /// <summary>
@@ -225,7 +227,7 @@ internal static class Program
     /// <param name="gameVersion">Game version</param>
     /// <param name="packetHeaderSize">Size of the packet header</param>
     /// <param name="progressBar">Progress bar used to report findings without breaking the bar</param>
-    private static void TestSessionPaket(string file, int gameVersion, int packetHeaderSize, ConsoleProgressBar progressBar)
+    internal static void TestSessionPaket(string file, int gameVersion, int packetHeaderSize, ConsoleProgressBar progressBar)
     {
         var fInfo = new FileInfo(file);
         var data = File.ReadAllBytes(file).AsSpan();

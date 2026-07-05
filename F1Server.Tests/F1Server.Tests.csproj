@@ -399,6 +399,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\F1PacketTester\F1PacketTester.csproj" />
     <ProjectReference Include="..\F1Server.Core\F1Server.Core.csproj" />
     <ProjectReference Include="..\F1Server.Service\F1Server.Service.csproj" />
   </ItemGroup>
