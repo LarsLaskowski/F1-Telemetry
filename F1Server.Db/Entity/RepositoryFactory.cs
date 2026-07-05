@@ -1,4 +1,5 @@
-﻿using F1Server.Db.Entity.Repositories.Base;
+﻿using F1Server.Core.Exceptions;
+using F1Server.Db.Entity.Repositories.Base;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -101,8 +102,11 @@ public sealed class RepositoryFactory : IDisposable
     }
 
     /// <summary>
-    /// Initialize the database
+    /// Initialize the database. Wraps and rethrows any exception raised while applying migrations,
+    /// so a failed schema update never leaves the application running against an
+    /// uninitialized or partially migrated database.
     /// </summary>
+    /// <exception cref="DbException">Thrown when applying pending migrations fails</exception>
     public void InitDatabase()
     {
         if (_dbContext != null && IsInitialized == false)
@@ -128,6 +132,8 @@ public sealed class RepositoryFactory : IDisposable
             catch (Exception ex)
             {
                 _dbContext.LastError = ex.ToString();
+
+                throw new DbException("Database migration failed during InitDatabase()", ex);
             }
             finally
             {
