@@ -74,7 +74,7 @@
   <ng-container matColumnDef="laps">
     <th mat-header-cell *matHeaderCellDef class="telemetry-cell"></th>
     <td mat-cell *matCellDef="let session" class="telemetry-cell">
-      <button mat-icon-button aria-label="Show laps" (click)="showLapsOverlay(session);$event.stopPropagation()">
+      <button mat-icon-button aria-label="Show laps" disabled matTooltip="Laps overview not implemented yet" (click)="$event.stopPropagation()">
         <img src="assets/laps.png" alt="Laps" width="24" height="24" style="display: block;" />
       </button>
     </td>
