@@ -2,6 +2,7 @@
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.Extensions.Logging;
 
 namespace F1Server.Db.Entity;
 
@@ -101,7 +102,9 @@ public sealed class RepositoryFactory : IDisposable
     }
 
     /// <summary>
-    /// Initialize the database
+    /// Initialize the database. Logs and rethrows any exception raised while applying migrations,
+    /// so a failed schema update never leaves the application running against an
+    /// uninitialized or partially migrated database.
     /// </summary>
     public void InitDatabase()
     {
@@ -128,6 +131,10 @@ public sealed class RepositoryFactory : IDisposable
             catch (Exception ex)
             {
                 _dbContext.LastError = ex.ToString();
+
+                _dbContext.Logger?.LogError(ex, "Database migration failed during InitDatabase()");
+
+                throw;
             }
             finally
             {
