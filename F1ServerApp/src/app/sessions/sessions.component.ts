@@ -15,6 +15,7 @@ import { DeleteSessionComponent } from './deletesession.component';
 import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon'
 import { MatButtonModule } from '@angular/material/button'
+import { MatTooltipModule } from '@angular/material/tooltip'
 import { Router } from '@angular/router';
 
 @Component(
@@ -28,6 +29,7 @@ import { Router } from '@angular/router';
     MatButtonModule,
     MatIconModule,
     MatInputModule,
+    MatTooltipModule,
     MatHeaderCell,
     MatHeaderCellDef,
     MatRow,
@@ -174,12 +176,6 @@ export class SessionsComponent implements AfterViewInit
         }
       });
     }
-  }
-
-  // Show session laps as overlay
-  showLapsOverlay(sessionData: SessionViewDataEx)
-  {
-    throw new Error("Not implemented yet");
   }
 
   // Show telemetry data dialog
