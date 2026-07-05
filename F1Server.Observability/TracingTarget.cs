@@ -13,16 +13,10 @@ public enum TracingTarget
     /// <summary>
     /// Export to console
     /// </summary>
-    Console,
+    Console = 1,
 
     /// <summary>
-    /// Export to zipkin
+    /// Open telemetry standard
     /// </summary>
-    [Obsolete]
-    Zipkin,
-
-    /// <summary>
-    /// Open telemtry standard
-    /// </summary>
-    OpenTelemetry
+    OpenTelemetry = 3
 }

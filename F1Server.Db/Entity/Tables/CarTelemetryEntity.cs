@@ -92,7 +92,7 @@ public class CarTelemetryEntity
     }
 
     /// <summary>
-    /// Rev ligthts indicator in percent
+    /// Rev lights indicator in percent
     /// </summary>
     public ushort RevLightsIndicator { get; set; }
 

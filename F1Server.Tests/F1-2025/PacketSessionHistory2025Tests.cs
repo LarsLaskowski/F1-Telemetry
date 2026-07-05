@@ -303,7 +303,7 @@ public class PacketSessionHistory2025Tests
                 isCorrect = sessionHistoryData.PacketData.TyreStintHistory[0].TyreVisualCompound == 17;
             }
 
-            Assert.IsTrue(isCorrect, "Visual compound of firty tyre stint is invalid!");
+            Assert.IsTrue(isCorrect, "Visual compound of first tyre stint is invalid!");
         }
         else
         {

@@ -46,7 +46,7 @@ public class TimeTrialDataSet2024 : ITimeTrialDataSetBase
     public TractionControl TractionControl { get; set; }
 
     /// <summary>
-    /// Assistent settings of the gear box
+    /// Assist settings of the gear box
     /// </summary>
     public GearboxAssist GearboxAssist { get; set; }
 

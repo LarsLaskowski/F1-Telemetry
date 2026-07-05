@@ -23,7 +23,7 @@ internal class PacketToTimeTrialData(PacketHeader packetHeader) : PacketToXBase(
     /// Get time trial data from received packet
     /// </summary>
     /// <param name="dataPacket">Received data packet</param>
-    /// <returns>Session history data object</returns>
+    /// <returns>Time trial data object</returns>
     public object? ExtractTimeTrialDataPacket(ReadOnlySpan<byte> dataPacket)
     {
         object? timeTrial = null;
@@ -44,7 +44,7 @@ internal class PacketToTimeTrialData(PacketHeader packetHeader) : PacketToXBase(
                                                _ => null
                                            };
 
-            if (timeTrialData != null
+            if (timeTrialData is not null
                 && HasValidPacketLength(dataPacket.Length, GetExpectedPayloadSize())
                 && ExtractTimeTrialData(ref memRef, HeaderSize, timeTrialData.PacketData))
             {
@@ -148,7 +148,7 @@ internal class PacketToTimeTrialData(PacketHeader packetHeader) : PacketToXBase(
     {
         var actOffset = offsetToStart;
 
-        if (timeTrialData != null)
+        if (timeTrialData is not null)
         {
             try
             {

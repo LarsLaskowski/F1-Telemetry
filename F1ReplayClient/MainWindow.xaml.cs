@@ -668,7 +668,7 @@ public partial class MainWindow : Window, IDisposable
     #region IDisposable
 
     /// <summary>
-    /// Dipose method
+    /// Dispose method
     /// </summary>
     public void Dispose()
     {
@@ -680,7 +680,7 @@ public partial class MainWindow : Window, IDisposable
     /// <summary>
     /// Internal dispose method
     /// </summary>
-    /// <param name="disposing">Dipose now?</param>
+    /// <param name="disposing">Dispose now?</param>
     protected virtual void Dispose(bool disposing)
     {
         if (disposing)

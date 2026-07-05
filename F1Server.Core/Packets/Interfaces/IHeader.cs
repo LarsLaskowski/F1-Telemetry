@@ -30,7 +30,7 @@ public interface IHeader
     byte PacketVersion { get; }
 
     /// <summary>
-    /// Identifiert for the packet type
+    /// Identifier for the packet type
     /// </summary>
     PacketTypes PacketType { get; }
 

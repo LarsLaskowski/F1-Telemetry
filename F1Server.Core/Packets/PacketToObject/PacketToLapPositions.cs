@@ -19,10 +19,10 @@ internal class PacketToLapPositions(PacketHeader packetHeader) : PacketToXBase(p
     #region Methods
 
     /// <summary>
-    /// Get session history data from received packet
+    /// Get lap positions data from received packet
     /// </summary>
     /// <param name="dataPacket">Received data packet</param>
-    /// <returns>Session history data object</returns>
+    /// <returns>Lap positions data object</returns>
     public object? ExtractLapPositionsPacket(ReadOnlySpan<byte> dataPacket)
     {
         object? lapPositions = null;
@@ -42,7 +42,7 @@ internal class PacketToLapPositions(PacketHeader packetHeader) : PacketToXBase(p
                                                  _ => null
                                              };
 
-            if (lapPositionsData != null
+            if (lapPositionsData is not null
                 && HasValidPacketLength(dataPacket.Length, GetExpectedPayloadSize())
                 && ExtractLapPositions(ref memRef, HeaderSize, lapPositionsData.PacketData))
             {
@@ -79,7 +79,7 @@ internal class PacketToLapPositions(PacketHeader packetHeader) : PacketToXBase(p
     }
 
     /// <summary>
-    /// Extract session history
+    /// Extract lap positions
     /// </summary>
     /// <param name="dataPacket">Received data packet</param>
     /// <param name="offsetToStart">Offset to start</param>

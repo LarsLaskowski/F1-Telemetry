@@ -180,5 +180,30 @@ public class PacketEvent2020Tests
         }
     }
 
+    /// <summary>
+    /// Check event type from top speed packet
+    /// </summary>
+    [TestMethod]
+    public void PacketEvent2020IsTopSpeedEventTypeExpectedSpeedTrap()
+    {
+        if (_packetData.PacketHeader != null)
+        {
+            var packetData = _packetAnalyzer.GetEventData(_packetData.PacketHeader, File.ReadAllBytes(@"SampleData/F1-2020-Event-TopSpeed.packet"));
+
+            if (packetData is EventData eventData && eventData.PacketData?.EventDetails is IEventDataDetails2020 eventDetails)
+            {
+                Assert.AreEqual(EventType.SpeedTrap, eventDetails.EventType, "Incorrect event type!");
+            }
+            else
+            {
+                Assert.Fail("Invalid packet data, expected F1 2020!");
+            }
+        }
+        else
+        {
+            Assert.IsNull(_packetData.PacketHeader, "Invalid F1 2020 packet header!");
+        }
+    }
+
     #endregion // Methods
 }

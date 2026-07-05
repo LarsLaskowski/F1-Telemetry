@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Text;
 
 using F1Server.Core;
 using F1Server.Core.Data;
@@ -74,6 +75,29 @@ public class PacketEvent2025Tests
     }
 
     #endregion // Initializer/Cleanup
+
+    #region Static methods
+
+    /// <summary>
+    /// Builds a synthetic F1 2025 event packet by taking a real sample packet's header and
+    /// overwriting its event code and payload, so branches without a dedicated sample file can be tested
+    /// </summary>
+    /// <param name="eventCode">Four letter event code to inject</param>
+    /// <param name="payloadBytes">Payload bytes following the event code</param>
+    /// <returns>Synthetic packet content</returns>
+    private static byte[] BuildSyntheticEventPacket(string eventCode, params byte[] payloadBytes)
+    {
+        var data = File.ReadAllBytes(@"SampleData/F1-2025-Event-Penalty.packet");
+        var headerSize = ConstData.F12025HeaderSize;
+        var codeBytes = Encoding.ASCII.GetBytes(eventCode);
+
+        Array.Copy(codeBytes, 0, data, headerSize, codeBytes.Length);
+        Array.Copy(payloadBytes, 0, data, headerSize + 4, payloadBytes.Length);
+
+        return data;
+    }
+
+    #endregion // Static methods
 
     #region Methods
 
@@ -361,6 +385,108 @@ public class PacketEvent2025Tests
             if (packetData is EventData eventData && eventData.PacketData?.EventDetails is IEventDataDetails2025 eventDetails)
             {
                 Assert.AreEqual(16, eventDetails.PenaltyLapNumber, "Incorrect lap number!");
+            }
+            else
+            {
+                Assert.Fail("Invalid packet data, expected F1 2025!");
+            }
+        }
+        else
+        {
+            Assert.IsNull(_packetDataPenalty.PacketHeader, "Invalid F1 2025 packet header!");
+        }
+    }
+
+    /// <summary>
+    /// Check event type from top speed packet
+    /// </summary>
+    [TestMethod]
+    public void PacketEvent2025IsTopSpeedEventTypeExpectedSpeedTrap()
+    {
+        if (_packetDataTopSpeed.PacketHeader != null)
+        {
+            var packetData = _packetAnalyzer.GetEventData(_packetDataTopSpeed.PacketHeader, File.ReadAllBytes(@"SampleData/F1-2025-Event-TopSpeed.packet"));
+
+            if (packetData is EventData eventData && eventData.PacketData?.EventDetails is IEventDataDetails2025 eventDetails)
+            {
+                Assert.AreEqual(EventType.SpeedTrap, eventDetails.EventType, "Incorrect event type!");
+            }
+            else
+            {
+                Assert.Fail("Invalid packet data, expected F1 2025!");
+            }
+        }
+        else
+        {
+            Assert.IsNull(_packetDataTopSpeed.PacketHeader, "Invalid F1 2025 packet header!");
+        }
+    }
+
+    /// <summary>
+    /// Check event type from flashback packet
+    /// </summary>
+    [TestMethod]
+    public void PacketEvent2025IsFlashbackEventTypeExpectedFlashback()
+    {
+        if (_packetDataFlashback.PacketHeader != null)
+        {
+            var packetData = _packetAnalyzer.GetEventData(_packetDataFlashback.PacketHeader, File.ReadAllBytes(@"SampleData/F1-2025-Event-Flashback.packet"));
+
+            if (packetData is EventData eventData && eventData.PacketData?.EventDetails is IEventDataDetails2025 eventDetails)
+            {
+                Assert.AreEqual(EventType.Flashback, eventDetails.EventType, "Incorrect event type!");
+            }
+            else
+            {
+                Assert.Fail("Invalid packet data, expected F1 2025!");
+            }
+        }
+        else
+        {
+            Assert.IsNull(_packetDataFlashback.PacketHeader, "Invalid F1 2025 packet header!");
+        }
+    }
+
+    /// <summary>
+    /// Check event type from penalty packet
+    /// </summary>
+    [TestMethod]
+    public void PacketEvent2025IsPenaltyEventTypeExpectedPenalty()
+    {
+        if (_packetDataPenalty.PacketHeader != null)
+        {
+            var packetData = _packetAnalyzer.GetEventData(_packetDataPenalty.PacketHeader, File.ReadAllBytes(@"SampleData/F1-2025-Event-Penalty.packet"));
+
+            if (packetData is EventData eventData && eventData.PacketData?.EventDetails is IEventDataDetails2025 eventDetails)
+            {
+                Assert.AreEqual(EventType.Penalty, eventDetails.EventType, "Incorrect event type!");
+            }
+            else
+            {
+                Assert.Fail("Invalid packet data, expected F1 2025!");
+            }
+        }
+        else
+        {
+            Assert.IsNull(_packetDataPenalty.PacketHeader, "Invalid F1 2025 packet header!");
+        }
+    }
+
+    /// <summary>
+    /// Check event type and reason of a synthetic DRS disabled packet
+    /// </summary>
+    [TestMethod]
+    public void PacketEvent2025IsDrsDisabledEventTypeExpectedDrsDisabled()
+    {
+        if (_packetDataPenalty.PacketHeader != null)
+        {
+            var syntheticData = BuildSyntheticEventPacket("DRSD", 2);
+            var packetData = _packetAnalyzer.GetEventData(_packetDataPenalty.PacketHeader, syntheticData);
+
+            if (packetData is EventData eventData && eventData.PacketData?.EventDetails is IEventDataDetails2025 eventDetails)
+            {
+                Assert.AreEqual(EventType.DrsDisabled, eventDetails.EventType, "Incorrect event type!");
+                Assert.AreEqual(DrsDisabledReason.RedFlag, eventDetails.DrsDisabledReason, "Incorrect DRS disabled reason!");
             }
             else
             {

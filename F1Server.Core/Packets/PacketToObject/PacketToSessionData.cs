@@ -300,7 +300,7 @@ internal class PacketToSessionData(PacketHeader packetHeader) : PacketToXBase(pa
     {
         var actOffset = offsetToStart;
 
-        if (sessionData != null && packetLength >= offsetToStart + ConstData.F12019SessionSize)
+        if (sessionData is not null && packetLength >= offsetToStart + ConstData.F12019SessionSize)
         {
             var weather = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
@@ -418,7 +418,7 @@ internal class PacketToSessionData(PacketHeader packetHeader) : PacketToXBase(pa
     }
 
     /// <summary>
-    /// Check wether the session is recordable or not
+    /// Check whether the session is recordable or not
     /// </summary>
     /// <param name="sessionData">Session data</param>
     /// <returns>Is recordable?</returns>
@@ -455,7 +455,7 @@ internal class PacketToSessionData(PacketHeader packetHeader) : PacketToXBase(pa
     /// <summary>
     /// Converts received data to a session object for F1 2019
     /// </summary>
-    /// <param name="dataPacket">Recevied data</param>
+    /// <param name="dataPacket">Received data</param>
     /// <param name="packetLength">Size of received packet</param>
     /// <param name="offsetToStart">Data offset</param>
     /// <param name="sessionDataBase">Base session data object</param>
@@ -464,7 +464,7 @@ internal class PacketToSessionData(PacketHeader packetHeader) : PacketToXBase(pa
     {
         var retValue = false;
 
-        if (sessionDataBase != null)
+        if (sessionDataBase is not null)
         {
             try
             {
@@ -531,7 +531,7 @@ internal class PacketToSessionData(PacketHeader packetHeader) : PacketToXBase(pa
     {
         var retValue = false;
 
-        if (sessionDataBase != null)
+        if (sessionDataBase is not null)
         {
             try
             {

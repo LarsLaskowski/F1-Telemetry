@@ -6,9 +6,9 @@
 public enum ChampionshipMode
 {
     /// <summary>
-    /// Carreer
+    /// Career
     /// </summary>
-    Carreer = 0,
+    Career = 0,
 
     /// <summary>
     /// My team

@@ -3,7 +3,7 @@
 namespace F1Server.Data;
 
 /// <summary>
-/// Lap data, independed from game version
+/// Lap data, independent from game version
 /// </summary>
 public class IndependentLapData : IIndependentLapData
 {

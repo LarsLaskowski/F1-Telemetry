@@ -18,7 +18,7 @@ public interface ILapData2020 : ILapDataBase
     float CurrentLapTime { get; }
 
     /// <summary>
-    /// Sector 1 time in milliseonds
+    /// Sector 1 time in milliseconds
     /// </summary>
     ushort Sector1Time { get; }
 

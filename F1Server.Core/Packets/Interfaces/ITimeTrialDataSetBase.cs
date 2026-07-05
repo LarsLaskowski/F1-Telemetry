@@ -45,7 +45,7 @@ public interface ITimeTrialDataSetBase
     TractionControl TractionControl { get; set; }
 
     /// <summary>
-    /// Assistent settings of the gear box
+    /// Assist settings of the gear box
     /// </summary>
     GearboxAssist GearboxAssist { get; set; }
 

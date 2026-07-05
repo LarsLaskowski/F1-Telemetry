@@ -28,7 +28,7 @@ public class CarStatusData2024 : ICarStatusData2024
     /// <summary>
     /// Front brake bias in percentage
     /// </summary>
-    public ushort FronBrakeBias { get; set; }
+    public ushort FrontBrakeBias { get; set; }
 
     /// <summary>
     /// Pit limiter status - 0 - off - 1 - on

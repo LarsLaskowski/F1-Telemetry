@@ -15,12 +15,12 @@ public interface ILapDataBase
     bool IsEmpty { get; }
 
     /// <summary>
-    /// Distance vehicle is around current lap in meters, negativ is finish line not crossed yet
+    /// Distance vehicle is around current lap in meters, negative is finish line not crossed yet
     /// </summary>
     float LapDistance { get; }
 
     /// <summary>
-    /// Total distance travelled in session in meters, can be negativ like <see cref="LapDistance"/>
+    /// Total distance travelled in session in meters, can be negative like <see cref="LapDistance"/>
     /// </summary>
     float TotalDistance { get; }
 

@@ -31,7 +31,7 @@ internal class EventDataDetails2021 : EventDataDetails2019, IEventDataDetails202
     public ushort PenaltyTimeGained { get; set; }
 
     /// <summary>
-    /// Lap of penalty occured on
+    /// Lap of penalty occurred on
     /// </summary>
     public ushort PenaltyLapNumber { get; set; }
 

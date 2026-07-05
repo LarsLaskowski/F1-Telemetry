@@ -53,7 +53,7 @@ public enum EventType
     /// <summary>
     /// Stop and go penalty served (since 2021)
     /// </summary>
-    StopAndGoPenaltryServed,
+    StopAndGoPenaltyServed,
 
     /// <summary>
     /// Flashback activated (since 2021)
@@ -71,7 +71,22 @@ public enum EventType
     RedFlag,
 
     /// <summary>
-    /// Overtake occured (since 2023)
+    /// Overtake occurred (since 2023)
     /// </summary>
-    Overtake
+    Overtake,
+
+    /// <summary>
+    /// Safety car deployed (since 2023)
+    /// </summary>
+    SafetyCar,
+
+    /// <summary>
+    /// Collision occurred (since 2023)
+    /// </summary>
+    Collision,
+
+    /// <summary>
+    /// DRS disabled (since 2023)
+    /// </summary>
+    DrsDisabled
 }

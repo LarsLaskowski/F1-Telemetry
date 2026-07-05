@@ -30,7 +30,7 @@ public interface IEventDataDetails2022 : IEventDataDetailsBase
     ushort PenaltyTimeGained { get; }
 
     /// <summary>
-    /// Lap of penalty occured on
+    /// Lap of penalty occurred on
     /// </summary>
     ushort PenaltyLapNumber { get; }
 

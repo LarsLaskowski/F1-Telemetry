@@ -20,7 +20,6 @@
     <None Remove="SampleData\F1-2021-Event-Flashback.packet" />
     <None Remove="SampleData\F1-2021-Event-Penalty.packet" />
     <None Remove="SampleData\F1-2021-Event-TopSpeed.packet" />
-    <None Remove="SampleData\F1-2021-EventPena41" />
     <None Remove="SampleData\F1-2021-FinalClassification.packet" />
     <None Remove="SampleData\F1-2021-HeaderCheck.packet" />
     <None Remove="SampleData\F1-2021-LapData.packet" />
@@ -36,17 +35,19 @@
     <None Remove="SampleData\F1-2022-Event-TopSpeed.packet" />
     <None Remove="SampleData\F1-2022-FinalClassification.packet" />
     <None Remove="SampleData\F1-2022-HeaderCheck.packet" />
+    <None Remove="SampleData\F1-2022-LapData.packet" />
     <None Remove="SampleData\F1-2022-MiamiQ1-Session.packet" />
     <None Remove="SampleData\F1-2022-MiamiQ1-SessionFirst.packet" />
+    <None Remove="SampleData\F1-2022-Participants.packet" />
+    <None Remove="SampleData\F1-2022-Session.packet" />
     <None Remove="SampleData\F1-2022-SessionHistory.packet" />
+    <None Remove="SampleData\F1-2023-CarStatus.packet" />
     <None Remove="SampleData\F1-2023-CarTelemetry.packet" />
     <None Remove="SampleData\F1-2023-Event-Flashback.packet" />
     <None Remove="SampleData\F1-2023-Event-Penalty.packet" />
     <None Remove="SampleData\F1-2023-Event-TopSpeed.packet" />
     <None Remove="SampleData\F1-2023-FinalClassification.packet" />
     <None Remove="SampleData\F1-2023-HeaderCheck.packet" />
-    <None Remove="SampleData\F1-2023-JeddahQ3-Event-SessionEnd.packet" />
-    <None Remove="SampleData\F1-2023-JeddahQ3-Event-SessionStart.packet" />
     <None Remove="SampleData\F1-2023-JeddahQ3-Session.packet" />
     <None Remove="SampleData\F1-2023-JeddahQ3-SessionFirst.packet" />
     <None Remove="SampleData\F1-2023-LapData.packet" />
@@ -84,9 +85,16 @@
     <None Remove="SampleData\F1-2025-Participants.packet" />
     <None Remove="SampleData\F1-2025-Session.packet" />
     <None Remove="SampleData\F1-2025-SessionHistory.packet" />
-    <None Remove="SampleData\F1-2025-ShanghaiPractice-Session.packet" />
-    <None Remove="SampleData\F1-2025-ShanghaiPractice-SessionFirst.packet" />
+    <None Remove="SampleData\F1-2026-CarStatus.packet" />
+    <None Remove="SampleData\F1-2026-CarTelemetry.packet" />
     <None Remove="SampleData\F1-2026-FinalClassification.packet" />
+    <None Remove="SampleData\F1-2026-HeaderCheck.packet" />
+    <None Remove="SampleData\F1-2026-LapData.packet" />
+    <None Remove="SampleData\F1-2026-MelbourneQ3-Session.packet" />
+    <None Remove="SampleData\F1-2026-MelbourneQ3-SessionFirst.packet" />
+    <None Remove="SampleData\F1-2026-MelbourneRace-Event-SessionStart.packet" />
+    <None Remove="SampleData\F1-2026-MelbourneRace-SessionFirst.packet" />
+    <None Remove="SampleData\F1-2026-Participants.packet" />
     <None Remove="SampleData\F1-2026-Session.packet" />
     <None Remove="SampleData\F1-2026-SessionHistory.packet" />
   </ItemGroup>
@@ -316,10 +324,10 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="SampleData\F1-2025-MelbourneQ3-Session.packet">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="SampleData\F1-2025-MelbourneQ3-SessionFirst.packet">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="SampleData\F1-2025-MelbourneRace-Event-SessionStart.packet">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -391,6 +399,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\F1PacketTester\F1PacketTester.csproj" />
     <ProjectReference Include="..\F1Server.Core\F1Server.Core.csproj" />
     <ProjectReference Include="..\F1Server.Service\F1Server.Service.csproj" />
   </ItemGroup>

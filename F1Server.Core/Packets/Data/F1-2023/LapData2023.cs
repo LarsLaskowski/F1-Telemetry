@@ -30,12 +30,12 @@ public class LapData2023 : ILapData2023
     public uint CurrentLapTime { get; set; }
 
     /// <summary>
-    /// Sector 1 time in milliseonds
+    /// Sector 1 time in milliseconds
     /// </summary>
     public ushort Sector1Time { get; set; }
 
     /// <summary>
-    /// Sector 1 while minutes part
+    /// Sector 1 whole minutes part
     /// </summary>
     public ushort Sector1TimeMinutes { get; set; }
 
@@ -64,12 +64,12 @@ public class LapData2023 : ILapData2023
     #region ILapDataBase
 
     /// <summary>
-    /// Distance vehicle is around current lap in meters, negativ is finish line not crossed yet
+    /// Distance vehicle is around current lap in meters, negative is finish line not crossed yet
     /// </summary>
     public float LapDistance { get; set; }
 
     /// <summary>
-    /// Total distance travelled in session in meters, can be negativ like <see cref="LapDistance"/>
+    /// Total distance travelled in session in meters, can be negative like <see cref="LapDistance"/>
     /// </summary>
     public float TotalDistance { get; set; }
 
@@ -174,7 +174,7 @@ public class LapData2023 : ILapData2023
     public bool IsPitLaneTimerActive { get; set; }
 
     /// <summary>
-    /// Pit lane time in lan in milliseconds, only if <see cref="IsPitLaneTimerActive"/> is active
+    /// Pit lane time in lane in milliseconds, only if <see cref="IsPitLaneTimerActive"/> is active
     /// </summary>
     public ushort PitLaneTimeInLane { get; set; }
 

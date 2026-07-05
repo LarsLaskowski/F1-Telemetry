@@ -373,5 +373,80 @@ public class PacketEvent2022Tests
         }
     }
 
+    /// <summary>
+    /// Check event type from top speed packet
+    /// </summary>
+    [TestMethod]
+    public void PacketEvent2022IsTopSpeedEventTypeExpectedSpeedTrap()
+    {
+        if (_packetDataTopSpeed.PacketHeader != null)
+        {
+            var packetData = _packetAnalyzer.GetEventData(_packetDataTopSpeed.PacketHeader, File.ReadAllBytes(@"SampleData/F1-2022-Event-TopSpeed.packet"));
+
+            if (packetData is EventData eventData && eventData.PacketData?.EventDetails is IEventDataDetails2022 eventDetails)
+            {
+                Assert.AreEqual(EventType.SpeedTrap, eventDetails.EventType, "Incorrect event type!");
+            }
+            else
+            {
+                Assert.Fail("Invalid packet data, expected F1 2022!");
+            }
+        }
+        else
+        {
+            Assert.IsNull(_packetDataTopSpeed.PacketHeader, "Invalid F1 2022 packet header!");
+        }
+    }
+
+    /// <summary>
+    /// Check event type from flashback packet
+    /// </summary>
+    [TestMethod]
+    public void PacketEvent2022IsFlashbackEventTypeExpectedFlashback()
+    {
+        if (_packetDataFlashback.PacketHeader != null)
+        {
+            var packetData = _packetAnalyzer.GetEventData(_packetDataFlashback.PacketHeader, File.ReadAllBytes(@"SampleData/F1-2022-Event-Flashback.packet"));
+
+            if (packetData is EventData eventData && eventData.PacketData?.EventDetails is IEventDataDetails2022 eventDetails)
+            {
+                Assert.AreEqual(EventType.Flashback, eventDetails.EventType, "Incorrect event type!");
+            }
+            else
+            {
+                Assert.Fail("Invalid packet data, expected F1 2022!");
+            }
+        }
+        else
+        {
+            Assert.IsNull(_packetDataFlashback.PacketHeader, "Invalid F1 2022 packet header!");
+        }
+    }
+
+    /// <summary>
+    /// Check event type from penalty packet
+    /// </summary>
+    [TestMethod]
+    public void PacketEvent2022IsPenaltyEventTypeExpectedPenalty()
+    {
+        if (_packetDataPenalty.PacketHeader != null)
+        {
+            var packetData = _packetAnalyzer.GetEventData(_packetDataPenalty.PacketHeader, File.ReadAllBytes(@"SampleData/F1-2022-Event-Penalty.packet"));
+
+            if (packetData is EventData eventData && eventData.PacketData?.EventDetails is IEventDataDetails2022 eventDetails)
+            {
+                Assert.AreEqual(EventType.Penalty, eventDetails.EventType, "Incorrect event type!");
+            }
+            else
+            {
+                Assert.Fail("Invalid packet data, expected F1 2022!");
+            }
+        }
+        else
+        {
+            Assert.IsNull(_packetDataPenalty.PacketHeader, "Invalid F1 2022 packet header!");
+        }
+    }
+
     #endregion // Methods
 }

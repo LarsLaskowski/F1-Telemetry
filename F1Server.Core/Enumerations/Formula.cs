@@ -1,7 +1,7 @@
 ﻿namespace F1Server.Core.Enumerations;
 
 /// <summary>
-/// Enumeration of formula typs
+/// Enumeration of formula types
 /// </summary>
 public enum Formula
 {

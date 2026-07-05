@@ -3,7 +3,7 @@
 /// <summary>
 /// Interface for public participants data class
 /// </summary>
-/// <typeparam name="T">Game version depended interface</typeparam>
+/// <typeparam name="T">Game version dependent interface</typeparam>
 public interface IParticipants<out T>
 {
     #region Properties

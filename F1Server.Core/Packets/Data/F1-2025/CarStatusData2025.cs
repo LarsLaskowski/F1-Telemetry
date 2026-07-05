@@ -20,7 +20,7 @@ public class CarStatusData2025 : ICarStatusData2025
     public ushort FuelMix { get; set; }
 
     /// <inheritdoc/>
-    public ushort FronBrakeBias { get; set; }
+    public ushort FrontBrakeBias { get; set; }
 
     /// <inheritdoc/>
     public uint PitLimiterStatus { get; set; }

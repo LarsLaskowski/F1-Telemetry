@@ -1,7 +1,7 @@
 ﻿namespace F1Server.Core.Packets.Interfaces;
 
 /// <summary>
-/// Complete lap poitions data
+/// Complete lap positions data
 /// </summary>
 public interface ILapPositionsBase
 {

@@ -30,7 +30,7 @@ public interface IEventDataDetails2025 : IEventDataDetailsBase
     ushort PenaltyTimeGained { get; }
 
     /// <summary>
-    /// Lap of penalty occured on
+    /// Lap of penalty occurred on
     /// </summary>
     ushort PenaltyLapNumber { get; }
 
@@ -85,7 +85,7 @@ public interface IEventDataDetails2025 : IEventDataDetailsBase
     float FlashbackSessionTime { get; }
 
     /// <summary>
-    /// Gets or sets the duration, in seconds, of the stop-and-go penalty
+    /// Duration of the stop-and-go penalty in seconds
     /// </summary>
     float StopAndGoPenaltyTime { get; set; }
 

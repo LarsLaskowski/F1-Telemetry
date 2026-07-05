@@ -92,6 +92,10 @@ export class ChampionshipViewData
               championshipTrack.racePosition = track.racePosition;
               championshipTrack.racePoints = track.racePoints;
               championshipTrack.sprintPoints = track.sprintPoints;
+              championshipTrack.qualifyingDifficulty = track.qualifyingDifficulty;
+              championshipTrack.sprintQualifyingDifficulty = track.sprintQualifyingDifficulty;
+              championshipTrack.sprintDifficulty = track.sprintDifficulty;
+              championshipTrack.raceDifficulty = track.raceDifficulty;
 
               this.tracks.push(championshipTrack);
             },

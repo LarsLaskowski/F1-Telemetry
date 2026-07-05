@@ -9,6 +9,6 @@ export interface ChampionshipTrackViewApiData
   sprintPoints: number;
   raceDifficulty: number;
   sprintDifficulty: number;
-  qualiyingDifficulty: number;
+  qualifyingDifficulty: number;
   sprintQualifyingDifficulty: number;
 }

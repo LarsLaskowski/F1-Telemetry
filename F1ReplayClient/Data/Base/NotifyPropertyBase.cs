@@ -21,10 +21,10 @@ internal class NotifyPropertyBase : INotifyPropertyChanged
     /// <summary>
     /// Property value has changed
     /// </summary>
-    /// <param name="propertName">Name of property</param>
-    public void RaisePropertyChange(string propertName)
+    /// <param name="propertyName">Name of property</param>
+    public void RaisePropertyChange(string propertyName)
     {
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertName));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
     #endregion // Methods
