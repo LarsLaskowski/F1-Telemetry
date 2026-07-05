@@ -129,20 +129,20 @@ public sealed class TelemetryWriter : ITelemetryWriter, IDisposable
         {
             var writeData = new StringBuilder(512);
 
-            writeData.Append($"SessionData,session={sessionRuntimeData.CurrentSessionId},type={sessionRuntimeData.CurrentSessionType.ToString()}");
+            writeData.Append($"SessionData,session={sessionRuntimeData.CurrentSessionId.ToString(_cultureInfo)},type={sessionRuntimeData.CurrentSessionType.ToString()}");
 
             var fields = new[]
                          {
-                             $"airTemperature={sessionRuntimeData.AirTemperature}",
-                             $"fastestLapTime={sessionRuntimeData.FastestLap}",
-                             $"fastestSector1={sessionRuntimeData.FastestSector1}",
-                             $"fastestSector2={sessionRuntimeData.FastestSector2}",
-                             $"fastestSector3={sessionRuntimeData.FastestSector3}",
-                             $"personalFastestLapTime={liveDriverData.FastestLapTime}",
-                             $"personalFastestSector1={liveDriverData.FastestSector1}",
-                             $"personalFastestSector2={liveDriverData.FastestSector2}",
-                             $"personalFastestSector3={liveDriverData.FastestSector3}",
-                             $"trackTemperature={sessionRuntimeData.TrackTemperature}"
+                             $"airTemperature={sessionRuntimeData.AirTemperature.ToString(_cultureInfo)}",
+                             $"fastestLapTime={sessionRuntimeData.FastestLap.ToString(_cultureInfo)}",
+                             $"fastestSector1={sessionRuntimeData.FastestSector1.ToString(_cultureInfo)}",
+                             $"fastestSector2={sessionRuntimeData.FastestSector2.ToString(_cultureInfo)}",
+                             $"fastestSector3={sessionRuntimeData.FastestSector3.ToString(_cultureInfo)}",
+                             $"personalFastestLapTime={liveDriverData.FastestLapTime.ToString(_cultureInfo)}",
+                             $"personalFastestSector1={liveDriverData.FastestSector1.ToString(_cultureInfo)}",
+                             $"personalFastestSector2={liveDriverData.FastestSector2.ToString(_cultureInfo)}",
+                             $"personalFastestSector3={liveDriverData.FastestSector3.ToString(_cultureInfo)}",
+                             $"trackTemperature={sessionRuntimeData.TrackTemperature.ToString(_cultureInfo)}"
                          };
 
             writeData.Append(' ');
@@ -167,20 +167,20 @@ public sealed class TelemetryWriter : ITelemetryWriter, IDisposable
 
             var lapDistance = lapInfo.LapDistance < 0 ? 0 : lapInfo.LapDistance;
 
-            writeData.Append($"LapData,lapNumber={lapInfo.CurrentLapNumber},session={sessionRuntimeData.CurrentSessionId},type={sessionRuntimeData.CurrentSessionType.ToString()}");
+            writeData.Append($"LapData,lapNumber={lapInfo.CurrentLapNumber.ToString(_cultureInfo)},session={sessionRuntimeData.CurrentSessionId.ToString(_cultureInfo)},type={sessionRuntimeData.CurrentSessionType.ToString()}");
 
             var fields = new[]
                          {
-                             $"carPosition={lapInfo.CarPosition}",
-                             $"currentLapNumber={lapInfo.CurrentLapNumber}",
+                             $"carPosition={lapInfo.CarPosition.ToString(_cultureInfo)}",
+                             $"currentLapNumber={lapInfo.CurrentLapNumber.ToString(_cultureInfo)}",
                              $"driverStatus=\"{lapInfo.CurrentDriverStatus.ToString()}\"",
-                             $"gridPosition={lapInfo.GridPosition}",
+                             $"gridPosition={lapInfo.GridPosition.ToString(_cultureInfo)}",
                              $"lapDistance={lapDistance.ToString("0.00", _cultureInfo)}",
-                             $"lapTime={lapData.CurrentLapTime}",
-                             $"lastLapTime={lapData.LastLapTime}",
-                             $"sector1Time={lapData.Sector1Time}",
-                             $"sector2Time={lapData.Sector2Time}",
-                             $"sector3Time={lapData.Sector3Time}"
+                             $"lapTime={lapData.CurrentLapTime.ToString(_cultureInfo)}",
+                             $"lastLapTime={lapData.LastLapTime.ToString(_cultureInfo)}",
+                             $"sector1Time={lapData.Sector1Time.ToString(_cultureInfo)}",
+                             $"sector2Time={lapData.Sector2Time.ToString(_cultureInfo)}",
+                             $"sector3Time={lapData.Sector3Time.ToString(_cultureInfo)}"
                          };
 
             writeData.Append(' ');
@@ -203,32 +203,32 @@ public sealed class TelemetryWriter : ITelemetryWriter, IDisposable
         {
             var writeData = new StringBuilder(512);
 
-            writeData.Append($"CarTelemetry,lapNumber={currentLapNumber},session={sessionRuntimeData.CurrentSessionId},type={sessionRuntimeData.CurrentSessionType}");
+            writeData.Append($"CarTelemetry,lapNumber={currentLapNumber.ToString(_cultureInfo)},session={sessionRuntimeData.CurrentSessionId.ToString(_cultureInfo)},type={sessionRuntimeData.CurrentSessionType.ToString()}");
 
             var fields = new[]
                          {
                              $"brake={carTelemetryData.Brake.ToString("0.00", _cultureInfo)}",
-                             $"brakeTempFrontLeft={carTelemetryData.BrakesTemperature.FrontLeft}",
-                             $"brakeTempFrontRight={carTelemetryData.BrakesTemperature.FrontRight}",
-                             $"brakeTempRearLeft={carTelemetryData.BrakesTemperature.RearLeft}",
-                             $"brakeTempRearRight={carTelemetryData.BrakesTemperature.RearRight}",
-                             $"engineRPM={carTelemetryData.EngineRPM}",
-                             $"engineTemperature={carTelemetryData.EngineTemperature}",
-                             $"gear={carTelemetryData.Gear}",
-                             $"speed={carTelemetryData.Speed}",
+                             $"brakeTempFrontLeft={carTelemetryData.BrakesTemperature.FrontLeft.ToString(_cultureInfo)}",
+                             $"brakeTempFrontRight={carTelemetryData.BrakesTemperature.FrontRight.ToString(_cultureInfo)}",
+                             $"brakeTempRearLeft={carTelemetryData.BrakesTemperature.RearLeft.ToString(_cultureInfo)}",
+                             $"brakeTempRearRight={carTelemetryData.BrakesTemperature.RearRight.ToString(_cultureInfo)}",
+                             $"engineRPM={carTelemetryData.EngineRPM.ToString(_cultureInfo)}",
+                             $"engineTemperature={carTelemetryData.EngineTemperature.ToString(_cultureInfo)}",
+                             $"gear={carTelemetryData.Gear.ToString(_cultureInfo)}",
+                             $"speed={carTelemetryData.Speed.ToString(_cultureInfo)}",
                              $"throttle={carTelemetryData.Throttle.ToString("0.00", _cultureInfo)}",
-                             $"tyreInnerTempFrontLeft={carTelemetryData.TyresInnerTemperature.FrontLeft}",
-                             $"tyreInnerTempFrontRight={carTelemetryData.TyresInnerTemperature.FrontRight}",
-                             $"tyreInnerTempRearLeft={carTelemetryData.TyresInnerTemperature.RearLeft}",
-                             $"tyreInnerTempRearRight={carTelemetryData.TyresInnerTemperature.RearRight}",
+                             $"tyreInnerTempFrontLeft={carTelemetryData.TyresInnerTemperature.FrontLeft.ToString(_cultureInfo)}",
+                             $"tyreInnerTempFrontRight={carTelemetryData.TyresInnerTemperature.FrontRight.ToString(_cultureInfo)}",
+                             $"tyreInnerTempRearLeft={carTelemetryData.TyresInnerTemperature.RearLeft.ToString(_cultureInfo)}",
+                             $"tyreInnerTempRearRight={carTelemetryData.TyresInnerTemperature.RearRight.ToString(_cultureInfo)}",
                              $"tyrePressureFrontLeft={carTelemetryData.TyresPressure.FrontLeft.ToString(DefaultFloatFormat, _cultureInfo)}",
                              $"tyrePressureFrontRight={carTelemetryData.TyresPressure.FrontRight.ToString(DefaultFloatFormat, _cultureInfo)}",
                              $"tyrePressureRearLeft={carTelemetryData.TyresPressure.RearLeft.ToString(DefaultFloatFormat, _cultureInfo)}",
                              $"tyrePressureRearRight={carTelemetryData.TyresPressure.RearRight.ToString(DefaultFloatFormat, _cultureInfo)}",
-                             $"tyreSurfaceTempFrontLeft={carTelemetryData.TyresSurfaceTemperature.FrontLeft}",
-                             $"tyreSurfaceTempFrontRight={carTelemetryData.TyresSurfaceTemperature.FrontRight}",
-                             $"tyreSurfaceTempRearLeft={carTelemetryData.TyresSurfaceTemperature.RearLeft}",
-                             $"tyreSurfaceTempRearRight={carTelemetryData.TyresSurfaceTemperature.RearRight}"
+                             $"tyreSurfaceTempFrontLeft={carTelemetryData.TyresSurfaceTemperature.FrontLeft.ToString(_cultureInfo)}",
+                             $"tyreSurfaceTempFrontRight={carTelemetryData.TyresSurfaceTemperature.FrontRight.ToString(_cultureInfo)}",
+                             $"tyreSurfaceTempRearLeft={carTelemetryData.TyresSurfaceTemperature.RearLeft.ToString(_cultureInfo)}",
+                             $"tyreSurfaceTempRearRight={carTelemetryData.TyresSurfaceTemperature.RearRight.ToString(_cultureInfo)}"
                          };
 
             writeData.Append(' ');
@@ -251,7 +251,7 @@ public sealed class TelemetryWriter : ITelemetryWriter, IDisposable
         {
             var writeData = new StringBuilder(512);
 
-            writeData.Append($"CarStatus,lapNumber={currentLapNumber},session={sessionRuntimeData.CurrentSessionId},type={sessionRuntimeData.CurrentSessionType.ToString()}");
+            writeData.Append($"CarStatus,lapNumber={currentLapNumber.ToString(_cultureInfo)},session={sessionRuntimeData.CurrentSessionId.ToString(_cultureInfo)},type={sessionRuntimeData.CurrentSessionType.ToString()}");
 
             var fields = new[]
                          {
