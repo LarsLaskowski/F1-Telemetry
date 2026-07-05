@@ -111,14 +111,14 @@ internal class TimeTrialProcessor : BaseProcessor
 
                 if (personalTeamId > 0)
                 {
-                    teamData = dbFactory.GetRepository<TeamRepository>()?.GetQuery()?.FirstOrDefault(t => t.TeamGameId == playerSessionTeamId);
+                    teamData = dbFactory.GetRepository<TeamRepository>()?.GetQuery()?.FirstOrDefault(t => t.TeamGameId == personalTeamId);
 
                     activity?.AddTag("f1.personal_team", teamData?.Name);
                 }
 
                 if (rivalTeamId > 0)
                 {
-                    teamData = dbFactory.GetRepository<TeamRepository>()?.GetQuery()?.FirstOrDefault(t => t.TeamGameId == playerSessionTeamId);
+                    teamData = dbFactory.GetRepository<TeamRepository>()?.GetQuery()?.FirstOrDefault(t => t.TeamGameId == rivalTeamId);
 
                     activity?.AddTag("f1.rival_team", teamData?.Name);
                 }
