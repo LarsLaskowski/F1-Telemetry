@@ -98,7 +98,7 @@ public class TelemetryStatistics
     #region Methods
 
     /// <summary>
-    /// Check wether the current session has changed
+    /// Check whether the current session has changed
     /// </summary>
     /// <param name="sessionId">Session id from last received packet</param>
     /// <param name="gameVersion">Game version from last received packet</param>

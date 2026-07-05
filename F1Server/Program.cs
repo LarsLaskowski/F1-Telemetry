@@ -133,7 +133,7 @@ public static class Program
     }
 
     /// <summary>
-    /// Check wether telemetry is enabled
+    /// Check whether telemetry is enabled
     /// </summary>
     /// <param name="serviceProvider">A <see cref="IServiceProvider"/> containing the configured services</param>
     private static void CheckObservability(IServiceProvider serviceProvider)

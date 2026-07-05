@@ -46,7 +46,7 @@ public class CarTelemetry2020 : ICarTelemetry2020
     public ushort MfdPanelIndex { get; set; }
 
     /// <summary>
-    /// Index of MDF panel open (second player)
+    /// Index of MFD panel open (second player)
     /// </summary>
     public ushort MfdPanelIndexSecondary { get; set; }
 

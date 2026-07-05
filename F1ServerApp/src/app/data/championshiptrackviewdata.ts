@@ -11,6 +11,6 @@ export class ChampionshipTrackViewData
   sprintPoints: number = 0;
   raceDifficulty: number = 0;
   sprintDifficulty: number = 0;
-  qualiyingDifficulty: number = 0;
+  qualifyingDifficulty: number = 0;
   sprintQualifyingDifficulty: number = 0;
 }

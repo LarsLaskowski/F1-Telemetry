@@ -8,7 +8,7 @@ public class TrackViewData
     #region Properties
 
     /// <summary>
-    /// Id if track
+    /// Id of track
     /// </summary>
     public long TrackId { get; set; }
 

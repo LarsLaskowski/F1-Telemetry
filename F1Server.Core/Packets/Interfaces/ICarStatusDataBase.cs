@@ -3,7 +3,7 @@
 namespace F1Server.Core.Packets.Interfaces;
 
 /// <summary>
-/// Interface for car status packets across all F1 game version
+/// Interface for car status packets across all F1 game versions
 /// </summary>
 public interface ICarStatusDataBase
 {
@@ -27,7 +27,7 @@ public interface ICarStatusDataBase
     /// <summary>
     /// Front brake bias in percentage
     /// </summary>
-    ushort FronBrakeBias { get; set; }
+    ushort FrontBrakeBias { get; set; }
 
     /// <summary>
     /// Pit limiter status - 0 - off - 1 - on

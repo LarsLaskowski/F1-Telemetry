@@ -38,7 +38,7 @@ public class SessionHistoryData2024 : ISessionHistoryDataBase
     public ushort NumberOfTyreStints { get; set; }
 
     /// <summary>
-    /// Number of best lap time achieved on
+    /// Number of the lap on which the best lap time was achieved
     /// </summary>
     public ushort BestLapNumber { get; set; }
 
@@ -48,7 +48,7 @@ public class SessionHistoryData2024 : ISessionHistoryDataBase
     public ushort BestSector1LapNumber { get; set; }
 
     /// <summary>
-    /// Number if lap with best sector 2 time
+    /// Number of lap with best sector 2 time
     /// </summary>
     public ushort BestSector2LapNumber { get; set; }
 

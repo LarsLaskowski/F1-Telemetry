@@ -18,12 +18,12 @@ public interface ILapData2023 : ILapDataBase
     uint CurrentLapTime { get; }
 
     /// <summary>
-    /// Sector 1 time in milliseonds
+    /// Sector 1 time in milliseconds
     /// </summary>
     ushort Sector1Time { get; }
 
     /// <summary>
-    /// Sector 1 while minutes part
+    /// Sector 1 whole minutes part
     /// </summary>
     ushort Sector1TimeMinutes { get; }
 
@@ -78,7 +78,7 @@ public interface ILapData2023 : ILapDataBase
     bool IsPitLaneTimerActive { get; }
 
     /// <summary>
-    /// Pit lane time in lan in milliseconds, only if <see cref="IsPitLaneTimerActive"/> is active
+    /// Pit lane time in lane in milliseconds, only if <see cref="IsPitLaneTimerActive"/> is active
     /// </summary>
     ushort PitLaneTimeInLane { get; }
 

@@ -236,7 +236,7 @@ internal static class Program
         {
             if (data.Length > packetHeaderSize + 19)
             {
-                ushort marshalZones = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref memRef, packetHeaderSize + 19));
+                byte marshalZones = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref memRef, packetHeaderSize + 19));
 
                 if (marshalZones > 0)
                 {
@@ -246,17 +246,17 @@ internal static class Program
 
             if (data.Length > packetHeaderSize + 124)
             {
-                ushort saftyCarStatus = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref memRef, packetHeaderSize + 124));
+                byte safetyCarStatus = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref memRef, packetHeaderSize + 124));
 
-                if (saftyCarStatus == 0)
+                if (safetyCarStatus > 0)
                 {
-                    progressBar.WriteLine($"Safety car status ({saftyCarStatus}) found in {fInfo.Name}");
+                    progressBar.WriteLine($"Safety car status ({safetyCarStatus}) found in {fInfo.Name}");
                 }
             }
 
             if (data.Length > packetHeaderSize + 640)
             {
-                ushort aiDifficulty = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref memRef, packetHeaderSize + 640));
+                byte aiDifficulty = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref memRef, packetHeaderSize + 640));
 
                 if (aiDifficulty > 0)
                 {

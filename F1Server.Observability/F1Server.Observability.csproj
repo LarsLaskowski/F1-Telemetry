@@ -16,9 +16,8 @@
      <PackageReference Include="OpenTelemetry" />
      <PackageReference Include="OpenTelemetry.Exporter.Prometheus.AspNetCore" />
      <PackageReference Include="OpenTelemetry.Exporter.Prometheus.HttpListener" />
-      <PackageReference Include="OpenTelemetry.Exporter.Console" />
-      <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" />
-      <PackageReference Include="OpenTelemetry.Exporter.Zipkin" />
+     <PackageReference Include="OpenTelemetry.Exporter.Console" />
+     <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" />
      <PackageReference Include="OpenTelemetry.Instrumentation.EntityFrameworkCore" />
      <PackageReference Include="OpenTelemetry.Instrumentation.EventCounters" />
      <PackageReference Include="OpenTelemetry.Instrumentation.Process" />

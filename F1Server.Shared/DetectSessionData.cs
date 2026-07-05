@@ -86,7 +86,7 @@ public class DetectSessionData
     }
 
     /// <summary>
-    /// Check wether this packet is a session packet
+    /// Check whether this packet is a session packet
     /// </summary>
     /// <param name="file">File name</param>
     private void CheckPossibleSessionPacket(string file)

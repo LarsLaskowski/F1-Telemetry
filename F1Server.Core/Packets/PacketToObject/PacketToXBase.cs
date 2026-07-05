@@ -36,7 +36,7 @@ internal abstract class PacketToXBase
     public int GameVersion => PacketHeader?.GameVersion ?? 0;
 
     /// <summary>
-    /// Size of game version dependet packet header size
+    /// Size of game version dependent packet header size
     /// </summary>
     public int HeaderSize => GetHeaderSize();
 

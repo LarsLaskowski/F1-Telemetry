@@ -49,7 +49,7 @@ internal class PacketToFinalClassification(PacketHeader packetHeader) : PacketTo
                                                                            _ => null
                                                                        };
 
-            if (packetDataBase != null
+            if (packetDataBase is not null
                 && HasValidPacketLength(dataPacket.Length, GetExpectedPayloadSize())
                 && ExtractFinalClassificationData(ref memRef, dataPacket.Length, HeaderSize, packetDataBase.PacketData))
             {
@@ -102,7 +102,7 @@ internal class PacketToFinalClassification(PacketHeader packetHeader) : PacketTo
     {
         var retValue = false;
 
-        if (offsetToStart > 0 && packetLength >= offsetToStart + ConstData.TypeUInt8 && finalClassificationData?.FinalClassifications != null)
+        if (offsetToStart > 0 && packetLength >= offsetToStart + ConstData.TypeUInt8 && finalClassificationData?.FinalClassifications is not null)
         {
             try
             {

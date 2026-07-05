@@ -700,7 +700,7 @@ public sealed class TelemetryClient : ITelemetryClient, IDisposable
     }
 
     /// <summary>
-    /// Check wether the task is running to process all incoming packets
+    /// Check whether the task is running to process all incoming packets
     /// </summary>
     private void CheckPacketProcessingTaskIsRunning()
     {
@@ -718,7 +718,7 @@ public sealed class TelemetryClient : ITelemetryClient, IDisposable
     }
 
     /// <summary>
-    /// Check wether the task is running to process logging packets
+    /// Check whether the task is running to process logging packets
     /// </summary>
     /// <param name="packetData">Packet data</param>
     private void EnqueueLoggingPacket(ref ReceivedPacketData packetData)
@@ -731,7 +731,7 @@ public sealed class TelemetryClient : ITelemetryClient, IDisposable
 
             _applicationData.AppMetrics?.PacketsLogged.Add(1);
 
-            // Check wether the task is running to process all incoming logging packets
+            // Check whether the task is running to process all incoming logging packets
             if (_isLoggingQueueRunning == false)
             {
                 _isLoggingQueueRunning = true;

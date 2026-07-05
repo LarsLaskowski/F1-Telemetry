@@ -7,7 +7,7 @@ export class LiveSessionViewData extends SessionViewData
 {
   sessionGameId: number = 0;
   sessionDbId: number = 0;
-  isFinised: boolean = false;
+  isFinished: boolean = false;
   currentCarsOnTrack: number = 0;
   sessionDuration: string = "";
   sessionTimeLeft: string = "";
@@ -36,14 +36,14 @@ export class LiveSessionViewData extends SessionViewData
     {
       this.sessionGameId = liveSessionApiData.sessionGameId;
       this.sessionDbId = liveSessionApiData.dbId;
-      this.isFinised = liveSessionApiData.isFinished;
+      this.isFinished = liveSessionApiData.isFinished;
       this.currentCarsOnTrack = liveSessionApiData.currentCarsOnTrack;
       this.sessionDuration = CalculateTimes.timeSecondsToString(liveSessionApiData.sessionDuration);
       this.sessionTimeLeft = CalculateTimes.timeSecondsToString(liveSessionApiData.sessionTimeLeft);
       this.airTemperature = liveSessionApiData.airTemperature;
       this.trackTemperature = liveSessionApiData.trackTemperature;
       this.isSafetyCar = liveSessionApiData.isSafetyCar;
-      this.weatherCondition = this.matchWeatherCondidion(liveSessionApiData.weather);
+      this.weatherCondition = this.matchWeatherCondition(liveSessionApiData.weather);
       this.fastestSector1 = CalculateTimes.matchTimeOutput(liveSessionApiData.fastestSector1);
       this.fastestSector2 = CalculateTimes.matchTimeOutput(liveSessionApiData.fastestSector2);
       this.fastestSector3 = CalculateTimes.matchTimeOutput(liveSessionApiData.fastestSector3);
@@ -169,7 +169,7 @@ export class LiveSessionViewData extends SessionViewData
   }
 
   // Match weather condition
-  private matchWeatherCondidion(weather: number): string
+  private matchWeatherCondition(weather: number): string
   {
     let output = "";
 

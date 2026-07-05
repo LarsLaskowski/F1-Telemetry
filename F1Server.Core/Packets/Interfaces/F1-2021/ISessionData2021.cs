@@ -40,7 +40,7 @@ public interface ISessionData2021 : ISessionData2020
     ushort PitStopWindowIdealLap { get; }
 
     /// <summary>
-    /// Lates lap to pit on current strategy
+    /// Latest lap to pit on current strategy
     /// </summary>
     ushort PitStopWindowLatestLap { get; }
 

@@ -50,7 +50,7 @@ internal class PacketToLapData(PacketHeader packetHeader) : PacketToXBase(packet
                                                                    _ => null
                                                                };
 
-            if (packetDataBase != null
+            if (packetDataBase is not null
                 && ExtractCompleteLapData(ref memRef, HeaderSize, dataPacket.Length, packetDataBase.PacketData))
             {
                 lapDataObject = packetDataBase;
@@ -83,7 +83,7 @@ internal class PacketToLapData(PacketHeader packetHeader) : PacketToXBase(packet
     {
         var retValue = false;
 
-        if (offsetToStart > 0 && lapDataComplete?.LapData != null)
+        if (offsetToStart > 0 && lapDataComplete?.LapData is not null)
         {
             try
             {

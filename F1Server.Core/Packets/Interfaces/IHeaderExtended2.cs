@@ -13,7 +13,7 @@ public interface IHeaderExtended2
     ushort GameYear { get; }
 
     /// <summary>
-    /// Overall identifier for the frame the data was received (doesn't go back after falshbacks)
+    /// Overall identifier for the frame the data was received (doesn't go back after flashbacks)
     /// </summary>
     uint OverallFrameIdentifier { get; }
 

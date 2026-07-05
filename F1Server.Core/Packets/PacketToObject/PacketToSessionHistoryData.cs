@@ -46,7 +46,7 @@ internal class PacketToSessionHistoryData(PacketHeader packetHeader) : PacketToX
                                                          _ => null
                                                      };
 
-            if (sessionHistoryData != null
+            if (sessionHistoryData is not null
                 && HasValidPacketLength(dataPacket.Length, GetExpectedPayloadSize())
                 && ExtractSessionHistoryData(ref memRef, HeaderSize, sessionHistoryData.PacketData))
             {
@@ -140,7 +140,7 @@ internal class PacketToSessionHistoryData(PacketHeader packetHeader) : PacketToX
     {
         var retValue = false;
 
-        if (sessionHistoryData != null)
+        if (sessionHistoryData is not null)
         {
             var actOffset = offsetToStart;
 
@@ -174,7 +174,7 @@ internal class PacketToSessionHistoryData(PacketHeader packetHeader) : PacketToX
     {
         var retValue = false;
 
-        if (sessionHistoryData != null)
+        if (sessionHistoryData is not null)
         {
             var actOffset = offsetToStart;
 
@@ -208,7 +208,7 @@ internal class PacketToSessionHistoryData(PacketHeader packetHeader) : PacketToX
     {
         var retValue = false;
 
-        if (sessionHistoryData != null)
+        if (sessionHistoryData is not null)
         {
             var actOffset = offsetToStart;
 
@@ -287,7 +287,7 @@ internal class PacketToSessionHistoryData(PacketHeader packetHeader) : PacketToX
     {
         var retValue = false;
 
-        if (sessionHistoryData != null)
+        if (sessionHistoryData is not null)
         {
             var actOffset = offsetToStart;
 
@@ -366,7 +366,7 @@ internal class PacketToSessionHistoryData(PacketHeader packetHeader) : PacketToX
     {
         var retValue = false;
 
-        if (sessionHistoryData != null)
+        if (sessionHistoryData is not null)
         {
             var actOffset = offsetToStart;
 
@@ -445,7 +445,7 @@ internal class PacketToSessionHistoryData(PacketHeader packetHeader) : PacketToX
     {
         var retValue = false;
 
-        if (sessionHistoryData != null)
+        if (sessionHistoryData is not null)
         {
             var actOffset = offsetToStart;
 
@@ -524,7 +524,7 @@ internal class PacketToSessionHistoryData(PacketHeader packetHeader) : PacketToX
     {
         var actOffset = offsetToStart;
 
-        if (sessionHistoryData != null)
+        if (sessionHistoryData is not null)
         {
             try
             {
@@ -566,7 +566,7 @@ internal class PacketToSessionHistoryData(PacketHeader packetHeader) : PacketToX
     }
 
     /// <summary>
-    /// Extract session history base data
+    /// Extract session history laps
     /// </summary>
     /// <param name="dataPacket">Received data packet</param>
     /// <param name="offsetToStart">Offset to start</param>
@@ -577,7 +577,7 @@ internal class PacketToSessionHistoryData(PacketHeader packetHeader) : PacketToX
     {
         var actOffset = offsetToStart;
 
-        if (sessionHistoryData != null)
+        if (sessionHistoryData is not null)
         {
             try
             {
@@ -585,7 +585,7 @@ internal class PacketToSessionHistoryData(PacketHeader packetHeader) : PacketToX
                 {
                     var lapData = CreateGameDependentLapHistoryObject();
 
-                    if (lap < sessionHistoryData.NumberOfLaps && lapData != null)
+                    if (lap < sessionHistoryData.NumberOfLaps && lapData is not null)
                     {
                         ExtractSessionHistoryLapData(ref dataPacket, ref actOffset, lapData!);
 
@@ -624,7 +624,7 @@ internal class PacketToSessionHistoryData(PacketHeader packetHeader) : PacketToX
 
         actOffset += ConstData.TypeUInt16;
 
-        if (lapData23 != null)
+        if (lapData23 is not null)
         {
             lapData23.Sector1TimeMinutes = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
@@ -635,7 +635,7 @@ internal class PacketToSessionHistoryData(PacketHeader packetHeader) : PacketToX
 
         actOffset += ConstData.TypeUInt16;
 
-        if (lapData23 != null)
+        if (lapData23 is not null)
         {
             lapData23.Sector2TimeMinutes = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
@@ -646,7 +646,7 @@ internal class PacketToSessionHistoryData(PacketHeader packetHeader) : PacketToX
 
         actOffset += ConstData.TypeUInt16;
 
-        if (lapData23 != null)
+        if (lapData23 is not null)
         {
             lapData23.Sector3TimeMinutes = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
@@ -669,7 +669,7 @@ internal class PacketToSessionHistoryData(PacketHeader packetHeader) : PacketToX
     {
         var actOffset = offsetToStart;
 
-        if (sessionHistoryData != null)
+        if (sessionHistoryData is not null)
         {
             try
             {
@@ -677,7 +677,7 @@ internal class PacketToSessionHistoryData(PacketHeader packetHeader) : PacketToX
                 {
                     var tyreData = CreateGameDependentTyreStintObject();
 
-                    if (stint < sessionHistoryData.NumberOfTyreStints && tyreData != null)
+                    if (stint < sessionHistoryData.NumberOfTyreStints && tyreData is not null)
                     {
                         tyreData.EndLap = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 

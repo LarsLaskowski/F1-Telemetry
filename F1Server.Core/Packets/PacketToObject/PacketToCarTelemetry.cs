@@ -12,7 +12,7 @@ using F1Server.Core.Packets.Interfaces;
 namespace F1Server.Core.Packets.PacketToObject;
 
 /// <summary>
-/// Class to extract a car telemetry object from recevied packet
+/// Class to extract a car telemetry object from received packet
 /// </summary>
 /// <param name="packetHeader">Header of packet</param>
 internal class PacketToCarTelemetry(PacketHeader packetHeader) : PacketToXBase(packetHeader)
@@ -49,7 +49,7 @@ internal class PacketToCarTelemetry(PacketHeader packetHeader) : PacketToXBase(p
                                                                     _ => null
                                                                 };
 
-            if (packetDataBase != null
+            if (packetDataBase is not null
                 && HasValidPacketLength(dataPacket.Length, GetExpectedPayloadSize())
                 && ExtractCarTelemetry(ref memRef, HeaderSize, dataPacket.Length, packetDataBase.PacketData))
             {
@@ -619,7 +619,7 @@ internal class PacketToCarTelemetry(PacketHeader packetHeader) : PacketToXBase(p
     /// </summary>
     /// <param name="dataPacket">Data packet</param>
     /// <param name="actOffset">Current offset</param>
-    /// <param name="carTelemetryData">Car telemetry datsa</param>
+    /// <param name="carTelemetryData">Car telemetry data</param>
     /// <returns>New offset</returns>
     /// <exception cref="NotImplementedException">Invalid game version</exception>
     private int ExtractAdditionalValuesSince2020(ref byte dataPacket, int actOffset, ICarTelemetryDataBase carTelemetryData)

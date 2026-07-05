@@ -17,7 +17,7 @@ public class DbException : Exception
     }
 
     /// <summary>
-    /// Cosntructor
+    /// Constructor
     /// </summary>
     /// <param name="message">Exception message</param>
     /// <param name="innerException">Inner exception object</param>

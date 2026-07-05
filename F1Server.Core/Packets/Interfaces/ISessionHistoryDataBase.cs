@@ -33,7 +33,7 @@ public interface ISessionHistoryDataBase
     ushort BestSector1LapNumber { get; set; }
 
     /// <summary>
-    /// Number if lap with best sector 2 time
+    /// Number of lap with best sector 2 time
     /// </summary>
     ushort BestSector2LapNumber { get; set; }
 

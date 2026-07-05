@@ -13,7 +13,7 @@ using F1Server.Core.Utils;
 namespace F1Server.Core.Packets.PacketToObject;
 
 /// <summary>
-/// Class to extract a car status object from recevied packet
+/// Class to extract a car status object from received packet
 /// </summary>
 /// <param name="packetHeader">Header of packet</param>
 internal class PacketToCarStatus(PacketHeader packetHeader) : PacketToXBase(packetHeader)
@@ -50,7 +50,7 @@ internal class PacketToCarStatus(PacketHeader packetHeader) : PacketToXBase(pack
                                                                  _ => null
                                                              };
 
-            if (packetDataBase != null
+            if (packetDataBase is not null
                 && HasValidPacketLength(dataPacket.Length, GetExpectedPayloadSize())
                 && ExtractCarStatus(ref memRef, HeaderSize, dataPacket.Length, packetDataBase.PacketData))
             {
@@ -651,7 +651,7 @@ internal class PacketToCarStatus(PacketHeader packetHeader) : PacketToXBase(pack
     {
         int actOffset = offsetToStart;
 
-        if (carStatusData != null)
+        if (carStatusData is not null)
         {
             carStatusData.TractionControl = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
@@ -665,7 +665,7 @@ internal class PacketToCarStatus(PacketHeader packetHeader) : PacketToXBase(pack
 
             actOffset += ConstData.TypeUInt8;
 
-            carStatusData.FronBrakeBias = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
+            carStatusData.FrontBrakeBias = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
             actOffset += ConstData.TypeUInt8;
 
@@ -716,7 +716,7 @@ internal class PacketToCarStatus(PacketHeader packetHeader) : PacketToXBase(pack
     {
         int actOffset = offsetToStart;
 
-        if (carStatusData != null)
+        if (carStatusData is not null)
         {
             carStatusData.ActualTyreCompound = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
@@ -743,7 +743,7 @@ internal class PacketToCarStatus(PacketHeader packetHeader) : PacketToXBase(pack
     {
         int actOffset = offsetToStart;
 
-        if (carStatusData != null)
+        if (carStatusData is not null)
         {
             carStatusData.ERSStoreEnergy = Unsafe.ReadUnaligned<float>(ref Unsafe.Add(ref dataPacket, actOffset));
 
@@ -826,7 +826,7 @@ internal class PacketToCarStatus(PacketHeader packetHeader) : PacketToXBase(pack
     {
         int actOffset = offsetToStart;
 
-        if (carStatusData != null)
+        if (carStatusData is not null)
         {
             carStatusData.EnginePowerICE = Unsafe.ReadUnaligned<float>(ref Unsafe.Add(ref dataPacket, actOffset));
 

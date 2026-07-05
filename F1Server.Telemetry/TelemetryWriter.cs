@@ -65,7 +65,7 @@ public sealed class TelemetryWriter : ITelemetryWriter, IDisposable
     {
         _cultureInfo = CultureInfo.InvariantCulture;
 
-        using var currentActivty = AppActivity.SrvSource.StartActivity("TelemetryWriter");
+        using var currentActivity = AppActivity.SrvSource.StartActivity("TelemetryWriter");
 
         Configuration = serviceProvider.GetRequiredService<TelemetryConfiguration>();
 
@@ -79,12 +79,12 @@ public sealed class TelemetryWriter : ITelemetryWriter, IDisposable
 
                 IsReady = isReady.Status == Ready.StatusEnum.Ready;
 
-                currentActivty?.SetStatus(IsReady ? ActivityStatusCode.Ok : ActivityStatusCode.Error);
+                currentActivity?.SetStatus(IsReady ? ActivityStatusCode.Ok : ActivityStatusCode.Error);
             }
             catch (Exception ex)
             {
-                currentActivty?.SetStatus(ActivityStatusCode.Error);
-                currentActivty?.AddException(ex);
+                currentActivity?.SetStatus(ActivityStatusCode.Error);
+                currentActivity?.AddException(ex);
             }
 
             EnsureWriteTaskRunning();

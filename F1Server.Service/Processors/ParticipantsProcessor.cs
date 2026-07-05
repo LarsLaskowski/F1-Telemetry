@@ -128,7 +128,7 @@ internal class ParticipantsProcessor : BaseProcessor
     }
 
     /// <summary>
-    /// Check wether the current session is a network game
+    /// Check whether the current session is a network game
     /// </summary>
     /// <param name="sessionRuntimeData">Session runtime data</param>
     /// <param name="dbFactory">Database factory object</param>
@@ -326,7 +326,7 @@ internal class ParticipantsProcessor : BaseProcessor
     }
 
     /// <summary>
-    /// Check wether is myTeam mode
+    /// Check whether is myTeam mode
     /// </summary>
     /// <param name="participant">Participant</param>
     /// <param name="dbParticipant">Participant entity</param>

@@ -50,7 +50,7 @@ public class CarTelemetryData2020 : ICarTelemetryData2020
     public bool IsDRS { get; set; }
 
     /// <summary>
-    /// Rev ligthts indicator in percent
+    /// Rev lights indicator in percent
     /// </summary>
     public ushort RevLightsIndicator { get; set; }
 

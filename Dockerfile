@@ -43,7 +43,6 @@ LABEL org.opencontainers.image.base.digest="${BASE_RUNTIME_DIGEST}"
 
 EXPOSE 20777/udp
 EXPOSE 80
-EXPOSE 4820
 
 RUN apk add curl
 HEALTHCHECK --interval=5m --timeout=3s --retries=5 CMD curl --fail http://localhost/api/serverhealth || exit 1

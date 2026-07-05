@@ -35,7 +35,7 @@ public class LapData2019 : ILapData2019
     public float BestLapTime { get; set; }
 
     /// <summary>
-    /// Sector 1 time in milliseonds
+    /// Sector 1 time in milliseconds
     /// </summary>
     public float Sector1Time { get; set; }
 
@@ -49,12 +49,12 @@ public class LapData2019 : ILapData2019
     #region ILapDataBase
 
     /// <summary>
-    /// Distance vehicle is around current lap in meters, negativ is finish line not crossed yet
+    /// Distance vehicle is around current lap in meters, negative is finish line not crossed yet
     /// </summary>
     public float LapDistance { get; set; }
 
     /// <summary>
-    /// Total distance travelled in session in meters, can be negativ like <see cref="LapDistance"/>
+    /// Total distance travelled in session in meters, can be negative like <see cref="LapDistance"/>
     /// </summary>
     public float TotalDistance { get; set; }
 

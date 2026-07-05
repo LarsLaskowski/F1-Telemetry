@@ -93,7 +93,7 @@ public enum InfringementType
     /// <summary>
     /// Drive through reminder serve this lap
     /// </summary>
-    DriveThrouhgReminderThisLap,
+    DriveThroughReminderThisLap,
 
     /// <summary>
     /// Pit lane speeding

@@ -30,7 +30,7 @@ public class LapData2022 : ILapData2022
     public uint CurrentLapTime { get; set; }
 
     /// <summary>
-    /// Sector 1 time in milliseonds
+    /// Sector 1 time in milliseconds
     /// </summary>
     public ushort Sector1Time { get; set; }
 
@@ -44,12 +44,12 @@ public class LapData2022 : ILapData2022
     #region ILapDataBase
 
     /// <summary>
-    /// Distance vehicle is around current lap in meters, negativ is finish line not crossed yet
+    /// Distance vehicle is around current lap in meters, negative is finish line not crossed yet
     /// </summary>
     public float LapDistance { get; set; }
 
     /// <summary>
-    /// Total distance travelled in session in meters, can be negativ like <see cref="LapDistance"/>
+    /// Total distance travelled in session in meters, can be negative like <see cref="LapDistance"/>
     /// </summary>
     public float TotalDistance { get; set; }
 

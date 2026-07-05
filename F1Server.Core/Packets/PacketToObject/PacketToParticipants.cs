@@ -27,7 +27,7 @@ internal class PacketToParticipants(PacketHeader packetHeader) : PacketToXBase(p
     /// <returns>Participants data object</returns>
     public object? ExtractParticipantsDataPacket(ReadOnlySpan<byte> dataPacket)
     {
-        object? particpantsData = null;
+        object? participantsData = null;
 
         using var currentActivity = AppActivity.SrvSource.StartActivity("PacketToParticipants");
 
@@ -50,11 +50,11 @@ internal class PacketToParticipants(PacketHeader packetHeader) : PacketToXBase(p
                                                                     _ => null
                                                                 };
 
-            if (packetDataBase != null
+            if (packetDataBase is not null
                 && HasValidPacketLength(dataPacket.Length, GetExpectedPayloadSize())
                 && ExtractParticipantsData(ref memRef, HeaderSize, packetDataBase.PacketData))
             {
-                particpantsData = packetDataBase;
+                participantsData = packetDataBase;
             }
         }
 
@@ -65,7 +65,7 @@ internal class PacketToParticipants(PacketHeader packetHeader) : PacketToXBase(p
             currentActivity?.SetStatus(ActivityStatusCode.Error, LastError);
         }
 
-        return particpantsData;
+        return participantsData;
     }
 
     #endregion // Methods
@@ -103,7 +103,7 @@ internal class PacketToParticipants(PacketHeader packetHeader) : PacketToXBase(p
     {
         var retValue = false;
 
-        if (offsetToStart > 0 && participantsData != null)
+        if (offsetToStart > 0 && participantsData is not null)
         {
             int actOffset = offsetToStart;
 
@@ -135,7 +135,7 @@ internal class PacketToParticipants(PacketHeader packetHeader) : PacketToXBase(p
     {
         var retValue = false;
 
-        if (offsetToStart > 0 && participantsData != null)
+        if (offsetToStart > 0 && participantsData is not null)
         {
             try
             {
@@ -156,7 +156,7 @@ internal class PacketToParticipants(PacketHeader packetHeader) : PacketToXBase(p
                                                                 _ => null
                                                             };
 
-                    if (participantData != null)
+                    if (participantData is not null)
                     {
                         participantsData[participants] = participantData;
 

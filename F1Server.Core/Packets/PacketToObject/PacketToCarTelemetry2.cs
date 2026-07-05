@@ -41,7 +41,7 @@ internal class PacketToCarTelemetry2(PacketHeader packetHeader) : PacketToXBase(
                                                                      _ => null
                                                                  };
 
-            if (packetDataBase != null
+            if (packetDataBase is not null
                 && HasValidPacketLength(dataPacket.Length, ConstData.F12026CarTelemetry2Size)
                 && ExtractCarTelemetry2(ref memRef, HeaderSize, dataPacket.Length, packetDataBase.PacketData))
             {
@@ -75,7 +75,7 @@ internal class PacketToCarTelemetry2(PacketHeader packetHeader) : PacketToXBase(
     {
         var retValue = false;
 
-        if (packetLength >= offsetToStart && carTelemetry2Data?.CarTelemetry2Data != null)
+        if (packetLength >= offsetToStart && carTelemetry2Data?.CarTelemetry2Data is not null)
         {
             try
             {

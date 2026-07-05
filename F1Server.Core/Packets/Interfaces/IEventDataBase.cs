@@ -1,7 +1,7 @@
 ﻿namespace F1Server.Core.Packets.Interfaces;
 
 /// <summary>
-/// BAse interface for all event data interfaces
+/// Base interface for all event data interfaces
 /// </summary>
 public interface IEventDataBase
 {

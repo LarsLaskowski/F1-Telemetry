@@ -3,7 +3,7 @@
 namespace F1Server.Core.Packets.Interfaces;
 
 /// <summary>
-/// Interface for car telemetry packets across all F1 game version
+/// Interface for car telemetry packets across all F1 game versions
 /// </summary>
 public interface ICarTelemetryDataBase
 {
@@ -50,7 +50,7 @@ public interface ICarTelemetryDataBase
     bool IsDRS { get; set; }
 
     /// <summary>
-    /// Rev ligthts indicator in percent
+    /// Rev lights indicator in percent
     /// </summary>
     ushort RevLightsIndicator { get; set; }
 

@@ -1,7 +1,7 @@
 namespace F1Server.Data;
 
 /// <summary>
-/// Lap data, independed from game version
+/// Data for creating a new championship
 /// </summary>
 public class ChampionshipCreateData
 {

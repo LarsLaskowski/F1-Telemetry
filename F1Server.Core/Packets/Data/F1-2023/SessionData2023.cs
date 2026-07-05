@@ -178,7 +178,7 @@ public class SessionData2023 : ISessionData2023
     public ushort PitStopWindowIdealLap { get; set; }
 
     /// <summary>
-    /// Lates lap to pit on current strategy
+    /// Latest lap to pit on current strategy
     /// </summary>
     public ushort PitStopWindowLatestLap { get; set; }
 
@@ -213,7 +213,7 @@ public class SessionData2023 : ISessionData2023
     public bool IsPitReleaseAssist { get; set; }
 
     /// <summary>
-    /// ERS assist ón or off
+    /// ERS assist on or off
     /// </summary>
     public bool IsERSAssist { get; set; }
 

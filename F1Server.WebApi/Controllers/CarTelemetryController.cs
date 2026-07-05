@@ -117,7 +117,7 @@ public class CarTelemetryController : ControllerBase
     /// Reading telemetry data of fastest lap for given participant and session
     /// </summary>
     /// <param name="participantId">Id of participant</param>
-    /// <returns>Telememetry data</returns>
+    /// <returns>Telemetry data</returns>
     [Route("TelemetryByParticipantFastestLap/{participantId}")]
     [HttpGet]
     public IActionResult TelemetryOfParticipantFastestLap(long participantId)

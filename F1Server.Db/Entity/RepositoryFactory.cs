@@ -153,7 +153,7 @@ public sealed class RepositoryFactory : IDisposable
     #region IDisposable
 
     /// <summary>
-    /// Dipose
+    /// Dispose
     /// </summary>
     public void Dispose()
     {

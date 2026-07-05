@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, Inject } from '@angular/core';
+import { ChangeDetectorRef, Component, Inject, OnDestroy, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { SignalrService } from '../services/signalr.service';
@@ -15,7 +15,7 @@ import { DriverViewData } from '../data/driverviewdata';
   templateUrl: './livesession.component.html'
 })
 
-export class LiveSessionComponent
+export class LiveSessionComponent implements OnInit, OnDestroy
 {
   public liveSession!: LiveSessionViewData;
   private updateSubscription!: Subscription;

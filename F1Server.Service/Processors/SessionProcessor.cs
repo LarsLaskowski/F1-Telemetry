@@ -574,7 +574,7 @@ internal class SessionProcessor : BaseProcessor
     }
 
     /// <summary>
-    /// Check wether telemetry data should be recorded
+    /// Check whether telemetry data should be recorded
     /// </summary>
     /// <param name="sessionRuntimeData">Session runtime data</param>
     /// <param name="sessionData">Session data</param>

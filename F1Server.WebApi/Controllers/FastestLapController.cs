@@ -196,7 +196,7 @@ public class FastestLapController : ControllerBase
     /// <param name="dbFactory">Database factory object</param>
     /// <param name="dbSessions">Sessions</param>
     /// <param name="formulaType">Type of formula</param>
-    /// <returns>List with fastests laps</returns>
+    /// <returns>List with fastest laps</returns>
     private List<FastestLapOfTrackViewData>? GetFastestLapsOfSessions(long trackId, RepositoryFactory dbFactory, List<SessionEntity> dbSessions, Formula formulaType)
     {
         List<FastestLapOfTrackViewData>? fastestLaps = null;
@@ -285,7 +285,7 @@ public class FastestLapController : ControllerBase
     }
 
     /// <summary>
-    /// Get data of fastests laps
+    /// Get data of fastest lap
     /// </summary>
     /// <param name="dbFactory">Database factory object</param>
     /// <param name="fastestLap">Fastest lap entity</param>
@@ -328,11 +328,11 @@ public class FastestLapController : ControllerBase
     }
 
     /// <summary>
-    /// Determin fastest lap in practice sessions
+    /// Determine fastest lap in practice sessions
     /// </summary>
     /// <param name="dbFactory">DB-Factory object</param>
     /// <param name="dbSessions">Practice sessions</param>
-    /// <param name="sessionTypes">Typ of sessions</param>
+    /// <param name="sessionTypes">Type of sessions</param>
     /// <returns>Lap entity</returns>
     private LapEntity? FastestLapInSessions(RepositoryFactory dbFactory, List<SessionEntity> dbSessions, List<SessionType> sessionTypes)
     {
