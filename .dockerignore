@@ -9,6 +9,11 @@
 **/Dockerfile*
 **/.git
 **/.vs
+**/node_modules
+**/dist
+**/.angular
+secrets/
+.env
 LICENSE
 README.md
 *.user
