@@ -3,7 +3,11 @@
 Detailed performance review of the path an incoming UDP packet takes from the socket to the
 database and the live/runtime data structures. The review is written so that one or more agents
 can split it into individual GitHub issues and work on them independently — every finding has a
-stable ID, exact code locations, an impact assessment, and a concrete recommendation.
+stable ID (`PERF-xx` for performance, `CORR-xx` for correctness issues discovered along the
+way), exact code locations, an impact assessment, and a concrete recommendation. All findings
+were re-verified against the code in a second pass (line numbers, call chains, packet
+frequencies against the spec documents in `docs/`, and index definitions against the EF model
+snapshot).
 
 **Scope:** `F1Server.Service` (TelemetryClient, PacketProcessor, processors, runtime data,
 caches), `F1Server.Core` (header parsing, PacketAnalyzer, PacketToObject), `F1Server.Db`
@@ -52,10 +56,12 @@ Runtime data (SessionRuntimeData / ParticipantRuntimeData)
         └── EF Core → MariaDB / MsSql / PostgreSQL (SaveChanges per operation)
 ```
 
-Packet frequencies (per EA spec, race with 22 cars): CarTelemetry, Motion, LapData up to 60 Hz;
-CarStatus/CarDamage ~10 Hz; Session 2 Hz; SessionHistory ~20 packets/s (one car per packet,
-cycled); after FinalClassification a bulk of SessionHistory packets arrives. A one-hour session
-easily produces several hundred thousand datagrams.
+Packet frequencies (verified against `docs/F1 2024 Telemetry.md`, race with 22 cars): Motion,
+LapData, CarTelemetry and **CarStatus** all arrive at the send rate configured in the game menus
+(10-60 Hz each); CarDamage 10/s; Session and CarSetups 2/s; Participants every 5 s; TimeTrial
+1/s; SessionHistory and TyreSets 20/s (one car per packet, cycled); after FinalClassification a
+bulk of SessionHistory packets arrives. A one-hour session easily produces several hundred
+thousand datagrams.
 
 ### What already works well (do not "fix" these)
 
@@ -95,10 +101,11 @@ Severity scale:
   (`ParticipantRuntimeData.AddLap/CompleteLap/RemoveLap`), per Session packet
   (`SessionProcessor.Process`, 2 Hz), per finished-lap check in every SessionHistory packet
   (`SessionHistoryProcessor.UpdateFinishedLap`), in `SessionRuntimeData` property setters, etc.
-- **Impact:** Context construction + options building + service-provider resolution thousands of
-  times per session; EF's internal service provider is only cached per options hash, so this
-  mostly works but still burns CPU and allocations on every call, and prevents EF from reusing
-  compiled queries efficiently across short-lived contexts with per-instance options instances.
+- **Impact:** Context construction, env-var reads, connection-string building, options building
+  and a `new CommandInterceptor()` allocation happen thousands of times per session. (EF's
+  internal service provider *is* cached across contexts because the options hash to equal values
+  and interceptors are excluded from that hash — the model and compiled-query caches survive —
+  but everything listed above is paid per instance.)
 - **Recommendation:** Build `DbContextOptions<F1ServerDbContext>` **once** at startup (env vars
   cannot change while the process runs) and back `RepositoryFactory` with a
   `PooledDbContextFactory<F1ServerDbContext>`. Keep the public `RepositoryFactory` API
@@ -157,23 +164,59 @@ Severity scale:
   not found in `_unfinishedLaps`, `UpdateFinishedLap` runs — and it creates a
   RepositoryFactory/DbContext **before** checking whether anything changed at all. With ~20
   history packets/s and up to 100 laps per car, this creates up to ~2,000 contexts/s in the worst
-  case (late race). The `LapRepositoryCache` avoids the SELECT, but not the context, and the
-  change detection compares against the *cached* entity: `isInvalidLapTime` is recomputed from the
-  cached entity's own times on every packet and compared to the stored flag — if
-  `ValidateLapTimes` disagrees with what was stored (e.g., reference times were 0 when the lap
-  was created), the same UPDATE fires again on **every** history packet for that car.
-- **Impact:** Sustained per-packet DB work in the second half of a session; potential repeated
-  identical UPDATEs at ~1/s per car for the rest of the session.
+  case (late race). The `LapRepositoryCache` avoids the SELECT, but not the context. Worse, the
+  change detection never converges once a difference appears: `Refresh` writes the new values
+  only onto the freshly loaded DB entity (`obj`), **never onto the cached `lapDbData` instance**,
+  and `LapRepositoryCache.AddOrUpdate(lapDbData)` then re-caches that stale instance. From that
+  point on, `lapDbData.LapTime != lapData.LapTime` stays true and the same UPDATE fires again on
+  **every** subsequent history packet for that car until the session ends.
+- **Impact:** Sustained per-packet DB work in the second half of a session; once any lap's
+  history values change, repeated identical UPDATEs at ~1/s per affected car for the rest of the
+  session.
 - **Recommendation:** (a) Hoist the change check above the factory creation — create the context
   only when a write is actually needed (one factory per *packet*, not per lap, when writes
-  happen). (b) Update the cached entity's `IsInvalidLapTime` after writing so the comparison
-  converges (the cache update `LapRepositoryCache.AddOrUpdate(lapDbData)` currently re-adds the
-  same instance whose times were never copied from `lapData` — copy the new values onto the
-  cached entity first). (c) Skip the whole per-lap loop early when
+  happen). (b) Copy the new values (times + `IsInvalidLapTime`) onto the cached entity before
+  `AddOrUpdate` so the comparison converges. (c) Skip the whole per-lap loop early when
   `NumberOfLaps`/lap contents did not change since the last packet for this car (cheap
-  per-car checksum/last-seen lap counter in `ParticipantRuntimeData`).
+  per-car checksum/last-seen lap counter in `ParticipantRuntimeData`). See also CORR-01 — the
+  cache-miss branch of the same method inserts duplicate laps.
 - **Suggested issue:** *SessionHistoryProcessor: create DbContext lazily and make lap-diff
   detection converge*
+
+#### CORR-01 (Critical, correctness — found while verifying PERF-04) — Completed laps are suspected to be inserted twice
+
+- **Location:** `F1Server.Service/Runtime/ParticipantRuntimeData.cs:298-330` (`CompleteLap`:
+  removes the lap from `_unfinishedLaps`, upserts the DB row, but never touches
+  `LapRepositoryCache`), `F1Server.Service/Processors/SessionHistoryProcessor.cs:231-268`
+  (`UpdateFinishedLap` cache-miss branch), `281-327` (`CreateLap`: unconditional
+  `LapRepository.Add`), `F1Server.Service/Cache/LapRepositoryCache.cs` (pure in-memory
+  dictionary — unlike `SessionRepositoryCache` it has **no** database fallback on miss)
+- **Problem:** `LapRepositoryCache` is populated in exactly two places, both inside
+  `SessionHistoryProcessor` (lines 257 and 322). Laps that complete through the normal LapData
+  path (`LapDataProcessor.CheckLastLap` → `CompleteLap`) or through the history path itself
+  (`SessionHistoryProcessor` line 172 → `CompleteLap`) are removed from `_unfinishedLaps`
+  without ever entering the cache. The **next** SessionHistory packet for that car iterates all
+  laps again: lap N is no longer in `_unfinishedLaps` (→ `UpdateFinishedLap`), not in the cache,
+  and the cache does not fall back to the DB — so `CreateLap` runs and inserts a **second row**
+  for the same `(SessionId, ParticipantId, LapNumber)` via plain `Add`. Nothing at the database
+  level can reject it either: the model snapshot contains **zero unique indexes** (verified —
+  no `IsUnique` in `F1ServerDbContextModelSnapshot.cs`; the `[Index]` attributes on `LapEntity`
+  are all non-unique).
+- **Impact:** Suspected one duplicate lap row per completed lap per car in F1 2021+ sessions —
+  both a data-quality problem (duplicate laps in every downstream query, fastest-lap statistics,
+  cleanups) and a performance problem (an extra INSERT per lap per car; subsequent
+  `AddOrRefresh(ParticipantId, LapNumber)` upserts non-deterministically hit one of two rows;
+  cleanup passes process twice the rows). Static analysis is unambiguous, but the finding should
+  be confirmed with a reproducing test before large refactors build on top of it.
+- **Recommendation:** (1) Reproduce with an MSTest case (InMemory provider,
+  `F1SERVER_DATABASE_TYPE=99`): complete a lap via `CompleteLap`, then process a SessionHistory
+  packet containing that lap, assert lap count == 1. (2) Fix the write path: on cache miss,
+  check the DB for `(ParticipantId, LapNumber)` before inserting (or add the completed lap to
+  `LapRepositoryCache` inside `CompleteLap`/`AddLap`). (3) Add a **unique index** on
+  `Laps(SessionId, ParticipantId, LapNumber)` (new migration `Update{n}` for all three
+  providers) so this whole class of bug becomes impossible — this also protects the concurrent
+  upsert paths from PERF-04/PERF-06.
+- **Suggested issue:** *Prevent duplicate lap rows (cache population + unique index)*
 
 #### PERF-05 (High) — AutoInclude turns every lap lookup into a 4-table join
 
@@ -254,16 +297,19 @@ Severity scale:
   logging for whatever remains.
 - **Suggested issue:** *Remove per-packet INFO logging from the ingest hot path*
 
-#### PERF-10 (High) — `ConcurrentQueue<T>.Count` (O(n) snapshot) is sampled twice per packet
+#### PERF-10 (High) — `ConcurrentQueue<T>.Count` (not O(1)) is sampled twice per packet
 
 - **Location:** `F1Server.Service/TelemetryClient.cs:382, 480`
   (`AppMetrics.PacketsInQueue.Record(_packetQueue.Count)`),
   `F1Server.Service/Runtime/PacketProcessor.cs:111` (`QueuedPackets => _queuedPackets?.Count`),
   read per packet at `TelemetryClient.cs:529`
-- **Problem:** `ConcurrentQueue<T>.Count` walks the segment list and is not O(1). It is called on
-  every enqueue *and* every dequeue, plus `PacketProcessor.QueuedPackets` per processed packet —
-  exactly when the queue is large (backlog) the count gets most expensive.
-- **Impact:** Superlinear cost growth under backlog — the metric makes the congestion worse.
+- **Problem:** `ConcurrentQueue<T>.Count` is not a cheap field read: it must stabilize a
+  consistent head/tail snapshot and takes the internal cross-segment lock once the queue spans
+  more than two segments — i.e., it gets more expensive exactly when the queue backs up. It is
+  called on every enqueue *and* every dequeue, plus `PacketProcessor.QueuedPackets` per
+  processed packet.
+- **Impact:** Per-packet synchronization on the queue that grows with backlog — the metric makes
+  the congestion worse.
 - **Recommendation:** The class already maintains `_queuedPackets` via `Interlocked` — record
   that value instead of `_packetQueue.Count`. Same for `PacketProcessor` (maintain an
   `Interlocked` counter next to the queue). Alternatively sample the gauge on the statistics
@@ -345,10 +391,13 @@ Severity scale:
   At 300-500 packets/s this floods the thread pool and event ordering is lost.
 - **Impact:** Scheduling overhead and allocations per packet; subscribers see packets out of
   order.
-- **Recommendation:** Invoke the handler synchronously if subscribers are cheap (UI/console
-  status), or push the header into a dedicated bounded channel consumed by one dispatcher task.
-  Skip entirely when there are no subscribers (already guarded) — check what actually subscribes
-  in `F1Server`; if it is only the console status line, throttling to a few events/s is enough.
+- **Recommendation:** The subscriber chain is always non-null (`TelemetryClient` subscribes in
+  its constructor and forwards to `F1Server/Program.cs:103`), so the `Task.Run` fires for
+  literally every packet. The only end consumer (`Program.OnPacketReceived:429-443`) merely
+  prints to the console **when the game version or session id changes** — both changes are
+  already detected inside `PacketProcessor.ProcessPacket` (lines 160-179). Raise the event only
+  on those changes (or invoke synchronously); this removes one thread-pool work item and one
+  `PacketReceivedEventArgs` allocation per packet with zero functional loss.
 - **Suggested issue:** *Stop spawning a Task per packet for PacketReceived*
 
 #### PERF-16 (Medium) — Per-packet Activities across the whole pipeline (4-6 spans per packet, more per DB command)
@@ -358,8 +407,9 @@ Severity scale:
   `PacketProcessor.AnalyzePacket:282`, every processor (`LapDataProcessor:62`,
   `CarTelemetryProcessor:61`, …), every `PacketToX` transformation
   (`PacketToCarTelemetry.cs:31`), and `F1Server.Db/Entity/CommandInterceptor.cs` (a span for
-  *Executing and *Executed of every DB command — duplicating what the EF Core instrumentation
-  already provides).
+  *Executing and *Executed of every DB command — verified duplication: `F1Server.Observability/ObservabilityConfiguration.cs:101`
+  already registers `AddEntityFrameworkCoreInstrumentation()`, so every SQL command is traced
+  by both mechanisms).
 - **Problem:** With an OTLP listener attached, every datagram produces 4-6 spans plus 2 spans per
   SQL command; tags are stringified per span. Without a listener the cost is small but not zero
   (null checks, `using` frames).
@@ -404,10 +454,11 @@ Severity scale:
 #### PERF-19 (Medium) — Full managed object graph + transformation object allocated per packet
 
 - **Location:** `F1Server.Core/PacketAnalyzer.cs` (a `new PacketToXxx(packetHeader)` per
-  packet), `F1Server.Core/Packets/PacketToObject/PacketToCarTelemetry.cs:39-50` (per packet: a
-  `CarTelemetry` wrapper, a `CarTelemetry20xx` payload object, and inside 22-24 per-car data
-  objects incl. nested wheel-data arrays); same pattern for LapData, CarStatus, SessionHistory,
-  Session
+  packet), `F1Server.Core/Packets/PacketToObject/PacketToCarTelemetry.cs:39-50`;
+  `F1Server.Core/Packets/Data/F1-2025/CarTelemetry2025.cs:15-32` (constructor eagerly allocates
+  the array, 22 `CarTelemetryData2025` objects and 5 nested objects per car — together with the
+  wrapper ~135 heap allocations per CarTelemetry packet before a single byte is parsed); same
+  pattern for LapData, CarStatus, SessionHistory, Session
 - **Problem:** For the high-frequency packets, each datagram is expanded into dozens of small
   heap objects even though most consumers read only a handful of fields (e.g., CarTelemetry
   processing uses the data only for human drivers / recordable laps; LapData maps into
@@ -455,9 +506,13 @@ Severity scale:
 #### PERF-22 (Low) — `LapDataProcessor.UpdateSessionInformation` re-runs LINQ ordering per packet while the timetable is empty
 
 - **Location:** `F1Server.Service/Processors/LapDataProcessor.cs:137-153`
-- **Problem:** While `TimeTable.Count == 0` (whole first lap of a race), every LapData packet
-  runs up to two `Where/OrderBy/Select/ToList` chains over all drivers.
-- **Impact:** Bounded (n = 22) but repeated ~60×/s during the opening lap; allocation per call.
+- **Problem:** While `TimeTable.Count == 0`, every LapData packet runs up to two
+  `Where/OrderBy/Select/ToList` chains over all drivers. The state is transient — the first
+  packet in which any driver has a grid or car position produces a non-empty table — but in
+  session phases where neither is populated yet, both chains run on every LapData packet
+  (up to 60 Hz).
+- **Impact:** Bounded (n = 22) and mostly transient; allocation and sorting per call while
+  active.
 - **Recommendation:** Compute once when grid positions become known (Participants/first LapData
   packet) and only recompute on change; or mark dirty via a flag.
 - **Suggested issue:** can be bundled with PERF-21
@@ -486,30 +541,33 @@ expected payoff; sizes are rough (S ≤ ½ day, M ≈ 1-2 days, L > 2 days incl.
 
 | # | Issue title | Findings | Priority | Size |
 |---|---|---|---|---|
-| 1 | Introduce DbContext pooling behind RepositoryFactory | PERF-01 | Critical | M |
-| 2 | Move lap/telemetry persistence to an async background DB writer | PERF-02, PERF-23 | Critical | L |
-| 3 | Fast insert path for CarTelemetry batches | PERF-03 | High | M |
-| 4 | SessionHistoryProcessor: lazy context + convergent lap-diff detection | PERF-04 | High | M |
-| 5 | Remove/bypass EF AutoIncludes in hot lap and telemetry queries | PERF-05 | High | S |
-| 6 | Eliminate redundant round-trips in AddLap | PERF-06 | High | S |
-| 7 | Remove per-packet INFO logging from the ingest hot path | PERF-09 | High | S |
-| 8 | Replace ConcurrentQueue.Count sampling with O(1) counters | PERF-10 | High | S |
-| 9 | Stop spawning a Task per packet for PacketReceived | PERF-15 | High | S |
-| 10 | Replace polling queue workers with System.Threading.Channels | PERF-13, PERF-14 | Medium | M |
-| 11 | Reduce per-datagram allocations in the UDP receive path | PERF-12, PERF-20 | Medium | M |
-| 12 | Cheap per-packet bookkeeping (timeout timestamp, atomic statistics) | PERF-11 | Medium | S |
-| 13 | Set-based deletes for session cleanup paths | PERF-07 | Medium | S |
-| 14 | SessionProcessor: lazy DbContext creation | PERF-08 | Medium | S |
-| 15 | Reduce tracing volume in the per-packet hot path | PERF-16 | Medium | M |
-| 16 | O(1) live-driver lookup in per-car packet loops | PERF-21, PERF-22 | Medium | S |
-| 17 | Reduce per-packet allocations in packet-to-object transformation | PERF-19 | Medium | L |
-| 18 | Simplify ProcessorFactory / repository construction | PERF-17, PERF-18 | Low | S |
+| 1 | Prevent duplicate lap rows (cache population + unique index) | CORR-01 | Critical | M |
+| 2 | Introduce DbContext pooling behind RepositoryFactory | PERF-01 | Critical | M |
+| 3 | Move lap/telemetry persistence to an async background DB writer | PERF-02, PERF-23 | Critical | L |
+| 4 | Fast insert path for CarTelemetry batches | PERF-03 | High | M |
+| 5 | SessionHistoryProcessor: lazy context + convergent lap-diff detection | PERF-04 | High | M |
+| 6 | Remove/bypass EF AutoIncludes in hot lap and telemetry queries | PERF-05 | High | S |
+| 7 | Eliminate redundant round-trips in AddLap | PERF-06 | High | S |
+| 8 | Remove per-packet INFO logging from the ingest hot path | PERF-09 | High | S |
+| 9 | Replace ConcurrentQueue.Count sampling with O(1) counters | PERF-10 | High | S |
+| 10 | Raise PacketReceived only on game/session change instead of Task per packet | PERF-15 | High | S |
+| 11 | Replace polling queue workers with System.Threading.Channels | PERF-13, PERF-14 | Medium | M |
+| 12 | Reduce per-datagram allocations in the UDP receive path | PERF-12, PERF-20 | Medium | M |
+| 13 | Cheap per-packet bookkeeping (timeout timestamp, atomic statistics) | PERF-11 | Medium | S |
+| 14 | Set-based deletes for session cleanup paths | PERF-07 | Medium | S |
+| 15 | SessionProcessor: lazy DbContext creation | PERF-08 | Medium | S |
+| 16 | Reduce tracing volume in the per-packet hot path | PERF-16 | Medium | M |
+| 17 | O(1) live-driver lookup in per-car packet loops | PERF-21, PERF-22 | Medium | S |
+| 18 | Reduce per-packet allocations in packet-to-object transformation | PERF-19 | Medium | L |
+| 19 | Simplify ProcessorFactory / repository construction | PERF-17, PERF-18 | Low | S |
 
 Notes for the executing agent(s):
 
-- Issues 1 and 2 are the foundation; several later issues get simpler (or partially obsolete)
-  once they land. Do them first and in this order.
-- Issue 2 changes threading semantics: everything currently guarded by the single processing
+- Issue 1 (CORR-01) must come first: it needs a reproducing test before anything else, and its
+  unique index changes the write paths that issues 3-7 touch.
+- Issues 2 and 3 are the foundation for the remaining DB work; several later issues get simpler
+  (or partially obsolete) once they land. Do them in this order.
+- Issue 3 changes threading semantics: everything currently guarded by the single processing
   thread (runtime data mutation) must stay on that thread — only the *DB write jobs* move to the
   writer. Define the job types (`InsertLap`, `CompleteLap`, `InsertTelemetryBatch`,
   `UpdateSessionAttribute`, `DeleteLap`) explicitly.
