@@ -539,35 +539,40 @@ Severity scale:
 The findings compose into the following work packages. Ordering reflects dependency and
 expected payoff; sizes are rough (S ≤ ½ day, M ≈ 1-2 days, L > 2 days incl. tests).
 
-| # | Issue title | Findings | Priority | Size |
+| Issue | Title | Findings | Priority | Size |
 |---|---|---|---|---|
-| 1 | Prevent duplicate lap rows (cache population + unique index) | CORR-01 | Critical | M |
-| 2 | Introduce DbContext pooling behind RepositoryFactory | PERF-01 | Critical | M |
-| 3 | Move lap/telemetry persistence to an async background DB writer | PERF-02, PERF-23 | Critical | L |
-| 4 | Fast insert path for CarTelemetry batches | PERF-03 | High | M |
-| 5 | SessionHistoryProcessor: lazy context + convergent lap-diff detection | PERF-04 | High | M |
-| 6 | Remove/bypass EF AutoIncludes in hot lap and telemetry queries | PERF-05 | High | S |
-| 7 | Eliminate redundant round-trips in AddLap | PERF-06 | High | S |
-| 8 | Remove per-packet INFO logging from the ingest hot path | PERF-09 | High | S |
-| 9 | Replace ConcurrentQueue.Count sampling with O(1) counters | PERF-10 | High | S |
-| 10 | Raise PacketReceived only on game/session change instead of Task per packet | PERF-15 | High | S |
-| 11 | Replace polling queue workers with System.Threading.Channels | PERF-13, PERF-14 | Medium | M |
-| 12 | Reduce per-datagram allocations in the UDP receive path | PERF-12, PERF-20 | Medium | M |
-| 13 | Cheap per-packet bookkeeping (timeout timestamp, atomic statistics) | PERF-11 | Medium | S |
-| 14 | Set-based deletes for session cleanup paths | PERF-07 | Medium | S |
-| 15 | SessionProcessor: lazy DbContext creation | PERF-08 | Medium | S |
-| 16 | Reduce tracing volume in the per-packet hot path | PERF-16 | Medium | M |
-| 17 | O(1) live-driver lookup in per-car packet loops | PERF-21, PERF-22 | Medium | S |
-| 18 | Reduce per-packet allocations in packet-to-object transformation | PERF-19 | Medium | L |
-| 19 | Simplify ProcessorFactory / repository construction | PERF-17, PERF-18 | Low | S |
+| #419 | Prevent duplicate lap rows (cache population + unique index) | CORR-01 | Critical | M |
+| #420 | Introduce DbContext pooling behind RepositoryFactory | PERF-01 | Critical | M |
+| #421 | Move lap/telemetry persistence to an async background DB writer | PERF-02, PERF-23 | Critical | L |
+| #422 | Fast insert path for CarTelemetry batches | PERF-03 | High | M |
+| #423 | SessionHistoryProcessor: lazy context + convergent lap-diff detection | PERF-04 | High | M |
+| #424 | Remove/bypass EF AutoIncludes in hot lap and telemetry queries | PERF-05 | High | S |
+| #425 | Eliminate redundant round-trips in AddLap | PERF-06 | High | S |
+| #184 | Remove per-packet INFO logging from the ingest hot path (pre-existing issue) | PERF-09 | High | S |
+| #426 | Replace ConcurrentQueue.Count sampling with O(1) counters | PERF-10 | High | S |
+| #185 | Raise PacketReceived only on game/session change (pre-existing issue, see comment) | PERF-15 | High | S |
+| #427 | Replace polling queue workers with System.Threading.Channels | PERF-13, PERF-14 | Medium | M |
+| #428 | Reduce per-datagram allocations in the UDP receive path (extends #39) | PERF-12, PERF-20 | Medium | M |
+| #429 | Cheap per-packet bookkeeping (timeout timestamp, atomic statistics) | PERF-11 | Medium | S |
+| #430 | Set-based deletes for session cleanup paths | PERF-07 | Medium | S |
+| #431 | SessionProcessor: lazy DbContext creation | PERF-08 | Medium | S |
+| #432 | Reduce tracing volume in the per-packet hot path | PERF-16 | Medium | M |
+| #433 | O(1) live-driver lookup in per-car packet loops | PERF-21, PERF-22 | Medium | S |
+| #434 | Reduce per-packet allocations in packet-to-object transformation | PERF-19 | Medium | L |
+| #435 | Simplify ProcessorFactory / repository construction | PERF-17, PERF-18 | Low | S |
+
+PERF-09 and PERF-15 were already tracked by pre-existing issues #184 and #185 from the earlier
+repository-wide review; no duplicates were created. The additional PERF-15 analysis (single
+console subscriber, fire on change only) was posted as a comment on #185. Issue #39 covers the
+`SetRawData` copy portion of PERF-12 and is extended by #428.
 
 Notes for the executing agent(s):
 
-- Issue 1 (CORR-01) must come first: it needs a reproducing test before anything else, and its
-  unique index changes the write paths that issues 3-7 touch.
-- Issues 2 and 3 are the foundation for the remaining DB work; several later issues get simpler
+- #419 (CORR-01) must come first: it needs a reproducing test before anything else, and its
+  unique index changes the write paths that #421-#425 touch.
+- #420 and #421 are the foundation for the remaining DB work; several later issues get simpler
   (or partially obsolete) once they land. Do them in this order.
-- Issue 3 changes threading semantics: everything currently guarded by the single processing
+- #421 changes threading semantics: everything currently guarded by the single processing
   thread (runtime data mutation) must stay on that thread — only the *DB write jobs* move to the
   writer. Define the job types (`InsertLap`, `CompleteLap`, `InsertTelemetryBatch`,
   `UpdateSessionAttribute`, `DeleteLap`) explicitly.
