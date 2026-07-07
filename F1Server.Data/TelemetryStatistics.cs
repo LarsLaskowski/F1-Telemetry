@@ -7,6 +7,13 @@ namespace F1Server.Data;
 /// </summary>
 public class TelemetryStatistics
 {
+    #region Fields
+
+    private long _packetsReceivedTotal;
+    private long _packetsReceivedCurrentSession;
+
+    #endregion // Fields
+
     #region Events
 
     /// <summary>
@@ -41,12 +48,12 @@ public class TelemetryStatistics
     /// <summary>
     /// Total numbers of packets received
     /// </summary>
-    public long PacketsReceivedTotal { get; set; }
+    public long PacketsReceivedTotal => Volatile.Read(ref _packetsReceivedTotal);
 
     /// <summary>
     /// Number of packets received for current session
     /// </summary>
-    public long PacketsReceivedCurrentSession { get; set; }
+    public long PacketsReceivedCurrentSession => Volatile.Read(ref _packetsReceivedCurrentSession);
 
     /// <summary>
     /// Number of packets received in last session
@@ -98,6 +105,15 @@ public class TelemetryStatistics
     #region Methods
 
     /// <summary>
+    /// Atomically increments the total and the current session packet counters
+    /// </summary>
+    public void IncrementPacketsReceived()
+    {
+        Interlocked.Increment(ref _packetsReceivedTotal);
+        Interlocked.Increment(ref _packetsReceivedCurrentSession);
+    }
+
+    /// <summary>
     /// Check whether the current session has changed
     /// </summary>
     /// <param name="sessionId">Session id from last received packet</param>
@@ -117,13 +133,11 @@ public class TelemetryStatistics
             // Copy current session metrics to last session metrics
             if (CurrentSessionId > 0)
             {
-                PacketsReceivedLastSession = PacketsReceivedCurrentSession;
+                PacketsReceivedLastSession = Interlocked.Exchange(ref _packetsReceivedCurrentSession, 0);
 
                 LastSessionMetrics.CopyFrom(CurrentSessionMetrics);
 
                 CurrentSessionMetrics.Reset();
-
-                PacketsReceivedCurrentSession = 0;
             }
 
             CurrentSessionId = sessionId.Value;
