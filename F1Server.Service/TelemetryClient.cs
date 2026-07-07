@@ -379,7 +379,7 @@ public sealed class TelemetryClient : ITelemetryClient, IDisposable
             // Enqueue the received data for processing
             _packetQueue.Enqueue(packetData);
 
-            _applicationData.AppMetrics?.PacketsInQueue.Record(_packetQueue.Count);
+            _applicationData.AppMetrics?.PacketsInQueue.Record(Interlocked.Read(ref _queuedPackets));
 
             currentActivity?.SetStatus(ActivityStatusCode.Ok);
         }
@@ -477,7 +477,7 @@ public sealed class TelemetryClient : ITelemetryClient, IDisposable
 
             Interlocked.Decrement(ref _queuedPackets);
 
-            _applicationData.AppMetrics?.PacketsInQueue.Record(_packetQueue.Count);
+            _applicationData.AppMetrics?.PacketsInQueue.Record(Interlocked.Read(ref _queuedPackets));
 
             Logger?.LogInformation("Processing packet with id: {PacketId}, type: {PacketType}, session id: {SessionId}", packetData.PacketNumber, packetData.PacketHeader?.PacketType, packetData.PacketHeader?.UniqueSessionId);
 
@@ -757,7 +757,7 @@ public sealed class TelemetryClient : ITelemetryClient, IDisposable
             {
                 ProcessCurrentPackets(cancellationToken);
 
-                if (_packetQueue?.Count == 0)
+                if (_packetQueue?.IsEmpty == true)
                 {
                     _applicationData.Statistics.PacketsInQueue = 0;
                 }
@@ -822,7 +822,7 @@ public sealed class TelemetryClient : ITelemetryClient, IDisposable
                     _packetQueue.Enqueue(packetData);
 
                     _applicationData.AppMetrics?.PacketsReceived.Add(1);
-                    _applicationData.AppMetrics?.PacketsInQueue.Record(_packetQueue.Count);
+                    _applicationData.AppMetrics?.PacketsInQueue.Record(Interlocked.Read(ref _queuedPackets));
 
                     currentActivity?.SetStatus(ActivityStatusCode.Ok);
                 }

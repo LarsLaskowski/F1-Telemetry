@@ -40,6 +40,11 @@ internal class PacketProcessor : IDisposable
     private bool _isNewSession;
     private bool _queuePacketsNow;
 
+    /// <summary>
+    /// Number of packets currently held in <see cref="_queuedPackets"/>, maintained to avoid <see cref="ConcurrentQueue{T}.Count"/> in the packet path
+    /// </summary>
+    private long _queuedPacketCount;
+
     #endregion // Fields
 
     #region Constructors
@@ -108,7 +113,7 @@ internal class PacketProcessor : IDisposable
     /// <summary>
     /// Number of queued packets
     /// </summary>
-    public long QueuedPackets => _queuedPackets?.Count ?? 0;
+    public long QueuedPackets => Interlocked.Read(ref _queuedPacketCount);
 
     #endregion // Properties
 
@@ -223,7 +228,7 @@ internal class PacketProcessor : IDisposable
         var retValue = false;
 
         // No more queuing and we have queued packets? Process this queue!
-        if (_queuePacketsNow == false && _queuedPackets?.Count > 0)
+        if (_queuePacketsNow == false && Interlocked.Read(ref _queuedPacketCount) > 0)
         {
             retValue = ProcessQueuedPackets(receivedPacketData);
         }
@@ -232,6 +237,8 @@ internal class PacketProcessor : IDisposable
             if (_queuePacketsNow == true)
             {
                 _queuedPackets?.Enqueue(receivedPacketData);
+
+                Interlocked.Increment(ref _queuedPacketCount);
             }
             else
             {
@@ -261,9 +268,14 @@ internal class PacketProcessor : IDisposable
 
         while (_queuedPackets.IsEmpty == false)
         {
-            if (_queuedPackets.TryDequeue(out var queuedPacket) && queuedPacket.PacketHeader != null)
+            if (_queuedPackets.TryDequeue(out var queuedPacket))
             {
-                AnalyzePacket(queuedPacket);
+                Interlocked.Decrement(ref _queuedPacketCount);
+
+                if (queuedPacket.PacketHeader != null)
+                {
+                    AnalyzePacket(queuedPacket);
+                }
             }
         }
 
