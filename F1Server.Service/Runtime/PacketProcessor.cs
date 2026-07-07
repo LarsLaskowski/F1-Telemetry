@@ -67,7 +67,7 @@ internal class PacketProcessor : IDisposable
     #region Events
 
     /// <summary>
-    /// Event, if a packet received
+    /// Event raised when a received packet indicates a changed game version or a changed session identifier
     /// </summary>
     public event EventHandler<PacketReceivedEventArgs> PacketReceived;
 
@@ -154,9 +154,10 @@ internal class PacketProcessor : IDisposable
             {
                 LastError = string.Empty;
 
-                // Trigger packet received event
                 if (receivedPacketData.PacketHeader != null)
                 {
+                    var raisePacketEvent = false;
+
                     if (receivedPacketData.PacketHeader.UniqueSessionId != _currentSessionIdentifier)
                     {
                         _isNewSession = true;
@@ -164,11 +165,8 @@ internal class PacketProcessor : IDisposable
                         _appData?.IsActiveSession = false;
 
                         _currentSessionIdentifier = receivedPacketData.PacketHeader.UniqueSessionId;
-                    }
 
-                    if (PacketReceived != null)
-                    {
-                        Task.Run(() => PacketReceived.Invoke(this, new PacketReceivedEventArgs(receivedPacketData.PacketHeader)));
+                        raisePacketEvent = true;
                     }
 
                     if (CurrentGame != receivedPacketData.PacketHeader.GameVersion)
@@ -176,6 +174,14 @@ internal class PacketProcessor : IDisposable
                         CurrentGame = receivedPacketData.PacketHeader.GameVersion;
 
                         CheckGameVersion(CurrentGame, receivedPacketData.PacketHeader.MajorGameVersion, receivedPacketData.PacketHeader.MinorGameVersion);
+
+                        raisePacketEvent = true;
+                    }
+
+                    // Raise the event only on game version or session changes to avoid a Task and event argument allocation per packet
+                    if (raisePacketEvent)
+                    {
+                        RaisePacketReceived(receivedPacketData.PacketHeader);
                     }
 
                     //// The final classification packet should not be the final packet, normally in F1 2021++ a bulk of session history packets will be send after this packet.
@@ -212,6 +218,22 @@ internal class PacketProcessor : IDisposable
     #endregion // Methods
 
     #region Private methods
+
+    /// <summary>
+    /// Raises the <see cref="PacketReceived"/> event synchronously so subscriber exceptions are observed and logged
+    /// </summary>
+    /// <param name="packetHeader">Header of received packet</param>
+    private void RaisePacketReceived(PacketHeader packetHeader)
+    {
+        try
+        {
+            PacketReceived?.Invoke(this, new PacketReceivedEventArgs(packetHeader));
+        }
+        catch (Exception ex)
+        {
+            Logger?.LogError(ex, "Error in packet received event subscriber!");
+        }
+    }
 
     /// <summary>
     /// Internal method for processing received packets
