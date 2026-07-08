@@ -2192,6 +2192,9 @@ partial class F1ServerDbContextModelSnapshot : ModelSnapshot
 
                 b.HasIndex("SessionId", "LapNumber");
 
+                b.HasIndex("SessionId", "ParticipantId", "LapNumber")
+                    .IsUnique();
+
                 b.ToTable("Laps", t =>
                     {
                         t.HasComment("Table with all laps of participants in the session, depends on the game version");

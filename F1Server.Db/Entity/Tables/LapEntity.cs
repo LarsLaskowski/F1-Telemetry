@@ -18,6 +18,7 @@ namespace F1Server.Db.Entity.Tables;
 [Index(nameof(ParticipantId), nameof(SessionId))]
 [Index(nameof(SessionId), nameof(DbIsInvalidLapTime))]
 [Index(nameof(SessionId), nameof(LapNumber))]
+[Index(nameof(SessionId), nameof(ParticipantId), nameof(LapNumber), IsUnique = true)]
 public class LapEntity
 {
     #region Properties

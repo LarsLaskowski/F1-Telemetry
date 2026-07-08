@@ -268,7 +268,7 @@ internal class SessionHistoryProcessor : BaseProcessor
     }
 
     /// <summary>
-    /// Create a lap
+    /// Create a lap or update an already stored lap with the same participant and lap number
     /// </summary>
     /// <param name="dbFactory">Database factory object</param>
     /// <param name="lapData">Data of lap</param>
@@ -284,42 +284,76 @@ internal class SessionHistoryProcessor : BaseProcessor
 
         if (lapData.IsLapTimeCompleteValid)
         {
-            lapDbData = new LapEntity
-                        {
-                            IsCompleted = true,
-                            Sector1Time = lapData.Sector1Time,
-                            Sector2Time = lapData.Sector2Time,
-                            Sector3Time = lapData.Sector3Time,
-                            LapNumber = lapNumber,
-                            LapTime = lapData.LapTime,
-                            IsFinished = true,
-                            DriverStatus = DriverStatus.OnTrack,
-                            PitStatus = PitStatus.None,
-                            ResultStatus = ResultStatus.Active,
-                            ParticipantId = participantDbId,
-                            SessionId = sessionDbId,
-                            IsInvalidLapTime = participantRuntimeData?.ValidateLapTimes(lapData.LapTime, lapData.Sector1Time, lapData.Sector2Time, lapData.Sector3Time) ?? false
-                        };
+            var isInvalidLapTime = participantRuntimeData?.ValidateLapTimes(lapData.LapTime, lapData.Sector1Time, lapData.Sector2Time, lapData.Sector3Time) ?? false;
 
-            ITyreStintHistoryDataBase? tyre = null;
+            // The lap can already be stored without being cached, update it instead of inserting a duplicate row
+            lapDbData = dbFactory.GetRepository<LapRepository>()
+                                 ?.GetQuery()
+                                 ?.FirstOrDefault(l => l.ParticipantId == participantDbId && l.LapNumber == lapNumber);
 
-            if (sessionHistoryData?.TyreStintHistory != null)
+            if (lapDbData != null)
             {
-                tyre = Array.Find(sessionHistoryData.TyreStintHistory, t => t != null && (t.EndLap == 255 || t.EndLap > lapNumber));
-            }
+                var lapDbId = lapDbData.Id;
 
-            if (tyre != null)
-            {
-                lapDbData.TyreCompound = TyreCompoundMapper.MapVisualTyreCompoundToEnum(tyre.TyreVisualCompound);
-            }
+                lapDbData.LapTime = lapData.LapTime;
+                lapDbData.Sector1Time = lapData.Sector1Time;
+                lapDbData.Sector2Time = lapData.Sector2Time;
+                lapDbData.Sector3Time = lapData.Sector3Time;
+                lapDbData.IsCompleted = true;
+                lapDbData.IsInvalidLapTime = isInvalidLapTime;
 
-            if (dbFactory.GetRepository<LapRepository>()?.Add(lapDbData) == false)
-            {
-                lapDbData = null;
+                dbFactory.GetRepository<LapRepository>()?.Refresh(l => l.Id == lapDbId,
+                                                                  obj =>
+                                                                  {
+                                                                      obj.LapTime = lapData.LapTime;
+                                                                      obj.Sector1Time = lapData.Sector1Time;
+                                                                      obj.Sector2Time = lapData.Sector2Time;
+                                                                      obj.Sector3Time = lapData.Sector3Time;
+                                                                      obj.IsCompleted = true;
+                                                                      obj.IsInvalidLapTime = isInvalidLapTime;
+                                                                  });
+
+                LapRepositoryCache.AddOrUpdate(lapDbData);
             }
             else
             {
-                LapRepositoryCache.AddOrUpdate(lapDbData);
+                lapDbData = new LapEntity
+                            {
+                                IsCompleted = true,
+                                Sector1Time = lapData.Sector1Time,
+                                Sector2Time = lapData.Sector2Time,
+                                Sector3Time = lapData.Sector3Time,
+                                LapNumber = lapNumber,
+                                LapTime = lapData.LapTime,
+                                IsFinished = true,
+                                DriverStatus = DriverStatus.OnTrack,
+                                PitStatus = PitStatus.None,
+                                ResultStatus = ResultStatus.Active,
+                                ParticipantId = participantDbId,
+                                SessionId = sessionDbId,
+                                IsInvalidLapTime = isInvalidLapTime
+                            };
+
+                ITyreStintHistoryDataBase? tyre = null;
+
+                if (sessionHistoryData?.TyreStintHistory != null)
+                {
+                    tyre = Array.Find(sessionHistoryData.TyreStintHistory, t => t != null && (t.EndLap == 255 || t.EndLap > lapNumber));
+                }
+
+                if (tyre != null)
+                {
+                    lapDbData.TyreCompound = TyreCompoundMapper.MapVisualTyreCompoundToEnum(tyre.TyreVisualCompound);
+                }
+
+                if (dbFactory.GetRepository<LapRepository>()?.Add(lapDbData) == false)
+                {
+                    lapDbData = null;
+                }
+                else
+                {
+                    LapRepositoryCache.AddOrUpdate(lapDbData);
+                }
             }
         }
 

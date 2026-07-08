@@ -5,6 +5,7 @@ using F1Server.Data;
 using F1Server.Db.Entity;
 using F1Server.Db.Entity.Repositories;
 using F1Server.Db.Entity.Tables;
+using F1Server.Service.Cache;
 
 namespace F1Server.Service.Runtime;
 
@@ -237,6 +238,8 @@ public class ParticipantRuntimeData : IDisposable
                     if (lapId.HasValue)
                     {
                         lapData.Id = lapId.Value;
+
+                        LapRepositoryCache.AddOrUpdate(lapData);
                     }
                 }
             }
@@ -327,7 +330,8 @@ public class ParticipantRuntimeData : IDisposable
                                                                                         obj.Sector3Time = lapEntity.Sector3Time;
                                                                                         obj.LapTime = lapEntity.LapTime;
                                                                                         obj.IsCompleted = lapEntity.IsCompleted;
-                                                                                    }) ?? false;
+                                                                                    },
+                                                                                    obj => LapRepositoryCache.AddOrUpdate(obj)) ?? false;
             }
         }
 
