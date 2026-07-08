@@ -34,12 +34,45 @@ public static class Program
     public static void Main(string[] args)
     {
         var runInDocker = Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") == "true";
-        var hasDatabase = false;
-        var activateWeb = false;
 
         // Replace Assembly.GetExecutingAssembly() with typeof(Program).Assembly
         Console.WriteLine($"F1 telemetry service starting (version: {typeof(Program).Assembly.GetName().Version})...");
         Console.WriteLine($"System has {Environment.ProcessorCount} processors/cores");
+
+        var hasDatabase = CheckDatabaseConfiguration(out var activateWeb);
+
+        var serviceProvider = StartupServiceProvider();
+
+        CheckObservability(serviceProvider);
+        CheckTelemetry(serviceProvider);
+
+        var telemetryClient = new TelemetryClient(serviceProvider, hasDatabase, activateWeb);
+
+        telemetryClient.PacketReceived += OnPacketReceived;
+        telemetryClient.ConnectionStatusChanged += OnConnectionStatusChanged;
+        telemetryClient.ProcessingError += OnProcessingError;
+        telemetryClient.StatisticsOutput += OnStatisticsOutput;
+
+        telemetryClient.Startup();
+
+        StartProgram(args, runInDocker, telemetryClient);
+
+        telemetryClient.PacketReceived -= OnPacketReceived;
+        telemetryClient.StatisticsOutput -= OnStatisticsOutput;
+
+        Console.WriteLine("Exit!");
+    }
+
+    /// <summary>
+    /// Reads and outputs the database configuration from the environment variables
+    /// </summary>
+    /// <param name="activateWeb">Whether the web interface should be activated</param>
+    /// <returns>Whether a usable database configuration was found</returns>
+    private static bool CheckDatabaseConfiguration(out bool activateWeb)
+    {
+        var hasDatabase = false;
+
+        activateWeb = false;
 
         // Output database environments
         if (string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("F1SERVER_DB_HOST")) == false)
@@ -93,26 +126,7 @@ public static class Program
             Console.WriteLine("   Database information not exists!");
         }
 
-        var serviceProvider = StartupServiceProvider();
-
-        CheckObservability(serviceProvider);
-        CheckTelemetry(serviceProvider);
-
-        var telemetryClient = new TelemetryClient(serviceProvider, hasDatabase, activateWeb);
-
-        telemetryClient.PacketReceived += OnPacketReceived;
-        telemetryClient.ConnectionStatusChanged += OnConnectionStatusChanged;
-        telemetryClient.ProcessingError += OnProcessingError;
-        telemetryClient.StatisticsOutput += OnStatisticsOutput;
-
-        telemetryClient.Startup();
-
-        StartProgram(args, runInDocker, telemetryClient);
-
-        telemetryClient.PacketReceived -= OnPacketReceived;
-        telemetryClient.StatisticsOutput -= OnStatisticsOutput;
-
-        Console.WriteLine("Exit!");
+        return hasDatabase;
     }
 
     /// <summary>
