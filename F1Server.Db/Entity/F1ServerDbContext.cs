@@ -34,6 +34,11 @@ public sealed class F1ServerDbContext : DbContext
     #region Fields
 
     /// <summary>
+    /// Single stateless command interceptor instance shared by all context instances
+    /// </summary>
+    private static readonly CommandInterceptor _commandInterceptor = new CommandInterceptor();
+
+    /// <summary>
     /// Indicates whether the database configuration has already been logged (0 = not yet, 1 = logged)
     /// </summary>
     private static int _configurationLogged;
@@ -50,24 +55,17 @@ public sealed class F1ServerDbContext : DbContext
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="F1ServerDbContext"/> class
+    /// Initializes a new instance of the <see cref="F1ServerDbContext"/> class from pre-built options.
+    /// This constructor is used by the context pool behind <see cref="RepositoryFactory"/>
     /// </summary>
-    /// <param name="serviceProvider">The service provider for resolving dependencies</param>
-    public F1ServerDbContext(IServiceProvider serviceProvider)
+    /// <param name="options">Pre-built context options</param>
+    public F1ServerDbContext(DbContextOptions<F1ServerDbContext> options)
+        : base(options)
     {
-        try
-        {
-            var applicationData = serviceProvider?.GetRequiredService<F1ServerApplicationData>();
+        var applicationData = ResolveApplicationData(RepositoryFactory.ServiceProvider);
 
-            AppMetrics = applicationData?.AppMetrics;
-            Logger = applicationData?.Logger;
-        }
-        catch
-        {
-            // Ignore exceptions in this step, as it may not be critical for the context initialization
-            AppMetrics = null;
-            Logger = null;
-        }
+        AppMetrics = applicationData?.AppMetrics;
+        Logger = applicationData?.Logger;
     }
 
     #endregion // Constructors
@@ -80,6 +78,16 @@ public sealed class F1ServerDbContext : DbContext
     public static string? DbServerVersion { get; private set; }
 
     /// <summary>
+    /// Used sql server type
+    /// </summary>
+    public static SqlServerType DbServerType { get; private set; }
+
+    /// <summary>
+    /// Connection string
+    /// </summary>
+    public static string ConnectionString { get; private set; }
+
+    /// <summary>
     /// Access to application metrics for tracking performance and errors
     /// </summary>
     public IAppMetrics? AppMetrics { get; }
@@ -88,16 +96,6 @@ public sealed class F1ServerDbContext : DbContext
     /// Gets the logger instance used for logging messages and events
     /// </summary>
     public ILogger? Logger { get; }
-
-    /// <summary>
-    /// Used sql server type
-    /// </summary>
-    public SqlServerType DbServerType { get; private set; }
-
-    /// <summary>
-    /// Connection string
-    /// </summary>
-    public string ConnectionString { get; private set; }
 
     /// <summary>
     /// Last error
@@ -118,58 +116,35 @@ public sealed class F1ServerDbContext : DbContext
 
     #endregion // Properties
 
+    #region Static methods
+
+    /// <summary>
+    /// Builds the context options shared by all pooled context instances. The database configuration
+    /// is read from the environment variables once and reused for every pooled context
+    /// </summary>
+    /// <param name="serviceProvider">Service provider used to resolve logging and metrics; may be null</param>
+    /// <returns>Configured context options</returns>
+    internal static DbContextOptions<F1ServerDbContext> BuildOptions(IServiceProvider? serviceProvider)
+    {
+        var applicationData = ResolveApplicationData(serviceProvider);
+        var optionsBuilder = new DbContextOptionsBuilder<F1ServerDbContext>();
+
+        ConfigureOptions(optionsBuilder, applicationData?.Logger, applicationData?.AppMetrics);
+
+        return optionsBuilder.Options;
+    }
+
+    #endregion // Static methods
+
     #region DbContext
 
     /// <inheritdoc />
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        DetectServerType();
-
-        if (DbServerType != SqlServerType.Unknown)
+        if (optionsBuilder.IsConfigured == false)
         {
-            var database = Environment.GetEnvironmentVariable("F1SERVER_DB_NAME");
-            var server = Environment.GetEnvironmentVariable("F1SERVER_DB_HOST");
-            var userId = Environment.GetEnvironmentVariable("F1SERVER_DB_USER");
-            var passwd = Environment.GetEnvironmentVariable("F1SERVER_DB_PASSWORD");
-
-            if (string.IsNullOrWhiteSpace(userId))
-            {
-                userId = "f1telemetry";
-            }
-
-            if (string.IsNullOrWhiteSpace(database))
-            {
-                database = "f1telemetry";
-            }
-
-            if (DbServerType == SqlServerType.MariaDb)
-            {
-                ConfigureMariaDb(optionsBuilder, database, server ?? Localhost, userId, passwd ?? string.Empty);
-            }
-            else if (DbServerType == SqlServerType.MsSqlServer)
-            {
-                var trustServerCertificate = Environment.GetEnvironmentVariable("F1SERVER_DB_MSSQL_TRUST_SERVER_CERTIFICATE");
-                var trustServerCertificateValue = bool.TryParse(trustServerCertificate, out var parsedTrustServerCertificate) == false || parsedTrustServerCertificate;
-
-                ConfigureMicrosoftSql(optionsBuilder, database, server ?? Localhost, userId, passwd ?? string.Empty, trustServerCertificateValue);
-            }
-            else if (DbServerType == SqlServerType.PostgreSql)
-            {
-                ConfigurePostgreSql(optionsBuilder, database, server ?? Localhost, userId, passwd ?? string.Empty);
-            }
-            else if (DbServerType == SqlServerType.InMemory)
-            {
-                ConfigureInMemory(optionsBuilder);
-            }
-            else
-            {
-                Logger?.UnsupportedDatabaseServerType(DbServerType);
-
-                throw new NotSupportedException($"The {DbServerType} is not supported!");
-            }
+            ConfigureOptions(optionsBuilder, Logger, AppMetrics);
         }
-
-        optionsBuilder.AddInterceptors(new CommandInterceptor());
 
         base.OnConfiguring(optionsBuilder);
     }
@@ -267,6 +242,355 @@ public sealed class F1ServerDbContext : DbContext
     private static bool ShouldLogConfiguration()
     {
         return Interlocked.CompareExchange(ref _configurationLogged, 1, 0) == 0;
+    }
+
+    /// <summary>
+    /// Resolves the shared application data from the given service provider
+    /// </summary>
+    /// <param name="serviceProvider">Service provider; may be null</param>
+    /// <returns>Application data or null if it cannot be resolved</returns>
+    private static F1ServerApplicationData? ResolveApplicationData(IServiceProvider? serviceProvider)
+    {
+        try
+        {
+            return serviceProvider?.GetRequiredService<F1ServerApplicationData>();
+        }
+        catch
+        {
+            // Ignore exceptions in this step, as it may not be critical for the context initialization
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// Detects the configured database server type and configures the matching provider options
+    /// </summary>
+    /// <param name="optionsBuilder">Options builder</param>
+    /// <param name="logger">Logger used for configuration messages</param>
+    /// <param name="appMetrics">Application metrics used for error counting</param>
+    /// <exception cref="NotSupportedException">Thrown when the detected server type is not supported</exception>
+    private static void ConfigureOptions(DbContextOptionsBuilder optionsBuilder, ILogger? logger, IAppMetrics? appMetrics)
+    {
+        DbServerType = DetectServerType();
+
+        if (DbServerType != SqlServerType.Unknown)
+        {
+            var database = Environment.GetEnvironmentVariable("F1SERVER_DB_NAME");
+            var server = Environment.GetEnvironmentVariable("F1SERVER_DB_HOST");
+            var userId = Environment.GetEnvironmentVariable("F1SERVER_DB_USER");
+            var passwd = Environment.GetEnvironmentVariable("F1SERVER_DB_PASSWORD");
+
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                userId = "f1telemetry";
+            }
+
+            if (string.IsNullOrWhiteSpace(database))
+            {
+                database = "f1telemetry";
+            }
+
+            if (DbServerType == SqlServerType.MariaDb)
+            {
+                ConfigureMariaDb(optionsBuilder, database, server ?? Localhost, userId, passwd ?? string.Empty, logger, appMetrics);
+            }
+            else if (DbServerType == SqlServerType.MsSqlServer)
+            {
+                var trustServerCertificate = Environment.GetEnvironmentVariable("F1SERVER_DB_MSSQL_TRUST_SERVER_CERTIFICATE");
+                var trustServerCertificateValue = bool.TryParse(trustServerCertificate, out var parsedTrustServerCertificate) == false || parsedTrustServerCertificate;
+
+                ConfigureMicrosoftSql(optionsBuilder, database, server ?? Localhost, userId, passwd ?? string.Empty, trustServerCertificateValue, logger, appMetrics);
+            }
+            else if (DbServerType == SqlServerType.PostgreSql)
+            {
+                ConfigurePostgreSql(optionsBuilder, database, server ?? Localhost, userId, passwd ?? string.Empty, logger, appMetrics);
+            }
+            else if (DbServerType == SqlServerType.InMemory)
+            {
+                ConfigureInMemory(optionsBuilder);
+            }
+            else
+            {
+                logger?.UnsupportedDatabaseServerType(DbServerType);
+
+                throw new NotSupportedException($"The {DbServerType} is not supported!");
+            }
+        }
+
+        optionsBuilder.AddInterceptors(_commandInterceptor);
+    }
+
+    /// <summary>
+    /// Detect sql server type mode
+    /// </summary>
+    /// <returns>Detected sql server type</returns>
+    /// <exception cref="DbException">Unknown mode</exception>
+    private static SqlServerType DetectServerType()
+    {
+        var serverType = Environment.GetEnvironmentVariable("F1SERVER_DATABASE_TYPE");
+
+        // Not set? Set default to MariaDb
+        if (string.IsNullOrWhiteSpace(serverType))
+        {
+            serverType = "1";
+        }
+
+        return serverType switch
+               {
+                   "1" => SqlServerType.MariaDb,
+                   "2" => SqlServerType.MsSqlServer,
+                   "3" => SqlServerType.PostgreSql,
+                   "99" => SqlServerType.InMemory,
+                   _ => throw new DbException($"Unknown sql server type or not specified - detected value: {serverType}"),
+               };
+    }
+
+    /// <summary>
+    /// Configure MariaDB connection
+    /// </summary>
+    /// <param name="optionsBuilder">Options builder</param>
+    /// <param name="database">Used database</param>
+    /// <param name="server">Database server</param>
+    /// <param name="user">Database user</param>
+    /// <param name="passwd">Password</param>
+    /// <param name="logger">Logger used for configuration messages</param>
+    /// <param name="appMetrics">Application metrics used for error counting</param>
+    private static void ConfigureMariaDb(DbContextOptionsBuilder optionsBuilder, string database, string server, string user, string passwd, ILogger? logger, IAppMetrics? appMetrics)
+    {
+        var serverName = server;
+        uint serverPort = 3306;
+        ServerVersion? dbServerVersion = null;
+
+        if (string.IsNullOrWhiteSpace(server) == false && server.Contains(':'))
+        {
+            var serverSplit = server.Split(':');
+
+            serverName = serverSplit[0];
+
+            if (uint.TryParse(serverSplit[1], out serverPort) == false)
+            {
+                serverPort = 3306;
+            }
+        }
+
+        if (logger is not null && ShouldLogConfiguration())
+        {
+            logger.ConfiguringMariaDb(serverName, database, user);
+        }
+
+        var connectionStringBuilder = new MySqlConnectionStringBuilder
+                                      {
+                                          ApplicationName = "F1Server",
+                                          Database = database,
+                                          Port = serverPort,
+                                          Server = serverName,
+                                          UserID = user,
+                                          Password = passwd,
+                                          UseCompression = true
+                                      };
+
+        ConnectionString = connectionStringBuilder.ConnectionString;
+
+        if (string.IsNullOrEmpty(DbServerVersion))
+        {
+            using (var connection = new MySqlConnection(ConnectionString))
+            {
+                try
+                {
+                    connection.Open();
+
+                    DbServerVersion = connection.ServerVersion;
+
+                    dbServerVersion = ServerVersion.Parse(connection.ServerVersion);
+                }
+                catch (Exception ex)
+                {
+                    RecordConfigurationError(appMetrics, ex);
+
+                    logger?.ErrorConnectingMariaDb(ex);
+                }
+            }
+        }
+        else
+        {
+            if (ServerVersion.TryParse(DbServerVersion, out dbServerVersion) == false)
+            {
+                logger?.ErrorParsingServerVersion(DbServerVersion);
+            }
+        }
+
+        optionsBuilder.UseMySql(ConnectionString,
+                                dbServerVersion,
+                                x =>
+                                {
+                                    x.MigrationsAssembly("F1Server.Db.MySqlMigrations");
+                                    x.EnableRetryOnFailure();
+                                });
+    }
+
+    /// <summary>
+    /// Configure Microsoft SQL Server connection
+    /// </summary>
+    /// <param name="optionsBuilder">Options builder</param>
+    /// <param name="database">Used database</param>
+    /// <param name="server">Database server</param>
+    /// <param name="user">Database user</param>
+    /// <param name="passwd">Password</param>
+    /// <param name="trustServerCertificate">Whether the server certificate is trusted without validation</param>
+    /// <param name="logger">Logger used for configuration messages</param>
+    /// <param name="appMetrics">Application metrics used for error counting</param>
+    private static void ConfigureMicrosoftSql(DbContextOptionsBuilder optionsBuilder, string database, string server, string user, string passwd, bool trustServerCertificate, ILogger? logger, IAppMetrics? appMetrics)
+    {
+        if (logger is not null && ShouldLogConfiguration())
+        {
+            logger.ConfiguringMicrosoftSql(server, database, user);
+        }
+
+        var connectionStringBuilder = new SqlConnectionStringBuilder
+                                      {
+                                          ApplicationName = "F1Server",
+                                          DataSource = server,
+                                          InitialCatalog = database,
+                                          UserID = user,
+                                          Password = passwd,
+                                          MultipleActiveResultSets = false,
+                                          IntegratedSecurity = false,
+                                          TrustServerCertificate = trustServerCertificate
+                                      };
+
+        ConnectionString = connectionStringBuilder.ConnectionString;
+
+        // Gets the server version only if not set
+        if (string.IsNullOrEmpty(DbServerVersion))
+        {
+            using (var connection = new SqlConnection(ConnectionString))
+            {
+                try
+                {
+                    connection.Open();
+
+                    DbServerVersion = connection.ServerVersion;
+                }
+                catch (Exception ex)
+                {
+                    logger?.ErrorConnectingMicrosoftSql(ex);
+
+                    RecordConfigurationError(appMetrics, ex);
+                }
+            }
+        }
+
+        optionsBuilder.UseSqlServer(ConnectionString,
+                                    x =>
+                                    {
+                                        x.MigrationsAssembly("F1Server.Db.MsSqlMigrations");
+                                        x.EnableRetryOnFailure();
+                                    });
+    }
+
+    /// <summary>
+    /// Configure PostgreSQL connection
+    /// </summary>
+    /// <param name="optionsBuilder">Options builder</param>
+    /// <param name="database">Used database</param>
+    /// <param name="server">Database server</param>
+    /// <param name="user">Database user</param>
+    /// <param name="passwd">Password</param>
+    /// <param name="logger">Logger used for configuration messages</param>
+    /// <param name="appMetrics">Application metrics used for error counting</param>
+    private static void ConfigurePostgreSql(DbContextOptionsBuilder optionsBuilder, string database, string server, string user, string passwd, ILogger? logger, IAppMetrics? appMetrics)
+    {
+        var serverName = "localhost";
+        uint serverPort = 5432;
+
+        if (string.IsNullOrWhiteSpace(server) == false && server.Contains(':'))
+        {
+            var serverSplit = server.Split(':');
+
+            serverName = serverSplit[0];
+
+            if (uint.TryParse(serverSplit[1], out serverPort) == false)
+            {
+                serverPort = 5432;
+            }
+        }
+
+        if (logger is not null && ShouldLogConfiguration())
+        {
+            logger.ConfiguringPostgreSql(serverName, database, user);
+        }
+
+        var connectionStringBuilder = new NpgsqlConnectionStringBuilder
+                                      {
+                                          ApplicationName = "F1Server",
+                                          Database = database,
+                                          Host = serverName,
+                                          Port = (int)serverPort,
+                                          Username = user,
+                                          Password = passwd,
+                                      };
+
+        ConnectionString = connectionStringBuilder.ConnectionString;
+
+        // Gets the server version only if not set
+        if (string.IsNullOrEmpty(DbServerVersion))
+        {
+            using (var connection = new NpgsqlConnection(ConnectionString))
+            {
+                try
+                {
+                    connection.Open();
+
+                    var sql = "SELECT version()";
+
+                    using var cmd = new NpgsqlCommand(sql, connection);
+
+                    DbServerVersion = cmd.ExecuteScalar()?.ToString();
+                }
+                catch (Exception ex)
+                {
+                    RecordConfigurationError(appMetrics, ex);
+
+                    logger?.ErrorConnectingPostgreSql(ex);
+                }
+            }
+        }
+
+        optionsBuilder.UseNpgsql(ConnectionString,
+                                 x =>
+                                 {
+                                     x.MigrationsAssembly("F1Server.Db.PostgreSqlMigrations");
+                                     x.EnableRetryOnFailure();
+                                 });
+    }
+
+    /// <summary>
+    /// Configure InMemory connection for testing only
+    /// </summary>
+    /// <param name="optionsBuilder">Options builder</param>
+    private static void ConfigureInMemory(DbContextOptionsBuilder optionsBuilder)
+    {
+        var testAssembly = "F1Server.Tests, ";
+
+        if (Array.Exists(AppDomain.CurrentDomain.GetAssemblies(), a => a.FullName?.StartsWith(testAssembly, StringComparison.OrdinalIgnoreCase) == true))
+        {
+            optionsBuilder.UseInMemoryDatabase("F1TelemetryTest")
+                          .ConfigureWarnings(w => w.Ignore(InMemoryEventId.TransactionIgnoredWarning));
+        }
+        else
+        {
+            throw new InvalidOperationException("InMemory database can only used in unit tests!");
+        }
+    }
+
+    /// <summary>
+    /// Records a failed connection attempt during configuration in the application metrics
+    /// </summary>
+    /// <param name="appMetrics">Application metrics; may be null</param>
+    /// <param name="exception">Exception that occurred</param>
+    private static void RecordConfigurationError(IAppMetrics? appMetrics, Exception exception)
+    {
+        appMetrics?.DbErrorCount.Add(1, new KeyValuePair<string, object?>("LastError", exception.ToString()));
     }
 
     /// <summary>
@@ -5766,262 +6090,6 @@ public sealed class F1ServerDbContext : DbContext
         {
             // Ignore exceptions in this step
         }
-    }
-
-    /// <summary>
-    /// Configure MariaDB connection
-    /// </summary>
-    /// <param name="optionsBuilder">Options builder</param>
-    /// <param name="database">Used database</param>
-    /// <param name="server">Database server</param>
-    /// <param name="user">Database user</param>
-    /// <param name="passwd">Password</param>
-    private void ConfigureMariaDb(DbContextOptionsBuilder optionsBuilder, string database, string server, string user, string passwd)
-    {
-        var serverName = server;
-        uint serverPort = 3306;
-        ServerVersion? dbServerVersion = null;
-
-        if (string.IsNullOrWhiteSpace(server) == false && server.Contains(':'))
-        {
-            var serverSplit = server.Split(':');
-
-            serverName = serverSplit[0];
-
-            if (uint.TryParse(serverSplit[1], out serverPort) == false)
-            {
-                serverPort = 3306;
-            }
-        }
-
-        if (Logger is not null && ShouldLogConfiguration())
-        {
-            Logger.ConfiguringMariaDb(serverName, database, user);
-        }
-
-        var connectionStringBuilder = new MySqlConnectionStringBuilder
-                                      {
-                                          ApplicationName = "F1Server",
-                                          Database = database,
-                                          Port = serverPort,
-                                          Server = serverName,
-                                          UserID = user,
-                                          Password = passwd,
-                                          UseCompression = true
-                                      };
-
-        ConnectionString = connectionStringBuilder.ConnectionString;
-
-        if (string.IsNullOrEmpty(DbServerVersion))
-        {
-            using (var connection = new MySqlConnection(ConnectionString))
-            {
-                try
-                {
-                    connection.Open();
-
-                    DbServerVersion = connection.ServerVersion;
-
-                    dbServerVersion = ServerVersion.Parse(connection.ServerVersion);
-                }
-                catch (Exception ex)
-                {
-                    LastError = ex.ToString();
-
-                    Logger?.ErrorConnectingMariaDb(ex);
-                }
-            }
-        }
-        else
-        {
-            if (ServerVersion.TryParse(DbServerVersion, out dbServerVersion) == false)
-            {
-                Logger?.ErrorParsingServerVersion(DbServerVersion);
-            }
-        }
-
-        optionsBuilder.UseMySql(ConnectionString,
-                                dbServerVersion,
-                                x =>
-                                {
-                                    x.MigrationsAssembly("F1Server.Db.MySqlMigrations");
-                                    x.EnableRetryOnFailure();
-                                });
-    }
-
-    /// <summary>
-    /// Configure Microsoft SQL Server connection
-    /// </summary>
-    /// <param name="optionsBuilder">Options builder</param>
-    /// <param name="database">Used database</param>
-    /// <param name="server">Database server</param>
-    /// <param name="user">Database user</param>
-    /// <param name="passwd">Password</param>
-    /// <param name="trustServerCertificate">Whether the server certificate is trusted without validation</param>
-    private void ConfigureMicrosoftSql(DbContextOptionsBuilder optionsBuilder, string database, string server, string user, string passwd, bool trustServerCertificate)
-    {
-        if (Logger is not null && ShouldLogConfiguration())
-        {
-            Logger.ConfiguringMicrosoftSql(server, database, user);
-        }
-
-        var connectionStringBuilder = new SqlConnectionStringBuilder
-                                      {
-                                          ApplicationName = "F1Server",
-                                          DataSource = server,
-                                          InitialCatalog = database,
-                                          UserID = user,
-                                          Password = passwd,
-                                          MultipleActiveResultSets = false,
-                                          IntegratedSecurity = false,
-                                          TrustServerCertificate = trustServerCertificate
-                                      };
-
-        ConnectionString = connectionStringBuilder.ConnectionString;
-
-        // Gets the server version only if not set
-        if (string.IsNullOrEmpty(DbServerVersion))
-        {
-            using (var connection = new SqlConnection(ConnectionString))
-            {
-                try
-                {
-                    connection.Open();
-
-                    DbServerVersion = connection.ServerVersion;
-                }
-                catch (Exception ex)
-                {
-                    Logger?.ErrorConnectingMicrosoftSql(ex);
-
-                    LastError = ex.ToString();
-                }
-            }
-        }
-
-        optionsBuilder.UseSqlServer(ConnectionString,
-                                    x =>
-                                    {
-                                        x.MigrationsAssembly("F1Server.Db.MsSqlMigrations");
-                                        x.EnableRetryOnFailure();
-                                    });
-    }
-
-    /// <summary>
-    /// Configure PostgreSQL connection
-    /// </summary>
-    /// <param name="optionsBuilder">Options builder</param>
-    /// <param name="database">Used database</param>
-    /// <param name="server">Database server</param>
-    /// <param name="user">Database user</param>
-    /// <param name="passwd">Password</param>
-    private void ConfigurePostgreSql(DbContextOptionsBuilder optionsBuilder, string database, string server, string user, string passwd)
-    {
-        var serverName = "localhost";
-        uint serverPort = 5432;
-
-        if (string.IsNullOrWhiteSpace(server) == false && server.Contains(':'))
-        {
-            var serverSplit = server.Split(':');
-
-            serverName = serverSplit[0];
-
-            if (uint.TryParse(serverSplit[1], out serverPort) == false)
-            {
-                serverPort = 5432;
-            }
-        }
-
-        if (Logger is not null && ShouldLogConfiguration())
-        {
-            Logger.ConfiguringPostgreSql(serverName, database, user);
-        }
-
-        var connectionStringBuilder = new NpgsqlConnectionStringBuilder
-                                      {
-                                          ApplicationName = "F1Server",
-                                          Database = database,
-                                          Host = serverName,
-                                          Port = (int)serverPort,
-                                          Username = user,
-                                          Password = passwd,
-                                      };
-
-        ConnectionString = connectionStringBuilder.ConnectionString;
-
-        // Gets the server version only if not set
-        if (string.IsNullOrEmpty(DbServerVersion))
-        {
-            using (var connection = new NpgsqlConnection(ConnectionString))
-            {
-                try
-                {
-                    connection.Open();
-
-                    var sql = "SELECT version()";
-
-                    using var cmd = new NpgsqlCommand(sql, connection);
-
-                    DbServerVersion = cmd.ExecuteScalar()?.ToString();
-                }
-                catch (Exception ex)
-                {
-                    LastError = ex.ToString();
-
-                    Logger?.ErrorConnectingPostgreSql(ex);
-                }
-            }
-        }
-
-        optionsBuilder.UseNpgsql(ConnectionString,
-                                 x =>
-                                 {
-                                     x.MigrationsAssembly("F1Server.Db.PostgreSqlMigrations");
-                                     x.EnableRetryOnFailure();
-                                 });
-    }
-
-    /// <summary>
-    /// Configure InMemory connection for testing only
-    /// </summary>
-    /// <param name="optionsBuilder">Options builder</param>
-    private void ConfigureInMemory(DbContextOptionsBuilder optionsBuilder)
-    {
-        var testAssembly = "F1Server.Tests, ";
-
-        if (Array.Exists(AppDomain.CurrentDomain.GetAssemblies(), a => a.FullName?.StartsWith(testAssembly, StringComparison.OrdinalIgnoreCase) == true))
-        {
-            optionsBuilder.UseInMemoryDatabase("F1TelemetryTest")
-                          .ConfigureWarnings(w => w.Ignore(InMemoryEventId.TransactionIgnoredWarning));
-        }
-        else
-        {
-            throw new InvalidOperationException("InMemory database can only used in unit tests!");
-        }
-    }
-
-    /// <summary>
-    /// Detect sql server type mode
-    /// </summary>
-    /// <exception cref="Exception">Unknown mode</exception>
-    private void DetectServerType()
-    {
-        var serverType = Environment.GetEnvironmentVariable("F1SERVER_DATABASE_TYPE");
-
-        // Not set? Set default to MariaDb
-        if (string.IsNullOrWhiteSpace(serverType))
-        {
-            serverType = "1";
-        }
-
-        DbServerType = serverType switch
-                       {
-                           "1" => SqlServerType.MariaDb,
-                           "2" => SqlServerType.MsSqlServer,
-                           "3" => SqlServerType.PostgreSql,
-                           "99" => SqlServerType.InMemory,
-                           _ => throw new DbException($"Unknown sql server type or not specified - detected value: {serverType}"),
-                       };
     }
 
     #endregion // Private methods

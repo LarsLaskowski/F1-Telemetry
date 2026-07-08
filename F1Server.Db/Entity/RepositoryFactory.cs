@@ -2,6 +2,7 @@
 using F1Server.Db.Entity.Repositories.Base;
 
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
 
 namespace F1Server.Db.Entity;
@@ -12,6 +13,11 @@ namespace F1Server.Db.Entity;
 public sealed class RepositoryFactory : IDisposable
 {
     #region Fields
+
+    /// <summary>
+    /// Lazily created pool providing <see cref="F1ServerDbContext"/> instances to all factory instances
+    /// </summary>
+    private static readonly Lazy<PooledDbContextFactory<F1ServerDbContext>> _contextPool = new Lazy<PooledDbContextFactory<F1ServerDbContext>>(CreateContextPool);
 
     /// <summary>
     /// Repositories
@@ -32,7 +38,8 @@ public sealed class RepositoryFactory : IDisposable
     /// </summary>
     public RepositoryFactory()
     {
-        _dbContext = new F1ServerDbContext(ServiceProvider);
+        _dbContext = _contextPool.Value.CreateDbContext();
+        _dbContext.LastError = null;
         _repositories = new Dictionary<Type, RepositoryBase>();
     }
 
@@ -78,6 +85,16 @@ public sealed class RepositoryFactory : IDisposable
         ServiceProvider ??= serviceProvider;
 
         return CreateInstance();
+    }
+
+    /// <summary>
+    /// Creates the shared context pool. The context options are built once and reused for every
+    /// pooled context instance
+    /// </summary>
+    /// <returns>Pooled context factory</returns>
+    private static PooledDbContextFactory<F1ServerDbContext> CreateContextPool()
+    {
+        return new PooledDbContextFactory<F1ServerDbContext>(F1ServerDbContext.BuildOptions(ServiceProvider));
     }
 
     #endregion // Static methods
