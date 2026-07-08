@@ -54,6 +54,11 @@ public class ParticipantRuntimeData : IDisposable
     public long ParticipantDbId { get; set; }
 
     /// <summary>
+    /// Cached live driver data of this participant in the current live session
+    /// </summary>
+    public LiveDriverData? LiveData { get; set; }
+
+    /// <summary>
     /// Index in game packet
     /// </summary>
     public int ArrayIndex { get; set; }
