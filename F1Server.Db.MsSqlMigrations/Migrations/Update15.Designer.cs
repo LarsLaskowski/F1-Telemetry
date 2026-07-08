@@ -3,6 +3,7 @@ using System;
 using F1Server.Db.Entity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace F1Server.Db.MsSqlMigrations.Migrations;
 
 [DbContext(typeof(F1ServerDbContext))]
-partial class F1ServerDbContextModelSnapshot : ModelSnapshot
+[Migration("20260708055625_Update15")]
+partial class Update15
 {
-    protected override void BuildModel(ModelBuilder modelBuilder)
+    /// <inheritdoc />
+    protected override void BuildTargetModel(ModelBuilder modelBuilder)
     {
 #pragma warning disable 612, 618
         modelBuilder

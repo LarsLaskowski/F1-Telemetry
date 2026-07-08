@@ -3,24 +3,27 @@ using System;
 using F1Server.Db.Entity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace F1Server.Db.MsSqlMigrations.Migrations;
+namespace F1Server.Db.PostgreSqlMigrations.Migrations;
 
 [DbContext(typeof(F1ServerDbContext))]
-partial class F1ServerDbContextModelSnapshot : ModelSnapshot
+[Migration("20260708055627_Update15")]
+partial class Update15
 {
-    protected override void BuildModel(ModelBuilder modelBuilder)
+    /// <inheritdoc />
+    protected override void BuildTargetModel(ModelBuilder modelBuilder)
     {
 #pragma warning disable 612, 618
         modelBuilder
             .HasAnnotation("ProductVersion", "9.0.13")
-            .HasAnnotation("Relational:MaxIdentifierLength", 128);
+            .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
-        SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+        NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
         modelBuilder.Entity("F1Server.Db.Entity.Tables.CarTelemetryEntity", b =>
             {
@@ -28,35 +31,35 @@ partial class F1ServerDbContextModelSnapshot : ModelSnapshot
                     .ValueGeneratedOnAdd()
                     .HasColumnType("bigint");
 
-                SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+                NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
                 b.Property<float>("Brake")
                     .HasColumnType("real");
 
                 b.Property<int>("BrakesTempFrontLeft")
-                    .HasColumnType("int");
+                    .HasColumnType("integer");
 
                 b.Property<int>("BrakesTempFrontRight")
-                    .HasColumnType("int");
+                    .HasColumnType("integer");
 
                 b.Property<int>("BrakesTempRearLeft")
-                    .HasColumnType("int");
+                    .HasColumnType("integer");
 
                 b.Property<int>("BrakesTempRearRight")
-                    .HasColumnType("int");
+                    .HasColumnType("integer");
 
                 b.Property<int>("Clutch")
-                    .HasColumnType("int");
+                    .HasColumnType("integer");
 
                 b.Property<int>("DbIsDRS")
-                    .HasColumnType("int")
+                    .HasColumnType("integer")
                     .HasColumnName("IsDRS");
 
                 b.Property<int>("EngineRPM")
-                    .HasColumnType("int");
+                    .HasColumnType("integer");
 
                 b.Property<int>("EngineTemperature")
-                    .HasColumnType("int");
+                    .HasColumnType("integer");
 
                 b.Property<short>("Gear")
                     .HasColumnType("smallint");
@@ -68,13 +71,13 @@ partial class F1ServerDbContextModelSnapshot : ModelSnapshot
                     .HasColumnType("bigint");
 
                 b.Property<int>("PacketNumber")
-                    .HasColumnType("int");
+                    .HasColumnType("integer");
 
                 b.Property<int>("RevLightsIndicator")
-                    .HasColumnType("int");
+                    .HasColumnType("integer");
 
                 b.Property<int>("Speed")
-                    .HasColumnType("int");
+                    .HasColumnType("integer");
 
                 b.Property<float>("Steer")
                     .HasColumnType("real");
@@ -83,16 +86,16 @@ partial class F1ServerDbContextModelSnapshot : ModelSnapshot
                     .HasColumnType("real");
 
                 b.Property<int>("TyresInnerTempFrontLeft")
-                    .HasColumnType("int");
+                    .HasColumnType("integer");
 
                 b.Property<int>("TyresInnerTempFrontRight")
-                    .HasColumnType("int");
+                    .HasColumnType("integer");
 
                 b.Property<int>("TyresInnerTempRearLeft")
-                    .HasColumnType("int");
+                    .HasColumnType("integer");
 
                 b.Property<int>("TyresInnerTempRearRight")
-                    .HasColumnType("int");
+                    .HasColumnType("integer");
 
                 b.Property<float>("TyresPressureFrontLeft")
                     .HasColumnType("real");
@@ -107,16 +110,16 @@ partial class F1ServerDbContextModelSnapshot : ModelSnapshot
                     .HasColumnType("real");
 
                 b.Property<int>("TyresSurfaceTempFrontLeft")
-                    .HasColumnType("int");
+                    .HasColumnType("integer");
 
                 b.Property<int>("TyresSurfaceTempFrontRight")
-                    .HasColumnType("int");
+                    .HasColumnType("integer");
 
                 b.Property<int>("TyresSurfaceTempRearLeft")
-                    .HasColumnType("int");
+                    .HasColumnType("integer");
 
                 b.Property<int>("TyresSurfaceTempRearRight")
-                    .HasColumnType("int");
+                    .HasColumnType("integer");
 
                 b.HasKey("Id");
 
@@ -136,20 +139,20 @@ partial class F1ServerDbContextModelSnapshot : ModelSnapshot
                     .ValueGeneratedOnAdd()
                     .HasColumnType("bigint");
 
-                SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+                NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
                 b.Property<int>("DbIsFinished")
-                    .HasColumnType("int")
+                    .HasColumnType("integer")
                     .HasColumnName("IsFinished");
 
                 b.Property<long>("GameVersionId")
                     .HasColumnType("bigint");
 
                 b.Property<int>("Mode")
-                    .HasColumnType("int");
+                    .HasColumnType("integer");
 
                 b.Property<int>("Number")
-                    .HasColumnType("int");
+                    .HasColumnType("integer");
 
                 b.HasKey("Id");
 
@@ -175,10 +178,10 @@ partial class F1ServerDbContextModelSnapshot : ModelSnapshot
                     .ValueGeneratedOnAdd()
                     .HasColumnType("bigint");
 
-                SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+                NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
                 b.Property<int>("AdditionalPoints")
-                    .HasColumnType("int");
+                    .HasColumnType("integer");
 
                 b.Property<long>("ChampionshipId")
                     .HasColumnType("bigint");
@@ -187,10 +190,10 @@ partial class F1ServerDbContextModelSnapshot : ModelSnapshot
                     .HasColumnType("bigint");
 
                 b.Property<int>("RacePoints")
-                    .HasColumnType("int");
+                    .HasColumnType("integer");
 
                 b.Property<int>("SprintRacePoints")
-                    .HasColumnType("int");
+                    .HasColumnType("integer");
 
                 b.Property<long>("TrackId")
                     .HasColumnType("bigint");
@@ -223,7 +226,7 @@ partial class F1ServerDbContextModelSnapshot : ModelSnapshot
                     .ValueGeneratedOnAdd()
                     .HasColumnType("bigint");
 
-                SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+                NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
                 b.Property<long>("ChampionshipId")
                     .HasColumnType("bigint");
@@ -271,18 +274,18 @@ partial class F1ServerDbContextModelSnapshot : ModelSnapshot
                     .ValueGeneratedOnAdd()
                     .HasColumnType("bigint");
 
-                SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+                NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
                 b.Property<int>("DbIsHumanDriver")
-                    .HasColumnType("int")
+                    .HasColumnType("integer")
                     .HasColumnName("IsHumanDriver");
 
                 b.Property<int>("DriverGameId")
-                    .HasColumnType("int");
+                    .HasColumnType("integer");
 
                 b.Property<string>("Name")
                     .HasMaxLength(100)
-                    .HasColumnType("nvarchar(100)");
+                    .HasColumnType("character varying(100)");
 
                 b.HasKey("Id");
 
@@ -2038,19 +2041,19 @@ partial class F1ServerDbContextModelSnapshot : ModelSnapshot
                     .ValueGeneratedOnAdd()
                     .HasColumnType("bigint");
 
-                SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+                NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
                 b.Property<long>("FastestLapTime")
                     .HasColumnType("bigint");
 
                 b.Property<int>("FinishPosition")
-                    .HasColumnType("int");
+                    .HasColumnType("integer");
 
                 b.Property<int>("GridPosition")
-                    .HasColumnType("int");
+                    .HasColumnType("integer");
 
                 b.Property<int>("LapsDriven")
-                    .HasColumnType("int");
+                    .HasColumnType("integer");
 
                 b.Property<long>("NumberOfPenalties")
                     .HasColumnType("bigint");
@@ -2062,16 +2065,16 @@ partial class F1ServerDbContextModelSnapshot : ModelSnapshot
                     .HasColumnType("bigint");
 
                 b.Property<int>("PitStops")
-                    .HasColumnType("int");
+                    .HasColumnType("integer");
 
                 b.Property<int>("ResultStatus")
-                    .HasColumnType("int");
+                    .HasColumnType("integer");
 
                 b.Property<long>("SessionId")
                     .HasColumnType("bigint");
 
                 b.Property<double>("TotalRaceTime")
-                    .HasColumnType("float");
+                    .HasColumnType("double precision");
 
                 b.HasKey("Id");
 
@@ -2093,22 +2096,22 @@ partial class F1ServerDbContextModelSnapshot : ModelSnapshot
                     .ValueGeneratedOnAdd()
                     .HasColumnType("bigint");
 
-                SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+                NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
                 b.Property<DateTime?>("LastUsed")
-                    .HasColumnType("datetime2");
+                    .HasColumnType("timestamp with time zone");
 
                 b.Property<int>("MajorVersion")
-                    .HasColumnType("int");
+                    .HasColumnType("integer");
 
                 b.Property<int>("MinorVersion")
-                    .HasColumnType("int");
+                    .HasColumnType("integer");
 
                 b.Property<string>("Name")
-                    .HasColumnType("nvarchar(max)");
+                    .HasColumnType("text");
 
                 b.Property<int>("Version")
-                    .HasColumnType("int");
+                    .HasColumnType("integer");
 
                 b.HasKey("Id");
 
@@ -2126,28 +2129,28 @@ partial class F1ServerDbContextModelSnapshot : ModelSnapshot
                     .ValueGeneratedOnAdd()
                     .HasColumnType("bigint");
 
-                SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+                NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
                 b.Property<int>("CarPosition")
-                    .HasColumnType("int");
+                    .HasColumnType("integer");
 
                 b.Property<int>("DbIsCompleted")
-                    .HasColumnType("int")
+                    .HasColumnType("integer")
                     .HasColumnName("IsCompleted");
 
                 b.Property<int>("DbIsInvalid")
-                    .HasColumnType("int")
+                    .HasColumnType("integer")
                     .HasColumnName("IsInvalid");
 
                 b.Property<int>("DbIsInvalidLapTime")
-                    .HasColumnType("int")
+                    .HasColumnType("integer")
                     .HasColumnName("IsInvalidLapTime");
 
                 b.Property<int>("DriverStatus")
-                    .HasColumnType("int");
+                    .HasColumnType("integer");
 
                 b.Property<int>("LapNumber")
-                    .HasColumnType("int");
+                    .HasColumnType("integer");
 
                 b.Property<long>("LapTime")
                     .HasColumnType("bigint");
@@ -2156,10 +2159,10 @@ partial class F1ServerDbContextModelSnapshot : ModelSnapshot
                     .HasColumnType("bigint");
 
                 b.Property<int>("PitStatus")
-                    .HasColumnType("int");
+                    .HasColumnType("integer");
 
                 b.Property<int>("ResultStatus")
-                    .HasColumnType("int");
+                    .HasColumnType("integer");
 
                 b.Property<long>("Sector1Time")
                     .HasColumnType("bigint");
@@ -2174,7 +2177,7 @@ partial class F1ServerDbContextModelSnapshot : ModelSnapshot
                     .HasColumnType("bigint");
 
                 b.Property<int>("TyreCompound")
-                    .HasColumnType("int");
+                    .HasColumnType("integer");
 
                 b.HasKey("Id");
 
@@ -2207,14 +2210,14 @@ partial class F1ServerDbContextModelSnapshot : ModelSnapshot
                     .ValueGeneratedOnAdd()
                     .HasColumnType("bigint");
 
-                SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+                NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
                 b.Property<string>("Name")
                     .HasMaxLength(100)
-                    .HasColumnType("nvarchar(100)");
+                    .HasColumnType("character varying(100)");
 
                 b.Property<int>("NationalityGameId")
-                    .HasColumnType("int");
+                    .HasColumnType("integer");
 
                 b.HasKey("Id");
 
@@ -2780,27 +2783,27 @@ partial class F1ServerDbContextModelSnapshot : ModelSnapshot
                     .ValueGeneratedOnAdd()
                     .HasColumnType("bigint");
 
-                SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+                NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
                 b.Property<int>("ArrayIndex")
-                    .HasColumnType("int");
+                    .HasColumnType("integer");
 
                 b.Property<int>("CarRaceNumber")
-                    .HasColumnType("int");
+                    .HasColumnType("integer");
 
                 b.Property<int>("DbIsHumanControlled")
-                    .HasColumnType("int")
+                    .HasColumnType("integer")
                     .HasColumnName("IsHumanControlled");
 
                 b.Property<int?>("DbIsMyTeam")
-                    .HasColumnType("int")
+                    .HasColumnType("integer")
                     .HasColumnName("IsMyTeam");
 
                 b.Property<long>("DriverId")
                     .HasColumnType("bigint");
 
                 b.Property<string>("DriverName")
-                    .HasColumnType("nvarchar(max)");
+                    .HasColumnType("text");
 
                 b.Property<long>("NationalityId")
                     .HasColumnType("bigint");
@@ -2837,55 +2840,55 @@ partial class F1ServerDbContextModelSnapshot : ModelSnapshot
                     .ValueGeneratedOnAdd()
                     .HasColumnType("bigint");
 
-                SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+                NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
                 b.Property<int>("BrakingAssistFirst")
-                    .HasColumnType("int");
+                    .HasColumnType("integer");
 
                 b.Property<int>("BrakingAssistLast")
-                    .HasColumnType("int");
+                    .HasColumnType("integer");
 
                 b.Property<int>("DbBrakingAssistChanged")
-                    .HasColumnType("int")
+                    .HasColumnType("integer")
                     .HasColumnName("BrakingAssistChanged");
 
                 b.Property<int>("DbGearBoxAssistChanged")
-                    .HasColumnType("int")
+                    .HasColumnType("integer")
                     .HasColumnName("GearBoxAssistChanged");
 
                 b.Property<int>("DbIsExtendedSession")
-                    .HasColumnType("int")
+                    .HasColumnType("integer")
                     .HasColumnName("IsExtendedSession");
 
                 b.Property<int>("DbSteeringAssistChanged")
-                    .HasColumnType("int")
+                    .HasColumnType("integer")
                     .HasColumnName("SteeringAssistChanged");
 
                 b.Property<int>("DbSteeringAssistFirst")
-                    .HasColumnType("int")
+                    .HasColumnType("integer")
                     .HasColumnName("SteeringAssistFirst");
 
                 b.Property<int>("DbSteeringAssistLast")
-                    .HasColumnType("int")
+                    .HasColumnType("integer")
                     .HasColumnName("SteeringAssistLast");
 
                 b.Property<int>("FlashbacksUsed")
-                    .HasColumnType("int");
+                    .HasColumnType("integer");
 
                 b.Property<int>("GameMode")
-                    .HasColumnType("int");
+                    .HasColumnType("integer");
 
                 b.Property<int>("GearBoxAssistFirst")
-                    .HasColumnType("int");
+                    .HasColumnType("integer");
 
                 b.Property<int>("GearBoxAssistLast")
-                    .HasColumnType("int");
+                    .HasColumnType("integer");
 
                 b.Property<long>("RedFlags")
                     .HasColumnType("bigint");
 
                 b.Property<int>("RuleSet")
-                    .HasColumnType("int");
+                    .HasColumnType("integer");
 
                 b.Property<long>("SafetyCarStages")
                     .HasColumnType("bigint");
@@ -2897,10 +2900,10 @@ partial class F1ServerDbContextModelSnapshot : ModelSnapshot
                     .HasColumnType("bigint");
 
                 b.Property<int>("WeatherEnd")
-                    .HasColumnType("int");
+                    .HasColumnType("integer");
 
                 b.Property<int>("WeatherStart")
-                    .HasColumnType("int");
+                    .HasColumnType("integer");
 
                 b.HasKey("Id");
 
@@ -2918,39 +2921,39 @@ partial class F1ServerDbContextModelSnapshot : ModelSnapshot
                     .ValueGeneratedOnAdd()
                     .HasColumnType("bigint");
 
-                SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+                NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
                 b.Property<int>("ActiveCars")
-                    .HasColumnType("int");
+                    .HasColumnType("integer");
 
                 b.Property<int>("AiDifficulty")
-                    .HasColumnType("int");
+                    .HasColumnType("integer");
 
                 b.Property<DateTime>("CreationTimestamp")
-                    .HasColumnType("datetime2");
+                    .HasColumnType("timestamp with time zone");
 
                 b.Property<int>("DbIsFinished")
-                    .HasColumnType("int")
+                    .HasColumnType("integer")
                     .HasColumnName("IsFinished");
 
                 b.Property<int>("DbIsNetworkGame")
-                    .HasColumnType("int")
+                    .HasColumnType("integer")
                     .HasColumnName("IsNetworkGame");
 
                 b.Property<int>("FormulaType")
-                    .HasColumnType("int");
+                    .HasColumnType("integer");
 
                 b.Property<long>("GameVersionId")
                     .HasColumnType("bigint");
 
                 b.Property<decimal>("SessionId")
-                    .HasColumnType("decimal(20,0)");
+                    .HasColumnType("numeric(20,0)");
 
                 b.Property<int>("SessionLength")
-                    .HasColumnType("int");
+                    .HasColumnType("integer");
 
                 b.Property<int>("SessionType")
-                    .HasColumnType("int");
+                    .HasColumnType("integer");
 
                 b.Property<long>("TrackId")
                     .HasColumnType("bigint");
@@ -2977,14 +2980,14 @@ partial class F1ServerDbContextModelSnapshot : ModelSnapshot
                     .ValueGeneratedOnAdd()
                     .HasColumnType("bigint");
 
-                SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+                NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
                 b.Property<string>("Name")
                     .HasMaxLength(100)
-                    .HasColumnType("nvarchar(100)");
+                    .HasColumnType("character varying(100)");
 
                 b.Property<int>("TeamGameId")
-                    .HasColumnType("int");
+                    .HasColumnType("integer");
 
                 b.HasKey("Id");
 
@@ -5080,14 +5083,14 @@ partial class F1ServerDbContextModelSnapshot : ModelSnapshot
                     .ValueGeneratedOnAdd()
                     .HasColumnType("bigint");
 
-                SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+                NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
                 b.Property<long>("LapReferenceTime")
                     .HasColumnType("bigint");
 
                 b.Property<string>("Name")
                     .HasMaxLength(100)
-                    .HasColumnType("nvarchar(100)");
+                    .HasColumnType("character varying(100)");
 
                 b.Property<long>("Sector1ReferenceTime")
                     .HasColumnType("bigint");
@@ -5099,7 +5102,7 @@ partial class F1ServerDbContextModelSnapshot : ModelSnapshot
                     .HasColumnType("bigint");
 
                 b.Property<int>("TrackNumber")
-                    .HasColumnType("int");
+                    .HasColumnType("integer");
 
                 b.HasKey("Id");
 
