@@ -212,7 +212,7 @@ internal class ParticipantsProcessor : BaseProcessor
                 participantRuntimeData.IsValidObject = participantRuntimeData.ParticipantDbId > 0;
                 participantRuntimeData.IsHumanDriver = isHumanDriver;
 
-                if (isNewParticipant)
+                if (isNewParticipant || participantRuntimeData.LiveData is null)
                 {
                     CreateLiveData(sessionRuntimeData, participantRuntimeData);
                 }
@@ -409,7 +409,7 @@ internal class ParticipantsProcessor : BaseProcessor
     }
 
     /// <summary>
-    /// Create live data
+    /// Create live data and cache the reference on the participant runtime data
     /// </summary>
     /// <param name="sessionRuntimeData">Session runtime data</param>
     /// <param name="participantRuntimeData">Participant runtime data</param>
@@ -431,6 +431,8 @@ internal class ParticipantsProcessor : BaseProcessor
 
             sessionRuntimeData.CurrentSession.Drivers.Add(participantLiveData);
         }
+
+        participantRuntimeData.LiveData = participantLiveData as LiveDriverData;
     }
 
     /// <summary>
