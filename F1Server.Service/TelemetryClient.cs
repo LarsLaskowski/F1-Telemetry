@@ -389,7 +389,10 @@ public sealed class TelemetryClient : ITelemetryClient, IDisposable
 
             packetData.SetRawData(recvData);
 
-            Logger?.LogInformation("Received packet with length: {Length}", recvData.Length);
+            if (Logger?.IsEnabled(LogLevel.Trace) == true)
+            {
+                Logger.LogTrace("Received packet with length: {Length}", recvData.Length);
+            }
 
             EnqueueLoggingPacket(ref packetData);
 
@@ -504,7 +507,10 @@ public sealed class TelemetryClient : ITelemetryClient, IDisposable
 
             _applicationData.AppMetrics?.PacketsInQueue.Record(Interlocked.Read(ref _queuedPackets));
 
-            Logger?.LogInformation("Processing packet with id: {PacketId}, type: {PacketType}, session id: {SessionId}", packetData.PacketNumber, packetData.PacketHeader?.PacketType, packetData.PacketHeader?.UniqueSessionId);
+            if (Logger?.IsEnabled(LogLevel.Trace) == true)
+            {
+                Logger.LogTrace("Processing packet with id: {PacketId}, type: {PacketType}, session id: {SessionId}", packetData.PacketNumber, packetData.PacketHeader?.PacketType, packetData.PacketHeader?.UniqueSessionId);
+            }
 
             var currentActivity = AppActivity.SrvSource.StartActivity("ProcessCurrentPacket", ActivityKind.Internal, null);
 
@@ -836,7 +842,10 @@ public sealed class TelemetryClient : ITelemetryClient, IDisposable
 
                     packetData.SetRawData(recvBuf.AsSpan(0, recvBytes).ToArray());
 
-                    Logger?.LogInformation("Received TCP packet with length: {Length}", recvBytes);
+                    if (Logger?.IsEnabled(LogLevel.Trace) == true)
+                    {
+                        Logger.LogTrace("Received TCP packet with length: {Length}", recvBytes);
+                    }
 
                     EnqueueLoggingPacket(ref packetData);
 
