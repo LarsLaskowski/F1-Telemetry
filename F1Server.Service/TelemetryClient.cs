@@ -116,7 +116,7 @@ public sealed class TelemetryClient : ITelemetryClient, IDisposable
     #region Events
 
     /// <summary>
-    /// Event, if a packet received
+    /// Event raised when a received packet indicates a changed game version or a changed session identifier
     /// </summary>
     public event EventHandler<PacketReceivedEventArgs> PacketReceived;
 
