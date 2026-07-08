@@ -141,12 +141,24 @@ internal class LapDataProcessor : BaseProcessor
         // No one with a time? Use grid position or car position
         if (sessionRuntimeData.CurrentSession.TimeTable.Count == 0 && sessionRuntimeData.CurrentSession.Drivers?.Count > 0)
         {
-            // Grid postion?
-            sessionRuntimeData.CurrentSession.TimeTable = sessionRuntimeData.CurrentSession.Drivers.Where(d => d.GridPosition > 0).OrderBy(d => d.GridPosition).Select(d => d.ArrayIndex).ToList();
+            var hasGridPosition = false;
+            var hasCarPosition = false;
 
-            // Car position
-            if (sessionRuntimeData.CurrentSession.TimeTable.Count == 0)
+            // Cheap scan first, so the LINQ chains only run when they can produce a non-empty result
+            foreach (var driver in sessionRuntimeData.CurrentSession.Drivers)
             {
+                hasGridPosition |= driver.GridPosition > 0;
+                hasCarPosition |= driver.CarPosition > 0;
+            }
+
+            // Grid postion?
+            if (hasGridPosition)
+            {
+                sessionRuntimeData.CurrentSession.TimeTable = sessionRuntimeData.CurrentSession.Drivers.Where(d => d.GridPosition > 0).OrderBy(d => d.GridPosition).Select(d => d.ArrayIndex).ToList();
+            }
+            else if (hasCarPosition)
+            {
+                // Car position
                 sessionRuntimeData.CurrentSession.TimeTable = sessionRuntimeData.CurrentSession.Drivers.Where(d => d.CarPosition > 0).OrderBy(d => d.CarPosition).Select(d => d.ArrayIndex).ToList();
             }
         }
@@ -217,7 +229,7 @@ internal class LapDataProcessor : BaseProcessor
             PublishLapData(iLapData, lapInfo, sessionRuntimeData);
         }
 
-        UpdateLiveData(lapInfo, iLapData, sessionRuntimeData, participantRuntimeData.ParticipantDbId, isNewLapEntity, participantRuntimeData.IsHumanDriver);
+        UpdateLiveData(lapInfo, iLapData, sessionRuntimeData, participantRuntimeData, isNewLapEntity);
 
         return participantRuntimeData.CarIsOnTrack;
     }
@@ -336,12 +348,11 @@ internal class LapDataProcessor : BaseProcessor
     /// <param name="lapInfo">Lap base data</param>
     /// <param name="lapData">Data of lap</param>
     /// <param name="sessionRuntimeData">Session runtime data</param>
-    /// <param name="participantDbId">Database id of participant</param>
+    /// <param name="participantRuntimeData">Participant runtime data</param>
     /// <param name="isNewLapEntity">Is new lap?</param>
-    /// <param name="isHumanDriver">Is human driver</param>
-    private void UpdateLiveData(ILapDataBase lapInfo, IndependentLapData lapData, SessionRuntimeData sessionRuntimeData, long participantDbId, bool isNewLapEntity, bool isHumanDriver)
+    private void UpdateLiveData(ILapDataBase lapInfo, IndependentLapData lapData, SessionRuntimeData sessionRuntimeData, ParticipantRuntimeData participantRuntimeData, bool isNewLapEntity)
     {
-        if (sessionRuntimeData?.CurrentSession?.Drivers?.Find(p => p.DbId == participantDbId) is LiveDriverData liveData)
+        if (sessionRuntimeData?.CurrentSession is not null && participantRuntimeData.LiveData is LiveDriverData liveData)
         {
             liveData.CurrentDriverStatus = lapInfo.CurrentDriverStatus;
             liveData.GridPosition = lapInfo.GridPosition;
@@ -355,7 +366,7 @@ internal class LapDataProcessor : BaseProcessor
                 liveData.LapsDriven++;
             }
 
-            if (isHumanDriver)
+            if (participantRuntimeData.IsHumanDriver)
             {
                 _telemetryWriter?.WriteSessionData(sessionRuntimeData, liveData);
             }

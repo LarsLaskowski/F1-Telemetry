@@ -112,7 +112,7 @@ internal class CarStatusProcessor : BaseProcessor
     {
         if (sessionRuntimeData.Participants.TryGetValue(carIndex, out var participantData) && participantData != null)
         {
-            SetCurrentTyres(sessionRuntimeData, carStatusData, participantData);
+            SetCurrentTyres(carStatusData, participantData);
 
             if (participantData.IsHumanDriver)
             {
@@ -124,19 +124,15 @@ internal class CarStatusProcessor : BaseProcessor
     /// <summary>
     /// Get current tyres
     /// </summary>
-    /// <param name="sessionRuntimeData">Session runtime data</param>
     /// <param name="carStatusData">Car status data</param>
     /// <param name="participantData">Participant data</param>
-    private void SetCurrentTyres(SessionRuntimeData sessionRuntimeData, ICarStatusDataBase carStatusData, ParticipantRuntimeData participantData)
+    private void SetCurrentTyres(ICarStatusDataBase carStatusData, ParticipantRuntimeData participantData)
     {
         var currentLap = participantData.GetCurrentLap();
 
         currentLap?.TyreCompound = carStatusData?.VisualTyreCompound ?? VisualTyreCompound.Unknown;
 
-        if (sessionRuntimeData.CurrentSession.Drivers?.Find(p => p.DbId == participantData.ParticipantDbId) is LiveDriverData liveData)
-        {
-            liveData.CurrentUsedTyre = carStatusData?.VisualTyreCompound ?? VisualTyreCompound.Unknown;
-        }
+        participantData.LiveData?.CurrentUsedTyre = carStatusData?.VisualTyreCompound ?? VisualTyreCompound.Unknown;
     }
 
     /// <summary>

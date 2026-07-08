@@ -49,6 +49,7 @@ public sealed class TelemetryClient : ITelemetryClient, IDisposable
     private bool _isLoggingQueueRunning;
     private bool _statisticsTimerRunning;
     private long _queuedPackets;
+    private long _lastPacketReceivedTicks;
 
     #endregion // Fields
 
@@ -115,7 +116,7 @@ public sealed class TelemetryClient : ITelemetryClient, IDisposable
     #region Events
 
     /// <summary>
-    /// Event, if a packet received
+    /// Event raised when a received packet indicates a changed game version or a changed session identifier
     /// </summary>
     public event EventHandler<PacketReceivedEventArgs> PacketReceived;
 
@@ -250,6 +251,11 @@ public sealed class TelemetryClient : ITelemetryClient, IDisposable
                 _webHosting.StartWebHosting(_serviceProvider);
             }
 
+            Volatile.Write(ref _lastPacketReceivedTicks, DateTime.UtcNow.Ticks);
+
+            // Runs permanently while receiving; the elapsed handler checks the last packet timestamp
+            _timeoutTimer.Start();
+
             // Start receiving first data
             _udpClient.BeginReceive(new AsyncCallback(ReceiveCallback), null);
 
@@ -309,6 +315,21 @@ public sealed class TelemetryClient : ITelemetryClient, IDisposable
 
     #endregion // Methods
 
+    #region Static methods
+
+    /// <summary>
+    /// Checks whether the receive timeout window has elapsed since the last received packet
+    /// </summary>
+    /// <param name="lastPacketReceivedTicks">Timestamp in UTC ticks of the last received packet</param>
+    /// <param name="currentTicks">Current timestamp in UTC ticks</param>
+    /// <returns>True if the elapsed time exceeds <see cref="ConstData.TimeoutInMs"/>, otherwise false</returns>
+    internal static bool IsReceiveTimeoutElapsed(long lastPacketReceivedTicks, long currentTicks)
+    {
+        return currentTicks - lastPacketReceivedTicks > ConstData.TimeoutInMs * TimeSpan.TicksPerMillisecond;
+    }
+
+    #endregion // Static methods
+
     #region Private methods
 
     /// <summary>
@@ -341,13 +362,11 @@ public sealed class TelemetryClient : ITelemetryClient, IDisposable
             ConnectionStatusChanged?.Invoke(this, true);
         }
 
-        _applicationData.Statistics.PacketsReceivedTotal++;
-        _applicationData.Statistics.PacketsReceivedCurrentSession++;
+        _applicationData.Statistics.IncrementPacketsReceived();
 
         _applicationData.AppMetrics?.PacketsReceived.Add(1);
 
-        _timeoutTimer.Stop();
-        _timeoutTimer.Start();
+        Volatile.Write(ref _lastPacketReceivedTicks, DateTime.UtcNow.Ticks);
 
         if (_statisticsTimerRunning == false)
         {
@@ -405,12 +424,18 @@ public sealed class TelemetryClient : ITelemetryClient, IDisposable
     /// <param name="elapsedEventArgs">Event argument</param>
     private void OnTimerElapsed(object? sender, System.Timers.ElapsedEventArgs elapsedEventArgs)
     {
-        IsConnected = false;
+        if (IsReceiveTimeoutElapsed(Volatile.Read(ref _lastPacketReceivedTicks), DateTime.UtcNow.Ticks) == false)
+        {
+            return;
+        }
 
-        ConnectionStatusChanged?.Invoke(this, false);
+        // Report the lost connection only on the state transition
+        if (IsConnected)
+        {
+            IsConnected = false;
 
-        // Stop the timer, is started automatically if a connection is created
-        _timeoutTimer.Stop();
+            ConnectionStatusChanged?.Invoke(this, false);
+        }
     }
 
     /// <summary>
@@ -795,8 +820,9 @@ public sealed class TelemetryClient : ITelemetryClient, IDisposable
             {
                 using var stream = tcpClient.GetStream();
 
-                _applicationData.Statistics.PacketsReceivedTotal++;
-                _applicationData.Statistics.PacketsReceivedCurrentSession++;
+                _applicationData.Statistics.IncrementPacketsReceived();
+
+                Volatile.Write(ref _lastPacketReceivedTicks, DateTime.UtcNow.Ticks);
 
                 var recvBytes = await stream.ReadAsync(recvBuf, cancellationToken).ConfigureAwait(true);
 
