@@ -259,6 +259,9 @@ public class ParticipantRuntimeData : IDisposable
 
         if (lapNumber > 0 && _unfinishedLaps.TryRemove(lapNumber, out var lapEntity) && IsValidObject)
         {
+            // A pending telemetry batch of this lap must be written before its rows are deleted
+            DatabaseWriter.Flush();
+
             using (var dbFactory = RepositoryFactory.CreateInstance())
             {
                 // Remove telemetry data
@@ -383,11 +386,10 @@ public class ParticipantRuntimeData : IDisposable
     }
 
     /// <summary>
-    /// Complete telemetry data of given lap number
+    /// Complete telemetry data of given lap number and enqueue the buffered rows for the background database writer
     /// </summary>
     /// <param name="lapNumber">Lap number</param>
-    /// <returns>Task</returns>
-    public async Task CompleteTelemetryData(int lapNumber)
+    public void CompleteTelemetryData(int lapNumber)
     {
         if (_telemetryPoints.TryGetValue(lapNumber, out var telemetryData))
         {
@@ -395,25 +397,24 @@ public class ParticipantRuntimeData : IDisposable
 
             if (IsValidObject)
             {
-                using (var dbFactory = RepositoryFactory.CreateInstance())
+                _telemetryPoints.TryRemove(lapNumber, out _);
+
+                var telemetryEntities = telemetryData.TelemetryQueue.ToList();
+
+                if (telemetryEntities.Count > 0)
                 {
-                    var lapEntity = dbFactory.GetRepository<LapRepository>()
-                                             ?.GetQuery()
-                                             ?.FirstOrDefault(l => l.ParticipantId == ParticipantDbId && l.LapNumber == lapNumber);
+                    // Prefer the in-memory lap id; the writer resolves it from the database when it is still 0
+                    var lapDbId = GetLap(lapNumber)?.Id
+                                      ?? LapRepositoryCache.GetByLapNumberParticipant((ushort)lapNumber, ParticipantDbId)?.Id
+                                      ?? 0;
 
-                    if (lapEntity != null)
-                    {
-                        var telemetryEntities = telemetryData.TelemetryQueue.ToList();
-
-                        foreach (var telemetryEntity in telemetryEntities)
-                        {
-                            telemetryEntity.LapNumberId = lapEntity.Id;
-                        }
-
-                        _telemetryPoints.TryRemove(lapNumber, out _);
-
-                        await (dbFactory.GetRepository<CarTelemetryRepository>()?.UpdateRangeAsync(telemetryEntities) ?? Task.FromResult(false)).ConfigureAwait(false);
-                    }
+                    DatabaseWriter.Enqueue(new InsertTelemetryBatchJob
+                                           {
+                                               LapDbId = lapDbId,
+                                               LapNumber = (ushort)lapNumber,
+                                               ParticipantDbId = ParticipantDbId,
+                                               Rows = telemetryEntities
+                                           });
                 }
             }
         }

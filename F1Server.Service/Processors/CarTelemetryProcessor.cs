@@ -141,7 +141,7 @@ internal class CarTelemetryProcessor : BaseProcessor
             if (participantRuntimeData.IsNewTelemetry)
             {
                 // save all received telemetry data
-                participantRuntimeData.CompleteTelemetryData(participantRuntimeData.CurrentLapNumber - 1).GetAwaiter().GetResult();
+                participantRuntimeData.CompleteTelemetryData(participantRuntimeData.CurrentLapNumber - 1);
             }
 
             // add new telemetry point

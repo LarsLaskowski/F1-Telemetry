@@ -93,6 +93,9 @@ internal class FinalClassificationProcessor : BaseProcessor
     {
         var isProcessed = true;
 
+        // All pending telemetry batches must be written before laps and telemetry of this session are read and cleaned up
+        DatabaseWriter.Flush();
+
         using (var dbFactory = RepositoryFactory.CreateInstance())
         {
             for (ushort carIndex = 0; carIndex < finalClassificationData.PacketData!.NumberOfCars; carIndex++)
