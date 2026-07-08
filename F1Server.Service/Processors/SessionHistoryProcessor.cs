@@ -60,7 +60,7 @@ internal class SessionHistoryProcessor : BaseProcessor
                 if (sessionRuntimeData.HasParticipants
                     && sessionRuntimeData.Participants.TryGetValue(sessionHistory.PacketData.CarIndex, out var participantData))
                 {
-                    var liveData = sessionRuntimeData.CurrentSession.Drivers?.Find(p => p.DbId == participantData.ParticipantDbId) as LiveDriverData;
+                    var liveData = participantData.LiveData;
 
                     if (UpdateLaps(sessionHistory.PacketData, liveData, participantData, sessionRuntimeData.CurrentSession, isFinalDataReceived) == false)
                     {
