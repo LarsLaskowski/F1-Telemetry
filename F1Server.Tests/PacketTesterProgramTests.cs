@@ -95,7 +95,7 @@ public class PacketTesterProgramTests
         {
             var output = InvokeTestSessionPaket(filePath);
 
-            Assert.IsTrue(output.Contains("Marshal zones (3)"), "Expected marshal zones message not found!");
+            Assert.Contains("Marshal zones (3)", output, "Expected marshal zones message not found!");
         }
         finally
         {
@@ -115,7 +115,7 @@ public class PacketTesterProgramTests
         {
             var output = InvokeTestSessionPaket(filePath);
 
-            Assert.IsFalse(output.Contains("Marshal zones"), "Unexpected marshal zones message found!");
+            Assert.DoesNotContain("Marshal zones", output, "Unexpected marshal zones message found!");
         }
         finally
         {
@@ -135,7 +135,7 @@ public class PacketTesterProgramTests
         {
             var output = InvokeTestSessionPaket(filePath);
 
-            Assert.IsTrue(output.Contains("Safety car status (2)"), "Expected safety car status message not found!");
+            Assert.Contains("Safety car status (2)", output, "Expected safety car status message not found!");
         }
         finally
         {
@@ -155,7 +155,7 @@ public class PacketTesterProgramTests
         {
             var output = InvokeTestSessionPaket(filePath);
 
-            Assert.IsFalse(output.Contains("Safety car status"), "Unexpected safety car status message found!");
+            Assert.DoesNotContain("Safety car status", output, "Unexpected safety car status message found!");
         }
         finally
         {
@@ -175,7 +175,7 @@ public class PacketTesterProgramTests
         {
             var output = InvokeTestSessionPaket(filePath);
 
-            Assert.IsTrue(output.Contains("AI difficulty (50)"), "Expected AI difficulty message not found!");
+            Assert.Contains("AI difficulty (50)", output, "Expected AI difficulty message not found!");
         }
         finally
         {
@@ -195,7 +195,7 @@ public class PacketTesterProgramTests
         {
             var output = InvokeTestSessionPaket(filePath);
 
-            Assert.IsFalse(output.Contains("AI difficulty"), "Unexpected AI difficulty message found!");
+            Assert.DoesNotContain("AI difficulty", output, "Unexpected AI difficulty message found!");
         }
         finally
         {

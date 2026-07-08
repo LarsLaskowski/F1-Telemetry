@@ -8,6 +8,15 @@ namespace F1Server.Tests;
 [TestClass]
 public class TelemetryStatisticsTests
 {
+    #region Properties
+
+    /// <summary>
+    /// Gets or sets the test context which provides information about and functionality for the current test run
+    /// </summary>
+    public TestContext TestContext { get; set; }
+
+    #endregion // Properties
+
     #region Methods
 
     /// <summary>
@@ -55,7 +64,7 @@ public class TelemetryStatisticsTests
             workers[worker] = Task.Run(() => IncrementStatistics(statistics, incrementsPerWorker));
         }
 
-        Task.WaitAll(workers);
+        Task.WaitAll(workers, TestContext.CancellationToken);
 
         Assert.AreEqual((long)workerCount * incrementsPerWorker, statistics.PacketsReceivedTotal, "Total packet counter must not lose increments!");
         Assert.AreEqual((long)workerCount * incrementsPerWorker, statistics.PacketsReceivedCurrentSession, "Current session packet counter must not lose increments!");

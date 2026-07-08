@@ -108,7 +108,10 @@ public class CarTelemetryController : ControllerBase
             currentActivity?.SetStatus(ActivityStatusCode.Ok);
         }
 
-        _logger?.LogInformation("Telemetry values loaded: ({LoadedValues})", telemetryData?.Count ?? 0);
+        if (_logger?.IsEnabled(LogLevel.Information) == true)
+        {
+            _logger.LogInformation("Telemetry values loaded: ({LoadedValues})", telemetryData?.Count ?? 0);
+        }
 
         return Ok(telemetryData);
     }
@@ -162,7 +165,10 @@ public class CarTelemetryController : ControllerBase
             currentActivity?.SetStatus(ActivityStatusCode.Ok);
         }
 
-        _logger?.LogInformation("Telemetry values loaded: ({LoadedValues})", telemetryData?.Count ?? 0);
+        if (_logger?.IsEnabled(LogLevel.Information) == true)
+        {
+            _logger.LogInformation("Telemetry values loaded: ({LoadedValues})", telemetryData?.Count ?? 0);
+        }
 
         return Ok(telemetryData);
     }
