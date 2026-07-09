@@ -5,15 +5,15 @@ namespace F1Server.Tests.Runtime;
 /// <summary>
 /// Job failing with an exception to test the error handling of the database writer consumer task
 /// </summary>
-internal sealed class ThrowingJob : DatabaseWriterJob
+internal sealed class ThrowingJob : IDatabaseWriterJob
 {
-    #region DatabaseWriterJob
+    #region IDatabaseWriterJob
 
     /// <inheritdoc/>
-    public override Task ExecuteAsync()
+    public Task ExecuteAsync()
     {
         throw new InvalidOperationException("Test job failure!");
     }
 
-    #endregion // DatabaseWriterJob
+    #endregion // IDatabaseWriterJob
 }

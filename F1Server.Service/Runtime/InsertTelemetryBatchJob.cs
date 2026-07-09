@@ -9,7 +9,7 @@ namespace F1Server.Service.Runtime;
 /// <summary>
 /// Database writer job inserting the buffered car telemetry rows of a completed lap
 /// </summary>
-internal class InsertTelemetryBatchJob : DatabaseWriterJob
+internal class InsertTelemetryBatchJob : IDatabaseWriterJob
 {
     #region Properties
 
@@ -35,10 +35,10 @@ internal class InsertTelemetryBatchJob : DatabaseWriterJob
 
     #endregion // Properties
 
-    #region DatabaseWriterJob
+    #region IDatabaseWriterJob
 
     /// <inheritdoc/>
-    public override async Task ExecuteAsync()
+    public async Task ExecuteAsync()
     {
         if (Rows.Count > 0)
         {
@@ -74,5 +74,5 @@ internal class InsertTelemetryBatchJob : DatabaseWriterJob
         }
     }
 
-    #endregion // DatabaseWriterJob
+    #endregion // IDatabaseWriterJob
 }

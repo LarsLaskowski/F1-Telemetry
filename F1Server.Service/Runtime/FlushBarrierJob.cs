@@ -3,7 +3,7 @@ namespace F1Server.Service.Runtime;
 /// <summary>
 /// Barrier job signaling a task when all previously enqueued database writer jobs have been executed
 /// </summary>
-internal class FlushBarrierJob : DatabaseWriterJob
+internal class FlushBarrierJob : IDatabaseWriterJob
 {
     #region Fields
 
@@ -23,15 +23,15 @@ internal class FlushBarrierJob : DatabaseWriterJob
 
     #endregion // Properties
 
-    #region DatabaseWriterJob
+    #region IDatabaseWriterJob
 
     /// <inheritdoc/>
-    public override Task ExecuteAsync()
+    public Task ExecuteAsync()
     {
         _completionSource.TrySetResult();
 
         return Task.CompletedTask;
     }
 
-    #endregion // DatabaseWriterJob
+    #endregion // IDatabaseWriterJob
 }

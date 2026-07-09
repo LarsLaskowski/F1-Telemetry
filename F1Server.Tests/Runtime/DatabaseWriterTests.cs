@@ -190,7 +190,7 @@ public class DatabaseWriterTests
 
         var storedRows = GetStoredTelemetryRows(lapEntity.Id);
 
-        Assert.AreEqual(3, storedRows.Count, "All rows of the batch should be stored with the lap id of the batch!");
+        Assert.HasCount(3, storedRows, "All rows of the batch should be stored with the lap id of the batch!");
     }
 
     /// <summary>
@@ -214,7 +214,7 @@ public class DatabaseWriterTests
 
         var storedRows = GetStoredTelemetryRows(lapEntity.Id);
 
-        Assert.AreEqual(2, storedRows.Count, "The writer should resolve the lap id from the database and store all rows of the batch!");
+        Assert.HasCount(2, storedRows, "The writer should resolve the lap id from the database and store all rows of the batch!");
     }
 
     /// <summary>
@@ -237,7 +237,7 @@ public class DatabaseWriterTests
 
         var storedRows = GetStoredTelemetryRows(lapEntity.Id);
 
-        Assert.AreEqual(4, storedRows.Count, "All pending batches should be written before the shutdown completes!");
+        Assert.HasCount(4, storedRows, "All pending batches should be written before the shutdown completes!");
         Assert.IsFalse(DatabaseWriter.IsRunning, "The consumer task should be stopped after the shutdown!");
     }
 
@@ -283,7 +283,7 @@ public class DatabaseWriterTests
 
         var storedRows = GetStoredTelemetryRows(lapEntity.Id);
 
-        Assert.AreEqual(1, storedRows.Count, "The buffered telemetry row should be stored for the completed lap!");
+        Assert.HasCount(1, storedRows, "The buffered telemetry row should be stored for the completed lap!");
     }
 
     /// <summary>
@@ -308,7 +308,7 @@ public class DatabaseWriterTests
 
         var storedRows = GetStoredTelemetryRows(lapEntity.Id);
 
-        Assert.AreEqual(1, storedRows.Count, "Jobs enqueued after a failing job should still be executed!");
+        Assert.HasCount(1, storedRows, "Jobs enqueued after a failing job should still be executed!");
     }
 
     /// <summary>
@@ -408,7 +408,7 @@ public class DatabaseWriterTests
 
             participantRuntimeData.CompleteTelemetryData(lapEntity.LapNumber);
 
-            Assert.AreEqual(0, GetStoredTelemetryRows(lapEntity.Id).Count, "No rows may be written for an invalid participant!");
+            Assert.IsEmpty(GetStoredTelemetryRows(lapEntity.Id), "No rows may be written for an invalid participant!");
 
             participantRuntimeData.IsValidObject = true;
 
@@ -419,7 +419,7 @@ public class DatabaseWriterTests
 
         var storedRows = GetStoredTelemetryRows(lapEntity.Id);
 
-        Assert.AreEqual(1, storedRows.Count, "The buffered telemetry row should be written once the participant is valid!");
+        Assert.HasCount(1, storedRows, "The buffered telemetry row should be written once the participant is valid!");
     }
 
     /// <summary>
@@ -464,7 +464,7 @@ public class DatabaseWriterTests
 
         var storedRows = GetStoredTelemetryRows(lapDbId);
 
-        Assert.AreEqual(1, storedRows.Count, "The telemetry row should be stored with the in-memory lap id!");
+        Assert.HasCount(1, storedRows, "The telemetry row should be stored with the in-memory lap id!");
     }
 
     /// <summary>

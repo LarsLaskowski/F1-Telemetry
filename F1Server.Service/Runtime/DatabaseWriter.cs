@@ -24,7 +24,7 @@ internal static class DatabaseWriter
     /// <summary>
     /// Channel holding the queued database writer jobs
     /// </summary>
-    private static Channel<DatabaseWriterJob>? _jobChannel;
+    private static Channel<IDatabaseWriterJob>? _jobChannel;
 
     /// <summary>
     /// Single consumer task processing the queued jobs in FIFO order
@@ -62,7 +62,7 @@ internal static class DatabaseWriter
     /// Enqueues a job for the background consumer task; the consumer is started at first use
     /// </summary>
     /// <param name="job">Job to execute in the background</param>
-    public static void Enqueue(DatabaseWriterJob job)
+    public static void Enqueue(IDatabaseWriterJob job)
     {
         if (job is not null)
         {
@@ -70,10 +70,10 @@ internal static class DatabaseWriter
             {
                 if (_jobChannel == null)
                 {
-                    _jobChannel = Channel.CreateUnbounded<DatabaseWriterJob>(new UnboundedChannelOptions
-                                                                             {
-                                                                                 SingleReader = true
-                                                                             });
+                    _jobChannel = Channel.CreateUnbounded<IDatabaseWriterJob>(new UnboundedChannelOptions
+                                                                              {
+                                                                                  SingleReader = true
+                                                                              });
 
                     var jobReader = _jobChannel.Reader;
 
@@ -120,7 +120,7 @@ internal static class DatabaseWriter
     /// </summary>
     public static void Shutdown()
     {
-        Channel<DatabaseWriterJob>? jobChannel;
+        Channel<IDatabaseWriterJob>? jobChannel;
         Task? consumerTask;
 
         lock (_lockObj)
@@ -146,7 +146,7 @@ internal static class DatabaseWriter
     /// </summary>
     /// <param name="jobReader">Reader of the job channel</param>
     /// <returns>A task representing the asynchronous operation</returns>
-    private static async Task ConsumeJobsAsync(ChannelReader<DatabaseWriterJob> jobReader)
+    private static async Task ConsumeJobsAsync(ChannelReader<IDatabaseWriterJob> jobReader)
     {
         await foreach (var job in jobReader.ReadAllAsync().ConfigureAwait(false))
         {
