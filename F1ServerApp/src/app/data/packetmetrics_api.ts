@@ -23,6 +23,7 @@ export interface SessionPacketMetricsViewApiData
   motionEx: PacketMetricsViewApiData;
   timeTrial: PacketMetricsViewApiData;
   lapPositions: PacketMetricsViewApiData;
+  carTelemetry2: PacketMetricsViewApiData;
   unsuccessfullyProcessed: 0;
   errors: 0;
 }
