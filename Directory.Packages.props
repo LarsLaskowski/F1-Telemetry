@@ -19,11 +19,11 @@
     <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.9" />
     <!-- Testing -->
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.7.0" />
-    <PackageVersion Include="MSTest.TestAdapter" Version="4.2.3" />
-    <PackageVersion Include="MSTest.TestFramework" Version="4.2.3" />
+    <PackageVersion Include="MSTest.TestAdapter" Version="4.3.0" />
+    <PackageVersion Include="MSTest.TestFramework" Version="4.3.0" />
     <PackageVersion Include="coverlet.collector" Version="10.0.1" />
     <!-- Code Analysis -->
-    <PackageVersion Include="Reihitsu.Analyzer" Version="1.0.0-beta4" />
+    <PackageVersion Include="Reihitsu.Analyzer" Version="1.0.0-beta5" />
     <!-- API Documentation & Swagger -->
     <PackageVersion Include="Swashbuckle.AspNetCore.Swagger" Version="10.2.3" />
     <PackageVersion Include="Swashbuckle.AspNetCore.SwaggerGen" Version="10.2.3" />
@@ -41,7 +41,7 @@
     <PackageVersion Include="OpenTelemetry.Instrumentation.EventCounters" Version="1.15.0-alpha.1" />
     <PackageVersion Include="OpenTelemetry.Instrumentation.Process" Version="1.15.0-beta.1" />
     <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="1.16.0" />
-    <PackageVersion Include="OpenTelemetry.Instrumentation.Runtime" Version="1.15.1" />
+    <PackageVersion Include="OpenTelemetry.Instrumentation.Runtime" Version="1.16.0" />
     <PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="1.16.0" />
     <!-- WPF / UI -->
     <PackageVersion Include="Ookii.Dialogs.Wpf" Version="5.0.1" />
