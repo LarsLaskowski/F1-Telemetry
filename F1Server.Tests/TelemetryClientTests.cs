@@ -1,5 +1,11 @@
+using F1Server.Core;
 using F1Server.Core.Data;
+using F1Server.Data;
 using F1Server.Service;
+using F1Server.Service.Runtime;
+using F1Server.Telemetry;
+
+using Microsoft.Extensions.DependencyInjection;
 
 namespace F1Server.Tests;
 
@@ -45,6 +51,30 @@ public class TelemetryClientTests
         var currentTicks = lastPacketTicks + ((ConstData.TimeoutInMs + 1) * TimeSpan.TicksPerMillisecond);
 
         Assert.IsTrue(TelemetryClient.IsReceiveTimeoutElapsed(lastPacketTicks, currentTicks), "A timeout must be reported beyond the timeout window!");
+    }
+
+    /// <summary>
+    /// Test to verify that disposing the client releases the telemetry writer and stops the background database writer
+    /// </summary>
+    [TestMethod]
+    public void TelemetryClientDisposeShutsDownDatabaseWriter()
+    {
+        var services = new ServiceCollection();
+        var applicationData = new F1ServerApplicationData();
+
+        services.AddSingleton(applicationData);
+        services.AddSingleton(new PacketAnalyzer());
+        services.AddSingleton(new TelemetryConfiguration());
+
+        using (var serviceProvider = services.BuildServiceProvider())
+        {
+            var telemetryClient = new TelemetryClient(serviceProvider, false, false);
+
+            telemetryClient.Dispose();
+
+            Assert.IsNull(applicationData.TelemetryWriter, "The telemetry writer should be released on dispose!");
+            Assert.IsFalse(DatabaseWriter.IsRunning, "The background database writer should be stopped on dispose!");
+        }
     }
 
     #endregion // Methods

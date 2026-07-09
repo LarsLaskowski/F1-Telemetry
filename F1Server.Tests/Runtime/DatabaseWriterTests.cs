@@ -286,5 +286,229 @@ public class DatabaseWriterTests
         Assert.AreEqual(1, storedRows.Count, "The buffered telemetry row should be stored for the completed lap!");
     }
 
+    /// <summary>
+    /// Verifies that the consumer keeps processing jobs after a failing job
+    /// </summary>
+    /// <returns>Task</returns>
+    [TestMethod]
+    public async Task DatabaseWriterConsumerContinuesAfterFailingJob()
+    {
+        var lapEntity = CreateLap(5);
+
+        DatabaseWriter.Enqueue(new ThrowingJob());
+        DatabaseWriter.Enqueue(new InsertTelemetryBatchJob
+                               {
+                                   LapDbId = lapEntity.Id,
+                                   LapNumber = lapEntity.LapNumber,
+                                   ParticipantDbId = lapEntity.ParticipantId,
+                                   Rows = CreateTelemetryRows(1)
+                               });
+
+        await DatabaseWriter.FlushAsync().ConfigureAwait(false);
+
+        var storedRows = GetStoredTelemetryRows(lapEntity.Id);
+
+        Assert.AreEqual(1, storedRows.Count, "Jobs enqueued after a failing job should still be executed!");
+    }
+
+    /// <summary>
+    /// Verifies that a batch of an unknown lap is discarded without storing rows
+    /// </summary>
+    /// <returns>Task</returns>
+    [TestMethod]
+    public async Task DatabaseWriterInsertTelemetryBatchJobDiscardsBatchOfUnknownLap()
+    {
+        var telemetryEntity = new CarTelemetryEntity
+                              {
+                                  PacketNumber = 421421,
+                                  Speed = 200
+                              };
+
+        DatabaseWriter.Enqueue(new InsertTelemetryBatchJob
+                               {
+                                   LapDbId = 0,
+                                   LapNumber = 99,
+                                   ParticipantDbId = 421999,
+                                   Rows = [telemetryEntity]
+                               });
+
+        await DatabaseWriter.FlushAsync().ConfigureAwait(false);
+
+        using (var dbFactory = RepositoryFactory.CreateInstance())
+        {
+            var storedRows = dbFactory.GetRepository<CarTelemetryRepository>()
+                                      ?.GetQuery()
+                                      ?.Count(t => t.PacketNumber == 421421) ?? -1;
+
+            Assert.AreEqual(0, storedRows, "A batch of an unknown lap should be discarded!");
+        }
+    }
+
+    /// <summary>
+    /// Verifies that an empty batch is ignored without any database work
+    /// </summary>
+    /// <returns>Task</returns>
+    [TestMethod]
+    public async Task DatabaseWriterInsertTelemetryBatchJobIgnoresEmptyBatch()
+    {
+        DatabaseWriter.Enqueue(new InsertTelemetryBatchJob
+                               {
+                                   LapDbId = 0,
+                                   LapNumber = 98,
+                                   ParticipantDbId = 421998,
+                                   Rows = []
+                               });
+
+        await DatabaseWriter.FlushAsync().ConfigureAwait(false);
+
+        Assert.IsTrue(DatabaseWriter.IsRunning, "The consumer task should still be running after an empty batch!");
+    }
+
+    /// <summary>
+    /// Verifies that a null job neither starts the consumer nor blocks a following flush
+    /// </summary>
+    /// <returns>Task</returns>
+    [TestMethod]
+    public async Task DatabaseWriterEnqueueIgnoresNullJob()
+    {
+        DatabaseWriter.Shutdown();
+
+        DatabaseWriter.Enqueue(null!);
+
+        Assert.IsFalse(DatabaseWriter.IsRunning, "A null job should not start the consumer task!");
+
+        await DatabaseWriter.FlushAsync().ConfigureAwait(false);
+
+        Assert.IsFalse(DatabaseWriter.IsRunning, "Flushing without pending jobs should not start the consumer task!");
+    }
+
+    /// <summary>
+    /// Verifies that telemetry data of an invalid participant stays buffered until the participant becomes valid
+    /// </summary>
+    /// <returns>Task</returns>
+    [TestMethod]
+    public async Task ParticipantRuntimeDataCompleteTelemetryDataKeepsBufferOfInvalidParticipant()
+    {
+        var lapEntity = CreateLap(6);
+
+        var sessionRuntimeData = new SessionRuntimeData(2025, TestSessionUniqueId, SessionType.Race);
+
+        using (var participantRuntimeData = new ParticipantRuntimeData(sessionRuntimeData))
+        {
+            participantRuntimeData.IsValidObject = false;
+            participantRuntimeData.ParticipantDbId = lapEntity.ParticipantId;
+
+            var telemetryEntity = new CarTelemetryEntity
+                                  {
+                                      PacketNumber = 1,
+                                      Speed = 290
+                                  };
+
+            participantRuntimeData.AddTelemetryData(lapEntity.LapNumber, telemetryEntity);
+
+            participantRuntimeData.CompleteTelemetryData(lapEntity.LapNumber);
+
+            Assert.AreEqual(0, GetStoredTelemetryRows(lapEntity.Id).Count, "No rows may be written for an invalid participant!");
+
+            participantRuntimeData.IsValidObject = true;
+
+            participantRuntimeData.CompleteTelemetryData(lapEntity.LapNumber);
+        }
+
+        await DatabaseWriter.FlushAsync().ConfigureAwait(false);
+
+        var storedRows = GetStoredTelemetryRows(lapEntity.Id);
+
+        Assert.AreEqual(1, storedRows.Count, "The buffered telemetry row should be written once the participant is valid!");
+    }
+
+    /// <summary>
+    /// Verifies that completing telemetry of a still unfinished lap uses the in-memory lap id
+    /// </summary>
+    /// <returns>Task</returns>
+    [TestMethod]
+    public async Task ParticipantRuntimeDataCompleteTelemetryDataUsesInMemoryLapId()
+    {
+        var sessionRuntimeData = new SessionRuntimeData(2025, TestSessionUniqueId, SessionType.Race);
+        var lapDbId = 0L;
+
+        using (var participantRuntimeData = new ParticipantRuntimeData(sessionRuntimeData))
+        {
+            participantRuntimeData.IsValidObject = true;
+            participantRuntimeData.ParticipantDbId = _participantDbId;
+
+            var lapEntity = new LapEntity
+                            {
+                                LapNumber = 8,
+                                ParticipantId = _participantDbId,
+                                SessionId = _sessionDbId
+                            };
+
+            Assert.IsTrue(participantRuntimeData.AddLap(lapEntity), "The lap could not be added to the participant runtime data!");
+            Assert.AreNotEqual(0, lapEntity.Id, "The lap id should be populated when the lap is added!");
+
+            lapDbId = lapEntity.Id;
+
+            var telemetryEntity = new CarTelemetryEntity
+                                  {
+                                      PacketNumber = 2,
+                                      Speed = 310
+                                  };
+
+            participantRuntimeData.AddTelemetryData(lapEntity.LapNumber, telemetryEntity);
+
+            participantRuntimeData.CompleteTelemetryData(lapEntity.LapNumber);
+        }
+
+        await DatabaseWriter.FlushAsync().ConfigureAwait(false);
+
+        var storedRows = GetStoredTelemetryRows(lapDbId);
+
+        Assert.AreEqual(1, storedRows.Count, "The telemetry row should be stored with the in-memory lap id!");
+    }
+
+    /// <summary>
+    /// Verifies that removing an unfinished lap deletes the lap row after draining the writer
+    /// </summary>
+    [TestMethod]
+    public void ParticipantRuntimeDataRemoveLapDeletesLapRow()
+    {
+        var sessionRuntimeData = new SessionRuntimeData(2025, TestSessionUniqueId, SessionType.Race);
+
+        using (var participantRuntimeData = new ParticipantRuntimeData(sessionRuntimeData))
+        {
+            participantRuntimeData.IsValidObject = true;
+            participantRuntimeData.ParticipantDbId = _participantDbId;
+
+            var lapEntity = new LapEntity
+                            {
+                                LapNumber = 7,
+                                ParticipantId = _participantDbId,
+                                SessionId = _sessionDbId
+                            };
+
+            Assert.IsTrue(participantRuntimeData.AddLap(lapEntity), "The lap could not be added to the participant runtime data!");
+
+            var telemetryEntity = new CarTelemetryEntity
+                                  {
+                                      PacketNumber = 1,
+                                      Speed = 300
+                                  };
+
+            participantRuntimeData.AddTelemetryData(lapEntity.LapNumber, telemetryEntity);
+
+            Assert.IsTrue(participantRuntimeData.RemoveLap(lapEntity.LapNumber), "The lap could not be removed!");
+        }
+
+        using (var dbFactory = RepositoryFactory.CreateInstance())
+        {
+            var lapRows = dbFactory.GetRepository<LapRepository>()
+                                   ?.GetQuery()
+                                   ?.Count(l => l.ParticipantId == _participantDbId && l.LapNumber == 7) ?? -1;
+
+            Assert.AreEqual(0, lapRows, "The removed lap should no longer exist in the database!");
+        }
+    }
+
     #endregion // Methods
 }
