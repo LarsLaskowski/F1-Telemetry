@@ -81,7 +81,7 @@ public class ParticipantsProcessor2026Tests
 
         var validParticipants = sessionRuntimeData.Participants.Values.Where(p => p.IsValidObject).ToList();
 
-        Assert.IsFalse(validParticipants.Count == 0, "No valid participants created (2026)!");
+        Assert.IsNotEmpty(validParticipants, "No valid participants created (2026)!");
     }
 
     /// <summary>
@@ -94,7 +94,7 @@ public class ParticipantsProcessor2026Tests
 
         var humanParticipants = sessionRuntimeData.Participants.Values.Where(p => p.IsValidObject && p.IsHumanDriver).ToList();
 
-        Assert.IsFalse(humanParticipants.Count == 0, "No human participant created (2026)!");
+        Assert.IsNotEmpty(humanParticipants, "No human participant created (2026)!");
     }
 
     #endregion // Test methods
