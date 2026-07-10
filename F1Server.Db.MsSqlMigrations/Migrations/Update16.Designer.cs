@@ -4,23 +4,26 @@ using F1Server.Db.Entity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace F1Server.Db.MySqlMigrations.Migrations
+namespace F1Server.Db.MsSqlMigrations.Migrations
 {
     [DbContext(typeof(F1ServerDbContext))]
-    partial class F1ServerDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260710105414_Update16")]
+    partial class Update16
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("ProductVersion", "10.0.9")
-                .HasAnnotation("Relational:MaxIdentifierLength", 64);
+                .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
-            MySqlModelBuilderExtensions.AutoIncrementColumns(modelBuilder);
+            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
             modelBuilder.Entity("F1Server.Db.Entity.Tables.CarTelemetryEntity", b =>
                 {
@@ -28,41 +31,41 @@ namespace F1Server.Db.MySqlMigrations.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<long>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
                     b.Property<float>("Brake")
-                        .HasColumnType("float");
+                        .HasColumnType("real");
 
-                    b.Property<ushort>("BrakesTempFrontLeft")
-                        .HasColumnType("smallint unsigned");
+                    b.Property<int>("BrakesTempFrontLeft")
+                        .HasColumnType("int");
 
-                    b.Property<ushort>("BrakesTempFrontRight")
-                        .HasColumnType("smallint unsigned");
+                    b.Property<int>("BrakesTempFrontRight")
+                        .HasColumnType("int");
 
-                    b.Property<ushort>("BrakesTempRearLeft")
-                        .HasColumnType("smallint unsigned");
+                    b.Property<int>("BrakesTempRearLeft")
+                        .HasColumnType("int");
 
-                    b.Property<ushort>("BrakesTempRearRight")
-                        .HasColumnType("smallint unsigned");
+                    b.Property<int>("BrakesTempRearRight")
+                        .HasColumnType("int");
 
-                    b.Property<ushort>("Clutch")
-                        .HasColumnType("smallint unsigned");
+                    b.Property<int>("Clutch")
+                        .HasColumnType("int");
 
                     b.Property<int>("DbIsDRS")
                         .HasColumnType("int")
                         .HasColumnName("IsDRS");
 
-                    b.Property<ushort>("EngineRPM")
-                        .HasColumnType("smallint unsigned");
+                    b.Property<int>("EngineRPM")
+                        .HasColumnType("int");
 
-                    b.Property<ushort>("EngineTemperature")
-                        .HasColumnType("smallint unsigned");
+                    b.Property<int>("EngineTemperature")
+                        .HasColumnType("int");
 
                     b.Property<short>("Gear")
                         .HasColumnType("smallint");
 
                     b.Property<float>("LapDistance")
-                        .HasColumnType("float");
+                        .HasColumnType("real");
 
                     b.Property<long>("LapNumberId")
                         .HasColumnType("bigint");
@@ -70,53 +73,53 @@ namespace F1Server.Db.MySqlMigrations.Migrations
                     b.Property<int>("PacketNumber")
                         .HasColumnType("int");
 
-                    b.Property<ushort>("RevLightsIndicator")
-                        .HasColumnType("smallint unsigned");
+                    b.Property<int>("RevLightsIndicator")
+                        .HasColumnType("int");
 
                     b.Property<int>("Speed")
                         .HasColumnType("int");
 
                     b.Property<float>("Steer")
-                        .HasColumnType("float");
+                        .HasColumnType("real");
 
                     b.Property<float>("Throttle")
-                        .HasColumnType("float");
+                        .HasColumnType("real");
 
-                    b.Property<ushort>("TyresInnerTempFrontLeft")
-                        .HasColumnType("smallint unsigned");
+                    b.Property<int>("TyresInnerTempFrontLeft")
+                        .HasColumnType("int");
 
-                    b.Property<ushort>("TyresInnerTempFrontRight")
-                        .HasColumnType("smallint unsigned");
+                    b.Property<int>("TyresInnerTempFrontRight")
+                        .HasColumnType("int");
 
-                    b.Property<ushort>("TyresInnerTempRearLeft")
-                        .HasColumnType("smallint unsigned");
+                    b.Property<int>("TyresInnerTempRearLeft")
+                        .HasColumnType("int");
 
-                    b.Property<ushort>("TyresInnerTempRearRight")
-                        .HasColumnType("smallint unsigned");
+                    b.Property<int>("TyresInnerTempRearRight")
+                        .HasColumnType("int");
 
                     b.Property<float>("TyresPressureFrontLeft")
-                        .HasColumnType("float");
+                        .HasColumnType("real");
 
                     b.Property<float>("TyresPressureFrontRight")
-                        .HasColumnType("float");
+                        .HasColumnType("real");
 
                     b.Property<float>("TyresPressureRearLeft")
-                        .HasColumnType("float");
+                        .HasColumnType("real");
 
                     b.Property<float>("TyresPressureRearRight")
-                        .HasColumnType("float");
+                        .HasColumnType("real");
 
-                    b.Property<ushort>("TyresSurfaceTempFrontLeft")
-                        .HasColumnType("smallint unsigned");
+                    b.Property<int>("TyresSurfaceTempFrontLeft")
+                        .HasColumnType("int");
 
-                    b.Property<ushort>("TyresSurfaceTempFrontRight")
-                        .HasColumnType("smallint unsigned");
+                    b.Property<int>("TyresSurfaceTempFrontRight")
+                        .HasColumnType("int");
 
-                    b.Property<ushort>("TyresSurfaceTempRearLeft")
-                        .HasColumnType("smallint unsigned");
+                    b.Property<int>("TyresSurfaceTempRearLeft")
+                        .HasColumnType("int");
 
-                    b.Property<ushort>("TyresSurfaceTempRearRight")
-                        .HasColumnType("smallint unsigned");
+                    b.Property<int>("TyresSurfaceTempRearRight")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -136,10 +139,10 @@ namespace F1Server.Db.MySqlMigrations.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<long>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
-                    b.Property<ushort>("DbIsFinished")
-                        .HasColumnType("smallint unsigned")
+                    b.Property<int>("DbIsFinished")
+                        .HasColumnType("int")
                         .HasColumnName("IsFinished");
 
                     b.Property<long>("GameVersionId")
@@ -148,8 +151,8 @@ namespace F1Server.Db.MySqlMigrations.Migrations
                     b.Property<int>("Mode")
                         .HasColumnType("int");
 
-                    b.Property<ushort>("Number")
-                        .HasColumnType("smallint unsigned");
+                    b.Property<int>("Number")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -175,7 +178,7 @@ namespace F1Server.Db.MySqlMigrations.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<long>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
                     b.Property<int>("AdditionalPoints")
                         .HasColumnType("int");
@@ -223,7 +226,7 @@ namespace F1Server.Db.MySqlMigrations.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<long>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
                     b.Property<long>("ChampionshipId")
                         .HasColumnType("bigint");
@@ -271,7 +274,7 @@ namespace F1Server.Db.MySqlMigrations.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<long>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
                     b.Property<int>("DbIsHumanDriver")
                         .HasColumnType("int")
@@ -283,7 +286,7 @@ namespace F1Server.Db.MySqlMigrations.Migrations
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("varchar(100)");
+                        .HasColumnType("nvarchar(100)");
 
                     b.HasKey("Id");
 
@@ -2732,10 +2735,10 @@ namespace F1Server.Db.MySqlMigrations.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<long>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
-                    b.Property<uint>("FastestLapTime")
-                        .HasColumnType("int unsigned");
+                    b.Property<long>("FastestLapTime")
+                        .HasColumnType("bigint");
 
                     b.Property<int>("FinishPosition")
                         .HasColumnType("int");
@@ -2746,14 +2749,14 @@ namespace F1Server.Db.MySqlMigrations.Migrations
                     b.Property<int>("LapsDriven")
                         .HasColumnType("int");
 
-                    b.Property<uint>("NumberOfPenalties")
-                        .HasColumnType("int unsigned");
+                    b.Property<long>("NumberOfPenalties")
+                        .HasColumnType("bigint");
 
                     b.Property<long>("ParticipantId")
                         .HasColumnType("bigint");
 
-                    b.Property<uint>("PenaltiesTime")
-                        .HasColumnType("int unsigned");
+                    b.Property<long>("PenaltiesTime")
+                        .HasColumnType("bigint");
 
                     b.Property<int>("PitStops")
                         .HasColumnType("int");
@@ -2765,7 +2768,7 @@ namespace F1Server.Db.MySqlMigrations.Migrations
                         .HasColumnType("bigint");
 
                     b.Property<double>("TotalRaceTime")
-                        .HasColumnType("double");
+                        .HasColumnType("float");
 
                     b.HasKey("Id");
 
@@ -2787,10 +2790,10 @@ namespace F1Server.Db.MySqlMigrations.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<long>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
                     b.Property<DateTime?>("LastUsed")
-                        .HasColumnType("datetime(6)");
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("MajorVersion")
                         .HasColumnType("int");
@@ -2800,7 +2803,7 @@ namespace F1Server.Db.MySqlMigrations.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Version")
                         .HasColumnType("int");
@@ -2821,10 +2824,10 @@ namespace F1Server.Db.MySqlMigrations.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<long>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
-                    b.Property<ushort>("CarPosition")
-                        .HasColumnType("smallint unsigned");
+                    b.Property<int>("CarPosition")
+                        .HasColumnType("int");
 
                     b.Property<int>("DbIsCompleted")
                         .HasColumnType("int")
@@ -2841,11 +2844,11 @@ namespace F1Server.Db.MySqlMigrations.Migrations
                     b.Property<int>("DriverStatus")
                         .HasColumnType("int");
 
-                    b.Property<ushort>("LapNumber")
-                        .HasColumnType("smallint unsigned");
+                    b.Property<int>("LapNumber")
+                        .HasColumnType("int");
 
-                    b.Property<uint>("LapTime")
-                        .HasColumnType("int unsigned");
+                    b.Property<long>("LapTime")
+                        .HasColumnType("bigint");
 
                     b.Property<long>("ParticipantId")
                         .HasColumnType("bigint");
@@ -2856,14 +2859,14 @@ namespace F1Server.Db.MySqlMigrations.Migrations
                     b.Property<int>("ResultStatus")
                         .HasColumnType("int");
 
-                    b.Property<uint>("Sector1Time")
-                        .HasColumnType("int unsigned");
+                    b.Property<long>("Sector1Time")
+                        .HasColumnType("bigint");
 
-                    b.Property<uint>("Sector2Time")
-                        .HasColumnType("int unsigned");
+                    b.Property<long>("Sector2Time")
+                        .HasColumnType("bigint");
 
-                    b.Property<uint>("Sector3Time")
-                        .HasColumnType("int unsigned");
+                    b.Property<long>("Sector3Time")
+                        .HasColumnType("bigint");
 
                     b.Property<long>("SessionId")
                         .HasColumnType("bigint");
@@ -2902,15 +2905,15 @@ namespace F1Server.Db.MySqlMigrations.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<long>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("varchar(100)");
+                        .HasColumnType("nvarchar(100)");
 
-                    b.Property<ushort>("NationalityGameId")
-                        .HasColumnType("smallint unsigned");
+                    b.Property<int>("NationalityGameId")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -2926,547 +2929,547 @@ namespace F1Server.Db.MySqlMigrations.Migrations
                         {
                             Id = 1L,
                             Name = "Unknown",
-                            NationalityGameId = (ushort)0
+                            NationalityGameId = 0
                         },
                         new
                         {
                             Id = 2L,
                             Name = "American",
-                            NationalityGameId = (ushort)1
+                            NationalityGameId = 1
                         },
                         new
                         {
                             Id = 3L,
                             Name = "Argentinean",
-                            NationalityGameId = (ushort)2
+                            NationalityGameId = 2
                         },
                         new
                         {
                             Id = 4L,
                             Name = "Australian",
-                            NationalityGameId = (ushort)3
+                            NationalityGameId = 3
                         },
                         new
                         {
                             Id = 5L,
                             Name = "Austrian",
-                            NationalityGameId = (ushort)4
+                            NationalityGameId = 4
                         },
                         new
                         {
                             Id = 6L,
                             Name = "Azerbaijani",
-                            NationalityGameId = (ushort)5
+                            NationalityGameId = 5
                         },
                         new
                         {
                             Id = 7L,
                             Name = "Bahraini",
-                            NationalityGameId = (ushort)6
+                            NationalityGameId = 6
                         },
                         new
                         {
                             Id = 8L,
                             Name = "Belgian",
-                            NationalityGameId = (ushort)7
+                            NationalityGameId = 7
                         },
                         new
                         {
                             Id = 9L,
                             Name = "Bolivian",
-                            NationalityGameId = (ushort)8
+                            NationalityGameId = 8
                         },
                         new
                         {
                             Id = 10L,
                             Name = "Brazilian",
-                            NationalityGameId = (ushort)9
+                            NationalityGameId = 9
                         },
                         new
                         {
                             Id = 11L,
                             Name = "British",
-                            NationalityGameId = (ushort)10
+                            NationalityGameId = 10
                         },
                         new
                         {
                             Id = 12L,
                             Name = "Bulgarian",
-                            NationalityGameId = (ushort)11
+                            NationalityGameId = 11
                         },
                         new
                         {
                             Id = 13L,
                             Name = "Cameroonian",
-                            NationalityGameId = (ushort)12
+                            NationalityGameId = 12
                         },
                         new
                         {
                             Id = 14L,
                             Name = "Canadian",
-                            NationalityGameId = (ushort)13
+                            NationalityGameId = 13
                         },
                         new
                         {
                             Id = 15L,
                             Name = "Chilean",
-                            NationalityGameId = (ushort)14
+                            NationalityGameId = 14
                         },
                         new
                         {
                             Id = 16L,
                             Name = "Chinese",
-                            NationalityGameId = (ushort)15
+                            NationalityGameId = 15
                         },
                         new
                         {
                             Id = 17L,
                             Name = "Colombian",
-                            NationalityGameId = (ushort)16
+                            NationalityGameId = 16
                         },
                         new
                         {
                             Id = 18L,
                             Name = "Costa Rican",
-                            NationalityGameId = (ushort)17
+                            NationalityGameId = 17
                         },
                         new
                         {
                             Id = 19L,
                             Name = "Croatian",
-                            NationalityGameId = (ushort)18
+                            NationalityGameId = 18
                         },
                         new
                         {
                             Id = 20L,
                             Name = "Cypriot",
-                            NationalityGameId = (ushort)19
+                            NationalityGameId = 19
                         },
                         new
                         {
                             Id = 21L,
                             Name = "Czech",
-                            NationalityGameId = (ushort)20
+                            NationalityGameId = 20
                         },
                         new
                         {
                             Id = 22L,
                             Name = "Danish",
-                            NationalityGameId = (ushort)21
+                            NationalityGameId = 21
                         },
                         new
                         {
                             Id = 23L,
                             Name = "Dutch",
-                            NationalityGameId = (ushort)22
+                            NationalityGameId = 22
                         },
                         new
                         {
                             Id = 24L,
                             Name = "Ecuadorian",
-                            NationalityGameId = (ushort)23
+                            NationalityGameId = 23
                         },
                         new
                         {
                             Id = 25L,
                             Name = "English",
-                            NationalityGameId = (ushort)24
+                            NationalityGameId = 24
                         },
                         new
                         {
                             Id = 26L,
                             Name = "Emirian",
-                            NationalityGameId = (ushort)25
+                            NationalityGameId = 25
                         },
                         new
                         {
                             Id = 27L,
                             Name = "Estonian",
-                            NationalityGameId = (ushort)26
+                            NationalityGameId = 26
                         },
                         new
                         {
                             Id = 28L,
                             Name = "Finnish",
-                            NationalityGameId = (ushort)27
+                            NationalityGameId = 27
                         },
                         new
                         {
                             Id = 29L,
                             Name = "French",
-                            NationalityGameId = (ushort)28
+                            NationalityGameId = 28
                         },
                         new
                         {
                             Id = 30L,
                             Name = "German",
-                            NationalityGameId = (ushort)29
+                            NationalityGameId = 29
                         },
                         new
                         {
                             Id = 31L,
                             Name = "Ghanaian",
-                            NationalityGameId = (ushort)30
+                            NationalityGameId = 30
                         },
                         new
                         {
                             Id = 32L,
                             Name = "Greek",
-                            NationalityGameId = (ushort)31
+                            NationalityGameId = 31
                         },
                         new
                         {
                             Id = 33L,
                             Name = "Guatemalan",
-                            NationalityGameId = (ushort)32
+                            NationalityGameId = 32
                         },
                         new
                         {
                             Id = 34L,
                             Name = "Honduran",
-                            NationalityGameId = (ushort)33
+                            NationalityGameId = 33
                         },
                         new
                         {
                             Id = 35L,
                             Name = "Hong Konger",
-                            NationalityGameId = (ushort)34
+                            NationalityGameId = 34
                         },
                         new
                         {
                             Id = 36L,
                             Name = "Hungarian",
-                            NationalityGameId = (ushort)35
+                            NationalityGameId = 35
                         },
                         new
                         {
                             Id = 37L,
                             Name = "Icelander",
-                            NationalityGameId = (ushort)36
+                            NationalityGameId = 36
                         },
                         new
                         {
                             Id = 38L,
                             Name = "Indian",
-                            NationalityGameId = (ushort)37
+                            NationalityGameId = 37
                         },
                         new
                         {
                             Id = 39L,
                             Name = "Indonesian",
-                            NationalityGameId = (ushort)38
+                            NationalityGameId = 38
                         },
                         new
                         {
                             Id = 40L,
                             Name = "Irish",
-                            NationalityGameId = (ushort)39
+                            NationalityGameId = 39
                         },
                         new
                         {
                             Id = 41L,
                             Name = "Israeli",
-                            NationalityGameId = (ushort)40
+                            NationalityGameId = 40
                         },
                         new
                         {
                             Id = 42L,
                             Name = "Italian",
-                            NationalityGameId = (ushort)41
+                            NationalityGameId = 41
                         },
                         new
                         {
                             Id = 43L,
                             Name = "Jamaican",
-                            NationalityGameId = (ushort)42
+                            NationalityGameId = 42
                         },
                         new
                         {
                             Id = 44L,
                             Name = "Japanese",
-                            NationalityGameId = (ushort)43
+                            NationalityGameId = 43
                         },
                         new
                         {
                             Id = 45L,
                             Name = "Jordanian",
-                            NationalityGameId = (ushort)44
+                            NationalityGameId = 44
                         },
                         new
                         {
                             Id = 46L,
                             Name = "Kuwaiti",
-                            NationalityGameId = (ushort)45
+                            NationalityGameId = 45
                         },
                         new
                         {
                             Id = 47L,
                             Name = "Latvian",
-                            NationalityGameId = (ushort)46
+                            NationalityGameId = 46
                         },
                         new
                         {
                             Id = 48L,
                             Name = "Lebanese",
-                            NationalityGameId = (ushort)47
+                            NationalityGameId = 47
                         },
                         new
                         {
                             Id = 49L,
                             Name = "Lithuanian",
-                            NationalityGameId = (ushort)48
+                            NationalityGameId = 48
                         },
                         new
                         {
                             Id = 50L,
                             Name = "Luxembourger",
-                            NationalityGameId = (ushort)49
+                            NationalityGameId = 49
                         },
                         new
                         {
                             Id = 51L,
                             Name = "Malaysian",
-                            NationalityGameId = (ushort)50
+                            NationalityGameId = 50
                         },
                         new
                         {
                             Id = 52L,
                             Name = "Maltese",
-                            NationalityGameId = (ushort)51
+                            NationalityGameId = 51
                         },
                         new
                         {
                             Id = 53L,
                             Name = "Mexican",
-                            NationalityGameId = (ushort)52
+                            NationalityGameId = 52
                         },
                         new
                         {
                             Id = 54L,
                             Name = "Monegasque",
-                            NationalityGameId = (ushort)53
+                            NationalityGameId = 53
                         },
                         new
                         {
                             Id = 55L,
                             Name = "New Zealander",
-                            NationalityGameId = (ushort)54
+                            NationalityGameId = 54
                         },
                         new
                         {
                             Id = 56L,
                             Name = "Nicaraguan",
-                            NationalityGameId = (ushort)55
+                            NationalityGameId = 55
                         },
                         new
                         {
                             Id = 57L,
                             Name = "Northern Irish",
-                            NationalityGameId = (ushort)56
+                            NationalityGameId = 56
                         },
                         new
                         {
                             Id = 58L,
                             Name = "Norwegian",
-                            NationalityGameId = (ushort)57
+                            NationalityGameId = 57
                         },
                         new
                         {
                             Id = 59L,
                             Name = "Omani",
-                            NationalityGameId = (ushort)58
+                            NationalityGameId = 58
                         },
                         new
                         {
                             Id = 60L,
                             Name = "Pakistani",
-                            NationalityGameId = (ushort)59
+                            NationalityGameId = 59
                         },
                         new
                         {
                             Id = 61L,
                             Name = "Panamanian",
-                            NationalityGameId = (ushort)60
+                            NationalityGameId = 60
                         },
                         new
                         {
                             Id = 62L,
                             Name = "Paraguayan",
-                            NationalityGameId = (ushort)61
+                            NationalityGameId = 61
                         },
                         new
                         {
                             Id = 63L,
                             Name = "Peruvian",
-                            NationalityGameId = (ushort)62
+                            NationalityGameId = 62
                         },
                         new
                         {
                             Id = 64L,
                             Name = "Polish",
-                            NationalityGameId = (ushort)63
+                            NationalityGameId = 63
                         },
                         new
                         {
                             Id = 65L,
                             Name = "Portuguese",
-                            NationalityGameId = (ushort)64
+                            NationalityGameId = 64
                         },
                         new
                         {
                             Id = 66L,
                             Name = "Qatari",
-                            NationalityGameId = (ushort)65
+                            NationalityGameId = 65
                         },
                         new
                         {
                             Id = 67L,
                             Name = "Romanian",
-                            NationalityGameId = (ushort)66
+                            NationalityGameId = 66
                         },
                         new
                         {
                             Id = 68L,
                             Name = "Russian",
-                            NationalityGameId = (ushort)67
+                            NationalityGameId = 67
                         },
                         new
                         {
                             Id = 69L,
                             Name = "Salvadoran",
-                            NationalityGameId = (ushort)68
+                            NationalityGameId = 68
                         },
                         new
                         {
                             Id = 70L,
                             Name = "Saudi",
-                            NationalityGameId = (ushort)69
+                            NationalityGameId = 69
                         },
                         new
                         {
                             Id = 71L,
                             Name = "Scottish",
-                            NationalityGameId = (ushort)70
+                            NationalityGameId = 70
                         },
                         new
                         {
                             Id = 72L,
                             Name = "Serbian",
-                            NationalityGameId = (ushort)71
+                            NationalityGameId = 71
                         },
                         new
                         {
                             Id = 73L,
                             Name = "Singaporean",
-                            NationalityGameId = (ushort)72
+                            NationalityGameId = 72
                         },
                         new
                         {
                             Id = 74L,
                             Name = "Slovakian",
-                            NationalityGameId = (ushort)73
+                            NationalityGameId = 73
                         },
                         new
                         {
                             Id = 75L,
                             Name = "Slovenian",
-                            NationalityGameId = (ushort)74
+                            NationalityGameId = 74
                         },
                         new
                         {
                             Id = 76L,
                             Name = "South Korean",
-                            NationalityGameId = (ushort)75
+                            NationalityGameId = 75
                         },
                         new
                         {
                             Id = 77L,
                             Name = "South African",
-                            NationalityGameId = (ushort)76
+                            NationalityGameId = 76
                         },
                         new
                         {
                             Id = 78L,
                             Name = "Spanish",
-                            NationalityGameId = (ushort)77
+                            NationalityGameId = 77
                         },
                         new
                         {
                             Id = 79L,
                             Name = "Swedish",
-                            NationalityGameId = (ushort)78
+                            NationalityGameId = 78
                         },
                         new
                         {
                             Id = 80L,
                             Name = "Swiss",
-                            NationalityGameId = (ushort)79
+                            NationalityGameId = 79
                         },
                         new
                         {
                             Id = 81L,
                             Name = "Thai",
-                            NationalityGameId = (ushort)80
+                            NationalityGameId = 80
                         },
                         new
                         {
                             Id = 82L,
                             Name = "Turkish",
-                            NationalityGameId = (ushort)81
+                            NationalityGameId = 81
                         },
                         new
                         {
                             Id = 83L,
                             Name = "Uruguayan",
-                            NationalityGameId = (ushort)82
+                            NationalityGameId = 82
                         },
                         new
                         {
                             Id = 84L,
                             Name = "Ukrainian",
-                            NationalityGameId = (ushort)83
+                            NationalityGameId = 83
                         },
                         new
                         {
                             Id = 85L,
                             Name = "Venezuelan",
-                            NationalityGameId = (ushort)84
+                            NationalityGameId = 84
                         },
                         new
                         {
                             Id = 86L,
                             Name = "Barbadian",
-                            NationalityGameId = (ushort)85
+                            NationalityGameId = 85
                         },
                         new
                         {
                             Id = 87L,
                             Name = "Welsh",
-                            NationalityGameId = (ushort)86
+                            NationalityGameId = 86
                         },
                         new
                         {
                             Id = 88L,
                             Name = "Vietnamese",
-                            NationalityGameId = (ushort)87
+                            NationalityGameId = 87
                         },
                         new
                         {
                             Id = 89L,
                             Name = "Algerian",
-                            NationalityGameId = (ushort)88
+                            NationalityGameId = 88
                         },
                         new
                         {
                             Id = 90L,
                             Name = "Bosnian",
-                            NationalityGameId = (ushort)89
+                            NationalityGameId = 89
                         },
                         new
                         {
                             Id = 91L,
                             Name = "Filipino",
-                            NationalityGameId = (ushort)90
+                            NationalityGameId = 90
                         });
                 });
 
@@ -3476,10 +3479,10 @@ namespace F1Server.Db.MySqlMigrations.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<long>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
-                    b.Property<ushort>("ArrayIndex")
-                        .HasColumnType("smallint unsigned");
+                    b.Property<int>("ArrayIndex")
+                        .HasColumnType("int");
 
                     b.Property<int>("CarRaceNumber")
                         .HasColumnType("int");
@@ -3497,7 +3500,7 @@ namespace F1Server.Db.MySqlMigrations.Migrations
 
                     b.Property<string>("DriverName")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<long>("NationalityId")
                         .HasColumnType("bigint");
@@ -3534,7 +3537,7 @@ namespace F1Server.Db.MySqlMigrations.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<long>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
                     b.Property<int>("BrakingAssistFirst")
                         .HasColumnType("int");
@@ -3578,20 +3581,20 @@ namespace F1Server.Db.MySqlMigrations.Migrations
                     b.Property<int>("GearBoxAssistLast")
                         .HasColumnType("int");
 
-                    b.Property<uint>("RedFlags")
-                        .HasColumnType("int unsigned");
+                    b.Property<long>("RedFlags")
+                        .HasColumnType("bigint");
 
                     b.Property<int>("RuleSet")
                         .HasColumnType("int");
 
-                    b.Property<uint>("SafetyCarStages")
-                        .HasColumnType("int unsigned");
+                    b.Property<long>("SafetyCarStages")
+                        .HasColumnType("bigint");
 
                     b.Property<long>("SessionId")
                         .HasColumnType("bigint");
 
-                    b.Property<uint>("VirtualSafetyCarStages")
-                        .HasColumnType("int unsigned");
+                    b.Property<long>("VirtualSafetyCarStages")
+                        .HasColumnType("bigint");
 
                     b.Property<int>("WeatherEnd")
                         .HasColumnType("int");
@@ -3615,16 +3618,16 @@ namespace F1Server.Db.MySqlMigrations.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<long>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
                     b.Property<int>("ActiveCars")
                         .HasColumnType("int");
 
-                    b.Property<ushort>("AiDifficulty")
-                        .HasColumnType("smallint unsigned");
+                    b.Property<int>("AiDifficulty")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("CreationTimestamp")
-                        .HasColumnType("datetime(6)");
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("DbIsFinished")
                         .HasColumnType("int")
@@ -3640,8 +3643,8 @@ namespace F1Server.Db.MySqlMigrations.Migrations
                     b.Property<long>("GameVersionId")
                         .HasColumnType("bigint");
 
-                    b.Property<ulong>("SessionId")
-                        .HasColumnType("bigint unsigned");
+                    b.Property<decimal>("SessionId")
+                        .HasColumnType("decimal(20,0)");
 
                     b.Property<int>("SessionLength")
                         .HasColumnType("int");
@@ -3674,12 +3677,12 @@ namespace F1Server.Db.MySqlMigrations.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<long>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("varchar(100)");
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<int>("TeamGameId")
                         .HasColumnType("int");
@@ -6138,24 +6141,24 @@ namespace F1Server.Db.MySqlMigrations.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<long>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
-                    b.Property<uint>("LapReferenceTime")
-                        .HasColumnType("int unsigned");
+                    b.Property<long>("LapReferenceTime")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("varchar(100)");
+                        .HasColumnType("nvarchar(100)");
 
-                    b.Property<uint>("Sector1ReferenceTime")
-                        .HasColumnType("int unsigned");
+                    b.Property<long>("Sector1ReferenceTime")
+                        .HasColumnType("bigint");
 
-                    b.Property<uint>("Sector2ReferenceTime")
-                        .HasColumnType("int unsigned");
+                    b.Property<long>("Sector2ReferenceTime")
+                        .HasColumnType("bigint");
 
-                    b.Property<uint>("Sector3ReferenceTime")
-                        .HasColumnType("int unsigned");
+                    b.Property<long>("Sector3ReferenceTime")
+                        .HasColumnType("bigint");
 
                     b.Property<int>("TrackNumber")
                         .HasColumnType("int");
@@ -6173,371 +6176,371 @@ namespace F1Server.Db.MySqlMigrations.Migrations
                         new
                         {
                             Id = 1L,
-                            LapReferenceTime = 76086u,
+                            LapReferenceTime = 76086L,
                             Name = "Melbourne",
-                            Sector1ReferenceTime = 26213u,
-                            Sector2ReferenceTime = 17547u,
-                            Sector3ReferenceTime = 32326u,
+                            Sector1ReferenceTime = 26213L,
+                            Sector2ReferenceTime = 17547L,
+                            Sector3ReferenceTime = 32326L,
                             TrackNumber = 0
                         },
                         new
                         {
                             Id = 2L,
-                            LapReferenceTime = 88384u,
+                            LapReferenceTime = 88384L,
                             Name = "Paul Ricard",
-                            Sector1ReferenceTime = 21725u,
-                            Sector2ReferenceTime = 27336u,
-                            Sector3ReferenceTime = 39323u,
+                            Sector1ReferenceTime = 21725L,
+                            Sector2ReferenceTime = 27336L,
+                            Sector3ReferenceTime = 39323L,
                             TrackNumber = 1
                         },
                         new
                         {
                             Id = 3L,
-                            LapReferenceTime = 90098u,
+                            LapReferenceTime = 90098L,
                             Name = "Shanghai",
-                            Sector1ReferenceTime = 23633u,
-                            Sector2ReferenceTime = 27041u,
-                            Sector3ReferenceTime = 39424u,
+                            Sector1ReferenceTime = 23633L,
+                            Sector2ReferenceTime = 27041L,
+                            Sector3ReferenceTime = 39424L,
                             TrackNumber = 2
                         },
                         new
                         {
                             Id = 4L,
-                            LapReferenceTime = 87550u,
+                            LapReferenceTime = 87550L,
                             Name = "Sakhir (Bahrain)",
-                            Sector1ReferenceTime = 28228u,
-                            Sector2ReferenceTime = 37605u,
-                            Sector3ReferenceTime = 21717u,
+                            Sector1ReferenceTime = 28228L,
+                            Sector2ReferenceTime = 37605L,
+                            Sector3ReferenceTime = 21717L,
                             TrackNumber = 3
                         },
                         new
                         {
                             Id = 5L,
-                            LapReferenceTime = 70490u,
+                            LapReferenceTime = 70490L,
                             Name = "Catalunya",
-                            Sector1ReferenceTime = 21268u,
-                            Sector2ReferenceTime = 28388u,
-                            Sector3ReferenceTime = 20834u,
+                            Sector1ReferenceTime = 21268L,
+                            Sector2ReferenceTime = 28388L,
+                            Sector3ReferenceTime = 20834L,
                             TrackNumber = 4
                         },
                         new
                         {
                             Id = 6L,
-                            LapReferenceTime = 69897u,
+                            LapReferenceTime = 69897L,
                             Name = "Monaco",
-                            Sector1ReferenceTime = 18286u,
-                            Sector2ReferenceTime = 33560u,
-                            Sector3ReferenceTime = 18051u,
+                            Sector1ReferenceTime = 18286L,
+                            Sector2ReferenceTime = 33560L,
+                            Sector3ReferenceTime = 18051L,
                             TrackNumber = 5
                         },
                         new
                         {
                             Id = 7L,
-                            LapReferenceTime = 68744u,
+                            LapReferenceTime = 68744L,
                             Name = "Montreal",
-                            Sector1ReferenceTime = 19103u,
-                            Sector2ReferenceTime = 21748u,
-                            Sector3ReferenceTime = 27893u,
+                            Sector1ReferenceTime = 19103L,
+                            Sector2ReferenceTime = 21748L,
+                            Sector3ReferenceTime = 27893L,
                             TrackNumber = 6
                         },
                         new
                         {
                             Id = 8L,
-                            LapReferenceTime = 84532u,
+                            LapReferenceTime = 84532L,
                             Name = "Silverstone",
-                            Sector1ReferenceTime = 26940u,
-                            Sector2ReferenceTime = 34630u,
-                            Sector3ReferenceTime = 22962u,
+                            Sector1ReferenceTime = 26940L,
+                            Sector2ReferenceTime = 34630L,
+                            Sector3ReferenceTime = 22962L,
                             TrackNumber = 7
                         },
                         new
                         {
                             Id = 9L,
-                            LapReferenceTime = 70963u,
+                            LapReferenceTime = 70963L,
                             Name = "Hockenheim",
-                            Sector1ReferenceTime = 15279u,
-                            Sector2ReferenceTime = 34159u,
-                            Sector3ReferenceTime = 21525u,
+                            Sector1ReferenceTime = 15279L,
+                            Sector2ReferenceTime = 34159L,
+                            Sector3ReferenceTime = 21525L,
                             TrackNumber = 8
                         },
                         new
                         {
                             Id = 10L,
-                            LapReferenceTime = 74551u,
+                            LapReferenceTime = 74551L,
                             Name = "Hungaroring",
-                            Sector1ReferenceTime = 26892u,
-                            Sector2ReferenceTime = 26319u,
-                            Sector3ReferenceTime = 21340u,
+                            Sector1ReferenceTime = 26892L,
+                            Sector2ReferenceTime = 26319L,
+                            Sector3ReferenceTime = 21340L,
                             TrackNumber = 9
                         },
                         new
                         {
                             Id = 11L,
-                            LapReferenceTime = 100331u,
+                            LapReferenceTime = 100331L,
                             Name = "Spa",
-                            Sector1ReferenceTime = 29592u,
-                            Sector2ReferenceTime = 42794u,
-                            Sector3ReferenceTime = 27945u,
+                            Sector1ReferenceTime = 29592L,
+                            Sector2ReferenceTime = 42794L,
+                            Sector3ReferenceTime = 27945L,
                             TrackNumber = 10
                         },
                         new
                         {
                             Id = 12L,
-                            LapReferenceTime = 78401u,
+                            LapReferenceTime = 78401L,
                             Name = "Monza",
-                            Sector1ReferenceTime = 26003u,
-                            Sector2ReferenceTime = 26278u,
-                            Sector3ReferenceTime = 26120u,
+                            Sector1ReferenceTime = 26003L,
+                            Sector2ReferenceTime = 26278L,
+                            Sector3ReferenceTime = 26120L,
                             TrackNumber = 11
                         },
                         new
                         {
                             Id = 13L,
-                            LapReferenceTime = 94904u,
+                            LapReferenceTime = 94904L,
                             Name = "Singapore",
-                            Sector1ReferenceTime = 26392u,
-                            Sector2ReferenceTime = 36524u,
-                            Sector3ReferenceTime = 31988u,
+                            Sector1ReferenceTime = 26392L,
+                            Sector2ReferenceTime = 36524L,
+                            Sector3ReferenceTime = 31988L,
                             TrackNumber = 12
                         },
                         new
                         {
                             Id = 14L,
-                            LapReferenceTime = 86051u,
+                            LapReferenceTime = 86051L,
                             Name = "Suzuka",
-                            Sector1ReferenceTime = 30889u,
-                            Sector2ReferenceTime = 38756u,
-                            Sector3ReferenceTime = 16406u,
+                            Sector1ReferenceTime = 30889L,
+                            Sector2ReferenceTime = 38756L,
+                            Sector3ReferenceTime = 16406L,
                             TrackNumber = 13
                         },
                         new
                         {
                             Id = 15L,
-                            LapReferenceTime = 81379u,
+                            LapReferenceTime = 81379L,
                             Name = "Abu Dhabi",
-                            Sector1ReferenceTime = 17113u,
-                            Sector2ReferenceTime = 35001u,
-                            Sector3ReferenceTime = 29265u,
+                            Sector1ReferenceTime = 17113L,
+                            Sector2ReferenceTime = 35001L,
+                            Sector3ReferenceTime = 29265L,
                             TrackNumber = 14
                         },
                         new
                         {
                             Id = 16L,
-                            LapReferenceTime = 91376u,
+                            LapReferenceTime = 91376L,
                             Name = "Texas",
-                            Sector1ReferenceTime = 25031u,
-                            Sector2ReferenceTime = 36621u,
-                            Sector3ReferenceTime = 29724u,
+                            Sector1ReferenceTime = 25031L,
+                            Sector2ReferenceTime = 36621L,
+                            Sector3ReferenceTime = 29724L,
                             TrackNumber = 15
                         },
                         new
                         {
                             Id = 17L,
-                            LapReferenceTime = 67039u,
+                            LapReferenceTime = 67039L,
                             Name = "Brazil",
-                            Sector1ReferenceTime = 16654u,
-                            Sector2ReferenceTime = 33806u,
-                            Sector3ReferenceTime = 16579u,
+                            Sector1ReferenceTime = 16654L,
+                            Sector2ReferenceTime = 33806L,
+                            Sector3ReferenceTime = 16579L,
                             TrackNumber = 16
                         },
                         new
                         {
                             Id = 18L,
-                            LapReferenceTime = 62994u,
+                            LapReferenceTime = 62994L,
                             Name = "Austria",
-                            Sector1ReferenceTime = 15716u,
-                            Sector2ReferenceTime = 28174u,
-                            Sector3ReferenceTime = 19054u,
+                            Sector1ReferenceTime = 15716L,
+                            Sector2ReferenceTime = 28174L,
+                            Sector3ReferenceTime = 19054L,
                             TrackNumber = 17
                         },
                         new
                         {
                             Id = 19L,
-                            LapReferenceTime = 89867u,
+                            LapReferenceTime = 89867L,
                             Name = "Sochi",
-                            Sector1ReferenceTime = 32606u,
-                            Sector2ReferenceTime = 31066u,
-                            Sector3ReferenceTime = 26195u,
+                            Sector1ReferenceTime = 32606L,
+                            Sector2ReferenceTime = 31066L,
+                            Sector3ReferenceTime = 26195L,
                             TrackNumber = 18
                         },
                         new
                         {
                             Id = 20L,
-                            LapReferenceTime = 75181u,
+                            LapReferenceTime = 75181L,
                             Name = "Mexico",
-                            Sector1ReferenceTime = 28221u,
-                            Sector2ReferenceTime = 27944u,
-                            Sector3ReferenceTime = 19016u,
+                            Sector1ReferenceTime = 28221L,
+                            Sector2ReferenceTime = 27944L,
+                            Sector3ReferenceTime = 19016L,
                             TrackNumber = 19
                         },
                         new
                         {
                             Id = 21L,
-                            LapReferenceTime = 99352u,
+                            LapReferenceTime = 99352L,
                             Name = "Baku (Azerbaijan)",
-                            Sector1ReferenceTime = 35288u,
-                            Sector2ReferenceTime = 40019u,
-                            Sector3ReferenceTime = 24045u,
+                            Sector1ReferenceTime = 35288L,
+                            Sector2ReferenceTime = 40019L,
+                            Sector3ReferenceTime = 24045L,
                             TrackNumber = 20
                         },
                         new
                         {
                             Id = 22L,
-                            LapReferenceTime = 53252u,
+                            LapReferenceTime = 53252L,
                             Name = "Sakhir Short",
-                            Sector1ReferenceTime = 18566u,
-                            Sector2ReferenceTime = 18474u,
-                            Sector3ReferenceTime = 16212u,
+                            Sector1ReferenceTime = 18566L,
+                            Sector2ReferenceTime = 18474L,
+                            Sector3ReferenceTime = 16212L,
                             TrackNumber = 21
                         },
                         new
                         {
                             Id = 23L,
-                            LapReferenceTime = 51812u,
+                            LapReferenceTime = 51812L,
                             Name = "Silverstone Short",
-                            Sector1ReferenceTime = 10960u,
-                            Sector2ReferenceTime = 16373u,
-                            Sector3ReferenceTime = 24479u,
+                            Sector1ReferenceTime = 10960L,
+                            Sector2ReferenceTime = 16373L,
+                            Sector3ReferenceTime = 24479L,
                             TrackNumber = 22
                         },
                         new
                         {
                             Id = 24L,
-                            LapReferenceTime = 30000u,
+                            LapReferenceTime = 30000L,
                             Name = "Texas Short",
-                            Sector1ReferenceTime = 10000u,
-                            Sector2ReferenceTime = 10000u,
-                            Sector3ReferenceTime = 10000u,
+                            Sector1ReferenceTime = 10000L,
+                            Sector2ReferenceTime = 10000L,
+                            Sector3ReferenceTime = 10000L,
                             TrackNumber = 23
                         },
                         new
                         {
                             Id = 25L,
-                            LapReferenceTime = 30000u,
+                            LapReferenceTime = 30000L,
                             Name = "Suzuka Short",
-                            Sector1ReferenceTime = 10000u,
-                            Sector2ReferenceTime = 10000u,
-                            Sector3ReferenceTime = 10000u,
+                            Sector1ReferenceTime = 10000L,
+                            Sector2ReferenceTime = 10000L,
+                            Sector3ReferenceTime = 10000L,
                             TrackNumber = 24
                         },
                         new
                         {
                             Id = 26L,
-                            LapReferenceTime = 93454u,
+                            LapReferenceTime = 93454L,
                             Name = "Hanoi",
-                            Sector1ReferenceTime = 25342u,
-                            Sector2ReferenceTime = 40367u,
-                            Sector3ReferenceTime = 27745u,
+                            Sector1ReferenceTime = 25342L,
+                            Sector2ReferenceTime = 40367L,
+                            Sector3ReferenceTime = 27745L,
                             TrackNumber = 25
                         },
                         new
                         {
                             Id = 27L,
-                            LapReferenceTime = 67834u,
+                            LapReferenceTime = 67834L,
                             Name = "Zandvoort",
-                            Sector1ReferenceTime = 23711u,
-                            Sector2ReferenceTime = 23428u,
-                            Sector3ReferenceTime = 20695u,
+                            Sector1ReferenceTime = 23711L,
+                            Sector2ReferenceTime = 23428L,
+                            Sector3ReferenceTime = 20695L,
                             TrackNumber = 26
                         },
                         new
                         {
                             Id = 28L,
-                            LapReferenceTime = 73311u,
+                            LapReferenceTime = 73311L,
                             Name = "Imola",
-                            Sector1ReferenceTime = 23564u,
-                            Sector2ReferenceTime = 25323u,
-                            Sector3ReferenceTime = 24515u,
+                            Sector1ReferenceTime = 23564L,
+                            Sector2ReferenceTime = 25323L,
+                            Sector3ReferenceTime = 24515L,
                             TrackNumber = 27
                         },
                         new
                         {
                             Id = 29L,
-                            LapReferenceTime = 75588u,
+                            LapReferenceTime = 75588L,
                             Name = "Portimão",
-                            Sector1ReferenceTime = 21567u,
-                            Sector2ReferenceTime = 29255u,
-                            Sector3ReferenceTime = 24766u,
+                            Sector1ReferenceTime = 21567L,
+                            Sector2ReferenceTime = 29255L,
+                            Sector3ReferenceTime = 24766L,
                             TrackNumber = 28
                         },
                         new
                         {
                             Id = 30L,
-                            LapReferenceTime = 85870u,
+                            LapReferenceTime = 85870L,
                             Name = "Jeddah",
-                            Sector1ReferenceTime = 31244u,
-                            Sector2ReferenceTime = 27721u,
-                            Sector3ReferenceTime = 26905u,
+                            Sector1ReferenceTime = 31244L,
+                            Sector2ReferenceTime = 27721L,
+                            Sector3ReferenceTime = 26905L,
                             TrackNumber = 29
                         },
                         new
                         {
                             Id = 31L,
-                            LapReferenceTime = 85890u,
+                            LapReferenceTime = 85890L,
                             Name = "Miami",
-                            Sector1ReferenceTime = 29419u,
-                            Sector2ReferenceTime = 31444u,
-                            Sector3ReferenceTime = 25027u,
+                            Sector1ReferenceTime = 29419L,
+                            Sector2ReferenceTime = 31444L,
+                            Sector3ReferenceTime = 25027L,
                             TrackNumber = 30
                         },
                         new
                         {
                             Id = 32L,
-                            LapReferenceTime = 90406u,
+                            LapReferenceTime = 90406L,
                             Name = "Las Vegas",
-                            Sector1ReferenceTime = 43317u,
-                            Sector2ReferenceTime = 25530u,
-                            Sector3ReferenceTime = 21559u,
+                            Sector1ReferenceTime = 43317L,
+                            Sector2ReferenceTime = 25530L,
+                            Sector3ReferenceTime = 21559L,
                             TrackNumber = 31
                         },
                         new
                         {
                             Id = 33L,
-                            LapReferenceTime = 79850u,
+                            LapReferenceTime = 79850L,
                             Name = "Losail",
-                            Sector1ReferenceTime = 26190u,
-                            Sector2ReferenceTime = 26501u,
-                            Sector3ReferenceTime = 27159u,
+                            Sector1ReferenceTime = 26190L,
+                            Sector2ReferenceTime = 26501L,
+                            Sector3ReferenceTime = 27159L,
                             TrackNumber = 32
                         },
                         new
                         {
                             Id = 34L,
-                            LapReferenceTime = 0u,
+                            LapReferenceTime = 0L,
                             Name = "Silverstone (Reverse)",
-                            Sector1ReferenceTime = 0u,
-                            Sector2ReferenceTime = 0u,
-                            Sector3ReferenceTime = 0u,
+                            Sector1ReferenceTime = 0L,
+                            Sector2ReferenceTime = 0L,
+                            Sector3ReferenceTime = 0L,
                             TrackNumber = 39
                         },
                         new
                         {
                             Id = 35L,
-                            LapReferenceTime = 0u,
+                            LapReferenceTime = 0L,
                             Name = "Austria (Reverse)",
-                            Sector1ReferenceTime = 0u,
-                            Sector2ReferenceTime = 0u,
-                            Sector3ReferenceTime = 0u,
+                            Sector1ReferenceTime = 0L,
+                            Sector2ReferenceTime = 0L,
+                            Sector3ReferenceTime = 0L,
                             TrackNumber = 40
                         },
                         new
                         {
                             Id = 36L,
-                            LapReferenceTime = 0u,
+                            LapReferenceTime = 0L,
                             Name = "Zandvoort (Reverse)",
-                            Sector1ReferenceTime = 0u,
-                            Sector2ReferenceTime = 0u,
-                            Sector3ReferenceTime = 0u,
+                            Sector1ReferenceTime = 0L,
+                            Sector2ReferenceTime = 0L,
+                            Sector3ReferenceTime = 0L,
                             TrackNumber = 41
                         },
                         new
                         {
                             Id = 37L,
-                            LapReferenceTime = 0u,
+                            LapReferenceTime = 0L,
                             Name = "Madrid",
-                            Sector1ReferenceTime = 0u,
-                            Sector2ReferenceTime = 0u,
-                            Sector3ReferenceTime = 0u,
+                            Sector1ReferenceTime = 0L,
+                            Sector2ReferenceTime = 0L,
+                            Sector3ReferenceTime = 0L,
                             TrackNumber = 42
                         });
                 });

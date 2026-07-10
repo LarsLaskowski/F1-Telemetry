@@ -4,6 +4,7 @@ using F1Server.Db.Entity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace F1Server.Db.MySqlMigrations.Migrations
 {
     [DbContext(typeof(F1ServerDbContext))]
-    partial class F1ServerDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260710105948_Update21")]
+    partial class Update21
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
