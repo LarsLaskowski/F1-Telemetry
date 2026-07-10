@@ -53,6 +53,7 @@ internal static class TestData
         Processor2025 = new PacketProcessor(ServiceProvider, true);
         Processor2026 = new PacketProcessor(ServiceProvider, true);
         LiveSessionProcessor = new PacketProcessor(ServiceProvider, true);
+        LiveSessionProcessor2026 = new PacketProcessor(ServiceProvider, true);
     }
 
     #endregion // Constructor
@@ -105,6 +106,11 @@ internal static class TestData
     public static PacketProcessor LiveSessionProcessor { get; }
 
     /// <summary>
+    /// Packet processor for F1 2026 live session
+    /// </summary>
+    public static PacketProcessor LiveSessionProcessor2026 { get; }
+
+    /// <summary>
     /// Current game version of live session
     /// </summary>
     public static int LiveSessionGameVersion { get; private set; }
@@ -131,7 +137,10 @@ internal static class TestData
             PrepareSession(packetAnalyzer, @"SampleData/F1-2025-MelbourneQ3-SessionFirst.packet", Processor2025, 2025);
             PrepareSession(packetAnalyzer, @"SampleData/F1-2026-MelbourneQ3-SessionFirst.packet", Processor2026, 2026);
 
-            PrepareLiveSession();
+            PrepareLiveSession(@"SampleData/F1-2025-MelbourneRace-Event-SessionStart.packet", @"SampleData/F1-2025-MelbourneRace-SessionFirst.packet", LiveSessionProcessor);
+            PrepareLiveSession(@"SampleData/F1-2026-MelbourneRace-Event-SessionStart.packet", @"SampleData/F1-2026-MelbourneRace-SessionFirst.packet", LiveSessionProcessor2026);
+
+            LiveSessionGameVersion = LiveSessionProcessor.Session?.GameVersion ?? 0;
 
             _isDatabaseInitialized = true;
         }
@@ -187,26 +196,27 @@ internal static class TestData
     }
 
     /// <summary>
-    /// Prepare live session for F1 2025 in test database
+    /// Prepare a live session in test database
     /// </summary>
-    private static void PrepareLiveSession()
+    /// <param name="eventFile">Path to the sample session start event packet file</param>
+    /// <param name="sessionFile">Path to the sample session packet file</param>
+    /// <param name="processor">Packet processor for the live session</param>
+    private static void PrepareLiveSession(string eventFile, string sessionFile, PacketProcessor processor)
     {
-        var eventFile = @"SampleData/F1-2025-MelbourneRace-Event-SessionStart.packet";
-        var sessionFile = @"SampleData/F1-2025-MelbourneRace-SessionFirst.packet";
         var isEventFile = File.Exists(eventFile);
         var isSessionFile = File.Exists(sessionFile);
 
-        Assert.IsTrue(isEventFile, "File F1-2025-MelbourneRace-Event-SessionStart.packet is missing!");
+        Assert.IsTrue(isEventFile, $"File {Path.GetFileName(eventFile)} is missing!");
 
         var packetData = new ReceivedPacketData();
 
         packetData.SetRawData(File.ReadAllBytes(eventFile));
 
-        var isProcessed = LiveSessionProcessor.ProcessPacket(packetData);
+        var isProcessed = processor.ProcessPacket(packetData);
 
         Assert.IsTrue(isProcessed, "Event packet processing failed!");
 
-        Assert.IsTrue(isSessionFile, "File F1-2025-MelbourneRace-SessionFirst.packet is missing!");
+        Assert.IsTrue(isSessionFile, $"File {Path.GetFileName(sessionFile)} is missing!");
 
         var sessionFileContent = File.ReadAllBytes(sessionFile);
 
@@ -216,7 +226,7 @@ internal static class TestData
 
         Assert.IsNotNull(sessionPacketData.PacketHeader, "Analyzing session packet failed!");
 
-        isProcessed = LiveSessionProcessor.ProcessPacket(sessionPacketData);
+        isProcessed = processor.ProcessPacket(sessionPacketData);
 
         Assert.IsTrue(isProcessed, "Session packet processing failed!");
 
@@ -226,8 +236,6 @@ internal static class TestData
 
             Assert.IsNotNull(dbSessionData, "Session database object is null!");
         }
-
-        LiveSessionGameVersion = LiveSessionProcessor.Session?.GameVersion ?? 0;
     }
 
     #endregion // Private methods

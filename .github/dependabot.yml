@@ -21,6 +21,14 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 10
+    # Angular's compiler-cli only supports the TypeScript minor it ships with
+    # (peer range typescript ">=6.0 <6.1" for Angular 22). A TypeScript major
+    # bump (e.g. 6.x -> 7.x) breaks "ng build" with
+    # "Cannot read properties of undefined (reading 'Error')" in
+    # readConfiguration. Hold TypeScript majors until Angular supports them.
+    ignore:
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
     groups:
       npm-dependencies:
         patterns:
