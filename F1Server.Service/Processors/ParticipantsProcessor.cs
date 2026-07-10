@@ -454,7 +454,10 @@ internal class ParticipantsProcessor : BaseProcessor
 
         using (var dbFactory = RepositoryFactory.CreateInstance())
         {
-            if ((gameVersion <= 2020 && gameDriverId >= 100) || gameDriverId == 255)
+            // Human drivers send id 255 up to F1 2025; since F1 2026 the id is a uint16 and humans send 65535
+            if ((gameVersion <= 2020 && gameDriverId >= 100)
+                || (gameVersion < 2026 && gameDriverId == 255)
+                || (gameVersion >= 2026 && gameDriverId == 65535))
             {
                 isHumanDriver = true;
             }
