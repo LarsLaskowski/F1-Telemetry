@@ -111,10 +111,10 @@ internal static class FastestLapPerSessionCache
         var sessionQuery = dbFactory.GetRepository<SessionRepository>()?.GetQuery();
 
         var session = sessionQuery == null
-            ? null
-            : await sessionQuery.Include(obj => obj.Track)
-                                .FirstOrDefaultAsync(s => s.Id == sessionId, cancellationToken)
-                                .ConfigureAwait(false);
+                          ? null
+                          : await sessionQuery.Include(obj => obj.Track)
+                                              .FirstOrDefaultAsync(s => s.Id == sessionId, cancellationToken)
+                                              .ConfigureAwait(false);
 
         if (session != null)
         {
