@@ -1006,6 +1006,9 @@ public sealed class TelemetryClient : ITelemetryClient, IDisposable
         _ctsLog?.Cancel();
         _ctsLog?.Dispose();
 
+        // Drain the background database writer so pending laps are not lost on shutdown
+        DatabaseWriter.Shutdown();
+
         _webHosting?.StopWebHosting();
         _webHosting?.Dispose();
 

@@ -540,6 +540,9 @@ internal class SessionProcessor : BaseProcessor
     /// <param name="dbFactory">Database factory</param>
     private void ClearPreviousSessionData(long sessionId, RepositoryFactory dbFactory)
     {
+        // All pending telemetry batches must be written before laps and telemetry of the reused session id are deleted
+        DatabaseWriter.Flush();
+
         // Remove laps
         try
         {
