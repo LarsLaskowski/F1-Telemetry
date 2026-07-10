@@ -1,3 +1,4 @@
+using System.Buffers.Binary;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Net;
@@ -326,6 +327,33 @@ public sealed class TelemetryClient : ITelemetryClient, IDisposable
     internal static bool IsReceiveTimeoutElapsed(long lastPacketReceivedTicks, long currentTicks)
     {
         return currentTicks - lastPacketReceivedTicks > ConstData.TimeoutInMs * TimeSpan.TicksPerMillisecond;
+    }
+
+    /// <summary>
+    /// Reads the four byte little endian length prefix that precedes every replay packet on the shared connection
+    /// </summary>
+    /// <param name="stream">Stream to read the length prefix from</param>
+    /// <param name="lengthPrefix">Reusable buffer that receives the length prefix bytes</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>The length of the following packet, or zero when the connection was closed by the client</returns>
+    internal static async Task<int> ReadReplayPacketLengthAsync(Stream stream, byte[] lengthPrefix, CancellationToken cancellationToken)
+    {
+        var totalRead = 0;
+
+        while (totalRead < lengthPrefix.Length)
+        {
+            var read = await stream.ReadAsync(lengthPrefix.AsMemory(totalRead, lengthPrefix.Length - totalRead), cancellationToken).ConfigureAwait(true);
+
+            if (read == 0)
+            {
+                // The client closed the connection cleanly
+                return 0;
+            }
+
+            totalRead += read;
+        }
+
+        return BinaryPrimitives.ReadInt32LittleEndian(lengthPrefix);
     }
 
     #endregion // Static methods
@@ -817,6 +845,7 @@ public sealed class TelemetryClient : ITelemetryClient, IDisposable
     private async Task ReceiveReplayPackets(CancellationToken cancellationToken)
     {
         var recvBuf = new byte[4096];
+        var lengthPrefix = new byte[sizeof(int)];
 
         while (cancellationToken.IsCancellationRequested == false && _tcpServer != null)
         {
@@ -826,25 +855,34 @@ public sealed class TelemetryClient : ITelemetryClient, IDisposable
             {
                 using var stream = tcpClient.GetStream();
 
-                _applicationData.Statistics.IncrementPacketsReceived();
-
-                Volatile.Write(ref _lastPacketReceivedTicks, DateTime.UtcNow.Ticks);
-
-                var recvBytes = await stream.ReadAsync(recvBuf, cancellationToken).ConfigureAwait(true);
-
-                if (recvBytes > 0)
+                // A single connection now carries many length-prefixed packets until the client closes it
+                while (cancellationToken.IsCancellationRequested == false)
                 {
+                    var packetLength = await ReadReplayPacketLengthAsync(stream, lengthPrefix, cancellationToken).ConfigureAwait(true);
+
+                    // Zero signals a client-closed connection, an out-of-range length signals a framing error
+                    if (packetLength <= 0 || packetLength > recvBuf.Length)
+                    {
+                        break;
+                    }
+
+                    await stream.ReadExactlyAsync(recvBuf.AsMemory(0, packetLength), cancellationToken).ConfigureAwait(true);
+
+                    _applicationData.Statistics.IncrementPacketsReceived();
+
+                    Volatile.Write(ref _lastPacketReceivedTicks, DateTime.UtcNow.Ticks);
+
                     using var currentActivity = AppActivity.SrvSource.StartActivity("ReceiveReplayPacket", ActivityKind.Server);
 
-                    currentActivity?.SetTag("ReceivedBytes", recvBytes);
+                    currentActivity?.SetTag("ReceivedBytes", packetLength);
 
                     var packetData = new ReceivedPacketData();
 
-                    packetData.SetRawData(recvBuf.AsSpan(0, recvBytes).ToArray());
+                    packetData.SetRawData(recvBuf.AsSpan(0, packetLength).ToArray());
 
                     if (Logger?.IsEnabled(LogLevel.Trace) == true)
                     {
-                        Logger.LogTrace("Received TCP packet with length: {Length}", recvBytes);
+                        Logger.LogTrace("Received TCP packet with length: {Length}", packetLength);
                     }
 
                     EnqueueLoggingPacket(ref packetData);

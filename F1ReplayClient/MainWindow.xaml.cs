@@ -1,5 +1,6 @@
 using System;
 using System.Buffers;
+using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -355,6 +356,10 @@ public partial class MainWindow : Window, IDisposable
             _viewData.ProcessedFiles = 0;
 
             var buffer = ArrayPool<byte>.Shared.Rent(4096);
+            var lengthPrefix = new byte[sizeof(int)];
+
+            TcpClient? tcpClient = null;
+            NetworkStream? netStream = null;
 
             foreach (var file in CurrentFolderFiles)
             {
@@ -412,9 +417,19 @@ public partial class MainWindow : Window, IDisposable
                         // send data
                         if (_viewData.SendData && skipPacket == false)
                         {
-                            using var tcpClient = new TcpClient(hostName, port);
-                            using var netStream = tcpClient.GetStream();
+                            if (tcpClient == null || tcpClient.Connected == false)
+                            {
+                                netStream?.Dispose();
+                                tcpClient?.Dispose();
 
+                                tcpClient = new TcpClient(hostName, port);
+                                netStream = tcpClient.GetStream();
+                            }
+
+                            // Prefix every packet with its length so the reused connection can be framed on the server side
+                            BinaryPrimitives.WriteInt32LittleEndian(lengthPrefix, fileLength);
+
+                            netStream!.Write(lengthPrefix);
                             netStream.Write(buffer.AsSpan(0, fileLength));
 
                             cancelToken.WaitHandle.WaitOne(2);
@@ -422,7 +437,12 @@ public partial class MainWindow : Window, IDisposable
                     }
                     catch
                     {
-                        // Ignore exceptions in this step
+                        // Ignore exceptions in this step, but drop a broken connection so the next packet reconnects
+                        netStream?.Dispose();
+                        tcpClient?.Dispose();
+
+                        netStream = null;
+                        tcpClient = null;
                     }
                     finally
                     {
@@ -473,6 +493,9 @@ public partial class MainWindow : Window, IDisposable
 
                 _viewData.TimeDuration = TimeSpan.FromMilliseconds(processingWatch.Elapsed.TotalMilliseconds).ToString(@"hh\:mm\:ss\.fff");
             }
+
+            netStream?.Dispose();
+            tcpClient?.Dispose();
 
             ArrayPool<byte>.Shared.Return(buffer);
         }

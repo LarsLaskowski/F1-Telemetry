@@ -1,3 +1,5 @@
+using System.Buffers.Binary;
+
 using F1Server.Core;
 using F1Server.Core.Data;
 using F1Server.Data;
@@ -74,6 +76,43 @@ public class TelemetryClientTests
 
             Assert.IsNull(applicationData.TelemetryWriter, "The telemetry writer should be released on dispose!");
             Assert.IsFalse(DatabaseWriter.IsRunning, "The background database writer should be stopped on dispose!");
+        }
+    }
+
+    /// <summary>
+    /// Test to verify that the length prefix reader returns the packet length encoded on the shared connection
+    /// </summary>
+    /// <returns>A task representing the asynchronous operation</returns>
+    [TestMethod]
+    public async Task TelemetryClientReadReplayPacketLengthWithPrefixReturnsLength()
+    {
+        var lengthPrefix = new byte[sizeof(int)];
+        var payload = new byte[sizeof(int)];
+
+        BinaryPrimitives.WriteInt32LittleEndian(payload, 1347);
+
+        using (var stream = new MemoryStream(payload))
+        {
+            var packetLength = await TelemetryClient.ReadReplayPacketLengthAsync(stream, lengthPrefix, CancellationToken.None);
+
+            Assert.AreEqual(1347, packetLength, "The reader must return the length encoded in the prefix!");
+        }
+    }
+
+    /// <summary>
+    /// Test to verify that the length prefix reader returns zero once the connection was closed by the client
+    /// </summary>
+    /// <returns>A task representing the asynchronous operation</returns>
+    [TestMethod]
+    public async Task TelemetryClientReadReplayPacketLengthOnClosedConnectionReturnsZero()
+    {
+        var lengthPrefix = new byte[sizeof(int)];
+
+        using (var stream = new MemoryStream(Array.Empty<byte>()))
+        {
+            var packetLength = await TelemetryClient.ReadReplayPacketLengthAsync(stream, lengthPrefix, CancellationToken.None);
+
+            Assert.AreEqual(0, packetLength, "A closed connection must be reported as a zero length!");
         }
     }
 
