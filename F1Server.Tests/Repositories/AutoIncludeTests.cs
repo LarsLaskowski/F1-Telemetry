@@ -13,7 +13,7 @@ namespace F1Server.Tests.Repositories;
 /// Tests verifying that hot lap and telemetry queries run without auto-included navigations
 /// </summary>
 [TestClass]
-public class AutoIncludeTests
+public partial class AutoIncludeTests
 {
     #region Constants
 
@@ -197,7 +197,7 @@ public class AutoIncludeTests
                                   .Where(l => l.ParticipantId == 1 && l.LapNumber == 1)
                                   .ToQueryString();
 
-            StringAssert.DoesNotMatch(lapSql, new Regex("JOIN"), "The lap lookup must not join participant, driver, team or nationality tables!");
+            Assert.DoesNotMatchRegex(JoinRegex(), lapSql, "The lap lookup must not join participant, driver, team or nationality tables!");
         }
     }
 
@@ -217,9 +217,16 @@ public class AutoIncludeTests
                                         .Where(t => t.LapNumberId == 1)
                                         .ToQueryString();
 
-            StringAssert.DoesNotMatch(telemetrySql, new Regex("JOIN"), "The telemetry query must not join the lap table!");
+            Assert.DoesNotMatchRegex(JoinRegex(), telemetrySql, "The telemetry query must not join the lap table!");
         }
     }
+
+    /// <summary>
+    /// Verifies that the SQL contains no join by using a regex to match the word "JOIN" in the SQL string
+    /// </summary>
+    /// <returns>Regex</returns>
+    [GeneratedRegex("JOIN")]
+    private static partial Regex JoinRegex();
 
     #endregion // Methods
 }
