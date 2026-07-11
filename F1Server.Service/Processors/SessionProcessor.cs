@@ -538,7 +538,12 @@ internal class SessionProcessor : BaseProcessor
             // The factory is created lazily because most session packets cause no database change
             RepositoryFactory? dbFactory = null;
 
-            Func<RepositoryFactory> dbFactoryProvider = () => dbFactory ??= RepositoryFactory.CreateInstance();
+            Func<RepositoryFactory> dbFactoryProvider = () =>
+                                                        {
+                                                            dbFactory ??= RepositoryFactory.CreateInstance();
+
+                                                            return dbFactory;
+                                                        };
 
             try
             {
