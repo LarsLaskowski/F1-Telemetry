@@ -467,32 +467,13 @@ internal class SessionProcessor : BaseProcessor
         // All pending telemetry batches must be written before laps and telemetry of the reused session id are deleted
         DatabaseWriter.Flush();
 
-        // Remove laps
         try
         {
-            var lapIds = dbFactory.GetRepository<LapRepository>()
-                                  ?.GetQuery()
-                                  ?.Where(l => l.SessionId == sessionId)
-                                  .Select(lap => lap.Id)
-                                  .ToList() ?? [];
+            // Remove car telemetry of all laps of the session with a single set-based statement
+            dbFactory.GetRepository<CarTelemetryRepository>()?.RemoveBySessionId(sessionId);
 
-            if (lapIds.Count > 0)
-            {
-                foreach (var lapId in lapIds)
-                {
-                    // Remove car telemetry
-                    try
-                    {
-                        dbFactory.GetRepository<CarTelemetryRepository>()?.ExecuteRawSql("DELETE FROM CarTelemetries WHERE LapNumberId = @p0", lapId);
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger?.LogError(ex, "Error removing car telemetry for lap {LapId} in session {SessionId}.", lapId, sessionId);
-                    }
-                }
-
-                dbFactory.GetRepository<LapRepository>()?.RemoveRange(l => lapIds.Contains(l.Id));
-            }
+            // Remove laps
+            dbFactory.GetRepository<LapRepository>()?.RemoveWhere(l => l.SessionId == sessionId);
         }
         catch (Exception ex)
         {

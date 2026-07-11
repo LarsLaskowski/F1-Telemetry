@@ -265,7 +265,9 @@ public class ParticipantRuntimeData : IDisposable
                 // Remove telemetry data
                 if (ClearTelemetryData(lapNumber) && lapEntity?.Id > 0)
                 {
-                    dbFactory.GetRepository<CarTelemetryRepository>()?.ExecuteRawSql("DELETE FROM CarTelemetries WHERE LapNumberId = @p0", lapEntity.Id);
+                    var lapDbId = lapEntity.Id;
+
+                    dbFactory.GetRepository<CarTelemetryRepository>()?.RemoveWhere(t => t.LapNumberId == lapDbId);
                 }
 
                 // Remove the lap
