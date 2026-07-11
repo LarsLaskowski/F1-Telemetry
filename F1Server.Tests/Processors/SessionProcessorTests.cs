@@ -8,6 +8,7 @@ using F1Server.Core.PacketData;
 using F1Server.Core.Packets.Data;
 using F1Server.Db.Entity;
 using F1Server.Db.Entity.Repositories;
+using F1Server.Service.Cache;
 using F1Server.Service.Processors;
 using F1Server.Service.Runtime;
 using F1Server.Tests.Data;
@@ -751,6 +752,115 @@ public class SessionProcessorTests
 
         Assert.IsTrue(isProcessed, "Session packet (2020) not correctly processed!");
         Assert.AreEqual(factoriesBefore, RepositoryFactory.InstancesCreated, "A session packet without changes must not create a repository factory!");
+    }
+
+    /// <summary>
+    /// Method to test clearing the network game flag from a session packet
+    /// </summary>
+    [TestMethod]
+    public void ProcessSessionPacketExpectedNetworkGameFlagCleared()
+    {
+        var processor = TestData.Processor2020;
+
+        // Parse the packet freshly from file so modifications made by other tests do not leak in
+        var fileContent = File.ReadAllBytes(@"SampleData/F1-2020-MontrealPractice-Session.packet");
+
+        var packetData = new ReceivedPacketData();
+
+        packetData.SetRawData(fileContent);
+
+        Assert.IsNotNull(packetData.PacketHeader, "Packet header variable (2020) is null!");
+
+        var sessionData = _packetAnalyzer.GetSessionData(packetData.PacketHeader, packetData.PacketRawData) as SessionData;
+
+        Assert.IsNotNull(sessionData, "Session data (2020) is null!");
+
+        if (sessionData.PacketData is SessionData2020 sessionData2020)
+        {
+            sessionData2020.IsNetworkGame = false;
+        }
+        else
+        {
+            Assert.Fail("Invalid game version!");
+        }
+
+        // Mark the cached session as network game so processing has to clear the flag again
+        var cachedSession = SessionRepositoryCache.GetByUniqueSessionId(packetData.PacketHeader.UniqueSessionId);
+
+        Assert.IsNotNull(cachedSession, "Cached session (2020) is null!");
+
+        cachedSession.IsNetworkGame = true;
+
+        var sessionProcessor = processor.GetProcessor(packetData.PacketHeader);
+
+        Assert.IsInstanceOfType<SessionProcessor>(sessionProcessor);
+
+        var isProcessed = sessionProcessor.Process(sessionData, processor.Session);
+
+        Assert.IsTrue(isProcessed, "Session packet (2020) not correctly processed!");
+        Assert.IsFalse(cachedSession.IsNetworkGame, "Network game flag (2020) is not cleared in the cache!");
+
+        using (var dbFactory = RepositoryFactory.CreateInstance())
+        {
+            var dbSessionData = dbFactory.GetRepository<SessionRepository>()?.GetQuery()?.FirstOrDefault(s => s.SessionId == packetData.PacketHeader.UniqueSessionId);
+
+            Assert.IsNotNull(dbSessionData, "Session database object (2020) is null!");
+            Assert.IsFalse(dbSessionData.IsNetworkGame, "Network game flag (2020) is not cleared in the database!");
+        }
+    }
+
+    /// <summary>
+    /// Method to test updating the AI difficulty of opponents from a session packet
+    /// </summary>
+    [TestMethod]
+    public void ProcessSessionPacketExpectedAiDifficultyUpdated()
+    {
+        var processor = TestData.Processor2021;
+
+        // Parse the packet freshly from file so modifications made by other tests do not leak in
+        var fileContent = File.ReadAllBytes(@"SampleData/F1-2021-MonzaRace-Session.packet");
+
+        var packetData = new ReceivedPacketData();
+
+        packetData.SetRawData(fileContent);
+
+        Assert.IsNotNull(packetData.PacketHeader, "Packet header variable (2021) is null!");
+
+        var sessionData = _packetAnalyzer.GetSessionData(packetData.PacketHeader, packetData.PacketRawData) as SessionData;
+
+        Assert.IsNotNull(sessionData, "Session data (2021) is null!");
+
+        if (sessionData.PacketData is SessionData2021 sessionData2021)
+        {
+            sessionData2021.AiDifficulty = 90;
+        }
+        else
+        {
+            Assert.Fail("Invalid game version!");
+        }
+
+        // Reset the AI difficulty of the cached session so processing has to update it again
+        var cachedSession = SessionRepositoryCache.GetByUniqueSessionId(packetData.PacketHeader.UniqueSessionId);
+
+        Assert.IsNotNull(cachedSession, "Cached session (2021) is null!");
+
+        cachedSession.AiDifficulty = 0;
+
+        var sessionProcessor = processor.GetProcessor(packetData.PacketHeader);
+
+        Assert.IsInstanceOfType<SessionProcessor>(sessionProcessor);
+
+        var isProcessed = sessionProcessor.Process(sessionData, processor.Session);
+
+        Assert.IsTrue(isProcessed, "Session packet (2021) not correctly processed!");
+
+        using (var dbFactory = RepositoryFactory.CreateInstance())
+        {
+            var dbSessionData = dbFactory.GetRepository<SessionRepository>()?.GetQuery()?.FirstOrDefault(s => s.SessionId == packetData.PacketHeader.UniqueSessionId);
+
+            Assert.IsNotNull(dbSessionData, "Session database object (2021) is null!");
+            Assert.AreEqual((ushort)90, dbSessionData.AiDifficulty, "AI difficulty (2021) is not updated in the database!");
+        }
     }
 
     /// <summary>
