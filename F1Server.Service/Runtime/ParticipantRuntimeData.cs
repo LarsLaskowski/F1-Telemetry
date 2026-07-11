@@ -214,6 +214,7 @@ public class ParticipantRuntimeData : IDisposable
             {
                 using (var dbFactory = RepositoryFactory.CreateInstance())
                 {
+                    // The after callback runs behind SaveChanges, so the generated lap id is taken from the tracked entity without a second SELECT
                     dbFactory.GetRepository<LapRepository>()?.AddOrRefresh(l => l.ParticipantId == ParticipantDbId && l.LapNumber == lapData.LapNumber,
                                                                            obj =>
                                                                            {
@@ -231,16 +232,13 @@ public class ParticipantRuntimeData : IDisposable
                                                                                obj.Sector3Time = 0;
                                                                                obj.LapTime = 0;
                                                                                obj.IsCompleted = false;
+                                                                           },
+                                                                           obj =>
+                                                                           {
+                                                                               lapData.Id = obj.Id;
+
+                                                                               LapRepositoryCache.AddOrUpdate(lapData);
                                                                            });
-
-                    var lapId = dbFactory.GetRepository<LapRepository>()?.GetQuery()?.FirstOrDefault(l => l.ParticipantId == ParticipantDbId && l.LapNumber == lapData.LapNumber)?.Id;
-
-                    if (lapId.HasValue)
-                    {
-                        lapData.Id = lapId.Value;
-
-                        LapRepositoryCache.AddOrUpdate(lapData);
-                    }
                 }
             }
         }
