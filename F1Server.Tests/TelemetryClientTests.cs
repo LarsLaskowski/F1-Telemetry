@@ -1,4 +1,6 @@
 using System.Buffers.Binary;
+using System.Net;
+using System.Net.Sockets;
 
 using F1Server.Core;
 using F1Server.Core.Data;
@@ -17,6 +19,15 @@ namespace F1Server.Tests;
 [TestClass]
 public class TelemetryClientTests
 {
+    #region Constants
+
+    /// <summary>
+    /// UDP port used by the replay listener test, the TCP replay port is the next port number
+    /// </summary>
+    private const int ReplayTestPort = 47311;
+
+    #endregion // Constants
+
     #region Methods
 
     /// <summary>
@@ -285,6 +296,66 @@ public class TelemetryClientTests
         }
     }
 
+    /// <summary>
+    /// Test to verify that the replay TCP listener processes framed packets and keeps accepting connections after an unclean disconnect
+    /// </summary>
+    /// <returns>A task representing the asynchronous operation</returns>
+    [TestMethod]
+    public async Task TelemetryClientReceiveReplayPacketsSurvivesUncleanDisconnect()
+    {
+        var services = new ServiceCollection();
+        var applicationData = new F1ServerApplicationData();
+
+        services.AddSingleton(applicationData);
+        services.AddSingleton(new PacketAnalyzer());
+        services.AddSingleton(new TelemetryConfiguration());
+
+        using (var serviceProvider = services.BuildServiceProvider())
+        {
+            var telemetryClient = new TelemetryClient(serviceProvider, false, false, ReplayTestPort);
+
+            try
+            {
+                Assert.IsTrue(telemetryClient.StartReceiving(), "The telemetry client must start receiving on the test port!");
+
+                using (var firstConnection = new TcpClient())
+                {
+                    await firstConnection.ConnectAsync(IPAddress.Loopback, ReplayTestPort + 1);
+
+                    using (var stream = firstConnection.GetStream())
+                    {
+                        await stream.WriteAsync(CreateReplayFrame([1, 2, 3, 4]));
+
+                        // Announce more payload bytes than are sent so closing the connection triggers the unclean disconnect path
+                        await stream.WriteAsync(CreateReplayFrame(new byte[32])[..12]);
+                    }
+                }
+
+                await WaitForReceivedPacketsAsync(applicationData, 1);
+
+                Assert.AreEqual(1, applicationData.Statistics.PacketsReceivedTotal, "The framed packet of the first connection must be counted!");
+
+                using (var secondConnection = new TcpClient())
+                {
+                    await secondConnection.ConnectAsync(IPAddress.Loopback, ReplayTestPort + 1);
+
+                    using (var stream = secondConnection.GetStream())
+                    {
+                        await stream.WriteAsync(CreateReplayFrame([5, 6, 7, 8]));
+                    }
+                }
+
+                await WaitForReceivedPacketsAsync(applicationData, 2);
+
+                Assert.AreEqual(2, applicationData.Statistics.PacketsReceivedTotal, "The listener must accept a new connection after an unclean disconnect!");
+            }
+            finally
+            {
+                telemetryClient.Dispose();
+            }
+        }
+    }
+
     #endregion // Methods
 
     #region Static methods
@@ -303,6 +374,22 @@ public class TelemetryClientTests
         payload.CopyTo(frame, sizeof(int));
 
         return frame;
+    }
+
+    /// <summary>
+    /// Waits until the given number of packets was counted as received or a timeout elapses
+    /// </summary>
+    /// <param name="applicationData">Application data holding the statistics</param>
+    /// <param name="expectedPackets">Number of received packets to wait for</param>
+    /// <returns>A task representing the asynchronous operation</returns>
+    private static async Task WaitForReceivedPacketsAsync(F1ServerApplicationData applicationData, long expectedPackets)
+    {
+        var timeout = DateTime.UtcNow.AddSeconds(10);
+
+        while (applicationData.Statistics.PacketsReceivedTotal < expectedPackets && DateTime.UtcNow < timeout)
+        {
+            await Task.Delay(25);
+        }
     }
 
     #endregion // Static methods
