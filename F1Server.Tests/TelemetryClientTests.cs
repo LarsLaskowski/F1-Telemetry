@@ -28,6 +28,15 @@ public class TelemetryClientTests
 
     #endregion // Constants
 
+    #region Properties
+
+    /// <summary>
+    /// Gets or sets the test context that provides the cancellation token for the running test
+    /// </summary>
+    public TestContext TestContext { get; set; }
+
+    #endregion // Properties
+
     #region Methods
 
     /// <summary>
@@ -104,7 +113,7 @@ public class TelemetryClientTests
 
         using (var stream = new MemoryStream(payload))
         {
-            var packetLength = await TelemetryClient.ReadReplayPacketLengthAsync(stream, lengthPrefix, CancellationToken.None);
+            var packetLength = await TelemetryClient.ReadReplayPacketLengthAsync(stream, lengthPrefix, TestContext.CancellationToken);
 
             Assert.AreEqual(1347, packetLength, "The reader must return the length encoded in the prefix!");
         }
@@ -121,7 +130,7 @@ public class TelemetryClientTests
 
         using (var stream = new MemoryStream(Array.Empty<byte>()))
         {
-            var packetLength = await TelemetryClient.ReadReplayPacketLengthAsync(stream, lengthPrefix, CancellationToken.None);
+            var packetLength = await TelemetryClient.ReadReplayPacketLengthAsync(stream, lengthPrefix, TestContext.CancellationToken);
 
             Assert.AreEqual(0, packetLength, "A closed connection must be reported as a zero length!");
         }
@@ -143,7 +152,7 @@ public class TelemetryClientTests
 
         using (var stream = new MemoryStream(partialPrefix))
         {
-            var packetLength = await TelemetryClient.ReadReplayPacketLengthAsync(stream, lengthPrefix, CancellationToken.None);
+            var packetLength = await TelemetryClient.ReadReplayPacketLengthAsync(stream, lengthPrefix, TestContext.CancellationToken);
 
             Assert.AreEqual(0, packetLength, "A connection closed inside the prefix must be reported as a zero length!");
         }
@@ -162,10 +171,10 @@ public class TelemetryClientTests
 
         using (var stream = new MemoryStream(frame))
         {
-            var packetLength = await TelemetryClient.ReadReplayPacketAsync(stream, lengthPrefix, recvBuf, CancellationToken.None);
+            var packetLength = await TelemetryClient.ReadReplayPacketAsync(stream, lengthPrefix, recvBuf, TestContext.CancellationToken);
 
             Assert.AreEqual(3, packetLength, "The reader must return the announced payload length!");
-            CollectionAssert.AreEqual(new byte[] { 11, 22, 33 }, recvBuf[..packetLength], "The reader must return the payload bytes of the frame!");
+            Assert.AreSequenceEqual(new byte[] { 11, 22, 33 }, recvBuf.Take(packetLength), "The reader must return the payload bytes of the frame!");
         }
     }
 
@@ -182,17 +191,17 @@ public class TelemetryClientTests
 
         using (var stream = new MemoryStream(frames))
         {
-            var firstLength = await TelemetryClient.ReadReplayPacketAsync(stream, lengthPrefix, recvBuf, CancellationToken.None);
+            var firstLength = await TelemetryClient.ReadReplayPacketAsync(stream, lengthPrefix, recvBuf, TestContext.CancellationToken);
 
             Assert.AreEqual(2, firstLength, "The first frame must announce two payload bytes!");
-            CollectionAssert.AreEqual(new byte[] { 1, 2 }, recvBuf[..firstLength], "The first payload must be returned unchanged!");
+            Assert.AreSequenceEqual(new byte[] { 1, 2 }, recvBuf.Take(firstLength), "The first payload must be returned unchanged!");
 
-            var secondLength = await TelemetryClient.ReadReplayPacketAsync(stream, lengthPrefix, recvBuf, CancellationToken.None);
+            var secondLength = await TelemetryClient.ReadReplayPacketAsync(stream, lengthPrefix, recvBuf, TestContext.CancellationToken);
 
             Assert.AreEqual(3, secondLength, "The second frame must announce three payload bytes!");
-            CollectionAssert.AreEqual(new byte[] { 3, 4, 5 }, recvBuf[..secondLength], "The second payload must be returned unchanged!");
+            Assert.AreSequenceEqual(new byte[] { 3, 4, 5 }, recvBuf.Take(secondLength), "The second payload must be returned unchanged!");
 
-            var thirdLength = await TelemetryClient.ReadReplayPacketAsync(stream, lengthPrefix, recvBuf, CancellationToken.None);
+            var thirdLength = await TelemetryClient.ReadReplayPacketAsync(stream, lengthPrefix, recvBuf, TestContext.CancellationToken);
 
             Assert.AreEqual(0, thirdLength, "The end of the stream must be reported as a zero length!");
         }
@@ -213,7 +222,7 @@ public class TelemetryClientTests
 
         using (var stream = new MemoryStream(frame))
         {
-            var packetLength = await TelemetryClient.ReadReplayPacketAsync(stream, lengthPrefix, recvBuf, CancellationToken.None);
+            var packetLength = await TelemetryClient.ReadReplayPacketAsync(stream, lengthPrefix, recvBuf, TestContext.CancellationToken);
 
             Assert.AreEqual(0, packetLength, "A negative announced length must be treated as a framing error!");
         }
@@ -234,7 +243,7 @@ public class TelemetryClientTests
 
         using (var stream = new MemoryStream(frame))
         {
-            var packetLength = await TelemetryClient.ReadReplayPacketAsync(stream, lengthPrefix, recvBuf, CancellationToken.None);
+            var packetLength = await TelemetryClient.ReadReplayPacketAsync(stream, lengthPrefix, recvBuf, TestContext.CancellationToken);
 
             Assert.AreEqual(0, packetLength, "An announced length above the buffer size must be treated as a framing error!");
         }
@@ -249,11 +258,12 @@ public class TelemetryClientTests
     {
         var lengthPrefix = new byte[sizeof(int)];
         var recvBuf = new byte[ConstData.MaxReplayPacketLength];
-        var frame = CreateReplayFrame([7, 8, 9])[..^1];
+        var frame = CreateReplayFrame([7, 8, 9]);
 
-        using (var stream = new MemoryStream(frame))
+        // Expose the frame without its last payload byte so the payload read hits the end of the stream
+        using (var stream = new MemoryStream(frame, 0, frame.Length - 1))
         {
-            await Assert.ThrowsExactlyAsync<EndOfStreamException>(() => TelemetryClient.ReadReplayPacketAsync(stream, lengthPrefix, recvBuf, CancellationToken.None), "A truncated payload must surface as an end of stream!");
+            await Assert.ThrowsExactlyAsync<EndOfStreamException>(() => TelemetryClient.ReadReplayPacketAsync(stream, lengthPrefix, recvBuf, TestContext.CancellationToken), "A truncated payload must surface as an end of stream!");
         }
     }
 
@@ -320,32 +330,32 @@ public class TelemetryClientTests
 
                 using (var firstConnection = new TcpClient())
                 {
-                    await firstConnection.ConnectAsync(IPAddress.Loopback, ReplayTestPort + 1);
+                    await firstConnection.ConnectAsync(IPAddress.Loopback, ReplayTestPort + 1, TestContext.CancellationToken);
 
                     using (var stream = firstConnection.GetStream())
                     {
-                        await stream.WriteAsync(CreateReplayFrame([1, 2, 3, 4]));
+                        await stream.WriteAsync(CreateReplayFrame([1, 2, 3, 4]), TestContext.CancellationToken);
 
                         // Announce more payload bytes than are sent so closing the connection triggers the unclean disconnect path
-                        await stream.WriteAsync(CreateReplayFrame(new byte[32])[..12]);
+                        await stream.WriteAsync(CreateReplayFrame(new byte[32]).AsMemory(0, 12), TestContext.CancellationToken);
                     }
                 }
 
-                await WaitForReceivedPacketsAsync(applicationData, 1);
+                await WaitForReceivedPacketsAsync(applicationData, 1, TestContext.CancellationToken);
 
                 Assert.AreEqual(1, applicationData.Statistics.PacketsReceivedTotal, "The framed packet of the first connection must be counted!");
 
                 using (var secondConnection = new TcpClient())
                 {
-                    await secondConnection.ConnectAsync(IPAddress.Loopback, ReplayTestPort + 1);
+                    await secondConnection.ConnectAsync(IPAddress.Loopback, ReplayTestPort + 1, TestContext.CancellationToken);
 
                     using (var stream = secondConnection.GetStream())
                     {
-                        await stream.WriteAsync(CreateReplayFrame([5, 6, 7, 8]));
+                        await stream.WriteAsync(CreateReplayFrame([5, 6, 7, 8]), TestContext.CancellationToken);
                     }
                 }
 
-                await WaitForReceivedPacketsAsync(applicationData, 2);
+                await WaitForReceivedPacketsAsync(applicationData, 2, TestContext.CancellationToken);
 
                 Assert.AreEqual(2, applicationData.Statistics.PacketsReceivedTotal, "The listener must accept a new connection after an unclean disconnect!");
             }
@@ -381,14 +391,15 @@ public class TelemetryClientTests
     /// </summary>
     /// <param name="applicationData">Application data holding the statistics</param>
     /// <param name="expectedPackets">Number of received packets to wait for</param>
+    /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>A task representing the asynchronous operation</returns>
-    private static async Task WaitForReceivedPacketsAsync(F1ServerApplicationData applicationData, long expectedPackets)
+    private static async Task WaitForReceivedPacketsAsync(F1ServerApplicationData applicationData, long expectedPackets, CancellationToken cancellationToken)
     {
         var timeout = DateTime.UtcNow.AddSeconds(10);
 
         while (applicationData.Statistics.PacketsReceivedTotal < expectedPackets && DateTime.UtcNow < timeout)
         {
-            await Task.Delay(25);
+            await Task.Delay(25, cancellationToken);
         }
     }
 
