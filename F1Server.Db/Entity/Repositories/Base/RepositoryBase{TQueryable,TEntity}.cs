@@ -61,10 +61,23 @@ public abstract class RepositoryBase<TQueryable, TEntity> : RepositoryBase
     /// <summary>
     /// Get query
     /// </summary>
+    /// <param name="ignoreAutoIncludes">Ignore auto-included navigations configured on the model?</param>
     /// <returns>IQueryable object</returns>
-    public TQueryable? GetQuery()
+    public TQueryable? GetQuery(bool ignoreAutoIncludes = false)
     {
-        return _dbContext != null ? Activator.CreateInstance(typeof(TQueryable), _dbContext.Set<TEntity>().AsNoTracking()) as TQueryable : null;
+        if (_dbContext is null)
+        {
+            return null;
+        }
+
+        var queryable = _dbContext.Set<TEntity>().AsNoTracking();
+
+        if (ignoreAutoIncludes)
+        {
+            queryable = queryable.IgnoreAutoIncludes();
+        }
+
+        return Activator.CreateInstance(typeof(TQueryable), queryable) as TQueryable;
     }
 
     /// <summary>
@@ -122,6 +135,44 @@ public abstract class RepositoryBase<TQueryable, TEntity> : RepositoryBase
             Logger?.LogError(ex, "Error updating range of entities!");
 
             LastError = ex.ToString();
+        }
+
+        return success;
+    }
+
+    /// <summary>
+    /// Inserts a batch of new entities without automatic change detection, so large batches avoid the per-entity tracking overhead
+    /// </summary>
+    /// <param name="entities">Entities to insert</param>
+    /// <returns>Status</returns>
+    public async Task<bool> InsertBatchAsync(IEnumerable<TEntity> entities)
+    {
+        var success = false;
+
+        LastError = string.Empty;
+
+        var autoDetectChangesEnabled = _dbContext.ChangeTracker.AutoDetectChangesEnabled;
+
+        try
+        {
+            _dbContext.ChangeTracker.AutoDetectChangesEnabled = false;
+
+            _dbContext.Set<TEntity>()
+                      .AddRange(entities);
+
+            await _dbContext.SaveChangesAsync().ConfigureAwait(false);
+
+            success = true;
+        }
+        catch (Exception ex)
+        {
+            Logger?.LogError(ex, "Error inserting batch of entities!");
+
+            LastError = ex.ToString();
+        }
+        finally
+        {
+            _dbContext.ChangeTracker.AutoDetectChangesEnabled = autoDetectChangesEnabled;
         }
 
         return success;

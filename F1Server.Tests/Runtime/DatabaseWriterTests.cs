@@ -468,6 +468,37 @@ public class DatabaseWriterTests
     }
 
     /// <summary>
+    /// Verifies that all buffered telemetry rows of a completed lap are persisted with the lap id of the lap
+    /// </summary>
+    /// <returns>Task</returns>
+    [TestMethod]
+    public async Task ParticipantRuntimeDataCompleteTelemetryDataPersistsAllBufferedRows()
+    {
+        var lapEntity = CreateLap(9);
+
+        var sessionRuntimeData = new SessionRuntimeData(2025, TestSessionUniqueId, SessionType.Race);
+
+        using (var participantRuntimeData = new ParticipantRuntimeData(sessionRuntimeData))
+        {
+            participantRuntimeData.IsValidObject = true;
+            participantRuntimeData.ParticipantDbId = lapEntity.ParticipantId;
+
+            foreach (var telemetryEntity in CreateTelemetryRows(5))
+            {
+                participantRuntimeData.AddTelemetryData(lapEntity.LapNumber, telemetryEntity);
+            }
+
+            participantRuntimeData.CompleteTelemetryData(lapEntity.LapNumber);
+        }
+
+        await DatabaseWriter.FlushAsync().ConfigureAwait(false);
+
+        var storedRows = GetStoredTelemetryRows(lapEntity.Id);
+
+        Assert.HasCount(5, storedRows, "All buffered telemetry rows should be persisted with the lap id of the completed lap!");
+    }
+
+    /// <summary>
     /// Verifies that removing an unfinished lap deletes the lap row after draining the writer
     /// </summary>
     [TestMethod]
