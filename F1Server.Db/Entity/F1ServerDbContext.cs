@@ -6026,8 +6026,6 @@ public sealed class F1ServerDbContext : DbContext
         modelBuilder.Entity<ParticipantEntity>().Navigation(p => p.Nationality).AutoInclude();
         modelBuilder.Entity<ParticipantEntity>().Navigation(p => p.Team).AutoInclude();
         modelBuilder.Entity<ParticipantEntity>().Navigation(p => p.Driver).AutoInclude();
-        modelBuilder.Entity<LapEntity>().Navigation(p => p.Participant).AutoInclude();
-        modelBuilder.Entity<CarTelemetryEntity>().Navigation(t => t.Lap).AutoInclude();
         modelBuilder.Entity<ChampionshipEntity>().Navigation(t => t.GameVersion).AutoInclude();
         modelBuilder.Entity<ChampionshipEntity>().Navigation(t => t.Tracks).AutoInclude();
         modelBuilder.Entity<ChampionshipEntity>().Navigation(t => t.Points).AutoInclude();
