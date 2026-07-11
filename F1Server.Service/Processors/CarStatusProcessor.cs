@@ -49,57 +49,6 @@ internal class CarStatusProcessor : BaseProcessor
 
     #endregion // Constructors
 
-    #region BaseProcessor
-
-    /// <inheritdoc/>
-    public override bool Process(object? dataObject, SessionRuntimeData? sessionRuntimeData)
-    {
-        var isProcessed = true;
-
-        LastException = string.Empty;
-
-        using var currentActivity = AppActivity.SrvSource.StartActivity("CarStatusProcessor");
-
-        if (dataObject is CarStatus carStatusPacket && carStatusPacket.PacketData != null && sessionRuntimeData?.IsValid == true)
-        {
-            try
-            {
-                if (sessionRuntimeData.HasParticipants)
-                {
-                    for (ushort carIndex = 0; carIndex < carStatusPacket.PacketData.CarStatusData.Length; ++carIndex)
-                    {
-                        var carStatusData = carStatusPacket.PacketData.CarStatusData[carIndex];
-
-                        ProcessCarStatusData(sessionRuntimeData, carStatusData, carIndex);
-                    }
-                }
-
-                currentActivity?.SetStatus(ActivityStatusCode.Ok);
-            }
-            catch (Exception ex)
-            {
-                currentActivity?.SetStatus(ActivityStatusCode.Error, ex.ToString());
-                currentActivity?.AddException(ex);
-
-                LastException = ex.ToString();
-
-                isProcessed = false;
-
-                Logger?.LogError(ex, "Error processing CarStatus packet!");
-            }
-        }
-        else
-        {
-            currentActivity?.SetStatus(ActivityStatusCode.Error, "Unexpected data object or session not valid!");
-
-            Logger?.LogWarning("Unexpected data object or session not valid (processor: {Processor})!", nameof(CarStatusProcessor));
-        }
-
-        return isProcessed;
-    }
-
-    #endregion // BaseProcessor
-
     #region Private methods
 
     /// <summary>
@@ -152,4 +101,55 @@ internal class CarStatusProcessor : BaseProcessor
     }
 
     #endregion // Private methods
+
+    #region BaseProcessor
+
+    /// <inheritdoc/>
+    public override bool Process(object? dataObject, SessionRuntimeData? sessionRuntimeData)
+    {
+        var isProcessed = true;
+
+        LastException = string.Empty;
+
+        using var currentActivity = AppActivity.SrvSource.StartActivity("CarStatusProcessor");
+
+        if (dataObject is CarStatus carStatusPacket && carStatusPacket.PacketData != null && sessionRuntimeData?.IsValid == true)
+        {
+            try
+            {
+                if (sessionRuntimeData.HasParticipants)
+                {
+                    for (ushort carIndex = 0; carIndex < carStatusPacket.PacketData.CarStatusData.Length; ++carIndex)
+                    {
+                        var carStatusData = carStatusPacket.PacketData.CarStatusData[carIndex];
+
+                        ProcessCarStatusData(sessionRuntimeData, carStatusData, carIndex);
+                    }
+                }
+
+                currentActivity?.SetStatus(ActivityStatusCode.Ok);
+            }
+            catch (Exception ex)
+            {
+                currentActivity?.SetStatus(ActivityStatusCode.Error, ex.ToString());
+                currentActivity?.AddException(ex);
+
+                LastException = ex.ToString();
+
+                isProcessed = false;
+
+                Logger?.LogError(ex, "Error processing CarStatus packet!");
+            }
+        }
+        else
+        {
+            currentActivity?.SetStatus(ActivityStatusCode.Error, "Unexpected data object or session not valid!");
+
+            Logger?.LogWarning("Unexpected data object or session not valid (processor: {Processor})!", nameof(CarStatusProcessor));
+        }
+
+        return isProcessed;
+    }
+
+    #endregion // BaseProcessor
 }

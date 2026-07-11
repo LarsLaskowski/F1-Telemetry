@@ -13,22 +13,6 @@ public class ReceivedPacketDataTests
     #region Methods
 
     /// <summary>
-    /// Builds a raw packet of the given length whose first two bytes encode the given game version
-    /// </summary>
-    /// <param name="gameVersion">Game version to encode in the header</param>
-    /// <param name="length">Total length of the raw packet</param>
-    /// <returns>Raw packet bytes</returns>
-    private static byte[] BuildRawPacket(ushort gameVersion, int length)
-    {
-        var rawData = new byte[length];
-
-        rawData[0] = (byte)(gameVersion & 0xFF);
-        rawData[1] = (byte)((gameVersion >> 8) & 0xFF);
-
-        return rawData;
-    }
-
-    /// <summary>
     /// Test to verify that a packet reporting game version 2023 but shorter than the 2023 header size
     /// does not read past the end of the raw data and leaves the header unset
     /// </summary>
@@ -62,6 +46,22 @@ public class ReceivedPacketDataTests
 
         Assert.IsNotNull(packetData.PacketHeader, "Header should be set for a full size 2023 packet!");
         Assert.AreEqual((ushort)2023, packetData.PacketHeader.GameVersion, "Wrong game version!");
+    }
+
+    /// <summary>
+    /// Builds a raw packet of the given length whose first two bytes encode the given game version
+    /// </summary>
+    /// <param name="gameVersion">Game version to encode in the header</param>
+    /// <param name="length">Total length of the raw packet</param>
+    /// <returns>Raw packet bytes</returns>
+    private static byte[] BuildRawPacket(ushort gameVersion, int length)
+    {
+        var rawData = new byte[length];
+
+        rawData[0] = (byte)(gameVersion & 0xFF);
+        rawData[1] = (byte)((gameVersion >> 8) & 0xFF);
+
+        return rawData;
     }
 
     #endregion // Methods

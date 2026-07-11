@@ -286,6 +286,16 @@ public class WebHosting : IDisposable
     #region IDisposable
 
     /// <summary>
+    /// Dispose
+    /// </summary>
+    public void Dispose()
+    {
+        Dispose(true);
+
+        GC.SuppressFinalize(this);
+    }
+
+    /// <summary>
     /// Internal dispose method
     /// </summary>
     /// <param name="disposing">Dispose flag</param>
@@ -309,16 +319,6 @@ public class WebHosting : IDisposable
     private async Task StartupCache(CancellationToken cancellationToken)
     {
         await FastestLapPerSessionCache.InitializeCacheAsync(cancellationToken).ConfigureAwait(false);
-    }
-
-    /// <summary>
-    /// Dispose
-    /// </summary>
-    public void Dispose()
-    {
-        Dispose(true);
-
-        GC.SuppressFinalize(this);
     }
 
     #endregion // IDisposable

@@ -8,6 +8,45 @@ namespace F1Server.Core.Packets.Data;
 /// </summary>
 public class CarStatusData2019 : ICarStatusData2019
 {
+    #region ICarStatusData2019
+
+    /// <summary>
+    /// Tyres wear percentage
+    /// </summary>
+    public ushort[] TyresWear { get; set; }
+
+    /// <summary>
+    /// Tyre damage in percent
+    /// </summary>
+    public ushort[] TyreDamage { get; set; }
+
+    /// <summary>
+    /// Front left wing damage in percent
+    /// </summary>
+    public ushort FrontLeftWingDamage { get; set; }
+
+    /// <summary>
+    /// Front right wing damage in percent
+    /// </summary>
+    public ushort FrontRightWingDamage { get; set; }
+
+    /// <summary>
+    /// Rear wing damage in percent
+    /// </summary>
+    public ushort RearWingDamage { get; set; }
+
+    /// <summary>
+    /// Engine Damage in percent
+    /// </summary>
+    public ushort EngineDamage { get; set; }
+
+    /// <summary>
+    /// Gearbox damage in percent
+    /// </summary>
+    public ushort GearBoxDamage { get; set; }
+
+    #endregion // ICarStatusData2019
+
     #region ICarStatusDataBase
 
     /// <summary>
@@ -70,19 +109,6 @@ public class CarStatusData2019 : ICarStatusData2019
     /// </summary>
     public short DRSAllowed { get; set; }
 
-    #endregion // ICarStatusDataBase
-
-    #region ICarStatusData2019
-
-    /// <summary>
-    /// Tyres wear percentage
-    /// </summary>
-    public ushort[] TyresWear { get; set; }
-
-    #endregion // ICarStatusData2019
-
-    #region ICarStatusDataBase
-
     /// <summary>
     /// Tyre compound
     /// </summary>
@@ -124,38 +150,4 @@ public class CarStatusData2019 : ICarStatusData2019
     public float ERSDeployedThisLap { get; set; }
 
     #endregion // ICarStatusDataBase
-
-    #region ICarStatusData2019
-
-    /// <summary>
-    /// Tyre damage in percent
-    /// </summary>
-    public ushort[] TyreDamage { get; set; }
-
-    /// <summary>
-    /// Front left wing damage in percent
-    /// </summary>
-    public ushort FrontLeftWingDamage { get; set; }
-
-    /// <summary>
-    /// Front right wing damage in percent
-    /// </summary>
-    public ushort FrontRightWingDamage { get; set; }
-
-    /// <summary>
-    /// Rear wing damage in percent
-    /// </summary>
-    public ushort RearWingDamage { get; set; }
-
-    /// <summary>
-    /// Engine Damage in percent
-    /// </summary>
-    public ushort EngineDamage { get; set; }
-
-    /// <summary>
-    /// Gearbox damage in percent
-    /// </summary>
-    public ushort GearBoxDamage { get; set; }
-
-    #endregion // ICarStatusData2019
 }

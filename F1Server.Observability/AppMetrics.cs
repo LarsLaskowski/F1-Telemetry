@@ -250,10 +250,6 @@ public class AppMetrics : IAppMetrics
     /// <inheritdoc/>
     public Gauge<double> LapPositionsPacketProcessingTime { get; }
 
-    #endregion // IAppMetrics
-
-    #region IAppMetrics
-
     /// <inheritdoc/>
     public void RecordProcessedPacket(PacketTypes? packetType, double processingTimeMs)
     {

@@ -85,6 +85,67 @@ internal static class Program
     }
 
     /// <summary>
+    /// Test session packet
+    /// </summary>
+    /// <param name="file">Path to file</param>
+    /// <param name="gameVersion">Game version</param>
+    /// <param name="packetHeaderSize">Size of the packet header</param>
+    /// <param name="progressBar">Progress bar used to report findings without breaking the bar</param>
+    internal static void TestSessionPacket(string file, int gameVersion, int packetHeaderSize, ConsoleProgressBar progressBar)
+    {
+        var fInfo = new FileInfo(file);
+        var data = File.ReadAllBytes(file).AsSpan();
+
+        ref var memRef = ref MemoryMarshal.GetReference(data);
+
+        if (gameVersion == 2024)
+        {
+            TestSessionPacket2024(packetHeaderSize, progressBar, fInfo, data, ref memRef);
+        }
+    }
+
+    /// <summary>
+    /// Test session packet for F1 2024
+    /// </summary>
+    /// <param name="packetHeaderSize">Size of the packet header</param>
+    /// <param name="progressBar">Progress bar used to report findings without breaking the bar</param>
+    /// <param name="fInfo">File information</param>
+    /// <param name="data">Packet data</param>
+    /// <param name="memRef">Reference to the packet data</param>
+    private static void TestSessionPacket2024(int packetHeaderSize, ConsoleProgressBar progressBar, FileInfo fInfo, Span<byte> data, ref byte memRef)
+    {
+        if (data.Length > packetHeaderSize + 19)
+        {
+            byte marshalZones = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref memRef, packetHeaderSize + 19));
+
+            if (marshalZones > 0)
+            {
+                progressBar.WriteLine($"Marshal zones ({marshalZones}) found in {fInfo.Name}");
+            }
+        }
+
+        if (data.Length > packetHeaderSize + 124)
+        {
+            byte safetyCarStatus = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref memRef, packetHeaderSize + 124));
+
+            if (safetyCarStatus > 0)
+            {
+                progressBar.WriteLine($"Safety car status ({safetyCarStatus}) found in {fInfo.Name}");
+            }
+        }
+
+        if (data.Length > packetHeaderSize + 640)
+        {
+            byte aiDifficulty = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref memRef, packetHeaderSize + 640));
+
+            if (aiDifficulty > 0)
+            {
+                progressBar.WriteLine($"AI difficulty ({aiDifficulty}) found in {fInfo.Name}");
+            }
+        }
+    }
+
+    /// <summary>
     /// Walks the start directory and all of its subdirectories and collects every subfolder
     /// that matches the given name
     /// </summary>
@@ -178,13 +239,13 @@ internal static class Program
         {
             case PacketTypes.Event:
                 {
-                    TestEventPaket(file, packetHeaderSize, progressBar);
+                    TestEventPacket(file, packetHeaderSize, progressBar);
                 }
                 break;
 
             case PacketTypes.Session:
                 {
-                    TestSessionPaket(file, gameVersion, packetHeaderSize, progressBar);
+                    TestSessionPacket(file, gameVersion, packetHeaderSize, progressBar);
                 }
                 break;
         }
@@ -196,7 +257,7 @@ internal static class Program
     /// <param name="file">Path to file</param>
     /// <param name="packetHeaderSize">Size of the packet header</param>
     /// <param name="progressBar">Progress bar used to report findings without breaking the bar</param>
-    private static void TestEventPaket(string file, int packetHeaderSize, ConsoleProgressBar progressBar)
+    private static void TestEventPacket(string file, int packetHeaderSize, ConsoleProgressBar progressBar)
     {
         var fInfo = new FileInfo(file);
         var data = File.ReadAllBytes(file).AsSpan();
@@ -217,54 +278,6 @@ internal static class Program
             || eventString == "FLBK")
         {
             progressBar.WriteLine($"Event string: {eventString} found in {fInfo.Name}");
-        }
-    }
-
-    /// <summary>
-    /// Test session packet
-    /// </summary>
-    /// <param name="file">Path to file</param>
-    /// <param name="gameVersion">Game version</param>
-    /// <param name="packetHeaderSize">Size of the packet header</param>
-    /// <param name="progressBar">Progress bar used to report findings without breaking the bar</param>
-    internal static void TestSessionPaket(string file, int gameVersion, int packetHeaderSize, ConsoleProgressBar progressBar)
-    {
-        var fInfo = new FileInfo(file);
-        var data = File.ReadAllBytes(file).AsSpan();
-
-        ref var memRef = ref MemoryMarshal.GetReference(data);
-
-        if (gameVersion == 2024)
-        {
-            if (data.Length > packetHeaderSize + 19)
-            {
-                byte marshalZones = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref memRef, packetHeaderSize + 19));
-
-                if (marshalZones > 0)
-                {
-                    progressBar.WriteLine($"Marshal zones ({marshalZones}) found in {fInfo.Name}");
-                }
-            }
-
-            if (data.Length > packetHeaderSize + 124)
-            {
-                byte safetyCarStatus = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref memRef, packetHeaderSize + 124));
-
-                if (safetyCarStatus > 0)
-                {
-                    progressBar.WriteLine($"Safety car status ({safetyCarStatus}) found in {fInfo.Name}");
-                }
-            }
-
-            if (data.Length > packetHeaderSize + 640)
-            {
-                byte aiDifficulty = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref memRef, packetHeaderSize + 640));
-
-                if (aiDifficulty > 0)
-                {
-                    progressBar.WriteLine($"AI difficulty ({aiDifficulty}) found in {fInfo.Name}");
-                }
-            }
         }
     }
 

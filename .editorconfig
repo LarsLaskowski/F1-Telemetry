@@ -236,5 +236,7 @@ dotnet_diagnostic.CA2254.severity = silent
 dotnet_diagnostic.RH0396.severity = none
 dotnet_diagnostic.RH0428.severity = none
 dotnet_diagnostic.RH2102.severity = none
+dotnet_diagnostic.RH4119.severity = none
 dotnet_diagnostic.RH7004.severity = none
 dotnet_diagnostic.RH8027.severity = none
+dotnet_diagnostic.RH8306.severity = none

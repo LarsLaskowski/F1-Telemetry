@@ -714,6 +714,16 @@ internal class PacketProcessor : IDisposable
     #region IDisposable
 
     /// <summary>
+    /// Dispose
+    /// </summary>
+    public void Dispose()
+    {
+        Dispose(true);
+
+        GC.SuppressFinalize(this);
+    }
+
+    /// <summary>
     /// Internal dispose method
     /// </summary>
     /// <param name="disposing">Dispose flag</param>
@@ -723,16 +733,6 @@ internal class PacketProcessor : IDisposable
         {
             _processorFactory?.Dispose();
         }
-    }
-
-    /// <summary>
-    /// Dispose
-    /// </summary>
-    public void Dispose()
-    {
-        Dispose(true);
-
-        GC.SuppressFinalize(this);
     }
 
     #endregion // IDisposable

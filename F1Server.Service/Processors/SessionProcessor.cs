@@ -37,82 +37,6 @@ internal class SessionProcessor : BaseProcessor
 
     #endregion // Constructors
 
-    #region BaseProcessor
-
-    /// <inheritdoc/>
-    public override bool Process(object? dataObject, SessionRuntimeData? sessionRuntimeData)
-    {
-        var isProcessed = true;
-
-        LastException = string.Empty;
-
-        using var currentActivity = AppActivity.SrvSource.StartActivity("SessionProcessor");
-
-        if (dataObject is SessionData sessionData
-            && sessionData.PacketData != null
-            && sessionRuntimeData != null)
-        {
-            try
-            {
-                using (var dbFactory = RepositoryFactory.CreateInstance())
-                {
-                    var dbSessionData = SessionRepositoryCache.GetByUniqueSessionId(PacketHeader.UniqueSessionId);
-
-                    // Actual is no session set, it must be a new session
-                    if (dbSessionData == null)
-                    {
-                        isProcessed = CreateNewSession(sessionRuntimeData, sessionData.PacketData, dbFactory, out dbSessionData, out var dbSessionAttributes);
-
-                        if (dbSessionAttributes != null)
-                        {
-                            dbSessionAttributes.SessionId = sessionRuntimeData.SessionDbId;
-
-                            // Add entry for session attributes
-                            dbFactory.GetRepository<SessionAttributesRepository>()?.Add(dbSessionAttributes);
-
-                            SessionRepositoryCache.AddOrUpdateAttributes(dbSessionAttributes);
-                        }
-                    }
-                    else
-                    {
-                        UpdateSession(sessionRuntimeData, sessionData.PacketData, dbFactory, dbSessionData);
-                    }
-
-                    currentActivity?.AddTag("f1.session_id", dbSessionData?.SessionId ?? 0);
-                    currentActivity?.AddTag("f1.session_db_id", dbSessionData?.Id ?? 0);
-                    currentActivity?.AddTag("f1.session_type", dbSessionData?.SessionType ?? 0);
-
-                    RefreshLiveSessionData(sessionRuntimeData, sessionData, dbSessionData);
-                }
-
-                currentActivity?.SetStatus(ActivityStatusCode.Ok);
-            }
-            catch (Exception ex)
-            {
-                currentActivity?.SetStatus(ActivityStatusCode.Error, ex.ToString());
-                currentActivity?.AddException(ex);
-
-                LastException = ex.ToString();
-
-                Logger?.LogError(ex, "Error processing Session packet!");
-
-                isProcessed = false;
-            }
-        }
-        else
-        {
-            currentActivity?.SetStatus(ActivityStatusCode.Error, "Unexpected data object or session not valid!");
-
-            Logger?.LogWarning("Unexpected data object or session not valid (processor: {Processor})!", nameof(SessionProcessor));
-
-            isProcessed = false;
-        }
-
-        return isProcessed;
-    }
-
-    #endregion // BaseProcessor
-
     #region Private methods
 
     /// <summary>
@@ -595,4 +519,80 @@ internal class SessionProcessor : BaseProcessor
     }
 
     #endregion // Private methods
+
+    #region BaseProcessor
+
+    /// <inheritdoc/>
+    public override bool Process(object? dataObject, SessionRuntimeData? sessionRuntimeData)
+    {
+        var isProcessed = true;
+
+        LastException = string.Empty;
+
+        using var currentActivity = AppActivity.SrvSource.StartActivity("SessionProcessor");
+
+        if (dataObject is SessionData sessionData
+            && sessionData.PacketData != null
+            && sessionRuntimeData != null)
+        {
+            try
+            {
+                using (var dbFactory = RepositoryFactory.CreateInstance())
+                {
+                    var dbSessionData = SessionRepositoryCache.GetByUniqueSessionId(PacketHeader.UniqueSessionId);
+
+                    // Actual is no session set, it must be a new session
+                    if (dbSessionData == null)
+                    {
+                        isProcessed = CreateNewSession(sessionRuntimeData, sessionData.PacketData, dbFactory, out dbSessionData, out var dbSessionAttributes);
+
+                        if (dbSessionAttributes != null)
+                        {
+                            dbSessionAttributes.SessionId = sessionRuntimeData.SessionDbId;
+
+                            // Add entry for session attributes
+                            dbFactory.GetRepository<SessionAttributesRepository>()?.Add(dbSessionAttributes);
+
+                            SessionRepositoryCache.AddOrUpdateAttributes(dbSessionAttributes);
+                        }
+                    }
+                    else
+                    {
+                        UpdateSession(sessionRuntimeData, sessionData.PacketData, dbFactory, dbSessionData);
+                    }
+
+                    currentActivity?.AddTag("f1.session_id", dbSessionData?.SessionId ?? 0);
+                    currentActivity?.AddTag("f1.session_db_id", dbSessionData?.Id ?? 0);
+                    currentActivity?.AddTag("f1.session_type", dbSessionData?.SessionType ?? 0);
+
+                    RefreshLiveSessionData(sessionRuntimeData, sessionData, dbSessionData);
+                }
+
+                currentActivity?.SetStatus(ActivityStatusCode.Ok);
+            }
+            catch (Exception ex)
+            {
+                currentActivity?.SetStatus(ActivityStatusCode.Error, ex.ToString());
+                currentActivity?.AddException(ex);
+
+                LastException = ex.ToString();
+
+                Logger?.LogError(ex, "Error processing Session packet!");
+
+                isProcessed = false;
+            }
+        }
+        else
+        {
+            currentActivity?.SetStatus(ActivityStatusCode.Error, "Unexpected data object or session not valid!");
+
+            Logger?.LogWarning("Unexpected data object or session not valid (processor: {Processor})!", nameof(SessionProcessor));
+
+            isProcessed = false;
+        }
+
+        return isProcessed;
+    }
+
+    #endregion // BaseProcessor
 }

@@ -252,10 +252,6 @@ public static class Program
         {
             hasError = StartApplication(telemetryClient, runInDocker);
         }
-        else if (args.Length == 1)
-        {
-            StartClient(args[0]);
-        }
         else if (args.Length > 1)
         {
             // Test mode
@@ -348,27 +344,6 @@ public static class Program
     }
 
     /// <summary>
-    /// Start client
-    /// </summary>
-    /// <param name="parameter">Commandline parameter</param>
-    private static void StartClient(string parameter)
-    {
-#if DEBUG
-        if (parameter == "--client")
-        {
-            var client = new UdpClient();
-            var ep = new IPEndPoint(IPAddress.Parse("192.168.0.100"), 20777);
-
-            client.Connect(ep);
-
-            client.Send(new byte[] { 0xe5, 0x07, 0x01, 0x0d, 0x01, 0x03, 0xc7, 0xfe, 0x15, 0xa0, 0x3f, 0x11, 0x5c, 0xb4, 0xed, 0xb4, 0xad, 0x42, 0x4a, 0x07, 0x00, 0x00, 0x00, 0xff, 0x42, 0x55, 0x54, 0x4e, 0x80, 0x00, 0x00, 0x00, 0x40, 0x02, 0x00, 0x00 });
-
-            client.Dispose();
-        }
-#endif // DEBUG
-    }
-
-    /// <summary>
     /// Start test
     /// </summary>
     /// <param name="telemetryClient">Telemetry client</param>
@@ -455,10 +430,6 @@ public static class Program
 
             Console.WriteLine($"Session switched to: {_currentSessionId}");
         }
-
-#if DEBUG
-        Console.WriteLine($"Packet: {packetReceivedEventArgs.PacketType} - Session timestamp: {packetReceivedEventArgs.Timestamp}");
-#endif // DEBUG
     }
 
     /// <summary>

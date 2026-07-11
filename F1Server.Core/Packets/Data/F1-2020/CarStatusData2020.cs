@@ -8,6 +8,60 @@ namespace F1Server.Core.Packets.Data;
 /// </summary>
 public class CarStatusData2020 : ICarStatusData2020
 {
+    #region ICarStatusData2020
+
+    /// <summary>
+    /// DRS activation distance - 0 - DRS not available - non-zero - DRS will be available
+    /// </summary>
+    public int DRSActivationDistance { get; set; }
+
+    /// <summary>
+    /// Age of laps of the current set of tyres
+    /// </summary>
+    public ushort TyresAgeLaps { get; set; }
+
+    /// <summary>
+    /// Tyre damage in percent
+    /// </summary>
+    public ushort[] TyreDamage { get; set; }
+
+    /// <summary>
+    /// Front left wing damage in percent
+    /// </summary>
+    public ushort FrontLeftWingDamage { get; set; }
+
+    /// <summary>
+    /// Front right wing damage in percent
+    /// </summary>
+    public ushort FrontRightWingDamage { get; set; }
+
+    /// <summary>
+    /// Rear wing damage in percent
+    /// </summary>
+    public ushort RearWingDamage { get; set; }
+
+    /// <summary>
+    /// Engine Damage in percent
+    /// </summary>
+    public ushort EngineDamage { get; set; }
+
+    /// <summary>
+    /// Gearbox damage in percent
+    /// </summary>
+    public ushort GearBoxDamage { get; set; }
+
+    /// <summary>
+    /// Indicator for DRS fault - 0 - ok - 1 - fault
+    /// </summary>
+    public ushort DRSFault { get; set; }
+
+    /// <summary>
+    /// Tyres wear percentage
+    /// </summary>
+    public ushort[] TyresWear { get; set; }
+
+    #endregion // ICarStatusData2020
+
     #region ICarStatusDataBase
 
     /// <summary>
@@ -70,19 +124,6 @@ public class CarStatusData2020 : ICarStatusData2020
     /// </summary>
     public short DRSAllowed { get; set; }
 
-    #endregion // ICarStatusDataBase
-
-    #region ICarStatusData2020
-
-    /// <summary>
-    /// Tyres wear percentage
-    /// </summary>
-    public ushort[] TyresWear { get; set; }
-
-    #endregion // ICarStatusData2020
-
-    #region ICarStatusDataBase
-
     /// <summary>
     /// Tyre compound
     /// </summary>
@@ -124,53 +165,4 @@ public class CarStatusData2020 : ICarStatusData2020
     public float ERSDeployedThisLap { get; set; }
 
     #endregion // ICarStatusDataBase
-
-    #region ICarStatusData2020
-
-    /// <summary>
-    /// DRS activation distance - 0 - DRS not available - non-zero - DRS will be available
-    /// </summary>
-    public int DRSActivationDistance { get; set; }
-
-    /// <summary>
-    /// Age of laps of the current set of tyres
-    /// </summary>
-    public ushort TyresAgeLaps { get; set; }
-
-    /// <summary>
-    /// Tyre damage in percent
-    /// </summary>
-    public ushort[] TyreDamage { get; set; }
-
-    /// <summary>
-    /// Front left wing damage in percent
-    /// </summary>
-    public ushort FrontLeftWingDamage { get; set; }
-
-    /// <summary>
-    /// Front right wing damage in percent
-    /// </summary>
-    public ushort FrontRightWingDamage { get; set; }
-
-    /// <summary>
-    /// Rear wing damage in percent
-    /// </summary>
-    public ushort RearWingDamage { get; set; }
-
-    /// <summary>
-    /// Engine Damage in percent
-    /// </summary>
-    public ushort EngineDamage { get; set; }
-
-    /// <summary>
-    /// Gearbox damage in percent
-    /// </summary>
-    public ushort GearBoxDamage { get; set; }
-
-    /// <summary>
-    /// Indicator for DRS fault - 0 - ok - 1 - fault
-    /// </summary>
-    public ushort DRSFault { get; set; }
-
-    #endregion // ICarStatusData2020
 }

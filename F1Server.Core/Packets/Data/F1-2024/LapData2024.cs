@@ -1,4 +1,4 @@
-﻿using F1Server.Core.Enumerations;
+using F1Server.Core.Enumerations;
 using F1Server.Core.Packets.Interfaces;
 
 namespace F1Server.Core.Packets.Data;
@@ -8,15 +8,6 @@ namespace F1Server.Core.Packets.Data;
 /// </summary>
 public class LapData2024 : ILapData2023, ILapData2024
 {
-    #region ILapDataBase
-
-    /// <summary>
-    /// Flag if there is no car available (is nothing from the game)
-    /// </summary>
-    public bool IsEmpty => GridPosition == 0 && CurrentLapTime == 0;
-
-    #endregion // ILapDataBase
-
     #region ILapData2023
 
     /// <summary>
@@ -59,71 +50,10 @@ public class LapData2024 : ILapData2023, ILapData2024
     /// </summary>
     public ushort DeltaToRaceLeader { get; set; }
 
-    #endregion // ILapData2023
-
-    #region ILapDataBase
-
-    /// <summary>
-    /// Distance vehicle is around current lap in meters, negative is finish line not crossed yet
-    /// </summary>
-    public float LapDistance { get; set; }
-
-    /// <summary>
-    /// Total distance travelled in session in meters, can be negative like <see cref="LapDistance"/>
-    /// </summary>
-    public float TotalDistance { get; set; }
-
-    /// <summary>
-    /// Delta in seconds for safety car
-    /// </summary>
-    public float SafetyCarDelta { get; set; }
-
-    /// <summary>
-    /// Actual race position
-    /// </summary>
-    public ushort CarPosition { get; set; }
-
-    /// <summary>
-    /// Current lap number
-    /// </summary>
-    public ushort CurrentLapNumber { get; set; }
-
-    /// <summary>
-    /// Current pit status
-    /// </summary>
-    public PitStatus CurrentPitStatus { get; set; }
-
-    #endregion // ILapDataBase
-
-    #region ILapData2023
-
     /// <summary>
     /// Number of pit stops
     /// </summary>
     public ushort NumberPitStops { get; set; }
-
-    #endregion // ILapData2023
-
-    #region ILapDataBase
-
-    /// <summary>
-    /// Current sector
-    /// </summary>
-    public Sector CurrentSector { get; set; }
-
-    /// <summary>
-    /// Is current lap invalid?
-    /// </summary>
-    public bool IsCurrentLapInvalid { get; set; }
-
-    /// <summary>
-    /// Accumulated time penalties in seconds to be added
-    /// </summary>
-    public ushort TimePenalties { get; set; }
-
-    #endregion // ILapDataBase
-
-    #region ILapData2023
 
     /// <summary>
     /// Accumulated number of warnings
@@ -144,29 +74,6 @@ public class LapData2024 : ILapData2023, ILapData2024
     /// Number of stop and go penalties left to serve
     /// </summary>
     public ushort NumberUnservedStopAndGoPenalties { get; set; }
-
-    #endregion // ILapData2023
-
-    #region ILapDataBase
-
-    /// <summary>
-    /// Grid start position
-    /// </summary>
-    public ushort GridPosition { get; set; }
-
-    /// <summary>
-    /// Current driver status
-    /// </summary>
-    public DriverStatus CurrentDriverStatus { get; set; }
-
-    /// <summary>
-    /// Current result status
-    /// </summary>
-    public ResultStatus CurrentResultStatus { get; set; }
-
-    #endregion // ILapDataBase
-
-    #region ILapData2023
 
     /// <summary>
     /// Pit lane timing active flag
@@ -213,4 +120,73 @@ public class LapData2024 : ILapData2023, ILapData2024
     public ushort SpeedTrapFastestLap { get; set; }
 
     #endregion // ILapData2024
+
+    #region ILapDataBase
+
+    /// <summary>
+    /// Flag if there is no car available (is nothing from the game)
+    /// </summary>
+    public bool IsEmpty => GridPosition == 0 && CurrentLapTime == 0;
+
+    /// <summary>
+    /// Distance vehicle is around current lap in meters, negative is finish line not crossed yet
+    /// </summary>
+    public float LapDistance { get; set; }
+
+    /// <summary>
+    /// Total distance travelled in session in meters, can be negative like <see cref="LapDistance"/>
+    /// </summary>
+    public float TotalDistance { get; set; }
+
+    /// <summary>
+    /// Delta in seconds for safety car
+    /// </summary>
+    public float SafetyCarDelta { get; set; }
+
+    /// <summary>
+    /// Actual race position
+    /// </summary>
+    public ushort CarPosition { get; set; }
+
+    /// <summary>
+    /// Current lap number
+    /// </summary>
+    public ushort CurrentLapNumber { get; set; }
+
+    /// <summary>
+    /// Current pit status
+    /// </summary>
+    public PitStatus CurrentPitStatus { get; set; }
+
+    /// <summary>
+    /// Current sector
+    /// </summary>
+    public Sector CurrentSector { get; set; }
+
+    /// <summary>
+    /// Is current lap invalid?
+    /// </summary>
+    public bool IsCurrentLapInvalid { get; set; }
+
+    /// <summary>
+    /// Accumulated time penalties in seconds to be added
+    /// </summary>
+    public ushort TimePenalties { get; set; }
+
+    /// <summary>
+    /// Grid start position
+    /// </summary>
+    public ushort GridPosition { get; set; }
+
+    /// <summary>
+    /// Current driver status
+    /// </summary>
+    public DriverStatus CurrentDriverStatus { get; set; }
+
+    /// <summary>
+    /// Current result status
+    /// </summary>
+    public ResultStatus CurrentResultStatus { get; set; }
+
+    #endregion // ILapDataBase
 }

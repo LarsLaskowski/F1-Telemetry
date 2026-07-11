@@ -8,15 +8,6 @@ namespace F1Server.Core.Packets.Data;
 /// </summary>
 public class LapData2021 : ILapData2021
 {
-    #region ILapDataBase
-
-    /// <summary>
-    /// Flag if there is no car available (is nothing from the game)
-    /// </summary>
-    public bool IsEmpty => GridPosition == 0 && CurrentLapTime == 0;
-
-    #endregion // ILapDataBase
-
     #region ILapData2021
 
     /// <summary>
@@ -39,9 +30,54 @@ public class LapData2021 : ILapData2021
     /// </summary>
     public ushort Sector2Time { get; set; }
 
+    /// <summary>
+    /// Accumulated number of warnings
+    /// </summary>
+    public ushort Warnings { get; set; }
+
+    /// <summary>
+    /// Number of drive through penalties left to serve
+    /// </summary>
+    public ushort NumberUnservedDriveThroughPens { get; set; }
+
+    /// <summary>
+    /// Number of stop and go penalties left to serve
+    /// </summary>
+    public ushort NumberUnservedStopAndGoPenalties { get; set; }
+
+    /// <summary>
+    /// Number of pit stops
+    /// </summary>
+    public ushort NumberPitStops { get; set; }
+
+    /// <summary>
+    /// Pit lane timing active flag
+    /// </summary>
+    public bool IsPitLaneTimerActive { get; set; }
+
+    /// <summary>
+    /// Pit lane time in lan in milliseconds, only if <see cref="IsPitLaneTimerActive"/> is active
+    /// </summary>
+    public ushort PitLaneTimeInLane { get; set; }
+
+    /// <summary>
+    /// Time of actual pit stop in milliseconds
+    /// </summary>
+    public ushort PitStopTimer { get; set; }
+
+    /// <summary>
+    /// Flag if the car should serve a penalty at this stop
+    /// </summary>
+    public bool PitStopShouldServePenalty { get; set; }
+
     #endregion // ILapData2021
 
     #region ILapDataBase
+
+    /// <summary>
+    /// Flag if there is no car available (is nothing from the game)
+    /// </summary>
+    public bool IsEmpty => GridPosition == 0 && CurrentLapTime == 0;
 
     /// <summary>
     /// Distance vehicle is around current lap in meters, negative is finish line not crossed yet
@@ -73,19 +109,6 @@ public class LapData2021 : ILapData2021
     /// </summary>
     public PitStatus CurrentPitStatus { get; set; }
 
-    #endregion // ILapDataBase
-
-    #region ILapData2021
-
-    /// <summary>
-    /// Number of pit stops
-    /// </summary>
-    public ushort NumberPitStops { get; set; }
-
-    #endregion // ILapData2021
-
-    #region ILapDataBase
-
     /// <summary>
     /// Current sector
     /// </summary>
@@ -100,29 +123,6 @@ public class LapData2021 : ILapData2021
     /// Accumulated time penalties in seconds to be added
     /// </summary>
     public ushort TimePenalties { get; set; }
-
-    #endregion // ILapDataBase
-
-    #region ILapData2021
-
-    /// <summary>
-    /// Accumulated number of warnings
-    /// </summary>
-    public ushort Warnings { get; set; }
-
-    /// <summary>
-    /// Number of drive through penalties left to serve
-    /// </summary>
-    public ushort NumberUnservedDriveThroughPens { get; set; }
-
-    /// <summary>
-    /// Number of stop and go penalties left to serve
-    /// </summary>
-    public ushort NumberUnservedStopAndGoPenalties { get; set; }
-
-    #endregion // ILapData2021
-
-    #region ILapDataBase
 
     /// <summary>
     /// Grid start position
@@ -140,28 +140,4 @@ public class LapData2021 : ILapData2021
     public ResultStatus CurrentResultStatus { get; set; }
 
     #endregion // ILapDataBase
-
-    #region ILapData2021
-
-    /// <summary>
-    /// Pit lane timing active flag
-    /// </summary>
-    public bool IsPitLaneTimerActive { get; set; }
-
-    /// <summary>
-    /// Pit lane time in lan in milliseconds, only if <see cref="IsPitLaneTimerActive"/> is active
-    /// </summary>
-    public ushort PitLaneTimeInLane { get; set; }
-
-    /// <summary>
-    /// Time of actual pit stop in milliseconds
-    /// </summary>
-    public ushort PitStopTimer { get; set; }
-
-    /// <summary>
-    /// Flag if the car should serve a penalty at this stop
-    /// </summary>
-    public bool PitStopShouldServePenalty { get; set; }
-
-    #endregion // ILapData2021
 }

@@ -49,59 +49,6 @@ internal class CarTelemetryProcessor : BaseProcessor
 
     #endregion // Constructors
 
-    #region BaseProcessor
-
-    /// <inheritdoc/>
-    public override bool Process(object? dataObject, SessionRuntimeData? sessionRuntimeData)
-    {
-        var isProcessed = true;
-
-        LastException = string.Empty;
-
-        using var currentActivity = AppActivity.SrvSource.StartActivity("CarTelemetryProcessor");
-
-        if (dataObject is CarTelemetry carTelemetryPacket
-            && carTelemetryPacket.PacketData != null
-            && sessionRuntimeData?.IsValid == true)
-        {
-            try
-            {
-                if (sessionRuntimeData.HasParticipants)
-                {
-                    for (ushort currentCar = 0; currentCar < carTelemetryPacket.PacketData.CarTelemetryData.Length; ++currentCar)
-                    {
-                        var carTelemetryData = carTelemetryPacket.PacketData.CarTelemetryData[currentCar];
-
-                        ProcessCarTelemetryData(sessionRuntimeData, currentCar, carTelemetryData, sessionRuntimeData.IsTelemetryRecording);
-                    }
-                }
-
-                currentActivity?.SetStatus(ActivityStatusCode.Ok);
-            }
-            catch (Exception ex)
-            {
-                currentActivity?.SetStatus(ActivityStatusCode.Error, ex.ToString());
-                currentActivity?.AddException(ex);
-
-                LastException = ex.ToString();
-
-                Logger?.LogError(ex, "Error processing CarTelemetry packet!");
-
-                isProcessed = false;
-            }
-        }
-        else
-        {
-            currentActivity?.SetStatus(ActivityStatusCode.Error, "Unexpected data object or session not valid!");
-
-            Logger?.LogWarning("Unexpected data object or session not valid (processor: {Processor})!", nameof(CarTelemetryProcessor));
-        }
-
-        return isProcessed;
-    }
-
-    #endregion // BaseProcessor
-
     #region Private methods
 
     /// <summary>
@@ -203,4 +150,57 @@ internal class CarTelemetryProcessor : BaseProcessor
     }
 
     #endregion // Private methods
+
+    #region BaseProcessor
+
+    /// <inheritdoc/>
+    public override bool Process(object? dataObject, SessionRuntimeData? sessionRuntimeData)
+    {
+        var isProcessed = true;
+
+        LastException = string.Empty;
+
+        using var currentActivity = AppActivity.SrvSource.StartActivity("CarTelemetryProcessor");
+
+        if (dataObject is CarTelemetry carTelemetryPacket
+            && carTelemetryPacket.PacketData != null
+            && sessionRuntimeData?.IsValid == true)
+        {
+            try
+            {
+                if (sessionRuntimeData.HasParticipants)
+                {
+                    for (ushort currentCar = 0; currentCar < carTelemetryPacket.PacketData.CarTelemetryData.Length; ++currentCar)
+                    {
+                        var carTelemetryData = carTelemetryPacket.PacketData.CarTelemetryData[currentCar];
+
+                        ProcessCarTelemetryData(sessionRuntimeData, currentCar, carTelemetryData, sessionRuntimeData.IsTelemetryRecording);
+                    }
+                }
+
+                currentActivity?.SetStatus(ActivityStatusCode.Ok);
+            }
+            catch (Exception ex)
+            {
+                currentActivity?.SetStatus(ActivityStatusCode.Error, ex.ToString());
+                currentActivity?.AddException(ex);
+
+                LastException = ex.ToString();
+
+                Logger?.LogError(ex, "Error processing CarTelemetry packet!");
+
+                isProcessed = false;
+            }
+        }
+        else
+        {
+            currentActivity?.SetStatus(ActivityStatusCode.Error, "Unexpected data object or session not valid!");
+
+            Logger?.LogWarning("Unexpected data object or session not valid (processor: {Processor})!", nameof(CarTelemetryProcessor));
+        }
+
+        return isProcessed;
+    }
+
+    #endregion // BaseProcessor
 }

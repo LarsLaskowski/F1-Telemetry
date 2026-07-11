@@ -35,52 +35,6 @@ internal class FinalClassificationProcessor : BaseProcessor
 
     #endregion // Constructors
 
-    #region BaseProcessor
-
-    /// <inheritdoc/>
-    public override bool Process(object? dataObject, SessionRuntimeData? sessionRuntimeData)
-    {
-        var isProcessed = true;
-
-        LastException = string.Empty;
-
-        using var currentActivity = AppActivity.SrvSource.StartActivity("FinalClassificationProcessor");
-
-        if (dataObject is FinalClassificationData finalClassificationData
-            && finalClassificationData.PacketData != null
-            && sessionRuntimeData?.IsFinished == true
-            && sessionRuntimeData.HasParticipants)
-        {
-            try
-            {
-                isProcessed = ProcessFinalClassificationPacket(sessionRuntimeData, finalClassificationData);
-
-                currentActivity?.SetStatus(ActivityStatusCode.Ok);
-            }
-            catch (Exception ex)
-            {
-                currentActivity?.SetStatus(ActivityStatusCode.Error, ex.ToString());
-                currentActivity?.AddException(ex);
-
-                LastException = ex.ToString();
-
-                Logger?.LogError(ex, "Error processing final classification packet!");
-
-                isProcessed = false;
-            }
-        }
-        else
-        {
-            currentActivity?.SetStatus(ActivityStatusCode.Error, "Unexpected data object or session not finished!");
-
-            Logger?.LogWarning("Unexpected data object or session not valid (processor: {Processor})!", nameof(FinalClassificationProcessor));
-        }
-
-        return isProcessed;
-    }
-
-    #endregion // BaseProcessor
-
     #region Private methods
 
     /// <summary>
@@ -178,4 +132,50 @@ internal class FinalClassificationProcessor : BaseProcessor
     }
 
     #endregion // Private methods
+
+    #region BaseProcessor
+
+    /// <inheritdoc/>
+    public override bool Process(object? dataObject, SessionRuntimeData? sessionRuntimeData)
+    {
+        var isProcessed = true;
+
+        LastException = string.Empty;
+
+        using var currentActivity = AppActivity.SrvSource.StartActivity("FinalClassificationProcessor");
+
+        if (dataObject is FinalClassificationData finalClassificationData
+            && finalClassificationData.PacketData != null
+            && sessionRuntimeData?.IsFinished == true
+            && sessionRuntimeData.HasParticipants)
+        {
+            try
+            {
+                isProcessed = ProcessFinalClassificationPacket(sessionRuntimeData, finalClassificationData);
+
+                currentActivity?.SetStatus(ActivityStatusCode.Ok);
+            }
+            catch (Exception ex)
+            {
+                currentActivity?.SetStatus(ActivityStatusCode.Error, ex.ToString());
+                currentActivity?.AddException(ex);
+
+                LastException = ex.ToString();
+
+                Logger?.LogError(ex, "Error processing final classification packet!");
+
+                isProcessed = false;
+            }
+        }
+        else
+        {
+            currentActivity?.SetStatus(ActivityStatusCode.Error, "Unexpected data object or session not finished!");
+
+            Logger?.LogWarning("Unexpected data object or session not valid (processor: {Processor})!", nameof(FinalClassificationProcessor));
+        }
+
+        return isProcessed;
+    }
+
+    #endregion // BaseProcessor
 }

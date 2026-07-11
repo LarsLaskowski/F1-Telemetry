@@ -1,4 +1,4 @@
-﻿using F1Server.Core.Enumerations;
+using F1Server.Core.Enumerations;
 using F1Server.Core.Packets.Interfaces;
 
 namespace F1Server.Core.Packets.Data;
@@ -8,13 +8,6 @@ namespace F1Server.Core.Packets.Data;
 /// </summary>
 public class LapData2025 : ILapData2023, ILapData2025
 {
-    #region ILapDataBase
-
-    /// <inheritdoc/>
-    public bool IsEmpty => GridPosition == 0 && CurrentLapTime == 0;
-
-    #endregion // ILapDataBase
-
     #region ILapData2023
 
     /// <inheritdoc/>
@@ -41,51 +34,8 @@ public class LapData2025 : ILapData2023, ILapData2025
     /// <inheritdoc/>
     public ushort DeltaToRaceLeader { get; set; }
 
-    #endregion // ILapData2023
-
-    #region ILapDataBase
-
-    /// <inheritdoc/>
-    public float LapDistance { get; set; }
-
-    /// <inheritdoc/>
-    public float TotalDistance { get; set; }
-
-    /// <inheritdoc/>
-    public float SafetyCarDelta { get; set; }
-
-    /// <inheritdoc/>
-    public ushort CarPosition { get; set; }
-
-    /// <inheritdoc/>
-    public ushort CurrentLapNumber { get; set; }
-
-    /// <inheritdoc/>
-    public PitStatus CurrentPitStatus { get; set; }
-
-    #endregion // ILapDataBase
-
-    #region ILapData2023
-
     /// <inheritdoc/>
     public ushort NumberPitStops { get; set; }
-
-    #endregion // ILapData2023
-
-    #region ILapDataBase
-
-    /// <inheritdoc/>
-    public Sector CurrentSector { get; set; }
-
-    /// <inheritdoc/>
-    public bool IsCurrentLapInvalid { get; set; }
-
-    /// <inheritdoc/>
-    public ushort TimePenalties { get; set; }
-
-    #endregion // ILapDataBase
-
-    #region ILapData2023
 
     /// <inheritdoc/>
     public ushort Warnings { get; set; }
@@ -98,23 +48,6 @@ public class LapData2025 : ILapData2023, ILapData2025
 
     /// <inheritdoc/>
     public ushort NumberUnservedStopAndGoPenalties { get; set; }
-
-    #endregion // ILapData2023
-
-    #region ILapDataBase
-
-    /// <inheritdoc/>
-    public ushort GridPosition { get; set; }
-
-    /// <inheritdoc/>
-    public DriverStatus CurrentDriverStatus { get; set; }
-
-    /// <inheritdoc/>
-    public ResultStatus CurrentResultStatus { get; set; }
-
-    #endregion // ILapDataBase
-
-    #region ILapData2023
 
     /// <inheritdoc/>
     public bool IsPitLaneTimerActive { get; set; }
@@ -145,4 +78,47 @@ public class LapData2025 : ILapData2023, ILapData2025
     public ushort SpeedTrapFastestLap { get; set; }
 
     #endregion // ILapData2024
+
+    #region ILapDataBase
+
+    /// <inheritdoc/>
+    public bool IsEmpty => GridPosition == 0 && CurrentLapTime == 0;
+
+    /// <inheritdoc/>
+    public float LapDistance { get; set; }
+
+    /// <inheritdoc/>
+    public float TotalDistance { get; set; }
+
+    /// <inheritdoc/>
+    public float SafetyCarDelta { get; set; }
+
+    /// <inheritdoc/>
+    public ushort CarPosition { get; set; }
+
+    /// <inheritdoc/>
+    public ushort CurrentLapNumber { get; set; }
+
+    /// <inheritdoc/>
+    public PitStatus CurrentPitStatus { get; set; }
+
+    /// <inheritdoc/>
+    public Sector CurrentSector { get; set; }
+
+    /// <inheritdoc/>
+    public bool IsCurrentLapInvalid { get; set; }
+
+    /// <inheritdoc/>
+    public ushort TimePenalties { get; set; }
+
+    /// <inheritdoc/>
+    public ushort GridPosition { get; set; }
+
+    /// <inheritdoc/>
+    public DriverStatus CurrentDriverStatus { get; set; }
+
+    /// <inheritdoc/>
+    public ResultStatus CurrentResultStatus { get; set; }
+
+    #endregion // ILapDataBase
 }

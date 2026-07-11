@@ -42,52 +42,6 @@ internal class ParticipantsProcessor : BaseProcessor
 
     #endregion // Constructors
 
-    #region BaseProcessor
-
-    /// <inheritdoc/>
-    public override bool Process(object? dataObject, SessionRuntimeData? sessionRuntimeData)
-    {
-        var isProcessed = true;
-
-        LastException = string.Empty;
-
-        using var currentActivity = AppActivity.SrvSource.StartActivity("ParticipantsProcessor");
-
-        if (dataObject is Participants participantsData && participantsData.PacketData != null && sessionRuntimeData?.IsValid == true)
-        {
-            sessionRuntimeData.HasParticipants = true;
-            sessionRuntimeData.Players = participantsData.PacketData.ActiveCars;
-
-            try
-            {
-                isProcessed = ProcessParticipants(sessionRuntimeData, participantsData);
-
-                currentActivity?.SetStatus(ActivityStatusCode.Ok);
-            }
-            catch (Exception ex)
-            {
-                currentActivity?.SetStatus(ActivityStatusCode.Error, ex.ToString());
-                currentActivity?.AddException(ex);
-
-                LastException = ex.ToString();
-
-                Logger?.LogError(ex, "Error processing Participants packet!");
-
-                isProcessed = false;
-            }
-        }
-        else
-        {
-            currentActivity?.SetStatus(ActivityStatusCode.Error, "No participants data or session not valid!");
-
-            Logger?.LogWarning("Unexpected data object or session not valid (processor: {Processor})!", nameof(ParticipantsProcessor));
-        }
-
-        return isProcessed;
-    }
-
-    #endregion // BaseProcessor
-
     #region Private methods
 
     /// <summary>
@@ -535,4 +489,50 @@ internal class ParticipantsProcessor : BaseProcessor
     }
 
     #endregion // Private methods
+
+    #region BaseProcessor
+
+    /// <inheritdoc/>
+    public override bool Process(object? dataObject, SessionRuntimeData? sessionRuntimeData)
+    {
+        var isProcessed = true;
+
+        LastException = string.Empty;
+
+        using var currentActivity = AppActivity.SrvSource.StartActivity("ParticipantsProcessor");
+
+        if (dataObject is Participants participantsData && participantsData.PacketData != null && sessionRuntimeData?.IsValid == true)
+        {
+            sessionRuntimeData.HasParticipants = true;
+            sessionRuntimeData.Players = participantsData.PacketData.ActiveCars;
+
+            try
+            {
+                isProcessed = ProcessParticipants(sessionRuntimeData, participantsData);
+
+                currentActivity?.SetStatus(ActivityStatusCode.Ok);
+            }
+            catch (Exception ex)
+            {
+                currentActivity?.SetStatus(ActivityStatusCode.Error, ex.ToString());
+                currentActivity?.AddException(ex);
+
+                LastException = ex.ToString();
+
+                Logger?.LogError(ex, "Error processing Participants packet!");
+
+                isProcessed = false;
+            }
+        }
+        else
+        {
+            currentActivity?.SetStatus(ActivityStatusCode.Error, "No participants data or session not valid!");
+
+            Logger?.LogWarning("Unexpected data object or session not valid (processor: {Processor})!", nameof(ParticipantsProcessor));
+        }
+
+        return isProcessed;
+    }
+
+    #endregion // BaseProcessor
 }

@@ -35,51 +35,6 @@ internal class TimeTrialProcessor : BaseProcessor
 
     #endregion // Constructors
 
-    #region BaseProcessor
-
-    /// <inheritdoc/>
-    public override bool Process(object? dataObject, SessionRuntimeData? sessionRuntimeData)
-    {
-        var isProcessed = true;
-
-        LastException = string.Empty;
-
-        using var currentActivity = AppActivity.SrvSource.StartActivity("TimeTrialProcessor");
-
-        if (dataObject is TimeTrialData timeTrialData
-            && timeTrialData.PacketData != null
-            && sessionRuntimeData?.HasParticipants == true)
-        {
-            try
-            {
-                isProcessed = ProcessTimeTrialPacket(timeTrialData.PacketData, currentActivity);
-
-                currentActivity?.SetStatus(ActivityStatusCode.Ok);
-            }
-            catch (Exception ex)
-            {
-                currentActivity?.SetStatus(ActivityStatusCode.Error, ex.ToString());
-                currentActivity?.AddException(ex);
-
-                LastException = ex.ToString();
-
-                Logger?.LogError(ex, "Error processing time trial packet!");
-
-                isProcessed = false;
-            }
-        }
-        else
-        {
-            currentActivity?.SetStatus(ActivityStatusCode.Error, "Invalid data object!");
-
-            Logger?.LogWarning("Unexpected data object or session not valid (processor: {Processor})!", nameof(TimeTrialProcessor));
-        }
-
-        return isProcessed;
-    }
-
-    #endregion // BaseProcessor
-
     #region Private methods
 
     /// <summary>
@@ -131,4 +86,49 @@ internal class TimeTrialProcessor : BaseProcessor
     }
 
     #endregion // Private methods
+
+    #region BaseProcessor
+
+    /// <inheritdoc/>
+    public override bool Process(object? dataObject, SessionRuntimeData? sessionRuntimeData)
+    {
+        var isProcessed = true;
+
+        LastException = string.Empty;
+
+        using var currentActivity = AppActivity.SrvSource.StartActivity("TimeTrialProcessor");
+
+        if (dataObject is TimeTrialData timeTrialData
+            && timeTrialData.PacketData != null
+            && sessionRuntimeData?.HasParticipants == true)
+        {
+            try
+            {
+                isProcessed = ProcessTimeTrialPacket(timeTrialData.PacketData, currentActivity);
+
+                currentActivity?.SetStatus(ActivityStatusCode.Ok);
+            }
+            catch (Exception ex)
+            {
+                currentActivity?.SetStatus(ActivityStatusCode.Error, ex.ToString());
+                currentActivity?.AddException(ex);
+
+                LastException = ex.ToString();
+
+                Logger?.LogError(ex, "Error processing time trial packet!");
+
+                isProcessed = false;
+            }
+        }
+        else
+        {
+            currentActivity?.SetStatus(ActivityStatusCode.Error, "Invalid data object!");
+
+            Logger?.LogWarning("Unexpected data object or session not valid (processor: {Processor})!", nameof(TimeTrialProcessor));
+        }
+
+        return isProcessed;
+    }
+
+    #endregion // BaseProcessor
 }
