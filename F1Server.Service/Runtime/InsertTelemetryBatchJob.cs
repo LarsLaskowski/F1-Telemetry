@@ -52,7 +52,7 @@ internal class InsertTelemetryBatchJob : IDatabaseWriterJob
                     var lapNumber = LapNumber;
 
                     lapDbId = dbFactory.GetRepository<LapRepository>()
-                                       ?.GetQuery()
+                                       ?.GetQuery(ignoreAutoIncludes: true)
                                        ?.FirstOrDefault(l => l.ParticipantId == participantDbId && l.LapNumber == lapNumber)
                                        ?.Id ?? 0;
                 }
@@ -64,7 +64,7 @@ internal class InsertTelemetryBatchJob : IDatabaseWriterJob
                         telemetryEntity.LapNumberId = lapDbId;
                     }
 
-                    await (dbFactory.GetRepository<CarTelemetryRepository>()?.UpdateRangeAsync(Rows) ?? Task.FromResult(false)).ConfigureAwait(false);
+                    await (dbFactory.GetRepository<CarTelemetryRepository>()?.InsertBatchAsync(Rows) ?? Task.FromResult(false)).ConfigureAwait(false);
                 }
                 else
                 {
