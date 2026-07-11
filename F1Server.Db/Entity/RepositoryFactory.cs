@@ -43,8 +43,6 @@ public sealed class RepositoryFactory : IDisposable
     /// </summary>
     public RepositoryFactory()
     {
-        Interlocked.Increment(ref _instancesCreated);
-
         _dbContext = _contextPool.Value.CreateDbContext();
         _dbContext.LastError = null;
         _repositories = new Dictionary<Type, RepositoryBase>();
@@ -84,6 +82,8 @@ public sealed class RepositoryFactory : IDisposable
     /// <returns>Repository factory</returns>
     public static RepositoryFactory CreateInstance()
     {
+        Interlocked.Increment(ref _instancesCreated);
+
         return new RepositoryFactory();
     }
 
