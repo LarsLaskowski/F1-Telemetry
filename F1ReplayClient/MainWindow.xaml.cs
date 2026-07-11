@@ -355,7 +355,7 @@ public partial class MainWindow : Window, IDisposable
 
             _viewData.ProcessedFiles = 0;
 
-            var buffer = ArrayPool<byte>.Shared.Rent(4096);
+            var buffer = ArrayPool<byte>.Shared.Rent(ConstData.MaxReplayPacketLength);
             var lengthPrefix = new byte[sizeof(int)];
 
             TcpClient? tcpClient = null;
@@ -414,8 +414,10 @@ public partial class MainWindow : Window, IDisposable
                             skipPacket = true;
                         }
 
-                        // send data
-                        if (_viewData.SendData && skipPacket == false)
+                        // send data, but never announce a length the server-side framing would reject
+                        if (_viewData.SendData
+                            && skipPacket == false
+                            && fileLength <= ConstData.MaxReplayPacketLength)
                         {
                             if (tcpClient == null || tcpClient.Connected == false)
                             {

@@ -116,5 +116,194 @@ public class TelemetryClientTests
         }
     }
 
+    /// <summary>
+    /// Test to verify that the length prefix reader returns zero when the connection is closed inside a partial prefix
+    /// </summary>
+    /// <returns>A task representing the asynchronous operation</returns>
+    [TestMethod]
+    public async Task TelemetryClientReadReplayPacketLengthWithPartialPrefixReturnsZero()
+    {
+        var lengthPrefix = new byte[sizeof(int)];
+        var partialPrefix = new byte[]
+                            {
+                                42,
+                                0
+                            };
+
+        using (var stream = new MemoryStream(partialPrefix))
+        {
+            var packetLength = await TelemetryClient.ReadReplayPacketLengthAsync(stream, lengthPrefix, CancellationToken.None);
+
+            Assert.AreEqual(0, packetLength, "A connection closed inside the prefix must be reported as a zero length!");
+        }
+    }
+
+    /// <summary>
+    /// Test to verify that the packet reader returns the payload of a single framed packet
+    /// </summary>
+    /// <returns>A task representing the asynchronous operation</returns>
+    [TestMethod]
+    public async Task TelemetryClientReadReplayPacketWithSingleFrameReturnsPayload()
+    {
+        var lengthPrefix = new byte[sizeof(int)];
+        var recvBuf = new byte[ConstData.MaxReplayPacketLength];
+        var frame = CreateReplayFrame([11, 22, 33]);
+
+        using (var stream = new MemoryStream(frame))
+        {
+            var packetLength = await TelemetryClient.ReadReplayPacketAsync(stream, lengthPrefix, recvBuf, CancellationToken.None);
+
+            Assert.AreEqual(3, packetLength, "The reader must return the announced payload length!");
+            CollectionAssert.AreEqual(new byte[] { 11, 22, 33 }, recvBuf[..packetLength], "The reader must return the payload bytes of the frame!");
+        }
+    }
+
+    /// <summary>
+    /// Test to verify that the packet reader returns two consecutive framed packets from one stream
+    /// </summary>
+    /// <returns>A task representing the asynchronous operation</returns>
+    [TestMethod]
+    public async Task TelemetryClientReadReplayPacketWithTwoFramesReturnsBothPayloads()
+    {
+        var lengthPrefix = new byte[sizeof(int)];
+        var recvBuf = new byte[ConstData.MaxReplayPacketLength];
+        var frames = CreateReplayFrame([1, 2]).Concat(CreateReplayFrame([3, 4, 5])).ToArray();
+
+        using (var stream = new MemoryStream(frames))
+        {
+            var firstLength = await TelemetryClient.ReadReplayPacketAsync(stream, lengthPrefix, recvBuf, CancellationToken.None);
+
+            Assert.AreEqual(2, firstLength, "The first frame must announce two payload bytes!");
+            CollectionAssert.AreEqual(new byte[] { 1, 2 }, recvBuf[..firstLength], "The first payload must be returned unchanged!");
+
+            var secondLength = await TelemetryClient.ReadReplayPacketAsync(stream, lengthPrefix, recvBuf, CancellationToken.None);
+
+            Assert.AreEqual(3, secondLength, "The second frame must announce three payload bytes!");
+            CollectionAssert.AreEqual(new byte[] { 3, 4, 5 }, recvBuf[..secondLength], "The second payload must be returned unchanged!");
+
+            var thirdLength = await TelemetryClient.ReadReplayPacketAsync(stream, lengthPrefix, recvBuf, CancellationToken.None);
+
+            Assert.AreEqual(0, thirdLength, "The end of the stream must be reported as a zero length!");
+        }
+    }
+
+    /// <summary>
+    /// Test to verify that the packet reader treats a negative announced length as a framing error
+    /// </summary>
+    /// <returns>A task representing the asynchronous operation</returns>
+    [TestMethod]
+    public async Task TelemetryClientReadReplayPacketWithNegativeLengthReturnsZero()
+    {
+        var lengthPrefix = new byte[sizeof(int)];
+        var recvBuf = new byte[ConstData.MaxReplayPacketLength];
+        var frame = new byte[sizeof(int)];
+
+        BinaryPrimitives.WriteInt32LittleEndian(frame, -5);
+
+        using (var stream = new MemoryStream(frame))
+        {
+            var packetLength = await TelemetryClient.ReadReplayPacketAsync(stream, lengthPrefix, recvBuf, CancellationToken.None);
+
+            Assert.AreEqual(0, packetLength, "A negative announced length must be treated as a framing error!");
+        }
+    }
+
+    /// <summary>
+    /// Test to verify that the packet reader treats an announced length above the buffer size as a framing error
+    /// </summary>
+    /// <returns>A task representing the asynchronous operation</returns>
+    [TestMethod]
+    public async Task TelemetryClientReadReplayPacketWithOversizedLengthReturnsZero()
+    {
+        var lengthPrefix = new byte[sizeof(int)];
+        var recvBuf = new byte[ConstData.MaxReplayPacketLength];
+        var frame = new byte[sizeof(int)];
+
+        BinaryPrimitives.WriteInt32LittleEndian(frame, ConstData.MaxReplayPacketLength + 1);
+
+        using (var stream = new MemoryStream(frame))
+        {
+            var packetLength = await TelemetryClient.ReadReplayPacketAsync(stream, lengthPrefix, recvBuf, CancellationToken.None);
+
+            Assert.AreEqual(0, packetLength, "An announced length above the buffer size must be treated as a framing error!");
+        }
+    }
+
+    /// <summary>
+    /// Test to verify that the packet reader reports a payload truncated by an unclean disconnect as an end of stream
+    /// </summary>
+    /// <returns>A task representing the asynchronous operation</returns>
+    [TestMethod]
+    public async Task TelemetryClientReadReplayPacketWithTruncatedPayloadThrowsEndOfStreamException()
+    {
+        var lengthPrefix = new byte[sizeof(int)];
+        var recvBuf = new byte[ConstData.MaxReplayPacketLength];
+        var frame = CreateReplayFrame([7, 8, 9])[..^1];
+
+        using (var stream = new MemoryStream(frame))
+        {
+            await Assert.ThrowsExactlyAsync<EndOfStreamException>(() => TelemetryClient.ReadReplayPacketAsync(stream, lengthPrefix, recvBuf, CancellationToken.None), "A truncated payload must surface as an end of stream!");
+        }
+    }
+
+    /// <summary>
+    /// Test to verify that enqueuing a replay packet updates the received packet statistics and the queue counter
+    /// </summary>
+    [TestMethod]
+    public void TelemetryClientEnqueueReplayPacketUpdatesStatistics()
+    {
+        var services = new ServiceCollection();
+        var applicationData = new F1ServerApplicationData();
+
+        services.AddSingleton(applicationData);
+        services.AddSingleton(new PacketAnalyzer());
+        services.AddSingleton(new TelemetryConfiguration());
+
+        using (var serviceProvider = services.BuildServiceProvider())
+        {
+            var telemetryClient = new TelemetryClient(serviceProvider, false, false);
+
+            try
+            {
+                var recvBuf = new byte[]
+                              {
+                                  1,
+                                  2,
+                                  3,
+                                  4
+                              };
+
+                telemetryClient.EnqueueReplayPacket(recvBuf, recvBuf.Length);
+
+                Assert.AreEqual(1, applicationData.Statistics.PacketsReceivedTotal, "The received packet counter must be incremented!");
+                Assert.AreEqual(1, applicationData.Statistics.PacketsInQueue, "The queue counter must reflect the enqueued packet!");
+            }
+            finally
+            {
+                telemetryClient.Dispose();
+            }
+        }
+    }
+
     #endregion // Methods
+
+    #region Static methods
+
+    /// <summary>
+    /// Creates one length-prefixed replay frame for the given payload
+    /// </summary>
+    /// <param name="payload">Payload bytes of the frame</param>
+    /// <returns>The frame consisting of the four byte little endian length prefix followed by the payload</returns>
+    private static byte[] CreateReplayFrame(byte[] payload)
+    {
+        var frame = new byte[sizeof(int) + payload.Length];
+
+        BinaryPrimitives.WriteInt32LittleEndian(frame, payload.Length);
+
+        payload.CopyTo(frame, sizeof(int));
+
+        return frame;
+    }
+
+    #endregion // Static methods
 }

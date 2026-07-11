@@ -17,6 +17,11 @@ public static class ConstData
     /// </summary>
     public const int StatisticTimeoutInMs = 300000;
 
+    /// <summary>
+    /// Maximum length in bytes of a single packet on the TCP replay connection, shared by replay client and server
+    /// </summary>
+    public const int MaxReplayPacketLength = 4096;
+
     #endregion // Global consts
 
     #region Consts F1 2019
