@@ -100,7 +100,7 @@ internal static class Program
 
         if (gameVersion == 2024)
         {
-            TestSessionPacket2024(packetHeaderSize, progressBar, fInfo, data, memRef);
+            TestSessionPacket2024(packetHeaderSize, progressBar, fInfo, data, ref memRef);
         }
     }
 
@@ -112,7 +112,7 @@ internal static class Program
     /// <param name="fInfo">File information</param>
     /// <param name="data">Packet data</param>
     /// <param name="memRef">Reference to the packet data</param>
-    private static void TestSessionPacket2024(int packetHeaderSize, ConsoleProgressBar progressBar, FileInfo fInfo, Span<byte> data, byte memRef)
+    private static void TestSessionPacket2024(int packetHeaderSize, ConsoleProgressBar progressBar, FileInfo fInfo, Span<byte> data, ref byte memRef)
     {
         if (data.Length > packetHeaderSize + 19)
         {
