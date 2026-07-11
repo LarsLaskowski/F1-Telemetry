@@ -694,6 +694,66 @@ public class SessionProcessorTests
     }
 
     /// <summary>
+    /// Method to test that a session packet without database changes creates no repository factory
+    /// </summary>
+    [TestMethod]
+    public void ProcessSessionPacketNoChangeExpectedNoRepositoryFactoryCreated()
+    {
+        var processor = TestData.Processor2020;
+
+        // Parse the packet freshly from file so modifications made by other tests do not leak in
+        var fileContent = File.ReadAllBytes(@"SampleData/F1-2020-MontrealPractice-Session.packet");
+
+        var packetData = new ReceivedPacketData();
+
+        packetData.SetRawData(fileContent);
+
+        Assert.IsNotNull(packetData.PacketHeader, "Packet header variable (2020) is null!");
+
+        var sessionData = _packetAnalyzer.GetSessionData(packetData.PacketHeader, packetData.PacketRawData) as SessionData;
+
+        Assert.IsNotNull(sessionData, "Session data (2020) is null!");
+
+        using (var dbFactory = RepositoryFactory.CreateInstance())
+        {
+            var dbSessionData = dbFactory.GetRepository<SessionRepository>()?.GetQuery()?.FirstOrDefault(s => s.SessionId == packetData.PacketHeader.UniqueSessionId);
+
+            Assert.IsNotNull(dbSessionData, "Session database object (2020) is null!");
+
+            var dbSessionAttrData = dbFactory.GetRepository<SessionAttributesRepository>()?.GetQuery()?.FirstOrDefault(s => s.SessionId == dbSessionData.Id);
+
+            Assert.IsNotNull(dbSessionAttrData, "Session database attributes object (2020) is null!");
+
+            if (sessionData.PacketData is SessionData2020 sessionData2020)
+            {
+                // Align the packet with the stored session so processing causes no database change
+                sessionData2020.Weather = dbSessionAttrData.WeatherStart;
+                sessionData2020.IsNetworkGame = dbSessionData.IsNetworkGame;
+            }
+            else
+            {
+                Assert.Fail("Invalid game version!");
+            }
+        }
+
+        var sessionProcessor = processor.GetProcessor(packetData.PacketHeader);
+
+        Assert.IsInstanceOfType<SessionProcessor>(sessionProcessor);
+
+        // The first pass warms the caches and applies pending runtime updates
+        var isProcessed = sessionProcessor.Process(sessionData, processor.Session);
+
+        Assert.IsTrue(isProcessed, "Session packet (2020) not correctly processed!");
+
+        var factoriesBefore = RepositoryFactory.InstancesCreated;
+
+        isProcessed = sessionProcessor.Process(sessionData, processor.Session);
+
+        Assert.IsTrue(isProcessed, "Session packet (2020) not correctly processed!");
+        Assert.AreEqual(factoriesBefore, RepositoryFactory.InstancesCreated, "A session packet without changes must not create a repository factory!");
+    }
+
+    /// <summary>
     /// Method to test receiving the correct processor for given packet
     /// </summary>
     [TestMethod]
