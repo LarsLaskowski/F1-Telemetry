@@ -499,6 +499,42 @@ public class DatabaseWriterTests
     }
 
     /// <summary>
+    /// Verifies that adding a new lap populates the lap id from the insert and stores exactly one row
+    /// </summary>
+    [TestMethod]
+    public void ParticipantRuntimeDataAddLapPopulatesLapIdWithSingleRow()
+    {
+        var sessionRuntimeData = new SessionRuntimeData(2025, TestSessionUniqueId, SessionType.Race);
+
+        using (var participantRuntimeData = new ParticipantRuntimeData(sessionRuntimeData))
+        {
+            participantRuntimeData.IsValidObject = true;
+            participantRuntimeData.ParticipantDbId = _participantDbId;
+
+            var lapEntity = new LapEntity
+                            {
+                                LapNumber = 10,
+                                ParticipantId = _participantDbId,
+                                SessionId = _sessionDbId
+                            };
+
+            Assert.IsTrue(participantRuntimeData.AddLap(lapEntity), "The lap could not be added to the participant runtime data!");
+            Assert.AreNotEqual(0, lapEntity.Id, "The lap id should be populated from the insert when the lap is added!");
+
+            using (var dbFactory = RepositoryFactory.CreateInstance())
+            {
+                var storedLaps = dbFactory.GetRepository<LapRepository>()
+                                          ?.GetQuery(ignoreAutoIncludes: true)
+                                          ?.Where(l => l.ParticipantId == _participantDbId && l.LapNumber == 10)
+                                          .ToList() ?? [];
+
+                Assert.HasCount(1, storedLaps, "Exactly one lap row should exist for the added lap!");
+                Assert.AreEqual(lapEntity.Id, storedLaps[0].Id, "The populated lap id should match the stored lap row!");
+            }
+        }
+    }
+
+    /// <summary>
     /// Verifies that removing an unfinished lap deletes the lap row after draining the writer
     /// </summary>
     [TestMethod]
