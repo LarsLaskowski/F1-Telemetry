@@ -73,21 +73,10 @@ internal class FinalClassificationProcessor : BaseProcessor
                 }
             }
 
-            // Cleanup invalid laps
-            var invalidLaps = dbFactory.GetRepository<LapRepository>()
-                                       ?.GetQuery()
-                                       ?.Where(l => l.SessionId == sessionRuntimeData.SessionDbId && l.DbIsInvalidLapTime == 1)
-                                       ?.ToList();
+            // Cleanup invalid laps and their telemetry with set-based statements
+            dbFactory.GetRepository<CarTelemetryRepository>()?.RemoveBySessionId(sessionRuntimeData.SessionDbId, true);
 
-            if (invalidLaps?.Count > 0)
-            {
-                foreach (var invalidLapData in invalidLaps)
-                {
-                    dbFactory.GetRepository<CarTelemetryRepository>()?.ExecuteRawSql("DELETE FROM CarTelemetries WHERE LapNumberId = @p0", invalidLapData.Id);
-                }
-
-                dbFactory.GetRepository<LapRepository>()?.RemoveRange(l => l.SessionId == sessionRuntimeData.SessionDbId && l.DbIsInvalidLapTime == 1);
-            }
+            dbFactory.GetRepository<LapRepository>()?.RemoveWhere(l => l.SessionId == sessionRuntimeData.SessionDbId && l.DbIsInvalidLapTime == 1);
         }
 
         return isProcessed;

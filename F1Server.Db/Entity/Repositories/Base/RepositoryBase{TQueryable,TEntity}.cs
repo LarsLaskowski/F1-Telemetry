@@ -500,6 +500,51 @@ public abstract class RepositoryBase<TQueryable, TEntity> : RepositoryBase
     }
 
     /// <summary>
+    /// Remove all entity objects matching the expression with a single set-based statement
+    /// </summary>
+    /// <param name="expression">Expression</param>
+    /// <returns>Number of removed entities, or -1 on error</returns>
+    public int RemoveWhere(Expression<Func<TEntity, bool>> expression)
+    {
+        var removedCount = -1;
+
+        LastError = string.Empty;
+
+        try
+        {
+            // Auto-included navigations are not needed for deleting and would drop rows whose principals are missing
+            var query = _dbContext.Set<TEntity>()
+                                  .IgnoreAutoIncludes()
+                                  .Where(expression);
+
+            if (_dbContext.Database.IsRelational())
+            {
+                removedCount = query.ExecuteDelete();
+            }
+            else
+            {
+                // Set-based deletes are not supported by non-relational providers (e.g. InMemory), so fall back to load-and-remove
+                var entities = query.ToList();
+
+                _dbContext.Set<TEntity>()
+                          .RemoveRange(entities);
+
+                _dbContext.SaveChanges();
+
+                removedCount = entities.Count;
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger?.LogError(ex, "Error removing entity objects with a set-based delete!");
+
+            LastError = ex.ToString();
+        }
+
+        return removedCount;
+    }
+
+    /// <summary>
     /// Execute a raw SQL statement against the database
     /// </summary>
     /// <param name="sqlStatement">SQL statement</param>
