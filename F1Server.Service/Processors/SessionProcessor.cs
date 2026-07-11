@@ -553,7 +553,7 @@ internal class SessionProcessor : BaseProcessor
                 // Actual is no session set, it must be a new session
                 if (dbSessionData == null)
                 {
-                    dbFactory ??= RepositoryFactory.CreateInstance();
+                    dbFactory = RepositoryFactory.CreateInstance();
 
                     isProcessed = CreateNewSession(sessionRuntimeData, sessionData.PacketData, dbFactory, out dbSessionData, out var dbSessionAttributes);
 
