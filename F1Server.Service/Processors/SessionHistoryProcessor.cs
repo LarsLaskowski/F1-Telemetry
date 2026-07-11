@@ -57,17 +57,38 @@ internal class SessionHistoryProcessor : BaseProcessor
 
         if (sessionHistoryData?.NumberOfLaps > 0)
         {
-            for (var lap = 0; lap < sessionHistoryData.NumberOfLaps; ++lap)
-            {
-                var lapData = sessionHistoryData.LapHistory[lap];
+            // The context bundles the per-packet data and its factory is only created when a lap actually needs a database write
+            var context = new SessionHistoryLapContext
+                          {
+                              ParticipantRuntimeData = participantRuntimeData,
+                              LiveDriverData = liveDriverData,
+                              LiveSessionData = liveSessionData,
+                              SessionHistoryData = sessionHistoryData,
+                              IsFinalDataReceived = isFinalDataReceived,
+                              DbFactory = new Lazy<RepositoryFactory>(RepositoryFactory.CreateInstance)
+                          };
 
-                try
+            try
+            {
+                for (var lap = 0; lap < sessionHistoryData.NumberOfLaps; ++lap)
                 {
-                    UpdateSingleLap(lapData, (ushort)(lap + 1), participantRuntimeData, liveDriverData, liveSessionData, isFinalDataReceived, sessionHistoryData);
+                    var lapData = sessionHistoryData.LapHistory[lap];
+
+                    try
+                    {
+                        UpdateSingleLap(lapData, (ushort)(lap + 1), context);
+                    }
+                    catch
+                    {
+                        isProcessed = false;
+                    }
                 }
-                catch
+            }
+            finally
+            {
+                if (context.DbFactory.IsValueCreated)
                 {
-                    isProcessed = false;
+                    context.DbFactory.Value.Dispose();
                 }
             }
         }
@@ -91,15 +112,13 @@ internal class SessionHistoryProcessor : BaseProcessor
     /// </summary>
     /// <param name="lapData">Data of lap</param>
     /// <param name="lapNumber">Number of lap</param>
-    /// <param name="participantRuntimeData">Participant runtime data</param>
-    /// <param name="liveDriverData">Live driver data</param>
-    /// <param name="liveSessionData">Live session data</param>
-    /// <param name="isFinalDataReceived">Final classification received?</param>
-    /// <param name="sessionHistoryData">History data of session</param>
-    private void UpdateSingleLap(ILapHistoryDataBase lapData, ushort lapNumber, ParticipantRuntimeData participantRuntimeData, LiveDriverData? liveDriverData, LiveSessionData liveSessionData, bool isFinalDataReceived, ISessionHistoryDataBase sessionHistoryData)
+    /// <param name="context">Per-packet processing context</param>
+    private void UpdateSingleLap(ILapHistoryDataBase lapData, ushort lapNumber, SessionHistoryLapContext context)
     {
         if (lapData.LapTime > 0 || lapData.Sector1Time > 0 || lapData.Sector2Time > 0 || lapData.Sector3Time > 0)
         {
+            var participantRuntimeData = context.ParticipantRuntimeData;
+
             // valid lap data information
             var lapEntity = participantRuntimeData.GetLap(lapNumber);
 
@@ -122,7 +141,7 @@ internal class SessionHistoryProcessor : BaseProcessor
                 {
                     lapEntity.IsCompleted = false;
 
-                    if (isFinalDataReceived)
+                    if (context.IsFinalDataReceived)
                     {
                         lapEntity.IsInvalid = true;
                         lapEntity.IsInvalidLapTime = true;
@@ -133,12 +152,12 @@ internal class SessionHistoryProcessor : BaseProcessor
                     }
                 }
 
-                CheckFastestLapTimes(lapEntity, liveSessionData, liveDriverData);
+                CheckFastestLapTimes(lapEntity, context.LiveSessionData, context.LiveDriverData);
             }
             else
             {
                 // Lap is finished or unknown
-                UpdateFinishedLap(lapData, lapNumber, participantRuntimeData.ParticipantDbId, liveDriverData, liveSessionData, sessionHistoryData, participantRuntimeData);
+                UpdateFinishedLap(lapData, lapNumber, context);
             }
         }
     }
@@ -169,138 +188,163 @@ internal class SessionHistoryProcessor : BaseProcessor
     /// </summary>
     /// <param name="lapData">Lap data</param>
     /// <param name="lapNumber">Number of lap</param>
-    /// <param name="participantDbId">Database id of participant</param>
-    /// <param name="liveDriverData">Live driver data</param>
-    /// <param name="liveSessionData">Live session data</param>
-    /// <param name="sessionHistoryData">History data of session</param>
-    /// <param name="participantRuntimeData">Participant runtime data</param>
-    private void UpdateFinishedLap(ILapHistoryDataBase lapData, ushort lapNumber, long participantDbId, LiveDriverData? liveDriverData, LiveSessionData liveSessionData, ISessionHistoryDataBase sessionHistoryData, ParticipantRuntimeData? participantRuntimeData)
+    /// <param name="context">Per-packet processing context</param>
+    private void UpdateFinishedLap(ILapHistoryDataBase lapData, ushort lapNumber, SessionHistoryLapContext context)
     {
-        using (var dbFactory = RepositoryFactory.CreateInstance())
+        var participantDbId = context.ParticipantRuntimeData.ParticipantDbId;
+        var lapDbData = LapRepositoryCache.GetByLapNumberParticipant(lapNumber, participantDbId);
+
+        if (lapDbData != null)
         {
-            var lapDbData = LapRepositoryCache.GetByLapNumberParticipant(lapNumber, participantDbId);
+            var isInvalidLapTime = context.ParticipantRuntimeData.ValidateLapTimes(lapDbData.LapTime, lapDbData.Sector1Time, lapDbData.Sector2Time, lapDbData.Sector3Time);
 
-            if (lapDbData != null)
+            if (lapDbData.LapTime != lapData.LapTime
+                || lapDbData.Sector1Time != lapData.Sector1Time
+                || lapDbData.Sector2Time != lapData.Sector2Time
+                || lapDbData.Sector3Time != lapData.Sector3Time
+                || lapDbData.IsInvalidLapTime != isInvalidLapTime)
             {
-                var isInvalidLapTime = participantRuntimeData?.ValidateLapTimes(lapDbData.LapTime, lapDbData.Sector1Time, lapDbData.Sector2Time, lapDbData.Sector3Time);
+                context.DbFactory.Value.GetRepository<LapRepository>()?.Refresh(l => l.Id == lapDbData.Id,
+                                                                                obj =>
+                                                                                {
+                                                                                    obj.LapTime = lapData.LapTime;
+                                                                                    obj.Sector1Time = lapData.Sector1Time;
+                                                                                    obj.Sector2Time = lapData.Sector2Time;
+                                                                                    obj.Sector3Time = lapData.Sector3Time;
+                                                                                    obj.IsInvalidLapTime = isInvalidLapTime;
+                                                                                });
 
-                if (lapDbData.LapTime != lapData.LapTime
-                    || lapDbData.Sector1Time != lapData.Sector1Time
-                    || lapDbData.Sector2Time != lapData.Sector2Time
-                    || lapDbData.Sector3Time != lapData.Sector3Time
-                    || lapDbData.IsInvalidLapTime != isInvalidLapTime)
-                {
-                    dbFactory.GetRepository<LapRepository>()?.Refresh(l => l.Id == lapDbData.Id,
-                                                                      obj =>
-                                                                      {
-                                                                          obj.LapTime = lapData.LapTime;
-                                                                          obj.Sector1Time = lapData.Sector1Time;
-                                                                          obj.Sector2Time = lapData.Sector2Time;
-                                                                          obj.Sector3Time = lapData.Sector3Time;
-                                                                          obj.IsInvalidLapTime = isInvalidLapTime ?? false;
-                                                                      });
+                // The cached entity must receive the new values as well, otherwise the comparison above stays true forever
+                lapDbData.LapTime = lapData.LapTime;
+                lapDbData.Sector1Time = lapData.Sector1Time;
+                lapDbData.Sector2Time = lapData.Sector2Time;
+                lapDbData.Sector3Time = lapData.Sector3Time;
+                lapDbData.IsInvalidLapTime = isInvalidLapTime;
 
-                    LapRepositoryCache.AddOrUpdate(lapDbData);
-                }
+                LapRepositoryCache.AddOrUpdate(lapDbData);
             }
-            else
-            {
-                // Lap is unknown? Insert if valid
-                lapDbData = CreateLap(dbFactory, lapData, lapNumber, participantDbId, sessionHistoryData, liveSessionData.DbId, participantRuntimeData);
-            }
-
-            CheckFastestLapTimes(lapDbData, liveSessionData, liveDriverData);
         }
+        else
+        {
+            // Lap is unknown? Insert if valid
+            lapDbData = CreateLap(lapData, lapNumber, context);
+        }
+
+        CheckFastestLapTimes(lapDbData, context.LiveSessionData, context.LiveDriverData);
     }
 
     /// <summary>
     /// Create a lap or update an already stored lap with the same participant and lap number
     /// </summary>
-    /// <param name="dbFactory">Database factory object</param>
     /// <param name="lapData">Data of lap</param>
     /// <param name="lapNumber">Number of lap</param>
-    /// <param name="participantDbId">Participant database id</param>
-    /// <param name="sessionHistoryData">Session history data</param>
-    /// <param name="sessionDbId">Session database id</param>
-    /// <param name="participantRuntimeData">Participant runtime data</param>
+    /// <param name="context">Per-packet processing context</param>
     /// <returns>Lap entity</returns>
-    private LapEntity? CreateLap(RepositoryFactory dbFactory, ILapHistoryDataBase lapData, ushort lapNumber, long participantDbId, ISessionHistoryDataBase sessionHistoryData, long sessionDbId, ParticipantRuntimeData? participantRuntimeData)
+    private LapEntity? CreateLap(ILapHistoryDataBase lapData, ushort lapNumber, SessionHistoryLapContext context)
     {
         LapEntity? lapDbData = null;
 
         if (lapData.IsLapTimeCompleteValid)
         {
-            var isInvalidLapTime = participantRuntimeData?.ValidateLapTimes(lapData.LapTime, lapData.Sector1Time, lapData.Sector2Time, lapData.Sector3Time) ?? false;
+            var participantDbId = context.ParticipantRuntimeData.ParticipantDbId;
+            var isInvalidLapTime = context.ParticipantRuntimeData.ValidateLapTimes(lapData.LapTime, lapData.Sector1Time, lapData.Sector2Time, lapData.Sector3Time);
 
             // The lap can already be stored without being cached, update it instead of inserting a duplicate row
-            lapDbData = dbFactory.GetRepository<LapRepository>()
-                                 ?.GetQuery()
-                                 ?.FirstOrDefault(l => l.ParticipantId == participantDbId && l.LapNumber == lapNumber);
+            lapDbData = context.DbFactory.Value.GetRepository<LapRepository>()
+                                               ?.GetQuery()
+                                               ?.FirstOrDefault(l => l.ParticipantId == participantDbId && l.LapNumber == lapNumber);
 
             if (lapDbData != null)
             {
-                var lapDbId = lapDbData.Id;
-
-                lapDbData.LapTime = lapData.LapTime;
-                lapDbData.Sector1Time = lapData.Sector1Time;
-                lapDbData.Sector2Time = lapData.Sector2Time;
-                lapDbData.Sector3Time = lapData.Sector3Time;
-                lapDbData.IsCompleted = true;
-                lapDbData.IsInvalidLapTime = isInvalidLapTime;
-
-                dbFactory.GetRepository<LapRepository>()?.Refresh(l => l.Id == lapDbId,
-                                                                  obj =>
-                                                                  {
-                                                                      obj.LapTime = lapData.LapTime;
-                                                                      obj.Sector1Time = lapData.Sector1Time;
-                                                                      obj.Sector2Time = lapData.Sector2Time;
-                                                                      obj.Sector3Time = lapData.Sector3Time;
-                                                                      obj.IsCompleted = true;
-                                                                      obj.IsInvalidLapTime = isInvalidLapTime;
-                                                                  });
-
-                LapRepositoryCache.AddOrUpdate(lapDbData);
+                RefreshStoredLap(lapDbData, lapData, isInvalidLapTime, context);
             }
             else
             {
-                lapDbData = new LapEntity
-                            {
-                                IsCompleted = true,
-                                Sector1Time = lapData.Sector1Time,
-                                Sector2Time = lapData.Sector2Time,
-                                Sector3Time = lapData.Sector3Time,
-                                LapNumber = lapNumber,
-                                LapTime = lapData.LapTime,
-                                IsFinished = true,
-                                DriverStatus = DriverStatus.OnTrack,
-                                PitStatus = PitStatus.None,
-                                ResultStatus = ResultStatus.Active,
-                                ParticipantId = participantDbId,
-                                SessionId = sessionDbId,
-                                IsInvalidLapTime = isInvalidLapTime
-                            };
-
-                ITyreStintHistoryDataBase? tyre = null;
-
-                if (sessionHistoryData?.TyreStintHistory != null)
-                {
-                    tyre = Array.Find(sessionHistoryData.TyreStintHistory, t => t != null && (t.EndLap == 255 || t.EndLap > lapNumber));
-                }
-
-                if (tyre != null)
-                {
-                    lapDbData.TyreCompound = TyreCompoundMapper.MapVisualTyreCompoundToEnum(tyre.TyreVisualCompound);
-                }
-
-                if (dbFactory.GetRepository<LapRepository>()?.Add(lapDbData) == false)
-                {
-                    lapDbData = null;
-                }
-                else
-                {
-                    LapRepositoryCache.AddOrUpdate(lapDbData);
-                }
+                lapDbData = InsertLap(lapData, lapNumber, isInvalidLapTime, context);
             }
+        }
+
+        return lapDbData;
+    }
+
+    /// <summary>
+    /// Refresh an already stored lap with the values of the current history packet
+    /// </summary>
+    /// <param name="lapDbData">Stored lap entity</param>
+    /// <param name="lapData">Data of lap</param>
+    /// <param name="isInvalidLapTime">Is the lap time invalid?</param>
+    /// <param name="context">Per-packet processing context</param>
+    private void RefreshStoredLap(LapEntity lapDbData, ILapHistoryDataBase lapData, bool isInvalidLapTime, SessionHistoryLapContext context)
+    {
+        var lapDbId = lapDbData.Id;
+
+        lapDbData.LapTime = lapData.LapTime;
+        lapDbData.Sector1Time = lapData.Sector1Time;
+        lapDbData.Sector2Time = lapData.Sector2Time;
+        lapDbData.Sector3Time = lapData.Sector3Time;
+        lapDbData.IsCompleted = true;
+        lapDbData.IsInvalidLapTime = isInvalidLapTime;
+
+        context.DbFactory.Value.GetRepository<LapRepository>()?.Refresh(l => l.Id == lapDbId,
+                                                                        obj =>
+                                                                        {
+                                                                            obj.LapTime = lapData.LapTime;
+                                                                            obj.Sector1Time = lapData.Sector1Time;
+                                                                            obj.Sector2Time = lapData.Sector2Time;
+                                                                            obj.Sector3Time = lapData.Sector3Time;
+                                                                            obj.IsCompleted = true;
+                                                                            obj.IsInvalidLapTime = isInvalidLapTime;
+                                                                        });
+
+        LapRepositoryCache.AddOrUpdate(lapDbData);
+    }
+
+    /// <summary>
+    /// Insert a new lap for the current history packet
+    /// </summary>
+    /// <param name="lapData">Data of lap</param>
+    /// <param name="lapNumber">Number of lap</param>
+    /// <param name="isInvalidLapTime">Is the lap time invalid?</param>
+    /// <param name="context">Per-packet processing context</param>
+    /// <returns>Inserted lap entity, or null when the insert failed</returns>
+    private LapEntity? InsertLap(ILapHistoryDataBase lapData, ushort lapNumber, bool isInvalidLapTime, SessionHistoryLapContext context)
+    {
+        LapEntity? lapDbData = new LapEntity
+                               {
+                                   IsCompleted = true,
+                                   Sector1Time = lapData.Sector1Time,
+                                   Sector2Time = lapData.Sector2Time,
+                                   Sector3Time = lapData.Sector3Time,
+                                   LapNumber = lapNumber,
+                                   LapTime = lapData.LapTime,
+                                   IsFinished = true,
+                                   DriverStatus = DriverStatus.OnTrack,
+                                   PitStatus = PitStatus.None,
+                                   ResultStatus = ResultStatus.Active,
+                                   ParticipantId = context.ParticipantRuntimeData.ParticipantDbId,
+                                   SessionId = context.LiveSessionData.DbId,
+                                   IsInvalidLapTime = isInvalidLapTime
+                               };
+
+        ITyreStintHistoryDataBase? tyre = null;
+
+        if (context.SessionHistoryData.TyreStintHistory != null)
+        {
+            tyre = Array.Find(context.SessionHistoryData.TyreStintHistory, t => t != null && (t.EndLap == 255 || t.EndLap > lapNumber));
+        }
+
+        if (tyre != null)
+        {
+            lapDbData.TyreCompound = TyreCompoundMapper.MapVisualTyreCompoundToEnum(tyre.TyreVisualCompound);
+        }
+
+        if (context.DbFactory.Value.GetRepository<LapRepository>()?.Add(lapDbData) == false)
+        {
+            lapDbData = null;
+        }
+        else
+        {
+            LapRepositoryCache.AddOrUpdate(lapDbData);
         }
 
         return lapDbData;

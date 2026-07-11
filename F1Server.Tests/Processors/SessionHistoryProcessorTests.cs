@@ -5,6 +5,7 @@ using F1Server.Data;
 using F1Server.Db.Entity;
 using F1Server.Db.Entity.Repositories;
 using F1Server.Db.Entity.Tables;
+using F1Server.Service.Cache;
 using F1Server.Service.Processors;
 using F1Server.Service.Runtime;
 using F1Server.Tests.Data;
@@ -38,6 +39,21 @@ public class SessionHistoryProcessorTests
     /// Car index of the test participant of the unfinished lap test
     /// </summary>
     private const ushort TestCarIndex2 = 8;
+
+    /// <summary>
+    /// Unique game session id used by the changed lap values test
+    /// </summary>
+    private const ulong TestSessionUniqueId3 = 419419419421UL;
+
+    /// <summary>
+    /// Car index of the test participant of the changed lap values test
+    /// </summary>
+    private const ushort TestCarIndex3 = 9;
+
+    /// <summary>
+    /// Sector 3 sentinel time written directly to the database to detect an unwanted second update
+    /// </summary>
+    private const uint SentinelSector3Time = 12345;
 
     #endregion // Constants
 
@@ -246,6 +262,132 @@ public class SessionHistoryProcessorTests
                                          ?.Count(l => l.ParticipantId == participantDbId && l.DbIsCompleted == 1) ?? -1;
 
             Assert.AreEqual(1, completedLaps, "Exactly the lap with consistent times should be completed in the database!");
+        }
+    }
+
+    /// <summary>
+    /// A changed lap value in a session history packet triggers exactly one database update:
+    /// the cached lap converges to the packet values, so a repeated packet performs no further write
+    /// </summary>
+    [TestMethod]
+    public void SessionHistoryProcessorChangedLapValuesAreUpdatedExactlyOnce()
+    {
+        var (sessionDbId, participantDbId) = CreateTestEntities(419005, 4192, 419006, TestSessionUniqueId3, TestCarIndex3);
+
+        var sessionRuntimeData = new SessionRuntimeData(2025, TestSessionUniqueId3, SessionType.Race)
+                                 {
+                                     HasParticipants = true,
+                                     IsRecordable = true,
+                                     CurrentSession = new LiveSessionData
+                                                      {
+                                                          DbId = sessionDbId,
+                                                          SessionGameId = TestSessionUniqueId3,
+                                                          SessionType = SessionType.Race
+                                                      }
+                                 };
+
+        var participantRuntimeData = new ParticipantRuntimeData(sessionRuntimeData)
+                                     {
+                                         IsValidObject = true,
+                                         ParticipantDbId = participantDbId,
+                                         ArrayIndex = TestCarIndex3
+                                     };
+
+        Assert.IsTrue(sessionRuntimeData.Participants.TryAdd(TestCarIndex3, participantRuntimeData), "Participant runtime data could not be registered!");
+
+        var packetHeader = new PacketHeader
+                           {
+                               GameVersion = 2025,
+                               PacketType = PacketTypes.SessionHistory,
+                               UniqueSessionId = TestSessionUniqueId3,
+                               PlayerCarIndex = TestCarIndex3
+                           };
+
+        var sessionHistoryProcessor = new SessionHistoryProcessor(TestData.ServiceProvider,
+                                                                  packetHeader,
+                                                                  new LiveGameData
+                                                                  {
+                                                                      GameVersion = 2025
+                                                                  });
+
+        var lapEntity = new LapEntity
+                        {
+                            LapNumber = 1,
+                            ParticipantId = participantDbId,
+                            SessionId = sessionDbId,
+                            DriverStatus = DriverStatus.OnTrack,
+                            PitStatus = PitStatus.None,
+                            ResultStatus = ResultStatus.Active
+                        };
+
+        Assert.IsTrue(participantRuntimeData.AddLap(lapEntity), "Lap could not be added to the participant runtime data!");
+
+        lapEntity.LapTime = 90000;
+        lapEntity.Sector1Time = 30000;
+        lapEntity.Sector2Time = 30000;
+        lapEntity.Sector3Time = 30000;
+        lapEntity.IsCompleted = true;
+        lapEntity.IsFinished = true;
+
+        Assert.IsTrue(participantRuntimeData.CompleteLap(lapEntity.LapNumber), "Lap could not be completed!");
+
+        // The history packet reports changed times for the completed lap
+        var sessionHistory = new SessionHistoryData2025
+                             {
+                                 CarIndex = TestCarIndex3,
+                                 NumberOfLaps = 1
+                             };
+
+        sessionHistory.LapHistory[0] = new SessionHistoryLapData2025
+                                       {
+                                           LapTime = 91000,
+                                           Sector1Time = 31000,
+                                           Sector2Time = 30000,
+                                           Sector3Time = 30000,
+                                           LapValidFlag = 0x0F
+                                       };
+
+        var sessionHistoryData = new SessionHistoryData(packetHeader, sessionHistory);
+
+        Assert.IsTrue(sessionHistoryProcessor.Process(sessionHistoryData, sessionRuntimeData), "Session history packet not correctly processed!");
+
+        using (var dbFactory = RepositoryFactory.CreateInstance())
+        {
+            var lapRow = dbFactory.GetRepository<LapRepository>()
+                                  ?.GetQuery()
+                                  ?.FirstOrDefault(l => l.ParticipantId == participantDbId && l.LapNumber == 1);
+
+            Assert.IsNotNull(lapRow, "The lap row must exist after the first session history packet!");
+            Assert.AreEqual(91000u, lapRow.LapTime, "The changed lap time was not written to the database!");
+            Assert.AreEqual(31000u, lapRow.Sector1Time, "The changed sector 1 time was not written to the database!");
+        }
+
+        var cachedLap = LapRepositoryCache.GetByLapNumberParticipant(1, participantDbId);
+
+        Assert.IsNotNull(cachedLap, "The lap must be cached after the first session history packet!");
+        Assert.AreEqual(91000u, cachedLap.LapTime, "The cached lap time must converge to the packet value after the update!");
+        Assert.AreEqual(31000u, cachedLap.Sector1Time, "The cached sector 1 time must converge to the packet value after the update!");
+        Assert.AreEqual(30000u, cachedLap.Sector2Time, "The cached sector 2 time must converge to the packet value after the update!");
+        Assert.AreEqual(30000u, cachedLap.Sector3Time, "The cached sector 3 time must converge to the packet value after the update!");
+
+        // A sentinel value written directly to the database reveals whether the repeated packet updates the row again
+        using (var dbFactory = RepositoryFactory.CreateInstance())
+        {
+            Assert.IsTrue(dbFactory.GetRepository<LapRepository>()?.Refresh(l => l.ParticipantId == participantDbId && l.LapNumber == 1,
+                                                                            obj => obj.Sector3Time = SentinelSector3Time),
+                          "The sentinel value could not be written to the lap row!");
+        }
+
+        Assert.IsTrue(sessionHistoryProcessor.Process(sessionHistoryData, sessionRuntimeData), "Repeated session history packet not correctly processed!");
+
+        using (var dbFactory = RepositoryFactory.CreateInstance())
+        {
+            var lapRow = dbFactory.GetRepository<LapRepository>()
+                                  ?.GetQuery()
+                                  ?.FirstOrDefault(l => l.ParticipantId == participantDbId && l.LapNumber == 1);
+
+            Assert.IsNotNull(lapRow, "The lap row must still exist after the repeated session history packet!");
+            Assert.AreEqual(SentinelSector3Time, lapRow.Sector3Time, "The repeated session history packet must not update the unchanged lap again!");
         }
     }
 
