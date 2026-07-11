@@ -20,6 +20,11 @@ public sealed class RepositoryFactory : IDisposable
     private static readonly Lazy<PooledDbContextFactory<F1ServerDbContext>> _contextPool = new Lazy<PooledDbContextFactory<F1ServerDbContext>>(CreateContextPool);
 
     /// <summary>
+    /// Number of factory instances created since application start
+    /// </summary>
+    private static long _instancesCreated;
+
+    /// <summary>
     /// Repositories
     /// </summary>
     private readonly Dictionary<Type, RepositoryBase> _repositories;
@@ -58,6 +63,11 @@ public sealed class RepositoryFactory : IDisposable
     public static IServiceProvider ServiceProvider { get; private set; }
 
     /// <summary>
+    /// Number of factory instances created since application start
+    /// </summary>
+    public static long InstancesCreated => Interlocked.Read(ref _instancesCreated);
+
+    /// <summary>
     /// Last error
     /// </summary>
     public string LastError => _dbContext?.LastError ?? string.Empty;
@@ -72,6 +82,8 @@ public sealed class RepositoryFactory : IDisposable
     /// <returns>Repository factory</returns>
     public static RepositoryFactory CreateInstance()
     {
+        Interlocked.Increment(ref _instancesCreated);
+
         return new RepositoryFactory();
     }
 
