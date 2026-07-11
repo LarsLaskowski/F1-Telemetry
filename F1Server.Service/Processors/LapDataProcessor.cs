@@ -50,56 +50,6 @@ internal class LapDataProcessor : BaseProcessor
 
     #endregion // Constructors
 
-    #region BaseProcessor
-
-    /// <inheritdoc/>
-    public override bool Process(object? dataObject, SessionRuntimeData? sessionRuntimeData)
-    {
-        var isProcessed = true;
-
-        LastException = string.Empty;
-
-        using var currentActivity = AppActivity.SrvSource.StartActivity("LapDataProcessor");
-
-        if (dataObject is LapData lapDataPacket
-            && sessionRuntimeData?.IsValid == true
-            && sessionRuntimeData.IsFinished == false)
-        {
-            try
-            {
-                if (sessionRuntimeData.HasParticipants && sessionRuntimeData.CurrentSession != null)
-                {
-                    var carsOnTrack = ProcessLaps(sessionRuntimeData, lapDataPacket);
-
-                    UpdateSessionInformation(sessionRuntimeData, carsOnTrack);
-                }
-
-                currentActivity?.SetStatus(ActivityStatusCode.Ok);
-            }
-            catch (Exception ex)
-            {
-                currentActivity?.SetStatus(ActivityStatusCode.Error, ex.ToString());
-                currentActivity?.AddException(ex);
-
-                LastException = ex.ToString();
-
-                Logger?.LogError(ex, "Error processing LapData packet!");
-
-                isProcessed = false;
-            }
-        }
-        else
-        {
-            currentActivity?.SetStatus(ActivityStatusCode.Error, "Unexpected data object or session not valid!");
-
-            Logger?.LogWarning("Unexpected data object or session not valid (processor: {Processor})!", nameof(LapDataProcessor));
-        }
-
-        return isProcessed;
-    }
-
-    #endregion // BaseProcessor
-
     #region Private methods
 
     /// <summary>
@@ -700,4 +650,54 @@ internal class LapDataProcessor : BaseProcessor
     }
 
     #endregion // Private methods
+
+    #region BaseProcessor
+
+    /// <inheritdoc/>
+    public override bool Process(object? dataObject, SessionRuntimeData? sessionRuntimeData)
+    {
+        var isProcessed = true;
+
+        LastException = string.Empty;
+
+        using var currentActivity = AppActivity.SrvSource.StartActivity("LapDataProcessor");
+
+        if (dataObject is LapData lapDataPacket
+            && sessionRuntimeData?.IsValid == true
+            && sessionRuntimeData.IsFinished == false)
+        {
+            try
+            {
+                if (sessionRuntimeData.HasParticipants && sessionRuntimeData.CurrentSession != null)
+                {
+                    var carsOnTrack = ProcessLaps(sessionRuntimeData, lapDataPacket);
+
+                    UpdateSessionInformation(sessionRuntimeData, carsOnTrack);
+                }
+
+                currentActivity?.SetStatus(ActivityStatusCode.Ok);
+            }
+            catch (Exception ex)
+            {
+                currentActivity?.SetStatus(ActivityStatusCode.Error, ex.ToString());
+                currentActivity?.AddException(ex);
+
+                LastException = ex.ToString();
+
+                Logger?.LogError(ex, "Error processing LapData packet!");
+
+                isProcessed = false;
+            }
+        }
+        else
+        {
+            currentActivity?.SetStatus(ActivityStatusCode.Error, "Unexpected data object or session not valid!");
+
+            Logger?.LogWarning("Unexpected data object or session not valid (processor: {Processor})!", nameof(LapDataProcessor));
+        }
+
+        return isProcessed;
+    }
+
+    #endregion // BaseProcessor
 }

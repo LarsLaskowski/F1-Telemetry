@@ -40,61 +40,7 @@ internal class SessionHistoryProcessor : BaseProcessor
 
     #endregion // Constructors
 
-    #region BaseProcessor
-
-    /// <inheritdoc/>
-    public override bool Process(object? dataObject, SessionRuntimeData? sessionRuntimeData)
-    {
-        var isProcessed = true;
-
-        LastException = string.Empty;
-
-        using var currentActivity = AppActivity.SrvSource.StartActivity("SessionHistoryProcessor");
-
-        if (dataObject is SessionHistoryData sessionHistory && sessionHistory.PacketData != null && sessionRuntimeData != null)
-        {
-            var isFinalDataReceived = sessionRuntimeData.FinalClassificationReceived == true;
-
-            try
-            {
-                if (sessionRuntimeData.HasParticipants
-                    && sessionRuntimeData.Participants.TryGetValue(sessionHistory.PacketData.CarIndex, out var participantData))
-                {
-                    var liveData = participantData.LiveData;
-
-                    if (UpdateLaps(sessionHistory.PacketData, liveData, participantData, sessionRuntimeData.CurrentSession, isFinalDataReceived) == false)
-                    {
-                        isProcessed = false;
-                    }
-                }
-
-                currentActivity?.SetStatus(ActivityStatusCode.Ok);
-            }
-            catch (Exception ex)
-            {
-                currentActivity?.SetStatus(ActivityStatusCode.Error, ex.ToString());
-                currentActivity?.AddException(ex);
-
-                LastException = ex.ToString();
-
-                Logger?.LogError(ex, "Error processing SessionHistory packet!");
-
-                isProcessed = false;
-            }
-        }
-        else
-        {
-            currentActivity?.SetStatus(ActivityStatusCode.Error, "Unexpected data object or session not finished!");
-
-            Logger?.LogWarning("Unexpected data object or session not valid (processor: {Processor})!", nameof(SessionHistoryProcessor));
-        }
-
-        return isProcessed;
-    }
-
-    #endregion // BaseProcessor
-
-    #region Private methods
+    #region Methods
 
     /// <summary>
     /// Update driven laps
@@ -512,5 +458,59 @@ internal class SessionHistoryProcessor : BaseProcessor
                                                    .ToList();
     }
 
-    #endregion // Private methods
+    #endregion // Methods
+
+    #region BaseProcessor
+
+    /// <inheritdoc/>
+    public override bool Process(object? dataObject, SessionRuntimeData? sessionRuntimeData)
+    {
+        var isProcessed = true;
+
+        LastException = string.Empty;
+
+        using var currentActivity = AppActivity.SrvSource.StartActivity("SessionHistoryProcessor");
+
+        if (dataObject is SessionHistoryData sessionHistory && sessionHistory.PacketData != null && sessionRuntimeData != null)
+        {
+            var isFinalDataReceived = sessionRuntimeData.FinalClassificationReceived == true;
+
+            try
+            {
+                if (sessionRuntimeData.HasParticipants
+                    && sessionRuntimeData.Participants.TryGetValue(sessionHistory.PacketData.CarIndex, out var participantData))
+                {
+                    var liveData = participantData.LiveData;
+
+                    if (UpdateLaps(sessionHistory.PacketData, liveData, participantData, sessionRuntimeData.CurrentSession, isFinalDataReceived) == false)
+                    {
+                        isProcessed = false;
+                    }
+                }
+
+                currentActivity?.SetStatus(ActivityStatusCode.Ok);
+            }
+            catch (Exception ex)
+            {
+                currentActivity?.SetStatus(ActivityStatusCode.Error, ex.ToString());
+                currentActivity?.AddException(ex);
+
+                LastException = ex.ToString();
+
+                Logger?.LogError(ex, "Error processing SessionHistory packet!");
+
+                isProcessed = false;
+            }
+        }
+        else
+        {
+            currentActivity?.SetStatus(ActivityStatusCode.Error, "Unexpected data object or session not finished!");
+
+            Logger?.LogWarning("Unexpected data object or session not valid (processor: {Processor})!", nameof(SessionHistoryProcessor));
+        }
+
+        return isProcessed;
+    }
+
+    #endregion // BaseProcessor
 }

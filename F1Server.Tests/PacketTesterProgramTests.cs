@@ -54,12 +54,12 @@ public class PacketTesterProgramTests
     }
 
     /// <summary>
-    /// Invokes <see cref="Program.TestSessionPaket"/> and captures the console output it writes
+    /// Invokes <see cref="Program.TestSessionPacket"/> and captures the console output it writes
     /// </summary>
     /// <param name="filePath">Path to the packet file</param>
     /// <param name="gameVersion">Game version passed to the method</param>
     /// <returns>Captured console output</returns>
-    private static string InvokeTestSessionPaket(string filePath, int gameVersion = 2024)
+    private static string InvokeTestSessionPacket(string filePath, int gameVersion = 2024)
     {
         var originalOut = Console.Out;
 
@@ -69,7 +69,7 @@ public class PacketTesterProgramTests
 
             Console.SetOut(writer);
 
-            Program.TestSessionPaket(filePath, gameVersion, HeaderSize, new ConsoleProgressBar(1, "Test"));
+            Program.TestSessionPacket(filePath, gameVersion, HeaderSize, new ConsoleProgressBar(1, "Test"));
 
             return writer.ToString();
         }
@@ -87,13 +87,13 @@ public class PacketTesterProgramTests
     /// Check that a positive marshal zones value is reported
     /// </summary>
     [TestMethod]
-    public void ProgramTestSessionPaketMarshalZonesPresentWritesMessage()
+    public void ProgramTestSessionPacketMarshalZonesPresentWritesMessage()
     {
         var filePath = CreateSessionPacketFile(MarshalZonesOffset, 3);
 
         try
         {
-            var output = InvokeTestSessionPaket(filePath);
+            var output = InvokeTestSessionPacket(filePath);
 
             Assert.Contains("Marshal zones (3)", output, "Expected marshal zones message not found!");
         }
@@ -107,13 +107,13 @@ public class PacketTesterProgramTests
     /// Check that a zero marshal zones value is not reported
     /// </summary>
     [TestMethod]
-    public void ProgramTestSessionPaketMarshalZonesZeroWritesNothing()
+    public void ProgramTestSessionPacketMarshalZonesZeroWritesNothing()
     {
         var filePath = CreateSessionPacketFile(MarshalZonesOffset, 0);
 
         try
         {
-            var output = InvokeTestSessionPaket(filePath);
+            var output = InvokeTestSessionPacket(filePath);
 
             Assert.DoesNotContain("Marshal zones", output, "Unexpected marshal zones message found!");
         }
@@ -127,13 +127,13 @@ public class PacketTesterProgramTests
     /// Check that an active safety car status is reported (regression test for the previously inverted "== 0" check)
     /// </summary>
     [TestMethod]
-    public void ProgramTestSessionPaketSafetyCarStatusPresentWritesMessage()
+    public void ProgramTestSessionPacketSafetyCarStatusPresentWritesMessage()
     {
         var filePath = CreateSessionPacketFile(SafetyCarStatusOffset, 2);
 
         try
         {
-            var output = InvokeTestSessionPaket(filePath);
+            var output = InvokeTestSessionPacket(filePath);
 
             Assert.Contains("Safety car status (2)", output, "Expected safety car status message not found!");
         }
@@ -147,13 +147,13 @@ public class PacketTesterProgramTests
     /// Check that no safety car (status 0) is not reported
     /// </summary>
     [TestMethod]
-    public void ProgramTestSessionPaketSafetyCarStatusZeroWritesNothing()
+    public void ProgramTestSessionPacketSafetyCarStatusZeroWritesNothing()
     {
         var filePath = CreateSessionPacketFile(SafetyCarStatusOffset, 0);
 
         try
         {
-            var output = InvokeTestSessionPaket(filePath);
+            var output = InvokeTestSessionPacket(filePath);
 
             Assert.DoesNotContain("Safety car status", output, "Unexpected safety car status message found!");
         }
@@ -167,13 +167,13 @@ public class PacketTesterProgramTests
     /// Check that a positive AI difficulty value is reported
     /// </summary>
     [TestMethod]
-    public void ProgramTestSessionPaketAiDifficultyPresentWritesMessage()
+    public void ProgramTestSessionPacketAiDifficultyPresentWritesMessage()
     {
         var filePath = CreateSessionPacketFile(AiDifficultyOffset, 50);
 
         try
         {
-            var output = InvokeTestSessionPaket(filePath);
+            var output = InvokeTestSessionPacket(filePath);
 
             Assert.Contains("AI difficulty (50)", output, "Expected AI difficulty message not found!");
         }
@@ -187,13 +187,13 @@ public class PacketTesterProgramTests
     /// Check that a zero AI difficulty value is not reported
     /// </summary>
     [TestMethod]
-    public void ProgramTestSessionPaketAiDifficultyZeroWritesNothing()
+    public void ProgramTestSessionPacketAiDifficultyZeroWritesNothing()
     {
         var filePath = CreateSessionPacketFile(AiDifficultyOffset, 0);
 
         try
         {
-            var output = InvokeTestSessionPaket(filePath);
+            var output = InvokeTestSessionPacket(filePath);
 
             Assert.DoesNotContain("AI difficulty", output, "Unexpected AI difficulty message found!");
         }
@@ -207,13 +207,13 @@ public class PacketTesterProgramTests
     /// Check that packets from game versions other than F1 2024 are not inspected
     /// </summary>
     [TestMethod]
-    public void ProgramTestSessionPaketNonF12024GameVersionWritesNothing()
+    public void ProgramTestSessionPacketNonF12024GameVersionWritesNothing()
     {
         var filePath = CreateSessionPacketFile(SafetyCarStatusOffset, 5);
 
         try
         {
-            var output = InvokeTestSessionPaket(filePath, gameVersion: 2023);
+            var output = InvokeTestSessionPacket(filePath, gameVersion: 2023);
 
             Assert.AreEqual(string.Empty, output, "No message expected for non-F1 2024 packets!");
         }
@@ -227,7 +227,7 @@ public class PacketTesterProgramTests
     /// Check that a truncated packet does not throw and produces no message
     /// </summary>
     [TestMethod]
-    public void ProgramTestSessionPaketTruncatedPacketDoesNotThrow()
+    public void ProgramTestSessionPacketTruncatedPacketDoesNotThrow()
     {
         var filePath = Path.GetTempFileName();
 
@@ -235,7 +235,7 @@ public class PacketTesterProgramTests
 
         try
         {
-            var output = InvokeTestSessionPaket(filePath);
+            var output = InvokeTestSessionPacket(filePath);
 
             Assert.AreEqual(string.Empty, output, "No message expected for a truncated packet!");
         }

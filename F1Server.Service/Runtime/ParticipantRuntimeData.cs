@@ -473,16 +473,6 @@ public class ParticipantRuntimeData : IDisposable
     #region IDisposable
 
     /// <summary>
-    /// Internal dispose method
-    /// </summary>
-    /// <param name="disposing">Dispose flag</param>
-    protected virtual void Dispose(bool disposing)
-    {
-        _unfinishedLaps.Clear();
-        _telemetryPoints.Clear();
-    }
-
-    /// <summary>
     /// Dispose
     /// </summary>
     public void Dispose()
@@ -490,6 +480,16 @@ public class ParticipantRuntimeData : IDisposable
         Dispose(true);
 
         GC.SuppressFinalize(this);
+    }
+
+    /// <summary>
+    /// Internal dispose method
+    /// </summary>
+    /// <param name="disposing">Dispose flag</param>
+    protected virtual void Dispose(bool disposing)
+    {
+        _unfinishedLaps.Clear();
+        _telemetryPoints.Clear();
     }
 
     #endregion // IDisposable

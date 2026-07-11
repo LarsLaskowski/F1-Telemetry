@@ -31,46 +31,6 @@ public class SessionRuntimeData : ISessionRuntimeData
 
     #endregion // Constructors
 
-    #region ISessionRuntimeData
-
-    /// <inheritdoc/>
-    public long SessionDbId { get; set; }
-
-    /// <inheritdoc/>
-    public ulong CurrentSessionId { get; }
-
-    /// <inheritdoc/>
-    public int GameVersion { get; }
-
-    /// <inheritdoc/>
-    public SessionType CurrentSessionType { get; }
-
-    /// <inheritdoc/>
-    public bool HasParticipants { get; set; }
-
-    /// <inheritdoc/>
-    public bool IsTelemetryRecording { get; set; }
-
-    /// <inheritdoc/>
-    public int AirTemperature => CurrentSession?.AirTemperature ?? 0;
-
-    /// <inheritdoc/>
-    public int TrackTemperature => CurrentSession?.TrackTemperature ?? 0;
-
-    /// <inheritdoc/>
-    public uint FastestSector1 => CurrentSession?.FastestSector1 ?? 0;
-
-    /// <inheritdoc/>
-    public uint FastestSector2 => CurrentSession?.FastestSector2 ?? 0;
-
-    /// <inheritdoc/>
-    public uint FastestSector3 => CurrentSession?.FastestSector3 ?? 0;
-
-    /// <inheritdoc/>
-    public uint FastestLap => CurrentSession?.FastestLap ?? 0;
-
-    #endregion // ISessionRuntimeData
-
     #region Properties
 
     /// <summary>
@@ -324,4 +284,44 @@ public class SessionRuntimeData : ISessionRuntimeData
     }
 
     #endregion // Private methods
+
+    #region ISessionRuntimeData
+
+    /// <inheritdoc/>
+    public long SessionDbId { get; set; }
+
+    /// <inheritdoc/>
+    public ulong CurrentSessionId { get; }
+
+    /// <inheritdoc/>
+    public int GameVersion { get; }
+
+    /// <inheritdoc/>
+    public SessionType CurrentSessionType { get; }
+
+    /// <inheritdoc/>
+    public bool HasParticipants { get; set; }
+
+    /// <inheritdoc/>
+    public bool IsTelemetryRecording { get; set; }
+
+    /// <inheritdoc/>
+    public int AirTemperature => CurrentSession?.AirTemperature ?? 0;
+
+    /// <inheritdoc/>
+    public int TrackTemperature => CurrentSession?.TrackTemperature ?? 0;
+
+    /// <inheritdoc/>
+    public uint FastestSector1 => CurrentSession?.FastestSector1 ?? 0;
+
+    /// <inheritdoc/>
+    public uint FastestSector2 => CurrentSession?.FastestSector2 ?? 0;
+
+    /// <inheritdoc/>
+    public uint FastestSector3 => CurrentSession?.FastestSector3 ?? 0;
+
+    /// <inheritdoc/>
+    public uint FastestLap => CurrentSession?.FastestLap ?? 0;
+
+    #endregion // ISessionRuntimeData
 }

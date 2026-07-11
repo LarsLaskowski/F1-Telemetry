@@ -2,6 +2,7 @@ using F1Server.Core.Data;
 using F1Server.Core.Exceptions;
 using F1Server.Core.Interfaces;
 using F1Server.Data;
+using F1Server.Db.Data;
 using F1Server.Db.Entity.Tables;
 using F1Server.Db.Enumerations;
 
@@ -136,102 +137,6 @@ public sealed class F1ServerDbContext : DbContext
 
     #endregion // Static methods
 
-    #region DbContext
-
-    /// <inheritdoc />
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-        if (optionsBuilder.IsConfigured == false)
-        {
-            ConfigureOptions(optionsBuilder, Logger, AppMetrics);
-        }
-
-        base.OnConfiguring(optionsBuilder);
-    }
-
-    /// <inheritdoc />
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
-    {
-        modelBuilder.Entity<GameVersionEntity>();
-        modelBuilder.Entity<TrackEntity>();
-        modelBuilder.Entity<SessionEntity>();
-        modelBuilder.Entity<ParticipantEntity>();
-        modelBuilder.Entity<TeamEntity>();
-        modelBuilder.Entity<LapEntity>();
-        modelBuilder.Entity<DriverEntity>();
-        modelBuilder.Entity<TeamEntity>();
-        modelBuilder.Entity<FinalClassificationEntity>();
-        modelBuilder.Entity<CarTelemetryEntity>();
-        modelBuilder.Entity<SessionAttributesEntity>();
-        modelBuilder.Entity<ChampionshipEntity>();
-        modelBuilder.Entity<ChampionshipTrackEntity>();
-        modelBuilder.Entity<ChampionshipPointsEntity>();
-
-        modelBuilder.Entity<ParticipantEntity>().Navigation(p => p.Nationality).AutoInclude();
-        modelBuilder.Entity<ParticipantEntity>().Navigation(p => p.Team).AutoInclude();
-        modelBuilder.Entity<ParticipantEntity>().Navigation(p => p.Driver).AutoInclude();
-        modelBuilder.Entity<LapEntity>().Navigation(p => p.Participant).AutoInclude();
-        modelBuilder.Entity<CarTelemetryEntity>().Navigation(t => t.Lap).AutoInclude();
-        modelBuilder.Entity<ChampionshipEntity>().Navigation(t => t.GameVersion).AutoInclude();
-        modelBuilder.Entity<ChampionshipEntity>().Navigation(t => t.Tracks).AutoInclude();
-        modelBuilder.Entity<ChampionshipEntity>().Navigation(t => t.Points).AutoInclude();
-        modelBuilder.Entity<ChampionshipTrackEntity>().Navigation(t => t.QualifyingSession).AutoInclude();
-        modelBuilder.Entity<ChampionshipTrackEntity>().Navigation(t => t.SprintQualifyingSession).AutoInclude();
-        modelBuilder.Entity<ChampionshipTrackEntity>().Navigation(t => t.SprintSession).AutoInclude();
-        modelBuilder.Entity<ChampionshipTrackEntity>().Navigation(t => t.RaceSession).AutoInclude();
-
-        modelBuilder.Entity<SessionEntity>()
-                    .HasMany(obj => obj.Participants)
-                    .WithOne(obj => obj.Session)
-                    .HasForeignKey(obj => obj.SessionId)
-                    .IsRequired()
-                    .OnDelete(DeleteBehavior.Restrict);
-
-        modelBuilder.Entity<SessionEntity>()
-                    .HasMany(obj => obj.FinalClassifications)
-                    .WithOne(obj => obj.Session)
-                    .HasForeignKey(obj => obj.SessionId)
-                    .IsRequired()
-                    .OnDelete(DeleteBehavior.Restrict);
-
-        modelBuilder.Entity<ParticipantEntity>()
-                    .HasMany(obj => obj.Laps)
-                    .WithOne(obj => obj.Participant)
-                    .HasForeignKey(obj => obj.ParticipantId)
-                    .IsRequired()
-                    .OnDelete(DeleteBehavior.Restrict);
-
-        modelBuilder.Entity<LapEntity>()
-                    .HasMany(obj => obj.Telemetries)
-                    .WithOne(obj => obj.Lap)
-                    .HasForeignKey(obj => obj.LapNumberId)
-                    .IsRequired()
-                    .OnDelete(DeleteBehavior.Restrict);
-
-        modelBuilder.Entity<ChampionshipEntity>()
-                    .HasMany(obj => obj.Tracks)
-                    .WithOne(obj => obj.Championship)
-                    .HasForeignKey(obj => obj.ChampionshipId)
-                    .IsRequired()
-                    .OnDelete(DeleteBehavior.Restrict);
-
-        modelBuilder.Entity<ChampionshipEntity>()
-                    .HasMany(obj => obj.Points)
-                    .WithOne(obj => obj.Championship)
-                    .HasForeignKey(obj => obj.ChampionshipId)
-                    .IsRequired()
-                    .OnDelete(DeleteBehavior.Restrict);
-
-        SeedTracks(modelBuilder);
-        SeedDrivers(modelBuilder);
-        SeedNationalities(modelBuilder);
-        SeedTeams(modelBuilder);
-
-        base.OnModelCreating(modelBuilder);
-    }
-
-    #endregion // DbContext
-
     #region Private methods
 
     /// <summary>
@@ -290,24 +195,36 @@ public sealed class F1ServerDbContext : DbContext
                 database = "f1telemetry";
             }
 
+            var dbConfigOptions = new DatabaseConfigurationData
+                                  {
+                                      OptionsBuilder = optionsBuilder,
+                                      Database = database,
+                                      Server = server ?? Localhost,
+                                      User = userId,
+                                      Password = passwd ?? string.Empty,
+                                      Logger = logger,
+                                      AppMetrics = appMetrics
+                                  };
+
             if (DbServerType == SqlServerType.MariaDb)
             {
-                ConfigureMariaDb(optionsBuilder, database, server ?? Localhost, userId, passwd ?? string.Empty, logger, appMetrics);
+                ConfigureMariaDb(dbConfigOptions);
             }
             else if (DbServerType == SqlServerType.MsSqlServer)
             {
                 var trustServerCertificate = Environment.GetEnvironmentVariable("F1SERVER_DB_MSSQL_TRUST_SERVER_CERTIFICATE");
-                var trustServerCertificateValue = bool.TryParse(trustServerCertificate, out var parsedTrustServerCertificate) == false || parsedTrustServerCertificate;
 
-                ConfigureMicrosoftSql(optionsBuilder, database, server ?? Localhost, userId, passwd ?? string.Empty, trustServerCertificateValue, logger, appMetrics);
+                dbConfigOptions.TrustServerCertificate = bool.TryParse(trustServerCertificate, out var parsedTrustServerCertificate) == false || parsedTrustServerCertificate;
+
+                ConfigureMicrosoftSql(dbConfigOptions);
             }
             else if (DbServerType == SqlServerType.PostgreSql)
             {
-                ConfigurePostgreSql(optionsBuilder, database, server ?? Localhost, userId, passwd ?? string.Empty, logger, appMetrics);
+                ConfigurePostgreSql(dbConfigOptions);
             }
             else if (DbServerType == SqlServerType.InMemory)
             {
-                ConfigureInMemory(optionsBuilder);
+                ConfigureInMemory(dbConfigOptions);
             }
             else
             {
@@ -348,22 +265,16 @@ public sealed class F1ServerDbContext : DbContext
     /// <summary>
     /// Configure MariaDB connection
     /// </summary>
-    /// <param name="optionsBuilder">Options builder</param>
-    /// <param name="database">Used database</param>
-    /// <param name="server">Database server</param>
-    /// <param name="user">Database user</param>
-    /// <param name="passwd">Password</param>
-    /// <param name="logger">Logger used for configuration messages</param>
-    /// <param name="appMetrics">Application metrics used for error counting</param>
-    private static void ConfigureMariaDb(DbContextOptionsBuilder optionsBuilder, string database, string server, string user, string passwd, ILogger? logger, IAppMetrics? appMetrics)
+    /// <param name="databaseConfiguration">Database configuration data</param>
+    private static void ConfigureMariaDb(DatabaseConfigurationData databaseConfiguration)
     {
-        var serverName = server;
+        var serverName = databaseConfiguration.Server;
         uint serverPort = 3306;
         ServerVersion? dbServerVersion = null;
 
-        if (string.IsNullOrWhiteSpace(server) == false && server.Contains(':'))
+        if (string.IsNullOrWhiteSpace(serverName) == false && serverName.Contains(':'))
         {
-            var serverSplit = server.Split(':');
+            var serverSplit = serverName.Split(':');
 
             serverName = serverSplit[0];
 
@@ -373,19 +284,19 @@ public sealed class F1ServerDbContext : DbContext
             }
         }
 
-        if (logger is not null && ShouldLogConfiguration())
+        if (databaseConfiguration.Logger is not null && ShouldLogConfiguration())
         {
-            logger.ConfiguringMariaDb(serverName, database, user);
+            databaseConfiguration.Logger.ConfiguringMariaDb(serverName, databaseConfiguration.Database, databaseConfiguration.User);
         }
 
         var connectionStringBuilder = new MySqlConnectionStringBuilder
                                       {
                                           ApplicationName = "F1Server",
-                                          Database = database,
+                                          Database = databaseConfiguration.Database,
                                           Port = serverPort,
                                           Server = serverName,
-                                          UserID = user,
-                                          Password = passwd,
+                                          UserID = databaseConfiguration.User,
+                                          Password = databaseConfiguration.Password,
                                           UseCompression = true
                                       };
 
@@ -405,9 +316,9 @@ public sealed class F1ServerDbContext : DbContext
                 }
                 catch (Exception ex)
                 {
-                    RecordConfigurationError(appMetrics, ex);
+                    RecordConfigurationError(databaseConfiguration.AppMetrics, ex);
 
-                    logger?.ErrorConnectingMariaDb(ex);
+                    databaseConfiguration.Logger?.ErrorConnectingMariaDb(ex);
                 }
             }
         }
@@ -415,47 +326,40 @@ public sealed class F1ServerDbContext : DbContext
         {
             if (ServerVersion.TryParse(DbServerVersion, out dbServerVersion) == false)
             {
-                logger?.ErrorParsingServerVersion(DbServerVersion);
+                databaseConfiguration.Logger?.ErrorParsingServerVersion(DbServerVersion);
             }
         }
 
-        optionsBuilder.UseMySql(ConnectionString,
-                                dbServerVersion,
-                                x =>
-                                {
-                                    x.MigrationsAssembly("F1Server.Db.MySqlMigrations");
-                                    x.EnableRetryOnFailure();
-                                });
+        databaseConfiguration.OptionsBuilder.UseMySql(ConnectionString,
+                                                      dbServerVersion,
+                                                      contextOptions =>
+                                                      {
+                                                          contextOptions.MigrationsAssembly("F1Server.Db.MySqlMigrations");
+                                                          contextOptions.EnableRetryOnFailure();
+                                                      });
     }
 
     /// <summary>
     /// Configure Microsoft SQL Server connection
     /// </summary>
-    /// <param name="optionsBuilder">Options builder</param>
-    /// <param name="database">Used database</param>
-    /// <param name="server">Database server</param>
-    /// <param name="user">Database user</param>
-    /// <param name="passwd">Password</param>
-    /// <param name="trustServerCertificate">Whether the server certificate is trusted without validation</param>
-    /// <param name="logger">Logger used for configuration messages</param>
-    /// <param name="appMetrics">Application metrics used for error counting</param>
-    private static void ConfigureMicrosoftSql(DbContextOptionsBuilder optionsBuilder, string database, string server, string user, string passwd, bool trustServerCertificate, ILogger? logger, IAppMetrics? appMetrics)
+    /// <param name="databaseConfiguration">Database configuration data</param>
+    private static void ConfigureMicrosoftSql(DatabaseConfigurationData databaseConfiguration)
     {
-        if (logger is not null && ShouldLogConfiguration())
+        if (databaseConfiguration.Logger is not null && ShouldLogConfiguration())
         {
-            logger.ConfiguringMicrosoftSql(server, database, user);
+            databaseConfiguration.Logger.ConfiguringMicrosoftSql(databaseConfiguration.Server, databaseConfiguration.Database, databaseConfiguration.User);
         }
 
         var connectionStringBuilder = new SqlConnectionStringBuilder
                                       {
                                           ApplicationName = "F1Server",
-                                          DataSource = server,
-                                          InitialCatalog = database,
-                                          UserID = user,
-                                          Password = passwd,
+                                          DataSource = databaseConfiguration.Server,
+                                          InitialCatalog = databaseConfiguration.Database,
+                                          UserID = databaseConfiguration.User,
+                                          Password = databaseConfiguration.Password,
                                           MultipleActiveResultSets = false,
                                           IntegratedSecurity = false,
-                                          TrustServerCertificate = trustServerCertificate
+                                          TrustServerCertificate = databaseConfiguration.TrustServerCertificate
                                       };
 
         ConnectionString = connectionStringBuilder.ConnectionString;
@@ -473,39 +377,33 @@ public sealed class F1ServerDbContext : DbContext
                 }
                 catch (Exception ex)
                 {
-                    logger?.ErrorConnectingMicrosoftSql(ex);
+                    databaseConfiguration.Logger?.ErrorConnectingMicrosoftSql(ex);
 
-                    RecordConfigurationError(appMetrics, ex);
+                    RecordConfigurationError(databaseConfiguration.AppMetrics, ex);
                 }
             }
         }
 
-        optionsBuilder.UseSqlServer(ConnectionString,
-                                    x =>
-                                    {
-                                        x.MigrationsAssembly("F1Server.Db.MsSqlMigrations");
-                                        x.EnableRetryOnFailure();
-                                    });
+        databaseConfiguration.OptionsBuilder.UseSqlServer(ConnectionString,
+                                                          contextOptions =>
+                                                          {
+                                                              contextOptions.MigrationsAssembly("F1Server.Db.MsSqlMigrations");
+                                                              contextOptions.EnableRetryOnFailure();
+                                                          });
     }
 
     /// <summary>
     /// Configure PostgreSQL connection
     /// </summary>
-    /// <param name="optionsBuilder">Options builder</param>
-    /// <param name="database">Used database</param>
-    /// <param name="server">Database server</param>
-    /// <param name="user">Database user</param>
-    /// <param name="passwd">Password</param>
-    /// <param name="logger">Logger used for configuration messages</param>
-    /// <param name="appMetrics">Application metrics used for error counting</param>
-    private static void ConfigurePostgreSql(DbContextOptionsBuilder optionsBuilder, string database, string server, string user, string passwd, ILogger? logger, IAppMetrics? appMetrics)
+    /// <param name="databaseConfiguration">Database configuration data</param>
+    private static void ConfigurePostgreSql(DatabaseConfigurationData databaseConfiguration)
     {
         var serverName = "localhost";
         uint serverPort = 5432;
 
-        if (string.IsNullOrWhiteSpace(server) == false && server.Contains(':'))
+        if (string.IsNullOrWhiteSpace(databaseConfiguration.Server) == false && databaseConfiguration.Server.Contains(':'))
         {
-            var serverSplit = server.Split(':');
+            var serverSplit = databaseConfiguration.Server.Split(':');
 
             serverName = serverSplit[0];
 
@@ -515,19 +413,19 @@ public sealed class F1ServerDbContext : DbContext
             }
         }
 
-        if (logger is not null && ShouldLogConfiguration())
+        if (databaseConfiguration.Logger is not null && ShouldLogConfiguration())
         {
-            logger.ConfiguringPostgreSql(serverName, database, user);
+            databaseConfiguration.Logger.ConfiguringPostgreSql(serverName, databaseConfiguration.Database, databaseConfiguration.User);
         }
 
         var connectionStringBuilder = new NpgsqlConnectionStringBuilder
                                       {
                                           ApplicationName = "F1Server",
-                                          Database = database,
+                                          Database = databaseConfiguration.Database,
                                           Host = serverName,
                                           Port = (int)serverPort,
-                                          Username = user,
-                                          Password = passwd,
+                                          Username = databaseConfiguration.User,
+                                          Password = databaseConfiguration.Password,
                                       };
 
         ConnectionString = connectionStringBuilder.ConnectionString;
@@ -549,33 +447,33 @@ public sealed class F1ServerDbContext : DbContext
                 }
                 catch (Exception ex)
                 {
-                    RecordConfigurationError(appMetrics, ex);
+                    RecordConfigurationError(databaseConfiguration.AppMetrics, ex);
 
-                    logger?.ErrorConnectingPostgreSql(ex);
+                    databaseConfiguration.Logger?.ErrorConnectingPostgreSql(ex);
                 }
             }
         }
 
-        optionsBuilder.UseNpgsql(ConnectionString,
-                                 x =>
-                                 {
-                                     x.MigrationsAssembly("F1Server.Db.PostgreSqlMigrations");
-                                     x.EnableRetryOnFailure();
-                                 });
+        databaseConfiguration.OptionsBuilder.UseNpgsql(ConnectionString,
+                                                       contextOptions =>
+                                                       {
+                                                           contextOptions.MigrationsAssembly("F1Server.Db.PostgreSqlMigrations");
+                                                           contextOptions.EnableRetryOnFailure();
+                                                       });
     }
 
     /// <summary>
     /// Configure InMemory connection for testing only
     /// </summary>
-    /// <param name="optionsBuilder">Options builder</param>
-    private static void ConfigureInMemory(DbContextOptionsBuilder optionsBuilder)
+    /// <param name="databaseConfiguration">Database configuration data</param>
+    private static void ConfigureInMemory(DatabaseConfigurationData databaseConfiguration)
     {
         var testAssembly = "F1Server.Tests, ";
 
         if (Array.Exists(AppDomain.CurrentDomain.GetAssemblies(), a => a.FullName?.StartsWith(testAssembly, StringComparison.OrdinalIgnoreCase) == true))
         {
-            optionsBuilder.UseInMemoryDatabase("F1TelemetryTest")
-                          .ConfigureWarnings(w => w.Ignore(InMemoryEventId.TransactionIgnoredWarning));
+            databaseConfiguration.OptionsBuilder.UseInMemoryDatabase("F1TelemetryTest")
+                                                .ConfigureWarnings(warnings => warnings.Ignore(InMemoryEventId.TransactionIgnoredWarning));
         }
         else
         {
@@ -6093,4 +5991,100 @@ public sealed class F1ServerDbContext : DbContext
     }
 
     #endregion // Private methods
+
+    #region DbContext
+
+    /// <inheritdoc />
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        if (optionsBuilder.IsConfigured == false)
+        {
+            ConfigureOptions(optionsBuilder, Logger, AppMetrics);
+        }
+
+        base.OnConfiguring(optionsBuilder);
+    }
+
+    /// <inheritdoc />
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<GameVersionEntity>();
+        modelBuilder.Entity<TrackEntity>();
+        modelBuilder.Entity<SessionEntity>();
+        modelBuilder.Entity<ParticipantEntity>();
+        modelBuilder.Entity<TeamEntity>();
+        modelBuilder.Entity<LapEntity>();
+        modelBuilder.Entity<DriverEntity>();
+        modelBuilder.Entity<TeamEntity>();
+        modelBuilder.Entity<FinalClassificationEntity>();
+        modelBuilder.Entity<CarTelemetryEntity>();
+        modelBuilder.Entity<SessionAttributesEntity>();
+        modelBuilder.Entity<ChampionshipEntity>();
+        modelBuilder.Entity<ChampionshipTrackEntity>();
+        modelBuilder.Entity<ChampionshipPointsEntity>();
+
+        modelBuilder.Entity<ParticipantEntity>().Navigation(p => p.Nationality).AutoInclude();
+        modelBuilder.Entity<ParticipantEntity>().Navigation(p => p.Team).AutoInclude();
+        modelBuilder.Entity<ParticipantEntity>().Navigation(p => p.Driver).AutoInclude();
+        modelBuilder.Entity<LapEntity>().Navigation(p => p.Participant).AutoInclude();
+        modelBuilder.Entity<CarTelemetryEntity>().Navigation(t => t.Lap).AutoInclude();
+        modelBuilder.Entity<ChampionshipEntity>().Navigation(t => t.GameVersion).AutoInclude();
+        modelBuilder.Entity<ChampionshipEntity>().Navigation(t => t.Tracks).AutoInclude();
+        modelBuilder.Entity<ChampionshipEntity>().Navigation(t => t.Points).AutoInclude();
+        modelBuilder.Entity<ChampionshipTrackEntity>().Navigation(t => t.QualifyingSession).AutoInclude();
+        modelBuilder.Entity<ChampionshipTrackEntity>().Navigation(t => t.SprintQualifyingSession).AutoInclude();
+        modelBuilder.Entity<ChampionshipTrackEntity>().Navigation(t => t.SprintSession).AutoInclude();
+        modelBuilder.Entity<ChampionshipTrackEntity>().Navigation(t => t.RaceSession).AutoInclude();
+
+        modelBuilder.Entity<SessionEntity>()
+                    .HasMany(obj => obj.Participants)
+                    .WithOne(obj => obj.Session)
+                    .HasForeignKey(obj => obj.SessionId)
+                    .IsRequired()
+                    .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<SessionEntity>()
+                    .HasMany(obj => obj.FinalClassifications)
+                    .WithOne(obj => obj.Session)
+                    .HasForeignKey(obj => obj.SessionId)
+                    .IsRequired()
+                    .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<ParticipantEntity>()
+                    .HasMany(obj => obj.Laps)
+                    .WithOne(obj => obj.Participant)
+                    .HasForeignKey(obj => obj.ParticipantId)
+                    .IsRequired()
+                    .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<LapEntity>()
+                    .HasMany(obj => obj.Telemetries)
+                    .WithOne(obj => obj.Lap)
+                    .HasForeignKey(obj => obj.LapNumberId)
+                    .IsRequired()
+                    .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<ChampionshipEntity>()
+                    .HasMany(obj => obj.Tracks)
+                    .WithOne(obj => obj.Championship)
+                    .HasForeignKey(obj => obj.ChampionshipId)
+                    .IsRequired()
+                    .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<ChampionshipEntity>()
+                    .HasMany(obj => obj.Points)
+                    .WithOne(obj => obj.Championship)
+                    .HasForeignKey(obj => obj.ChampionshipId)
+                    .IsRequired()
+                    .OnDelete(DeleteBehavior.Restrict);
+
+        SeedTracks(modelBuilder);
+        SeedDrivers(modelBuilder);
+        SeedNationalities(modelBuilder);
+        SeedTeams(modelBuilder);
+
+        base.OnModelCreating(modelBuilder);
+    }
+
+    #endregion // DbContext
 }

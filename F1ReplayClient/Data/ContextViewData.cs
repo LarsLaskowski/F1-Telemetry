@@ -591,13 +591,7 @@ internal class ContextViewData : NotifyPropertyBase, IDataErrorInfo
     /// </summary>
     /// <param name="columnName">Name of field</param>
     /// <returns>Error</returns>
-    public string this[string columnName]
-    {
-        get
-        {
-            return CheckFieldContent(columnName);
-        }
-    }
+    public string this[string columnName] => CheckFieldContent(columnName);
 
     /// <summary>
     /// Check content of fields

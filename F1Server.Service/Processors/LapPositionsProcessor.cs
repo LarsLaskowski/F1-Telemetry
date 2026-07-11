@@ -32,6 +32,27 @@ internal class LapPositionsProcessor : BaseProcessor
 
     #endregion // Constructors
 
+    #region Private methods
+
+    /// <summary>
+    /// Process lap positions packet
+    /// </summary>
+    /// <param name="lapPositions">Lap positions data</param>
+    /// <returns>Status</returns>
+    private bool ProcessLapPositionsPacket(ILapPositionsBase? lapPositions)
+    {
+        var isProcessed = false;
+
+        if (lapPositions != null)
+        {
+            isProcessed = true;
+        }
+
+        return isProcessed;
+    }
+
+    #endregion // Private methods
+
     #region BaseProcessor
 
     /// <inheritdoc/>
@@ -76,25 +97,4 @@ internal class LapPositionsProcessor : BaseProcessor
     }
 
     #endregion // BaseProcessor
-
-    #region Private methods
-
-    /// <summary>
-    /// Process lap positions packet
-    /// </summary>
-    /// <param name="lapPositions">Lap positions data</param>
-    /// <returns>Status</returns>
-    private bool ProcessLapPositionsPacket(ILapPositionsBase? lapPositions)
-    {
-        var isProcessed = false;
-
-        if (lapPositions != null)
-        {
-            isProcessed = true;
-        }
-
-        return isProcessed;
-    }
-
-    #endregion // Private methods
 }
