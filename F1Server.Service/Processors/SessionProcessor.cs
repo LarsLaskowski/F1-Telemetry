@@ -149,9 +149,9 @@ internal class SessionProcessor : BaseProcessor
     /// </summary>
     /// <param name="sessionRuntimeData">Session runtime data</param>
     /// <param name="sessionData">Session data from received packet</param>
-    /// <param name="dbFactoryProvider">Provider creating the database factory on first use</param>
+    /// <param name="dbFactory">Database factory, created on first write access</param>
     /// <param name="dbSessionData">Session entity</param>
-    private void UpdateSession(SessionRuntimeData sessionRuntimeData, ISessionDataBase sessionData, Func<RepositoryFactory> dbFactoryProvider, SessionEntity dbSessionData)
+    private void UpdateSession(SessionRuntimeData sessionRuntimeData, ISessionDataBase sessionData, ref RepositoryFactory? dbFactory, SessionEntity dbSessionData)
     {
         var isChangedAttr = false;
 
@@ -159,7 +159,9 @@ internal class SessionProcessor : BaseProcessor
         {
             sessionRuntimeData.SessionDbId = dbSessionData.Id;
 
-            ClearPreviousSessionData(dbSessionData.Id, dbFactoryProvider());
+            dbFactory ??= RepositoryFactory.CreateInstance();
+
+            ClearPreviousSessionData(dbSessionData.Id, dbFactory);
         }
 
         if (sessionRuntimeData.CurrentTrackReferenceLapTime == 0)
@@ -179,13 +181,15 @@ internal class SessionProcessor : BaseProcessor
         {
             dbSessionData.IsNetworkGame = false;
 
-            dbFactoryProvider().GetRepository<SessionRepository>()?.Refresh(s => s.Id == dbSessionData.Id,
-                                                                            obj => obj.DbIsNetworkGame = dbSessionData.DbIsNetworkGame);
+            dbFactory ??= RepositoryFactory.CreateInstance();
+
+            dbFactory.GetRepository<SessionRepository>()?.Refresh(s => s.Id == dbSessionData.Id,
+                                                                  obj => obj.DbIsNetworkGame = dbSessionData.DbIsNetworkGame);
 
             SessionRepositoryCache.AddOrUpdate(dbSessionData);
         }
 
-        UpdateOpponentStrength(sessionData, dbFactoryProvider, dbSessionData);
+        UpdateOpponentStrength(sessionData, ref dbFactory, dbSessionData);
 
         var dbSessionAttributes = SessionRepositoryCache.GetAttributesBySessionId(dbSessionData.Id);
 
@@ -206,17 +210,19 @@ internal class SessionProcessor : BaseProcessor
 
         if (isChangedAttr && dbSessionAttributes != null)
         {
-            dbFactoryProvider().GetRepository<SessionAttributesRepository>()?.Refresh(s => s.SessionId == dbSessionData.Id,
-                                                                                      obj =>
-                                                                                      {
-                                                                                          obj.BrakingAssistChanged = dbSessionAttributes.BrakingAssistChanged;
-                                                                                          obj.BrakingAssistLast = dbSessionAttributes.BrakingAssistLast;
-                                                                                          obj.GearBoxAssistChanged = dbSessionAttributes.GearBoxAssistChanged;
-                                                                                          obj.GearBoxAssistLast = dbSessionAttributes.GearBoxAssistLast;
-                                                                                          obj.SteeringAssistChanged = dbSessionAttributes.SteeringAssistChanged;
-                                                                                          obj.SteeringAssistLast = dbSessionAttributes.SteeringAssistLast;
-                                                                                          obj.WeatherEnd = dbSessionAttributes.WeatherEnd;
-                                                                                      });
+            dbFactory ??= RepositoryFactory.CreateInstance();
+
+            dbFactory.GetRepository<SessionAttributesRepository>()?.Refresh(s => s.SessionId == dbSessionData.Id,
+                                                                            obj =>
+                                                                            {
+                                                                                obj.BrakingAssistChanged = dbSessionAttributes.BrakingAssistChanged;
+                                                                                obj.BrakingAssistLast = dbSessionAttributes.BrakingAssistLast;
+                                                                                obj.GearBoxAssistChanged = dbSessionAttributes.GearBoxAssistChanged;
+                                                                                obj.GearBoxAssistLast = dbSessionAttributes.GearBoxAssistLast;
+                                                                                obj.SteeringAssistChanged = dbSessionAttributes.SteeringAssistChanged;
+                                                                                obj.SteeringAssistLast = dbSessionAttributes.SteeringAssistLast;
+                                                                                obj.WeatherEnd = dbSessionAttributes.WeatherEnd;
+                                                                            });
         }
 
         if (CheckSessionAttributes(sessionRuntimeData, sessionData, dbSessionData.Id)
@@ -232,9 +238,9 @@ internal class SessionProcessor : BaseProcessor
     /// Update AI strength of opponents
     /// </summary>
     /// <param name="sessionData">Session data</param>
-    /// <param name="dbFactoryProvider">Provider creating the database factory on first use</param>
+    /// <param name="dbFactory">Database factory, created on first write access</param>
     /// <param name="dbSessionData">Session entity</param>
-    private void UpdateOpponentStrength(ISessionDataBase sessionData, Func<RepositoryFactory> dbFactoryProvider, SessionEntity dbSessionData)
+    private void UpdateOpponentStrength(ISessionDataBase sessionData, ref RepositoryFactory? dbFactory, SessionEntity dbSessionData)
     {
         if (dbSessionData.AiDifficulty == 0 && GameInfo.GameVersion >= 2021)
         {
@@ -257,8 +263,10 @@ internal class SessionProcessor : BaseProcessor
 
             if (aiDiff > 0)
             {
-                dbFactoryProvider().GetRepository<SessionRepository>()?.Refresh(s => s.Id == dbSessionData.Id,
-                                                                                obj => obj.AiDifficulty = aiDiff);
+                dbFactory ??= RepositoryFactory.CreateInstance();
+
+                dbFactory.GetRepository<SessionRepository>()?.Refresh(s => s.Id == dbSessionData.Id,
+                                                                      obj => obj.AiDifficulty = aiDiff);
 
                 SessionRepositoryCache.AddOrUpdate(dbSessionData);
             }
@@ -538,13 +546,6 @@ internal class SessionProcessor : BaseProcessor
             // The factory is created lazily because most session packets cause no database change
             RepositoryFactory? dbFactory = null;
 
-            Func<RepositoryFactory> dbFactoryProvider = () =>
-                                                        {
-                                                            dbFactory ??= RepositoryFactory.CreateInstance();
-
-                                                            return dbFactory;
-                                                        };
-
             try
             {
                 var dbSessionData = SessionRepositoryCache.GetByUniqueSessionId(PacketHeader.UniqueSessionId);
@@ -552,21 +553,23 @@ internal class SessionProcessor : BaseProcessor
                 // Actual is no session set, it must be a new session
                 if (dbSessionData == null)
                 {
-                    isProcessed = CreateNewSession(sessionRuntimeData, sessionData.PacketData, dbFactoryProvider(), out dbSessionData, out var dbSessionAttributes);
+                    dbFactory ??= RepositoryFactory.CreateInstance();
+
+                    isProcessed = CreateNewSession(sessionRuntimeData, sessionData.PacketData, dbFactory, out dbSessionData, out var dbSessionAttributes);
 
                     if (dbSessionAttributes != null)
                     {
                         dbSessionAttributes.SessionId = sessionRuntimeData.SessionDbId;
 
                         // Add entry for session attributes
-                        dbFactoryProvider().GetRepository<SessionAttributesRepository>()?.Add(dbSessionAttributes);
+                        dbFactory.GetRepository<SessionAttributesRepository>()?.Add(dbSessionAttributes);
 
                         SessionRepositoryCache.AddOrUpdateAttributes(dbSessionAttributes);
                     }
                 }
                 else
                 {
-                    UpdateSession(sessionRuntimeData, sessionData.PacketData, dbFactoryProvider, dbSessionData);
+                    UpdateSession(sessionRuntimeData, sessionData.PacketData, ref dbFactory, dbSessionData);
                 }
 
                 currentActivity?.AddTag("f1.session_id", dbSessionData?.SessionId ?? 0);
