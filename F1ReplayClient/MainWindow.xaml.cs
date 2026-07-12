@@ -383,6 +383,12 @@ public partial class MainWindow : Window, IDisposable
 
                     try
                     {
+                        // fileLength must fit the rented buffer, otherwise ReadExactly would throw
+                        if (fileLength > buffer.Length)
+                        {
+                            throw new InvalidDataException($"Packet file '{file.FileName}' ({fileLength} bytes) exceeds the maximum buffer size of {buffer.Length} bytes.");
+                        }
+
                         fs.ReadExactly(buffer, 0, fileLength);
 
                         var packet = new ReceivedPacketData();
