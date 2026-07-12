@@ -140,6 +140,7 @@ is then enabled independently, depending on whether its endpoint variable is set
 | `F1SERVER_OTLP_METRICS_URL` | OTLP endpoint for metrics. |
 | `F1SERVER_OTLP_LOGGING_URL` | OTLP endpoint for logs. |
 | `F1SERVER_OTLP_URL` | Legacy fallback used for the traces endpoint when `F1SERVER_OTLP_TRACES_URL` is not set. |
+| `F1SERVER_TRACE_DB_COMMANDS` | Set to `true` to additionally trace every SQL command through `CommandInterceptor`. Defaults to `false`, since EF Core commands are already traced once via the automatic EF Core instrumentation described below. |
 
 All OTLP exporters use the **gRPC** protocol, so endpoints should point at an
 OTLP/gRPC collector (typically port `4317`), for example

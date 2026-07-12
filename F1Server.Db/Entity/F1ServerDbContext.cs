@@ -234,7 +234,12 @@ public sealed class F1ServerDbContext : DbContext
             }
         }
 
-        optionsBuilder.AddInterceptors(_commandInterceptor);
+        var traceDbCommands = Environment.GetEnvironmentVariable("F1SERVER_TRACE_DB_COMMANDS");
+
+        if (bool.TryParse(traceDbCommands, out var isTraceDbCommandsEnabled) && isTraceDbCommandsEnabled)
+        {
+            optionsBuilder.AddInterceptors(_commandInterceptor);
+        }
     }
 
     /// <summary>

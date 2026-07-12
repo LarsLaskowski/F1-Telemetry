@@ -3,7 +3,6 @@ using System.Runtime.CompilerServices;
 
 using F1Server.Core.Enumerations;
 using F1Server.Core.Interfaces;
-using F1Server.Core.Observability;
 using F1Server.Core.PacketData;
 using F1Server.Core.Packets.Data;
 using F1Server.Core.Packets.Interfaces;
@@ -111,7 +110,7 @@ internal class CarStatusProcessor : BaseProcessor
 
         LastException = string.Empty;
 
-        using var currentActivity = AppActivity.SrvSource.StartActivity("CarStatusProcessor");
+        var processWatch = Stopwatch.StartNew();
 
         if (dataObject is CarStatus carStatusPacket && carStatusPacket.PacketData != null && sessionRuntimeData?.IsValid == true)
         {
@@ -126,14 +125,9 @@ internal class CarStatusProcessor : BaseProcessor
                         ProcessCarStatusData(sessionRuntimeData, carStatusData, carIndex);
                     }
                 }
-
-                currentActivity?.SetStatus(ActivityStatusCode.Ok);
             }
             catch (Exception ex)
             {
-                currentActivity?.SetStatus(ActivityStatusCode.Error, ex.ToString());
-                currentActivity?.AddException(ex);
-
                 LastException = ex.ToString();
 
                 isProcessed = false;
@@ -143,10 +137,12 @@ internal class CarStatusProcessor : BaseProcessor
         }
         else
         {
-            currentActivity?.SetStatus(ActivityStatusCode.Error, "Unexpected data object or session not valid!");
-
             Logger?.LogWarning("Unexpected data object or session not valid (processor: {Processor})!", nameof(CarStatusProcessor));
         }
+
+        processWatch.Stop();
+
+        RecordSlowProcessingActivity(nameof(CarStatusProcessor), processWatch.Elapsed, isProcessed);
 
         return isProcessed;
     }

@@ -3,7 +3,6 @@ using System.Runtime.CompilerServices;
 
 using F1Server.Core.Enumerations;
 using F1Server.Core.Interfaces;
-using F1Server.Core.Observability;
 using F1Server.Core.PacketData;
 using F1Server.Core.Packets.Data;
 using F1Server.Core.Packets.Interfaces;
@@ -660,7 +659,7 @@ internal class LapDataProcessor : BaseProcessor
 
         LastException = string.Empty;
 
-        using var currentActivity = AppActivity.SrvSource.StartActivity("LapDataProcessor");
+        var processWatch = Stopwatch.StartNew();
 
         if (dataObject is LapData lapDataPacket
             && sessionRuntimeData?.IsValid == true
@@ -674,14 +673,9 @@ internal class LapDataProcessor : BaseProcessor
 
                     UpdateSessionInformation(sessionRuntimeData, carsOnTrack);
                 }
-
-                currentActivity?.SetStatus(ActivityStatusCode.Ok);
             }
             catch (Exception ex)
             {
-                currentActivity?.SetStatus(ActivityStatusCode.Error, ex.ToString());
-                currentActivity?.AddException(ex);
-
                 LastException = ex.ToString();
 
                 Logger?.LogError(ex, "Error processing LapData packet!");
@@ -691,10 +685,12 @@ internal class LapDataProcessor : BaseProcessor
         }
         else
         {
-            currentActivity?.SetStatus(ActivityStatusCode.Error, "Unexpected data object or session not valid!");
-
             Logger?.LogWarning("Unexpected data object or session not valid (processor: {Processor})!", nameof(LapDataProcessor));
         }
+
+        processWatch.Stop();
+
+        RecordSlowProcessingActivity(nameof(LapDataProcessor), processWatch.Elapsed, isProcessed);
 
         return isProcessed;
     }

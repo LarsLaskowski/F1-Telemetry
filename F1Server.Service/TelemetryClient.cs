@@ -602,7 +602,11 @@ public sealed class TelemetryClient : ITelemetryClient, IDisposable
                 Logger.LogTrace("Processing packet with id: {PacketId}, type: {PacketType}, session id: {SessionId}", packetData.PacketNumber, packetData.PacketHeader?.PacketType, packetData.PacketHeader?.UniqueSessionId);
             }
 
-            var currentActivity = AppActivity.SrvSource.StartActivity("ProcessCurrentPacket", ActivityKind.Internal, null);
+            var isHighFrequencyPacket = AppActivity.IsHighFrequencyPacketType(packetData.PacketHeader?.PacketType);
+
+            var currentActivity = isHighFrequencyPacket
+                                      ? null
+                                      : AppActivity.SrvSource.StartActivity("ProcessCurrentPacket", ActivityKind.Internal, null);
 
             currentActivity?.AddTag("f1.packet_id", packetData.PacketNumber);
             currentActivity?.AddTag("f1.session_id", packetData.PacketHeader?.UniqueSessionId);
@@ -628,7 +632,11 @@ public sealed class TelemetryClient : ITelemetryClient, IDisposable
 
             runWatch.Restart();
 
-            if (_packetProcessor.ProcessPacket(packetData) == false)
+            var isProcessed = _packetProcessor.ProcessPacket(packetData);
+
+            runWatch.Stop();
+
+            if (isProcessed == false)
             {
                 _applicationData.Statistics.CurrentSessionMetrics.UnsuccessfullyProcessed++;
 
@@ -645,7 +653,10 @@ public sealed class TelemetryClient : ITelemetryClient, IDisposable
                 }
             }
 
-            runWatch.Stop();
+            if (isHighFrequencyPacket && runWatch.Elapsed.TotalMilliseconds > ConstData.SlowPacketProcessingThresholdMs)
+            {
+                RecordSlowPacketActivity(packetData, runWatch.Elapsed, isProcessed);
+            }
 
             _applicationData.Statistics.PacketsInProcessorQueue = _packetProcessor.QueuedPackets;
 
@@ -658,6 +669,32 @@ public sealed class TelemetryClient : ITelemetryClient, IDisposable
 
             currentActivity?.Stop();
             currentActivity?.Dispose();
+        }
+    }
+
+    /// <summary>
+    /// Records a best-effort <c>ProcessCurrentPacket</c> span for a high-frequency packet whose processing time
+    /// exceeded <see cref="ConstData.SlowPacketProcessingThresholdMs"/>, backdating the span to when processing started
+    /// </summary>
+    /// <param name="packetData">Received packet data</param>
+    /// <param name="elapsed">Elapsed processing time</param>
+    /// <param name="isProcessed">Whether the packet was processed successfully</param>
+    private void RecordSlowPacketActivity(ReceivedPacketData packetData, TimeSpan elapsed, bool isProcessed)
+    {
+        using var currentActivity = AppActivity.SrvSource.StartActivity("ProcessCurrentPacket", ActivityKind.Internal, null, startTime: DateTime.UtcNow - elapsed);
+
+        currentActivity?.AddTag("f1.packet_id", packetData.PacketNumber);
+        currentActivity?.AddTag("f1.session_id", packetData.PacketHeader?.UniqueSessionId);
+        currentActivity?.AddTag("f1.packet_type", packetData.PacketHeader?.PacketType);
+        currentActivity?.AddTag("f1.packet_process_time_ms", elapsed.TotalMilliseconds);
+
+        if (isProcessed && string.IsNullOrWhiteSpace(_packetProcessor.LastError))
+        {
+            currentActivity?.SetStatus(ActivityStatusCode.Ok);
+        }
+        else
+        {
+            currentActivity?.SetStatus(ActivityStatusCode.Error, "Packet processed with error");
         }
     }
 
