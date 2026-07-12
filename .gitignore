@@ -408,3 +408,4 @@ FodyWeavers.xsd
 /F1Server/Properties/launchSettings.json
 /F1PacketTester/Properties/launchSettings.json
 /F1SessionFolderRename/Properties/launchSettings.json
+/F1ReplayClient/Properties/launchSettings.json
