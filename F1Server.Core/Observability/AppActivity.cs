@@ -34,10 +34,13 @@ public static class AppActivity
     public static bool IsHighFrequencyPacketType(PacketTypes? packetType)
     {
         return packetType is PacketTypes.CarTelemetry
+                          or PacketTypes.CarTelemetry2
                           or PacketTypes.Motion
+                          or PacketTypes.MotionEx
                           or PacketTypes.LapData
                           or PacketTypes.CarStatus
-                          or PacketTypes.SessionHistory;
+                          or PacketTypes.SessionHistory
+                          or PacketTypes.TyreSets;
     }
 
     #endregion // Methods
