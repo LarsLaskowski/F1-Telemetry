@@ -1,8 +1,7 @@
-using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Globalization;
-using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading.Channels;
 
 using F1Server.Core.Interfaces;
 using F1Server.Core.Observability;
@@ -37,9 +36,9 @@ public sealed class TelemetryWriter : ITelemetryWriter, IDisposable
     #region Fields
 
     /// <summary>
-    /// Represents a thread-safe queue used to store strings for writing operations
+    /// Represents a thread-safe channel used to store strings for writing operations
     /// </summary>
-    private readonly ConcurrentQueue<string> _writeQueue = new ConcurrentQueue<string>();
+    private readonly Channel<string> _writeChannel;
 
     /// <summary>
     /// Invariant culture info for formatting numbers
@@ -65,6 +64,11 @@ public sealed class TelemetryWriter : ITelemetryWriter, IDisposable
     {
         _cultureInfo = CultureInfo.InvariantCulture;
 
+        _writeChannel = Channel.CreateUnbounded<string>(new UnboundedChannelOptions
+                                                        {
+                                                            SingleReader = true
+                                                        });
+
         using var currentActivity = AppActivity.SrvSource.StartActivity("TelemetryWriter");
 
         Configuration = serviceProvider.GetRequiredService<TelemetryConfiguration>();
@@ -87,7 +91,12 @@ public sealed class TelemetryWriter : ITelemetryWriter, IDisposable
                 currentActivity?.AddException(ex);
             }
 
-            EnsureWriteTaskRunning();
+            _ctsWrite = new CancellationTokenSource();
+
+            using (ExecutionContext.SuppressFlow())
+            {
+                Task.Run(() => WriteToInflux(_ctsWrite.Token), _ctsWrite.Token);
+            }
         }
     }
 
@@ -99,11 +108,6 @@ public sealed class TelemetryWriter : ITelemetryWriter, IDisposable
     /// Gets the telemetry configuration used by this writer
     /// </summary>
     public TelemetryConfiguration Configuration { get; }
-
-    /// <summary>
-    /// Gets a value indicating whether a write task is currently running
-    /// </summary>
-    public bool IsWriteTaskRunning { get; private set; }
 
     #endregion // Properties
 
@@ -148,9 +152,7 @@ public sealed class TelemetryWriter : ITelemetryWriter, IDisposable
             writeData.Append(' ');
             writeData.AppendJoin(',', fields);
 
-            _writeQueue.Enqueue(writeData.ToString());
-
-            EnsureWriteTaskRunning();
+            _writeChannel.Writer.TryWrite(writeData.ToString());
 
             currentActivity?.SetStatus(ActivityStatusCode.Ok);
         }
@@ -186,9 +188,7 @@ public sealed class TelemetryWriter : ITelemetryWriter, IDisposable
             writeData.Append(' ');
             writeData.AppendJoin(',', fields);
 
-            _writeQueue.Enqueue(writeData.ToString());
-
-            EnsureWriteTaskRunning();
+            _writeChannel.Writer.TryWrite(writeData.ToString());
 
             currentActivity?.SetStatus(ActivityStatusCode.Ok);
         }
@@ -234,9 +234,7 @@ public sealed class TelemetryWriter : ITelemetryWriter, IDisposable
             writeData.Append(' ');
             writeData.AppendJoin(',', fields);
 
-            _writeQueue.Enqueue(writeData.ToString());
-
-            EnsureWriteTaskRunning();
+            _writeChannel.Writer.TryWrite(writeData.ToString());
 
             currentActivity?.SetStatus(ActivityStatusCode.Ok);
         }
@@ -266,33 +264,9 @@ public sealed class TelemetryWriter : ITelemetryWriter, IDisposable
             writeData.Append(' ');
             writeData.AppendJoin(',', fields);
 
-            _writeQueue.Enqueue(writeData.ToString());
-
-            EnsureWriteTaskRunning();
+            _writeChannel.Writer.TryWrite(writeData.ToString());
 
             currentActivity?.SetStatus(ActivityStatusCode.Ok);
-        }
-    }
-
-    /// <summary>
-    /// Ensures that the write task is running by starting it if it is not already active
-    /// </summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void EnsureWriteTaskRunning()
-    {
-        if (IsWriteTaskRunning == false)
-        {
-            IsWriteTaskRunning = true;
-
-            _ctsWrite?.Cancel();
-            _ctsWrite?.Dispose();
-
-            _ctsWrite = new CancellationTokenSource();
-
-            using (ExecutionContext.SuppressFlow())
-            {
-                Task.Run(() => WriteToInflux(_ctsWrite.Token), _ctsWrite.Token);
-            }
         }
     }
 
@@ -334,7 +308,7 @@ public sealed class TelemetryWriter : ITelemetryWriter, IDisposable
     #region Task methods
 
     /// <summary>
-    /// Writes data from the internal queue to InfluxDB asynchronously
+    /// Writes data from the internal channel to InfluxDB asynchronously until the channel is completed or the token is cancelled
     /// </summary>
     /// <param name="cancellationToken">A token that can be used to signal the cancellation of the write operation</param>
     /// <returns>A task that represents the asynchronous operation</returns>
@@ -342,12 +316,17 @@ public sealed class TelemetryWriter : ITelemetryWriter, IDisposable
     {
         var records = new List<string>(WriteCapacity);
 
-        while (cancellationToken.IsCancellationRequested == false)
+        try
         {
-            if (_writeQueue.IsEmpty == false)
+            while (await _writeChannel.Reader.WaitToReadAsync(cancellationToken).ConfigureAwait(false))
             {
-                while (_writeQueue.TryDequeue(out var writeData) && string.IsNullOrEmpty(writeData) == false)
+                while (_writeChannel.Reader.TryRead(out var writeData))
                 {
+                    if (string.IsNullOrEmpty(writeData))
+                    {
+                        continue;
+                    }
+
                     records.Add(writeData);
 
                     // If we have reached the write capacity, write the records to InfluxDB
@@ -359,7 +338,7 @@ public sealed class TelemetryWriter : ITelemetryWriter, IDisposable
                     }
                 }
 
-                // If there are any remaining records after the queue is empty, write them to InfluxDB
+                // If there are any remaining records after the channel is momentarily empty, write them to InfluxDB
                 if (records.Count > 0)
                 {
                     await WriteRecordsToInflux(records, cancellationToken).ConfigureAwait(false);
@@ -367,11 +346,11 @@ public sealed class TelemetryWriter : ITelemetryWriter, IDisposable
                     records.Clear();
                 }
             }
-
-            cancellationToken.WaitHandle.WaitOne(500);
         }
-
-        IsWriteTaskRunning = false;
+        catch (OperationCanceledException)
+        {
+            // Shutdown was requested, remaining records are dropped intentionally
+        }
     }
 
     #endregion // Task methods
@@ -385,6 +364,9 @@ public sealed class TelemetryWriter : ITelemetryWriter, IDisposable
     /// </summary>
     public void Dispose()
     {
+        // Complete the channel so the write task exits once it is drained
+        _writeChannel?.Writer.TryComplete();
+
         _ctsWrite?.Cancel();
         _ctsWrite?.Dispose();
 
