@@ -128,7 +128,7 @@ jobs:
       contents: read
     strategy:
       matrix:
-        node-version: [24, 25, 26]
+        node-version: [24, 26]
     defaults:
       run:
         working-directory: F1ServerApp
