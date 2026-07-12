@@ -442,7 +442,7 @@ public sealed class TelemetryClient : ITelemetryClient, IDisposable
         else
         {
             currentActivity?.AddTag("f1.packet_process_error", lastError);
-            currentActivity?.SetStatus(ActivityStatusCode.Error, string.IsNullOrWhiteSpace(lastError) ? "Packet processed with error" : lastError);
+            currentActivity?.SetStatus(ActivityStatusCode.Error, "Packet processed with error");
         }
     }
 
