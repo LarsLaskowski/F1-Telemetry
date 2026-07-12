@@ -13,5 +13,5 @@
 - [ ] `dotnet test F1Server.Tests` — all tests pass
 - [ ] New/updated tests cover the change
 
-<!-- Reference the issue this PR resolves, if any: -->
-Closes #
+<!-- If this PR resolves an issue, uncomment and fill in the line below. Otherwise delete it. -->
+<!-- Closes #<issue-number> -->
