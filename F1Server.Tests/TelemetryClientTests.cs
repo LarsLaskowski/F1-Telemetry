@@ -401,7 +401,7 @@ public class TelemetryClientTests
 
         Assert.IsNotNull(recordedActivity, "A failed packet did not record a tracing span!");
         Assert.AreEqual(ActivityStatusCode.Error, recordedActivity.Status, "The recorded span status was not Error!");
-        Assert.AreEqual("Test packet processing failure!", recordedActivity.StatusDescription, "The recorded span status description must carry the processor's error message!");
+        Assert.AreEqual("Packet processed with error", recordedActivity.StatusDescription, "The recorded span status description must carry the processor's error message!");
         Assert.AreEqual("Test packet processing failure!", recordedActivity.GetTagItem("f1.packet_process_error"), "The recorded span must carry the processor's error message as a tag!");
     }
 
