@@ -1,8 +1,8 @@
 using System.Buffers.Binary;
-using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
+using System.Threading.Channels;
 
 using F1Server.Core;
 using F1Server.Core.Data;
@@ -34,8 +34,8 @@ public sealed class TelemetryClient : ITelemetryClient, IDisposable
     private readonly IServiceProvider _serviceProvider;
     private readonly bool _useDatabase;
     private readonly int _port = 20777;
-    private readonly ConcurrentQueue<ReceivedPacketData> _packetQueue;
-    private readonly ConcurrentQueue<ReceivedPacketData> _logPacketQueue;
+    private readonly Channel<ReceivedPacketData> _packetChannel;
+    private readonly Channel<ReceivedPacketData> _logPacketChannel;
     private readonly System.Timers.Timer _timeoutTimer;
     private readonly System.Timers.Timer _statisticsTimer;
     private readonly F1ServerApplicationData _applicationData;
@@ -46,8 +46,8 @@ public sealed class TelemetryClient : ITelemetryClient, IDisposable
     private IPEndPoint? _ipEndpoint;
     private CancellationTokenSource _cts;
     private CancellationTokenSource _ctsLog;
-    private bool _isQueueWorkerRunning;
-    private bool _isLoggingQueueRunning;
+    private int _packetWorkerStarted;
+    private int _loggingWorkerStarted;
     private bool _statisticsTimerRunning;
     private long _queuedPackets;
     private long _lastPacketReceivedTicks;
@@ -87,8 +87,13 @@ public sealed class TelemetryClient : ITelemetryClient, IDisposable
 
         _packetProcessor.PacketReceived += OnPacketReceived;
 
-        _packetQueue = new ConcurrentQueue<ReceivedPacketData>();
-        _logPacketQueue = new ConcurrentQueue<ReceivedPacketData>();
+        var channelOptions = new UnboundedChannelOptions
+                             {
+                                 SingleReader = true
+                             };
+
+        _packetChannel = Channel.CreateUnbounded<ReceivedPacketData>(channelOptions);
+        _logPacketChannel = Channel.CreateUnbounded<ReceivedPacketData>(channelOptions);
 
         _timeoutTimer = new System.Timers.Timer(ConstData.TimeoutInMs)
                         {
@@ -245,7 +250,7 @@ public sealed class TelemetryClient : ITelemetryClient, IDisposable
 
             _tcpServer.Start();
 
-            CheckPacketProcessingTaskIsRunning();
+            StartPacketProcessingWorker();
 
             if (_webHosting?.IsRunning == false)
             {
@@ -344,8 +349,8 @@ public sealed class TelemetryClient : ITelemetryClient, IDisposable
 
         _applicationData.Statistics.PacketsInQueue = _queuedPackets;
 
-        // Put the received data in our queue
-        _packetQueue.Enqueue(packetData);
+        // Put the received data in our channel
+        _packetChannel.Writer.TryWrite(packetData);
 
         _applicationData.AppMetrics?.PacketsReceived.Add(1);
         _applicationData.AppMetrics?.PacketsInQueue.Record(Interlocked.Read(ref _queuedPackets));
@@ -473,8 +478,6 @@ public sealed class TelemetryClient : ITelemetryClient, IDisposable
 
             Interlocked.Increment(ref _queuedPackets);
 
-            CheckPacketProcessingTaskIsRunning();
-
             var packetData = new ReceivedPacketData();
 
             packetData.SetRawData(recvData);
@@ -489,7 +492,7 @@ public sealed class TelemetryClient : ITelemetryClient, IDisposable
             _applicationData.Statistics.PacketsInQueue = _queuedPackets;
 
             // Enqueue the received data for processing
-            _packetQueue.Enqueue(packetData);
+            _packetChannel.Writer.TryWrite(packetData);
 
             _applicationData.AppMetrics?.PacketsInQueue.Record(Interlocked.Read(ref _queuedPackets));
 
@@ -586,7 +589,7 @@ public sealed class TelemetryClient : ITelemetryClient, IDisposable
 
         ulong lastSessionId = 0;
 
-        while (_packetQueue.TryDequeue(out var packetData))
+        while (_packetChannel.Reader.TryRead(out var packetData))
         {
             if (cancellationToken.IsCancellationRequested)
             {
@@ -670,7 +673,7 @@ public sealed class TelemetryClient : ITelemetryClient, IDisposable
     {
         var runWatch = new Stopwatch();
 
-        while (packetAnalyzer != null && _logPacketQueue.TryDequeue(out var packetData))
+        while (packetAnalyzer != null && _logPacketChannel.Reader.TryRead(out var packetData))
         {
             if (cancellationToken.IsCancellationRequested)
             {
@@ -821,14 +824,12 @@ public sealed class TelemetryClient : ITelemetryClient, IDisposable
     }
 
     /// <summary>
-    /// Check whether the task is running to process all incoming packets
+    /// Starts the single long-lived task processing all incoming packets if it was not started yet
     /// </summary>
-    private void CheckPacketProcessingTaskIsRunning()
+    private void StartPacketProcessingWorker()
     {
-        if (_isQueueWorkerRunning == false)
+        if (Interlocked.CompareExchange(ref _packetWorkerStarted, 1, 0) == 0)
         {
-            _isQueueWorkerRunning = true;
-
             _applicationData.Statistics.PacketsInQueue = _queuedPackets;
 
             using (ExecutionContext.SuppressFlow())
@@ -839,7 +840,7 @@ public sealed class TelemetryClient : ITelemetryClient, IDisposable
     }
 
     /// <summary>
-    /// Check whether the task is running to process logging packets
+    /// Enqueues a packet for logging and lazily starts the single long-lived logging task
     /// </summary>
     /// <param name="packetData">Packet data</param>
     private void EnqueueLoggingPacket(ref ReceivedPacketData packetData)
@@ -848,16 +849,17 @@ public sealed class TelemetryClient : ITelemetryClient, IDisposable
         if (UsePacketLogging && string.IsNullOrWhiteSpace(PacketLoggingPath) == false)
         {
             // Enqueue the packet for logging
-            _logPacketQueue.Enqueue(packetData);
+            _logPacketChannel.Writer.TryWrite(packetData);
 
             _applicationData.AppMetrics?.PacketsLogged.Add(1);
 
-            // Check whether the task is running to process all incoming logging packets
-            if (_isLoggingQueueRunning == false)
+            // Start the task processing all incoming logging packets on the first logged packet
+            if (Interlocked.CompareExchange(ref _loggingWorkerStarted, 1, 0) == 0)
             {
-                _isLoggingQueueRunning = true;
-
-                Task.Run(() => ProcessPacketLoggingQueue(_ctsLog.Token), _ctsLog.Token);
+                using (ExecutionContext.SuppressFlow())
+                {
+                    Task.Run(() => ProcessPacketLoggingQueue(_ctsLog.Token), _ctsLog.Token);
+                }
             }
         }
     }
@@ -867,36 +869,40 @@ public sealed class TelemetryClient : ITelemetryClient, IDisposable
     #region Task methods
 
     /// <summary>
-    /// Task working on the packet queue
+    /// Task working on the packet channel until the channel is completed or the token is cancelled
     /// </summary>
     /// <param name="cancellationToken">Cancellation token</param>
-    private void ProcessPacketQueue(CancellationToken cancellationToken)
+    /// <returns>A task representing the asynchronous operation</returns>
+    private async Task ProcessPacketQueue(CancellationToken cancellationToken)
     {
-        while (cancellationToken.IsCancellationRequested == false)
+        try
         {
-            try
+            while (await _packetChannel.Reader.WaitToReadAsync(cancellationToken).ConfigureAwait(false))
             {
-                ProcessCurrentPackets(cancellationToken);
-
-                if (_packetQueue?.IsEmpty == true)
+                try
                 {
-                    _applicationData.Statistics.PacketsInQueue = 0;
+                    ProcessCurrentPackets(cancellationToken);
+
+                    if (Interlocked.Read(ref _queuedPackets) == 0)
+                    {
+                        _applicationData.Statistics.PacketsInQueue = 0;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    using var currentActivity = AppActivity.SrvSource.StartActivity("ProcessPacketQueueError", ActivityKind.Internal, null);
+
+                    currentActivity?.SetStatus(ActivityStatusCode.Error, ex.ToString());
+                    currentActivity?.AddException(ex);
+
+                    Logger?.LogError(ex, "Error processing packet queue!");
                 }
             }
-            catch (Exception ex)
-            {
-                using var currentActivity = AppActivity.SrvSource.StartActivity("ProcessPacketQueueError", ActivityKind.Internal, null);
-
-                currentActivity?.SetStatus(ActivityStatusCode.Error, ex.ToString());
-                currentActivity?.AddException(ex);
-
-                Logger?.LogError(ex, "Error processing packet queue!");
-            }
-
-            cancellationToken.WaitHandle.WaitOne(100);
         }
-
-        _isQueueWorkerRunning = false;
+        catch (OperationCanceledException)
+        {
+            // Shutdown was requested, remaining packets are dropped intentionally
+        }
     }
 
     /// <summary>
@@ -954,28 +960,32 @@ public sealed class TelemetryClient : ITelemetryClient, IDisposable
     }
 
     /// <summary>
-    /// Process all packets to log
+    /// Task working on the logging packet channel until the channel is completed or the token is cancelled
     /// </summary>
     /// <param name="cancellationToken">Cancellation token</param>
-    private void ProcessPacketLoggingQueue(CancellationToken cancellationToken)
+    /// <returns>A task representing the asynchronous operation</returns>
+    private async Task ProcessPacketLoggingQueue(CancellationToken cancellationToken)
     {
         var packetAnalyzer = new PacketAnalyzer();
 
-        while (cancellationToken.IsCancellationRequested == false)
+        try
         {
-            try
+            while (await _logPacketChannel.Reader.WaitToReadAsync(cancellationToken).ConfigureAwait(false))
             {
-                ProcessCurrentLoggingPackets(packetAnalyzer, cancellationToken);
+                try
+                {
+                    ProcessCurrentLoggingPackets(packetAnalyzer, cancellationToken);
+                }
+                catch (Exception ex)
+                {
+                    Logger?.LogError(ex, "Error processing logging packet queue!");
+                }
             }
-            catch (Exception ex)
-            {
-                Logger?.LogError(ex, "Error processing logging packet queue!");
-            }
-
-            cancellationToken.WaitHandle.WaitOne(100);
         }
-
-        _isLoggingQueueRunning = false;
+        catch (OperationCanceledException)
+        {
+            // Shutdown was requested, remaining logging packets are dropped intentionally
+        }
     }
 
     /// <summary>
@@ -1078,6 +1088,10 @@ public sealed class TelemetryClient : ITelemetryClient, IDisposable
         _tcpServer?.Stop();
         _tcpServer?.Dispose();
         _tcpServer = null;
+
+        // Complete the channels so the consumers exit once they are drained
+        _packetChannel?.Writer.TryComplete();
+        _logPacketChannel?.Writer.TryComplete();
 
         _cts?.Cancel();
         _cts?.Dispose();

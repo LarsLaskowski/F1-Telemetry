@@ -1,4 +1,5 @@
 using System.Buffers.Binary;
+using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
 
@@ -25,6 +26,11 @@ public class TelemetryClientTests
     /// UDP port used by the replay listener test, the TCP replay port is the next port number
     /// </summary>
     private const int ReplayTestPort = 47311;
+
+    /// <summary>
+    /// UDP port used by the channel consumer test, the TCP replay port is the next port number
+    /// </summary>
+    private const int ChannelTestPort = 47313;
 
     #endregion // Constants
 
@@ -298,6 +304,57 @@ public class TelemetryClientTests
 
                 Assert.AreEqual(1, applicationData.Statistics.PacketsReceivedTotal, "The received packet counter must be incremented!");
                 Assert.AreEqual(1, applicationData.Statistics.PacketsInQueue, "The queue counter must reflect the enqueued packet!");
+            }
+            finally
+            {
+                telemetryClient.Dispose();
+            }
+        }
+    }
+
+    /// <summary>
+    /// Test to verify that an enqueued packet is processed by the channel consumer without any polling or timer delay
+    /// </summary>
+    /// <returns>A task representing the asynchronous operation</returns>
+    [TestMethod]
+    public async Task TelemetryClientEnqueueReplayPacketProcessesPacketWithoutPollingDelay()
+    {
+        var services = new ServiceCollection();
+        var applicationData = new F1ServerApplicationData();
+
+        services.AddSingleton(applicationData);
+        services.AddSingleton(new PacketAnalyzer());
+        services.AddSingleton(new TelemetryConfiguration());
+
+        using (var serviceProvider = services.BuildServiceProvider())
+        {
+            var telemetryClient = new TelemetryClient(serviceProvider, false, false, ChannelTestPort);
+
+            try
+            {
+                Assert.IsTrue(telemetryClient.StartReceiving(), "The telemetry client must start receiving on the test port!");
+
+                var recvBuf = new byte[]
+                              {
+                                  1,
+                                  2,
+                                  3,
+                                  4
+                              };
+
+                var stopwatch = Stopwatch.StartNew();
+
+                telemetryClient.EnqueueReplayPacket(recvBuf, recvBuf.Length);
+
+                while (applicationData.Statistics.TotalPacketsProcessed < 1 && stopwatch.ElapsedMilliseconds < 5000)
+                {
+                    await Task.Delay(1, TestContext.CancellationToken);
+                }
+
+                stopwatch.Stop();
+
+                Assert.AreEqual(1, applicationData.Statistics.TotalPacketsProcessed, "The enqueued packet must be processed by the channel consumer!");
+                Assert.IsLessThan(100L, stopwatch.ElapsedMilliseconds, "The packet must be processed without the former 100 ms polling delay!");
             }
             finally
             {
