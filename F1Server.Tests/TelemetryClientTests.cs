@@ -374,7 +374,7 @@ public class TelemetryClientTests
     [TestMethod]
     public void TelemetryClientRecordSlowPacketActivityFastSuccessDoesNotRecordActivity()
     {
-        var recordedActivity = InvokeRecordSlowPacketActivityWithListener(TimeSpan.FromMilliseconds(1), true);
+        var recordedActivity = InvokeRecordSlowPacketActivityWithListener(TimeSpan.FromMilliseconds(1), true, null);
 
         Assert.IsNull(recordedActivity, "A fast, successfully processed packet recorded a tracing span!");
     }
@@ -385,22 +385,24 @@ public class TelemetryClientTests
     [TestMethod]
     public void TelemetryClientRecordSlowPacketActivitySlowSuccessRecordsOkActivity()
     {
-        var recordedActivity = InvokeRecordSlowPacketActivityWithListener(TimeSpan.FromMilliseconds(ConstData.SlowPacketProcessingThresholdMs + 1), true);
+        var recordedActivity = InvokeRecordSlowPacketActivityWithListener(TimeSpan.FromMilliseconds(ConstData.SlowPacketProcessingThresholdMs + 1), true, null);
 
         Assert.IsNotNull(recordedActivity, "A slow, successfully processed packet did not record a tracing span!");
         Assert.AreEqual(ActivityStatusCode.Ok, recordedActivity.Status, "The recorded span status was not Ok!");
     }
 
     /// <summary>
-    /// Test to verify that a fast but failed high-frequency packet still records an Error tracing span
+    /// Test to verify that a fast but failed high-frequency packet still records an Error tracing span carrying the processor's error message
     /// </summary>
     [TestMethod]
-    public void TelemetryClientRecordSlowPacketActivityFastFailureRecordsErrorActivity()
+    public void TelemetryClientRecordSlowPacketActivityFastFailureRecordsErrorActivityWithLastError()
     {
-        var recordedActivity = InvokeRecordSlowPacketActivityWithListener(TimeSpan.FromMilliseconds(1), false);
+        var recordedActivity = InvokeRecordSlowPacketActivityWithListener(TimeSpan.FromMilliseconds(1), false, "Test packet processing failure!");
 
         Assert.IsNotNull(recordedActivity, "A failed packet did not record a tracing span!");
         Assert.AreEqual(ActivityStatusCode.Error, recordedActivity.Status, "The recorded span status was not Error!");
+        Assert.AreEqual("Test packet processing failure!", recordedActivity.StatusDescription, "The recorded span status description must carry the processor's error message!");
+        Assert.AreEqual("Test packet processing failure!", recordedActivity.GetTagItem("f1.packet_process_error"), "The recorded span must carry the processor's error message as a tag!");
     }
 
     #endregion // Methods
@@ -446,8 +448,9 @@ public class TelemetryClientTests
     /// </summary>
     /// <param name="elapsed">Elapsed processing time to pass through</param>
     /// <param name="isProcessed">Whether the packet was processed successfully</param>
+    /// <param name="lastError">Error message to pass through</param>
     /// <returns>The recorded span, or null if none was recorded</returns>
-    private static Activity? InvokeRecordSlowPacketActivityWithListener(TimeSpan elapsed, bool isProcessed)
+    private static Activity? InvokeRecordSlowPacketActivityWithListener(TimeSpan elapsed, bool isProcessed, string? lastError)
     {
         Activity? recordedActivity = null;
 
@@ -460,7 +463,7 @@ public class TelemetryClientTests
 
         ActivitySource.AddActivityListener(listener);
 
-        TelemetryClient.RecordSlowPacketActivity(new ReceivedPacketData(), elapsed, isProcessed);
+        TelemetryClient.RecordSlowPacketActivity(new ReceivedPacketData(), elapsed, isProcessed, lastError);
 
         return recordedActivity;
     }

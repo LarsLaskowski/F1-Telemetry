@@ -420,7 +420,8 @@ public sealed class TelemetryClient : ITelemetryClient, IDisposable
     /// <param name="packetData">Received packet data</param>
     /// <param name="elapsed">Elapsed processing time</param>
     /// <param name="isProcessed">Whether the packet was processed successfully</param>
-    internal static void RecordSlowPacketActivity(ReceivedPacketData packetData, TimeSpan elapsed, bool isProcessed)
+    /// <param name="lastError">Error message reported by the packet processor, if processing failed</param>
+    internal static void RecordSlowPacketActivity(ReceivedPacketData packetData, TimeSpan elapsed, bool isProcessed, string? lastError)
     {
         if (isProcessed && elapsed.TotalMilliseconds <= ConstData.SlowPacketProcessingThresholdMs)
         {
@@ -440,7 +441,8 @@ public sealed class TelemetryClient : ITelemetryClient, IDisposable
         }
         else
         {
-            currentActivity?.SetStatus(ActivityStatusCode.Error, "Packet processed with error");
+            currentActivity?.AddTag("f1.packet_process_error", lastError);
+            currentActivity?.SetStatus(ActivityStatusCode.Error, string.IsNullOrWhiteSpace(lastError) ? "Packet processed with error" : lastError);
         }
     }
 
@@ -662,7 +664,7 @@ public sealed class TelemetryClient : ITelemetryClient, IDisposable
 
         if (isHighFrequencyPacket)
         {
-            RecordSlowPacketActivity(packetData, runWatch.Elapsed, isProcessed);
+            RecordSlowPacketActivity(packetData, runWatch.Elapsed, isProcessed, _packetProcessor.LastError);
         }
 
         _applicationData.Statistics.PacketsInProcessorQueue = _packetProcessor.QueuedPackets;
