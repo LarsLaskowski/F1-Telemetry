@@ -1,4 +1,8 @@
-﻿using F1Server.Core.Packets.Data;
+﻿using System.Diagnostics;
+
+using F1Server.Core.Data;
+using F1Server.Core.Observability;
+using F1Server.Core.Packets.Data;
 using F1Server.Data;
 using F1Server.Service.Runtime;
 
@@ -86,6 +90,35 @@ public abstract class BaseProcessor
     /// <param name="sessionRuntimeData">Runtime information of current session</param>
     /// <returns>Status</returns>
     public abstract bool Process(object? dataObject, SessionRuntimeData? sessionRuntimeData);
+
+    /// <summary>
+    /// Records a best-effort processing span for a high-frequency packet processor, backdated to when
+    /// processing started, but only when it exceeded the slow-processing threshold or ended in an error -
+    /// this keeps span volume down for the common case while preserving visibility into slow outliers
+    /// </summary>
+    /// <param name="processorName">Name of the processor, used as the span name</param>
+    /// <param name="elapsed">Elapsed processing time</param>
+    /// <param name="isProcessed">Whether the packet was processed successfully</param>
+    protected void RecordSlowProcessingActivity(string processorName, TimeSpan elapsed, bool isProcessed)
+    {
+        if (isProcessed && elapsed.TotalMilliseconds <= ConstData.SlowPacketProcessingThresholdMs)
+        {
+            return;
+        }
+
+        using var currentActivity = AppActivity.SrvSource.StartActivity(processorName, ActivityKind.Internal, null, startTime: DateTime.UtcNow - elapsed);
+
+        currentActivity?.AddTag("f1.process_time_ms", elapsed.TotalMilliseconds);
+
+        if (isProcessed)
+        {
+            currentActivity?.SetStatus(ActivityStatusCode.Ok);
+        }
+        else
+        {
+            currentActivity?.SetStatus(ActivityStatusCode.Error, LastException);
+        }
+    }
 
     #endregion // Methods
 }

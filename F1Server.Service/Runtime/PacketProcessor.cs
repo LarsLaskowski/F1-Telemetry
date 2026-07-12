@@ -313,8 +313,6 @@ internal class PacketProcessor : IDisposable
     {
         var retValue = false;
 
-        using var currentActivity = AppActivity.SrvSource.StartActivity("AnalyzePacket");
-
         try
         {
             var packetData = _packetAnalyzer.GetPacketData(receivedPacketData);
@@ -324,17 +322,12 @@ internal class PacketProcessor : IDisposable
             {
                 retValue = ProcessPacketInternal(receivedPacketData, packetData);
             }
-
-            currentActivity?.SetStatus(ActivityStatusCode.Ok);
         }
         catch (Exception ex)
         {
             Logger?.LogError(ex, "Error analyzing packet {PacketType}!", receivedPacketData.PacketHeader?.PacketType);
 
             LastError = ex.ToString();
-
-            currentActivity?.SetStatus(ActivityStatusCode.Error, ex.ToString());
-            currentActivity?.AddException(ex);
         }
 
         return retValue;

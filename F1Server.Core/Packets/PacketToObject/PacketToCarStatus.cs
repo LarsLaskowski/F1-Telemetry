@@ -1,10 +1,8 @@
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 using F1Server.Core.Data;
 using F1Server.Core.Enumerations;
-using F1Server.Core.Observability;
 using F1Server.Core.PacketData;
 using F1Server.Core.Packets.Data;
 using F1Server.Core.Packets.Interfaces;
@@ -28,8 +26,6 @@ internal class PacketToCarStatus(PacketHeader packetHeader) : PacketToXBase(pack
     public object? ExtractCarStatusData(ReadOnlySpan<byte> dataPacket)
     {
         object? carStatusObject = null;
-
-        using var currentActivity = AppActivity.SrvSource.StartActivity("PacketToCarStatus");
 
         LastError = string.Empty;
 
@@ -56,13 +52,6 @@ internal class PacketToCarStatus(PacketHeader packetHeader) : PacketToXBase(pack
             {
                 carStatusObject = packetDataBase;
             }
-        }
-
-        currentActivity?.SetStatus(ActivityStatusCode.Ok);
-
-        if (string.IsNullOrWhiteSpace(LastError) == false)
-        {
-            currentActivity?.SetStatus(ActivityStatusCode.Error, LastError);
         }
 
         return carStatusObject;

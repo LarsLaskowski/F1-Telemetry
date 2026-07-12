@@ -1,5 +1,7 @@
 ﻿using System.Diagnostics;
 
+using F1Server.Core.Enumerations;
+
 namespace F1Server.Core.Observability;
 
 /// <summary>
@@ -20,4 +22,26 @@ public static class AppActivity
     public static readonly ActivitySource SrvSource = new("F1-Telemetry", "1.0");
 
     #endregion // Fields
+
+    #region Methods
+
+    /// <summary>
+    /// Determines whether a packet type is sent at a high frequency (multiple times per second), so that
+    /// tracing spans for it should be limited to slow outliers instead of every single packet
+    /// </summary>
+    /// <param name="packetType">Packet type to check</param>
+    /// <returns>True if the packet type is high-frequency, otherwise false</returns>
+    public static bool IsHighFrequencyPacketType(PacketTypes? packetType)
+    {
+        return packetType is PacketTypes.CarTelemetry
+                          or PacketTypes.CarTelemetry2
+                          or PacketTypes.Motion
+                          or PacketTypes.MotionEx
+                          or PacketTypes.LapData
+                          or PacketTypes.CarStatus
+                          or PacketTypes.SessionHistory
+                          or PacketTypes.TyreSets;
+    }
+
+    #endregion // Methods
 }

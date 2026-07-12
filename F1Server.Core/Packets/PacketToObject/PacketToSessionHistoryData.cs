@@ -1,9 +1,7 @@
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 using F1Server.Core.Data;
-using F1Server.Core.Observability;
 using F1Server.Core.PacketData;
 using F1Server.Core.Packets.Data;
 using F1Server.Core.Packets.Interfaces;
@@ -26,8 +24,6 @@ internal class PacketToSessionHistoryData(PacketHeader packetHeader) : PacketToX
     public object? ExtractSessionHistoryDataPacket(ReadOnlySpan<byte> dataPacket)
     {
         object? sessionHistory = null;
-
-        using var currentActivity = AppActivity.SrvSource.StartActivity("PacketToSessionHistory");
 
         LastError = string.Empty;
 
@@ -52,13 +48,6 @@ internal class PacketToSessionHistoryData(PacketHeader packetHeader) : PacketToX
             {
                 sessionHistory = sessionHistoryData;
             }
-        }
-
-        currentActivity?.SetStatus(ActivityStatusCode.Ok);
-
-        if (string.IsNullOrWhiteSpace(LastError) == false)
-        {
-            currentActivity?.SetStatus(ActivityStatusCode.Error, LastError);
         }
 
         return sessionHistory;

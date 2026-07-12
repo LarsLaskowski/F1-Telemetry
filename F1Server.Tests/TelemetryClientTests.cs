@@ -1,9 +1,11 @@
 using System.Buffers.Binary;
+using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
 
 using F1Server.Core;
 using F1Server.Core.Data;
+using F1Server.Core.Observability;
 using F1Server.Data;
 using F1Server.Service;
 using F1Server.Service.Runtime;
@@ -366,6 +368,43 @@ public class TelemetryClientTests
         }
     }
 
+    /// <summary>
+    /// Test to verify that a fast, successfully processed high-frequency packet does not record a tracing span
+    /// </summary>
+    [TestMethod]
+    public void TelemetryClientRecordSlowPacketActivityFastSuccessDoesNotRecordActivity()
+    {
+        var recordedActivity = InvokeRecordSlowPacketActivityWithListener(TimeSpan.FromMilliseconds(1), true, null);
+
+        Assert.IsNull(recordedActivity, "A fast, successfully processed packet recorded a tracing span!");
+    }
+
+    /// <summary>
+    /// Test to verify that a slow but successfully processed high-frequency packet records an Ok tracing span
+    /// </summary>
+    [TestMethod]
+    public void TelemetryClientRecordSlowPacketActivitySlowSuccessRecordsOkActivity()
+    {
+        var recordedActivity = InvokeRecordSlowPacketActivityWithListener(TimeSpan.FromMilliseconds(ConstData.SlowPacketProcessingThresholdMs + 1), true, null);
+
+        Assert.IsNotNull(recordedActivity, "A slow, successfully processed packet did not record a tracing span!");
+        Assert.AreEqual(ActivityStatusCode.Ok, recordedActivity.Status, "The recorded span status was not Ok!");
+    }
+
+    /// <summary>
+    /// Test to verify that a fast but failed high-frequency packet still records an Error tracing span carrying the processor's error message
+    /// </summary>
+    [TestMethod]
+    public void TelemetryClientRecordSlowPacketActivityFastFailureRecordsErrorActivityWithLastError()
+    {
+        var recordedActivity = InvokeRecordSlowPacketActivityWithListener(TimeSpan.FromMilliseconds(1), false, "Test packet processing failure!");
+
+        Assert.IsNotNull(recordedActivity, "A failed packet did not record a tracing span!");
+        Assert.AreEqual(ActivityStatusCode.Error, recordedActivity.Status, "The recorded span status was not Error!");
+        Assert.AreEqual("Packet processed with error", recordedActivity.StatusDescription, "The recorded span status description must carry the processor's error message!");
+        Assert.AreEqual("Test packet processing failure!", recordedActivity.GetTagItem("f1.packet_process_error"), "The recorded span must carry the processor's error message as a tag!");
+    }
+
     #endregion // Methods
 
     #region Static methods
@@ -401,6 +440,32 @@ public class TelemetryClientTests
         {
             await Task.Delay(25, cancellationToken);
         }
+    }
+
+    /// <summary>
+    /// Attaches an <see cref="ActivityListener"/> to <see cref="AppActivity.SrvSource"/>, calls
+    /// <see cref="TelemetryClient.RecordSlowPacketActivity"/> and returns the span it recorded, if any
+    /// </summary>
+    /// <param name="elapsed">Elapsed processing time to pass through</param>
+    /// <param name="isProcessed">Whether the packet was processed successfully</param>
+    /// <param name="lastError">Error message to pass through</param>
+    /// <returns>The recorded span, or null if none was recorded</returns>
+    private static Activity? InvokeRecordSlowPacketActivityWithListener(TimeSpan elapsed, bool isProcessed, string? lastError)
+    {
+        Activity? recordedActivity = null;
+
+        using var listener = new ActivityListener
+                             {
+                                 ShouldListenTo = source => source.Name == AppActivity.SrvSource.Name,
+                                 Sample = (ref ActivityCreationOptions<ActivityContext> options) => ActivitySamplingResult.AllData,
+                                 ActivityStopped = activity => recordedActivity = activity
+                             };
+
+        ActivitySource.AddActivityListener(listener);
+
+        TelemetryClient.RecordSlowPacketActivity(new ReceivedPacketData(), elapsed, isProcessed, lastError);
+
+        return recordedActivity;
     }
 
     #endregion // Static methods

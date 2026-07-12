@@ -325,10 +325,6 @@ public sealed class TelemetryClient : ITelemetryClient, IDisposable
 
         Volatile.Write(ref _lastPacketReceivedTicks, DateTime.UtcNow.Ticks);
 
-        using var currentActivity = AppActivity.SrvSource.StartActivity("ReceiveReplayPacket", ActivityKind.Server);
-
-        currentActivity?.SetTag("ReceivedBytes", packetLength);
-
         var packetData = new ReceivedPacketData();
 
         packetData.SetRawData(recvBuf.AsSpan(0, packetLength).ToArray());
@@ -349,8 +345,6 @@ public sealed class TelemetryClient : ITelemetryClient, IDisposable
 
         _applicationData.AppMetrics?.PacketsReceived.Add(1);
         _applicationData.AppMetrics?.PacketsInQueue.Record(Interlocked.Read(ref _queuedPackets));
-
-        currentActivity?.SetStatus(ActivityStatusCode.Ok);
     }
 
     #endregion // Methods
@@ -418,6 +412,40 @@ public sealed class TelemetryClient : ITelemetryClient, IDisposable
         return packetLength;
     }
 
+    /// <summary>
+    /// Records a best-effort <c>ProcessCurrentPacket</c> span for a high-frequency packet, backdating the span to
+    /// when processing started, but only when it failed or exceeded <see cref="ConstData.SlowPacketProcessingThresholdMs"/> -
+    /// this keeps span volume down for the common case while preserving visibility into slow or failed outliers
+    /// </summary>
+    /// <param name="packetData">Received packet data</param>
+    /// <param name="elapsed">Elapsed processing time</param>
+    /// <param name="isProcessed">Whether the packet was processed successfully</param>
+    /// <param name="lastError">Error message reported by the packet processor, if processing failed</param>
+    internal static void RecordSlowPacketActivity(ReceivedPacketData packetData, TimeSpan elapsed, bool isProcessed, string? lastError)
+    {
+        if (isProcessed && elapsed.TotalMilliseconds <= ConstData.SlowPacketProcessingThresholdMs)
+        {
+            return;
+        }
+
+        using var currentActivity = AppActivity.SrvSource.StartActivity("ProcessCurrentPacket", ActivityKind.Internal, null, startTime: DateTime.UtcNow - elapsed);
+
+        currentActivity?.AddTag("f1.packet_id", packetData.PacketNumber);
+        currentActivity?.AddTag("f1.session_id", packetData.PacketHeader?.UniqueSessionId);
+        currentActivity?.AddTag("f1.packet_type", packetData.PacketHeader?.PacketType);
+        currentActivity?.AddTag("f1.process_time_ms", elapsed.TotalMilliseconds);
+
+        if (isProcessed)
+        {
+            currentActivity?.SetStatus(ActivityStatusCode.Ok);
+        }
+        else
+        {
+            currentActivity?.AddTag("f1.packet_process_error", lastError);
+            currentActivity?.SetStatus(ActivityStatusCode.Error, "Packet processed with error");
+        }
+    }
+
     #endregion // Static methods
 
     #region Private methods
@@ -428,19 +456,9 @@ public sealed class TelemetryClient : ITelemetryClient, IDisposable
     /// <param name="result">Async result</param>
     private void ReceiveCallback(IAsyncResult result)
     {
-        Activity? currentActivity = null;
-
-        using (ExecutionContext.SuppressFlow())
-        {
-            currentActivity = AppActivity.SrvSource.StartActivity("PacketReceived", ActivityKind.Server, null);
-        }
-
         if (_udpClient == null || _ipEndpoint == null)
         {
-            currentActivity?.SetStatus(ActivityStatusCode.Error, "UDP client or endpoint is not initialized!");
-
-            currentActivity?.Stop();
-            currentActivity?.Dispose();
+            Logger?.LogError("Error receiving UDP packet: UDP client or endpoint is not initialized!");
 
             return;
         }
@@ -469,8 +487,6 @@ public sealed class TelemetryClient : ITelemetryClient, IDisposable
         {
             byte[] recvData = _udpClient.EndReceive(result, ref _ipEndpoint);
 
-            currentActivity?.SetTag("ReceivedBytes", recvData.Length);
-
             Interlocked.Increment(ref _queuedPackets);
 
             CheckPacketProcessingTaskIsRunning();
@@ -492,19 +508,11 @@ public sealed class TelemetryClient : ITelemetryClient, IDisposable
             _packetQueue.Enqueue(packetData);
 
             _applicationData.AppMetrics?.PacketsInQueue.Record(Interlocked.Read(ref _queuedPackets));
-
-            currentActivity?.SetStatus(ActivityStatusCode.Ok);
         }
         catch (Exception ex)
         {
-            currentActivity?.SetStatus(ActivityStatusCode.Error, ex.ToString());
-            currentActivity?.AddException(ex);
-
             Logger?.LogError(ex, "Error receiving UDP packet!");
         }
-
-        currentActivity?.Stop();
-        currentActivity?.Dispose();
 
         // Start receiving new data
         _udpClient.BeginReceive(new AsyncCallback(ReceiveCallback), null);
@@ -602,62 +610,94 @@ public sealed class TelemetryClient : ITelemetryClient, IDisposable
                 Logger.LogTrace("Processing packet with id: {PacketId}, type: {PacketType}, session id: {SessionId}", packetData.PacketNumber, packetData.PacketHeader?.PacketType, packetData.PacketHeader?.UniqueSessionId);
             }
 
-            var currentActivity = AppActivity.SrvSource.StartActivity("ProcessCurrentPacket", ActivityKind.Internal, null);
+            ProcessSinglePacket(packetData, runWatch, ref lastSessionId);
+        }
+    }
 
-            currentActivity?.AddTag("f1.packet_id", packetData.PacketNumber);
-            currentActivity?.AddTag("f1.session_id", packetData.PacketHeader?.UniqueSessionId);
-            currentActivity?.AddTag("f1.packet_type", packetData.PacketHeader?.PacketType);
+    /// <summary>
+    /// Processes one dequeued packet: fixes a missing session id, dispatches it to the packet processor,
+    /// records the (possibly gated) tracing span and updates processing statistics
+    /// </summary>
+    /// <param name="packetData">Received packet data</param>
+    /// <param name="runWatch">Reusable stopwatch used to measure the processing time</param>
+    /// <param name="lastSessionId">Last known session id, used as a fallback and updated for the next call</param>
+    private void ProcessSinglePacket(ReceivedPacketData packetData, Stopwatch runWatch, ref ulong lastSessionId)
+    {
+        var isHighFrequencyPacket = AppActivity.IsHighFrequencyPacketType(packetData.PacketHeader?.PacketType);
 
-            currentActivity?.SetStatus(ActivityStatusCode.Ok);
+        var currentActivity = isHighFrequencyPacket
+                                  ? null
+                                  : AppActivity.SrvSource.StartActivity("ProcessCurrentPacket", ActivityKind.Internal, null);
 
-            // Fix session id if it is under circumstances not set
-            if (packetData.PacketHeader?.UniqueSessionId == 0)
-            {
-                currentActivity?.SetStatus(ActivityStatusCode.Error, "Packet without session id");
+        currentActivity?.AddTag("f1.packet_id", packetData.PacketNumber);
+        currentActivity?.AddTag("f1.session_id", packetData.PacketHeader?.UniqueSessionId);
+        currentActivity?.AddTag("f1.packet_type", packetData.PacketHeader?.PacketType);
 
-                packetData.PacketHeader.UniqueSessionId = lastSessionId;
+        currentActivity?.SetStatus(ActivityStatusCode.Ok);
 
-                Logger?.LogWarning("Packet (type: {PacketType}) without session id, using last session id: {SessionId}", packetData.PacketHeader?.PacketType, lastSessionId);
-            }
+        // Fix session id if it is under circumstances not set
+        if (packetData.PacketHeader?.UniqueSessionId == 0)
+        {
+            currentActivity?.SetStatus(ActivityStatusCode.Error, "Packet without session id");
 
-            lastSessionId = packetData.PacketHeader?.UniqueSessionId ?? 0;
+            packetData.PacketHeader.UniqueSessionId = lastSessionId;
 
-            _applicationData.Statistics.CheckChangeSession(packetData.PacketHeader?.UniqueSessionId, packetData.PacketHeader?.GameVersion);
+            Logger?.LogWarning("Packet (type: {PacketType}) without session id, using last session id: {SessionId}", packetData.PacketHeader?.PacketType, lastSessionId);
+        }
 
-            _applicationData.Statistics.PacketsInQueue = _queuedPackets;
+        lastSessionId = packetData.PacketHeader?.UniqueSessionId ?? 0;
 
-            runWatch.Restart();
+        _applicationData.Statistics.CheckChangeSession(packetData.PacketHeader?.UniqueSessionId, packetData.PacketHeader?.GameVersion);
 
-            if (_packetProcessor.ProcessPacket(packetData) == false)
-            {
-                _applicationData.Statistics.CurrentSessionMetrics.UnsuccessfullyProcessed++;
+        _applicationData.Statistics.PacketsInQueue = _queuedPackets;
 
-                if (string.IsNullOrWhiteSpace(_packetProcessor.LastError) == false)
-                {
-                    ProcessingError?.Invoke(this, _packetProcessor.LastError);
+        runWatch.Restart();
 
-                    _applicationData.Statistics.CurrentSessionMetrics.Errors++;
+        var isProcessed = _packetProcessor.ProcessPacket(packetData);
 
-                    currentActivity?.SetStatus(ActivityStatusCode.Error, "Packet processed with error");
-                    currentActivity?.AddTag("f1.packet_process_error", _packetProcessor.LastError);
+        runWatch.Stop();
 
-                    Logger?.LogError("Error processing packet: {Error}", _packetProcessor.LastError);
-                }
-            }
+        if (isProcessed == false)
+        {
+            RecordPacketProcessingError(currentActivity);
+        }
 
-            runWatch.Stop();
+        if (isHighFrequencyPacket)
+        {
+            RecordSlowPacketActivity(packetData, runWatch.Elapsed, isProcessed, _packetProcessor.LastError);
+        }
 
-            _applicationData.Statistics.PacketsInProcessorQueue = _packetProcessor.QueuedPackets;
+        _applicationData.Statistics.PacketsInProcessorQueue = _packetProcessor.QueuedPackets;
 
-            _applicationData.Statistics.TotalPacketsProcessed++;
-            _applicationData.Statistics.TotalPacketProcessingTime += runWatch.Elapsed.TotalMilliseconds;
+        _applicationData.Statistics.TotalPacketsProcessed++;
+        _applicationData.Statistics.TotalPacketProcessingTime += runWatch.Elapsed.TotalMilliseconds;
 
-            _applicationData.AppMetrics?.RecordProcessedPacket(packetData.PacketHeader?.PacketType, runWatch.Elapsed.TotalMilliseconds);
+        _applicationData.AppMetrics?.RecordProcessedPacket(packetData.PacketHeader?.PacketType, runWatch.Elapsed.TotalMilliseconds);
 
-            _applicationData.Statistics.CurrentSessionMetrics.UpdatePacketStatistics(packetData.PacketHeader?.PacketType, runWatch.Elapsed.TotalMilliseconds);
+        _applicationData.Statistics.CurrentSessionMetrics.UpdatePacketStatistics(packetData.PacketHeader?.PacketType, runWatch.Elapsed.TotalMilliseconds);
 
-            currentActivity?.Stop();
-            currentActivity?.Dispose();
+        currentActivity?.Stop();
+        currentActivity?.Dispose();
+    }
+
+    /// <summary>
+    /// Updates the error statistics, raises <see cref="ProcessingError"/> and marks the current tracing span as failed
+    /// </summary>
+    /// <param name="currentActivity">Tracing span for the current packet, if any</param>
+    private void RecordPacketProcessingError(Activity? currentActivity)
+    {
+        _applicationData.Statistics.CurrentSessionMetrics.UnsuccessfullyProcessed++;
+
+        if (string.IsNullOrWhiteSpace(_packetProcessor.LastError) == false)
+        {
+            ProcessingError?.Invoke(this, _packetProcessor.LastError);
+
+            _applicationData.Statistics.CurrentSessionMetrics.Errors++;
+
+            currentActivity?.SetStatus(ActivityStatusCode.Error, "Packet processed with error");
+            currentActivity?.AddTag("f1.packet_process_error", _packetProcessor.LastError);
+
+            Logger?.LogError("Error processing packet: {Error}", _packetProcessor.LastError);
         }
     }
 

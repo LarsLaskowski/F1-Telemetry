@@ -1,8 +1,8 @@
 ﻿using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
+using F1Server.Core.Data;
 using F1Server.Core.Interfaces;
-using F1Server.Core.Observability;
 using F1Server.Core.PacketData;
 using F1Server.Core.Packets.Data;
 using F1Server.Core.Packets.Interfaces;
@@ -160,7 +160,7 @@ internal class CarTelemetryProcessor : BaseProcessor
 
         LastException = string.Empty;
 
-        using var currentActivity = AppActivity.SrvSource.StartActivity("CarTelemetryProcessor");
+        var processStartTimestamp = Stopwatch.GetTimestamp();
 
         if (dataObject is CarTelemetry carTelemetryPacket
             && carTelemetryPacket.PacketData != null
@@ -177,14 +177,9 @@ internal class CarTelemetryProcessor : BaseProcessor
                         ProcessCarTelemetryData(sessionRuntimeData, currentCar, carTelemetryData, sessionRuntimeData.IsTelemetryRecording);
                     }
                 }
-
-                currentActivity?.SetStatus(ActivityStatusCode.Ok);
             }
             catch (Exception ex)
             {
-                currentActivity?.SetStatus(ActivityStatusCode.Error, ex.ToString());
-                currentActivity?.AddException(ex);
-
                 LastException = ex.ToString();
 
                 Logger?.LogError(ex, "Error processing CarTelemetry packet!");
@@ -194,10 +189,10 @@ internal class CarTelemetryProcessor : BaseProcessor
         }
         else
         {
-            currentActivity?.SetStatus(ActivityStatusCode.Error, "Unexpected data object or session not valid!");
-
             Logger?.LogWarning("Unexpected data object or session not valid (processor: {Processor})!", nameof(CarTelemetryProcessor));
         }
+
+        RecordSlowProcessingActivity(nameof(CarTelemetryProcessor), Stopwatch.GetElapsedTime(processStartTimestamp), isProcessed);
 
         return isProcessed;
     }

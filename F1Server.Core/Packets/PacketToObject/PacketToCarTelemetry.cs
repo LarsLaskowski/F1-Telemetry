@@ -1,10 +1,8 @@
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 using F1Server.Core.Data;
 using F1Server.Core.Enumerations;
-using F1Server.Core.Observability;
 using F1Server.Core.PacketData;
 using F1Server.Core.Packets.Data;
 using F1Server.Core.Packets.Interfaces;
@@ -27,8 +25,6 @@ internal class PacketToCarTelemetry(PacketHeader packetHeader) : PacketToXBase(p
     public object? ExtractCarTelemetryData(ReadOnlySpan<byte> dataPacket)
     {
         object? carTelemetryObject = null;
-
-        using var currentActivity = AppActivity.SrvSource.StartActivity("PacketToCarTelemetry");
 
         LastError = string.Empty;
 
@@ -55,13 +51,6 @@ internal class PacketToCarTelemetry(PacketHeader packetHeader) : PacketToXBase(p
             {
                 carTelemetryObject = packetDataBase;
             }
-        }
-
-        currentActivity?.SetStatus(ActivityStatusCode.Ok);
-
-        if (string.IsNullOrWhiteSpace(LastError) == false)
-        {
-            currentActivity?.SetStatus(ActivityStatusCode.Error, LastError);
         }
 
         return carTelemetryObject;

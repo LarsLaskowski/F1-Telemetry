@@ -1,10 +1,8 @@
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 using F1Server.Core.Data;
 using F1Server.Core.Enumerations;
-using F1Server.Core.Observability;
 using F1Server.Core.PacketData;
 using F1Server.Core.Packets.Data;
 using F1Server.Core.Packets.Interfaces;
@@ -28,8 +26,6 @@ internal class PacketToSessionData(PacketHeader packetHeader) : PacketToXBase(pa
     {
         object? sessionObject = null;
 
-        using var currentActivity = AppActivity.SrvSource.StartActivity("PacketToSession");
-
         LastError = string.Empty;
 
         if (dataPacket.Length > 0 && HasValidPacketLength(dataPacket.Length, GetExpectedPayloadSize()))
@@ -48,13 +44,6 @@ internal class PacketToSessionData(PacketHeader packetHeader) : PacketToXBase(pa
                                 2026 => GetSessionData2026(ref memRef, dataPacket.Length),
                                 _ => null
                             };
-        }
-
-        currentActivity?.SetStatus(ActivityStatusCode.Ok);
-
-        if (string.IsNullOrWhiteSpace(LastError) == false)
-        {
-            currentActivity?.SetStatus(ActivityStatusCode.Error, LastError);
         }
 
         return sessionObject;

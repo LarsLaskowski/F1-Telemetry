@@ -1,9 +1,7 @@
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 using F1Server.Core.Data;
-using F1Server.Core.Observability;
 using F1Server.Core.PacketData;
 using F1Server.Core.Packets.Data;
 using F1Server.Core.Packets.Interfaces;
@@ -27,8 +25,6 @@ internal class PacketToCarTelemetry2(PacketHeader packetHeader) : PacketToXBase(
     {
         object? carTelemetry2Object = null;
 
-        using var currentActivity = AppActivity.SrvSource.StartActivity("PacketToCarTelemetry2");
-
         LastError = string.Empty;
 
         if (dataPacket.Length > 0)
@@ -47,13 +43,6 @@ internal class PacketToCarTelemetry2(PacketHeader packetHeader) : PacketToXBase(
             {
                 carTelemetry2Object = packetDataBase;
             }
-        }
-
-        currentActivity?.SetStatus(ActivityStatusCode.Ok);
-
-        if (string.IsNullOrWhiteSpace(LastError) == false)
-        {
-            currentActivity?.SetStatus(ActivityStatusCode.Error, LastError);
         }
 
         return carTelemetry2Object;

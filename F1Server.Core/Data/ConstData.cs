@@ -22,6 +22,12 @@ public static class ConstData
     /// </summary>
     public const int MaxReplayPacketLength = 4096;
 
+    /// <summary>
+    /// Processing time in milliseconds above which a high-frequency packet still gets a tracing span, keeping
+    /// span volume down for the common case while preserving visibility into slow outliers
+    /// </summary>
+    public const int SlowPacketProcessingThresholdMs = 10;
+
     #endregion // Global consts
 
     #region Consts F1 2019

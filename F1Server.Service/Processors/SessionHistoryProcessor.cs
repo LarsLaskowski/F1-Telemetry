@@ -1,7 +1,6 @@
 using System.Diagnostics;
 
 using F1Server.Core.Enumerations;
-using F1Server.Core.Observability;
 using F1Server.Core.PacketData;
 using F1Server.Core.Packets.Data;
 using F1Server.Core.Packets.Interfaces;
@@ -513,7 +512,7 @@ internal class SessionHistoryProcessor : BaseProcessor
 
         LastException = string.Empty;
 
-        using var currentActivity = AppActivity.SrvSource.StartActivity("SessionHistoryProcessor");
+        var processStartTimestamp = Stopwatch.GetTimestamp();
 
         if (dataObject is SessionHistoryData sessionHistory && sessionHistory.PacketData != null && sessionRuntimeData != null)
         {
@@ -531,14 +530,9 @@ internal class SessionHistoryProcessor : BaseProcessor
                         isProcessed = false;
                     }
                 }
-
-                currentActivity?.SetStatus(ActivityStatusCode.Ok);
             }
             catch (Exception ex)
             {
-                currentActivity?.SetStatus(ActivityStatusCode.Error, ex.ToString());
-                currentActivity?.AddException(ex);
-
                 LastException = ex.ToString();
 
                 Logger?.LogError(ex, "Error processing SessionHistory packet!");
@@ -548,10 +542,10 @@ internal class SessionHistoryProcessor : BaseProcessor
         }
         else
         {
-            currentActivity?.SetStatus(ActivityStatusCode.Error, "Unexpected data object or session not finished!");
-
             Logger?.LogWarning("Unexpected data object or session not valid (processor: {Processor})!", nameof(SessionHistoryProcessor));
         }
+
+        RecordSlowProcessingActivity(nameof(SessionHistoryProcessor), Stopwatch.GetElapsedTime(processStartTimestamp), isProcessed);
 
         return isProcessed;
     }

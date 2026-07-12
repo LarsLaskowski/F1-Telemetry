@@ -1,11 +1,9 @@
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 
 using F1Server.Core.Data;
 using F1Server.Core.Enumerations;
-using F1Server.Core.Observability;
 using F1Server.Core.PacketData;
 using F1Server.Core.Packets.Data;
 using F1Server.Core.Packets.Interfaces;
@@ -28,8 +26,6 @@ internal class PacketToEventData(PacketHeader packetHeader) : PacketToXBase(pack
     public object? ExtractEventData(ReadOnlySpan<byte> dataPacket)
     {
         object? eventDataObject = null;
-
-        using var currentActivity = AppActivity.SrvSource.StartActivity("PacketToEventData");
 
         LastError = string.Empty;
 
@@ -55,16 +51,7 @@ internal class PacketToEventData(PacketHeader packetHeader) : PacketToXBase(pack
                 && ExtractEventData(ref memRef, HeaderSize, dataPacket.Length, packetDataBase.PacketData))
             {
                 eventDataObject = packetDataBase;
-
-                currentActivity?.AddTag("f1.event_code", packetDataBase.PacketData?.EventCode);
             }
-        }
-
-        currentActivity?.SetStatus(ActivityStatusCode.Ok);
-
-        if (string.IsNullOrWhiteSpace(LastError) == false)
-        {
-            currentActivity?.SetStatus(ActivityStatusCode.Error, LastError);
         }
 
         return eventDataObject;
