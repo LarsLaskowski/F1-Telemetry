@@ -512,7 +512,7 @@ internal class SessionHistoryProcessor : BaseProcessor
 
         LastException = string.Empty;
 
-        var processWatch = Stopwatch.StartNew();
+        var processStartTimestamp = Stopwatch.GetTimestamp();
 
         if (dataObject is SessionHistoryData sessionHistory && sessionHistory.PacketData != null && sessionRuntimeData != null)
         {
@@ -545,9 +545,7 @@ internal class SessionHistoryProcessor : BaseProcessor
             Logger?.LogWarning("Unexpected data object or session not valid (processor: {Processor})!", nameof(SessionHistoryProcessor));
         }
 
-        processWatch.Stop();
-
-        RecordSlowProcessingActivity(nameof(SessionHistoryProcessor), processWatch.Elapsed, isProcessed);
+        RecordSlowProcessingActivity(nameof(SessionHistoryProcessor), Stopwatch.GetElapsedTime(processStartTimestamp), isProcessed);
 
         return isProcessed;
     }

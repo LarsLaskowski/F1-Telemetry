@@ -17,10 +17,13 @@ public class AppActivityTests
     /// <param name="packetType">Packet type under test</param>
     [TestMethod]
     [DataRow(PacketTypes.CarTelemetry)]
+    [DataRow(PacketTypes.CarTelemetry2)]
     [DataRow(PacketTypes.Motion)]
+    [DataRow(PacketTypes.MotionEx)]
     [DataRow(PacketTypes.LapData)]
     [DataRow(PacketTypes.CarStatus)]
     [DataRow(PacketTypes.SessionHistory)]
+    [DataRow(PacketTypes.TyreSets)]
     public void AppActivityIsHighFrequencyPacketTypeHighFrequencyTypeReturnsTrue(PacketTypes packetType)
     {
         Assert.IsTrue(AppActivity.IsHighFrequencyPacketType(packetType), "High-frequency packet type was not recognized as such!");

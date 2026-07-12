@@ -659,7 +659,7 @@ internal class LapDataProcessor : BaseProcessor
 
         LastException = string.Empty;
 
-        var processWatch = Stopwatch.StartNew();
+        var processStartTimestamp = Stopwatch.GetTimestamp();
 
         if (dataObject is LapData lapDataPacket
             && sessionRuntimeData?.IsValid == true
@@ -688,9 +688,7 @@ internal class LapDataProcessor : BaseProcessor
             Logger?.LogWarning("Unexpected data object or session not valid (processor: {Processor})!", nameof(LapDataProcessor));
         }
 
-        processWatch.Stop();
-
-        RecordSlowProcessingActivity(nameof(LapDataProcessor), processWatch.Elapsed, isProcessed);
+        RecordSlowProcessingActivity(nameof(LapDataProcessor), Stopwatch.GetElapsedTime(processStartTimestamp), isProcessed);
 
         return isProcessed;
     }

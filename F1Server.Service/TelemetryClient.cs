@@ -418,6 +418,38 @@ public sealed class TelemetryClient : ITelemetryClient, IDisposable
         return packetLength;
     }
 
+    /// <summary>
+    /// Records a best-effort <c>ProcessCurrentPacket</c> span for a high-frequency packet, backdating the span to
+    /// when processing started, but only when it failed or exceeded <see cref="ConstData.SlowPacketProcessingThresholdMs"/> -
+    /// this keeps span volume down for the common case while preserving visibility into slow or failed outliers
+    /// </summary>
+    /// <param name="packetData">Received packet data</param>
+    /// <param name="elapsed">Elapsed processing time</param>
+    /// <param name="isProcessed">Whether the packet was processed successfully</param>
+    internal static void RecordSlowPacketActivity(ReceivedPacketData packetData, TimeSpan elapsed, bool isProcessed)
+    {
+        if (isProcessed && elapsed.TotalMilliseconds <= ConstData.SlowPacketProcessingThresholdMs)
+        {
+            return;
+        }
+
+        using var currentActivity = AppActivity.SrvSource.StartActivity("ProcessCurrentPacket", ActivityKind.Internal, null, startTime: DateTime.UtcNow - elapsed);
+
+        currentActivity?.AddTag("f1.packet_id", packetData.PacketNumber);
+        currentActivity?.AddTag("f1.session_id", packetData.PacketHeader?.UniqueSessionId);
+        currentActivity?.AddTag("f1.packet_type", packetData.PacketHeader?.PacketType);
+        currentActivity?.AddTag("f1.process_time_ms", elapsed.TotalMilliseconds);
+
+        if (isProcessed)
+        {
+            currentActivity?.SetStatus(ActivityStatusCode.Ok);
+        }
+        else
+        {
+            currentActivity?.SetStatus(ActivityStatusCode.Error, "Packet processed with error");
+        }
+    }
+
     #endregion // Static methods
 
     #region Private methods
@@ -428,19 +460,9 @@ public sealed class TelemetryClient : ITelemetryClient, IDisposable
     /// <param name="result">Async result</param>
     private void ReceiveCallback(IAsyncResult result)
     {
-        Activity? currentActivity = null;
-
-        using (ExecutionContext.SuppressFlow())
-        {
-            currentActivity = AppActivity.SrvSource.StartActivity("PacketReceived", ActivityKind.Server, null);
-        }
-
         if (_udpClient == null || _ipEndpoint == null)
         {
-            currentActivity?.SetStatus(ActivityStatusCode.Error, "UDP client or endpoint is not initialized!");
-
-            currentActivity?.Stop();
-            currentActivity?.Dispose();
+            Logger?.LogError("Error receiving UDP packet: UDP client or endpoint is not initialized!");
 
             return;
         }
@@ -469,8 +491,6 @@ public sealed class TelemetryClient : ITelemetryClient, IDisposable
         {
             byte[] recvData = _udpClient.EndReceive(result, ref _ipEndpoint);
 
-            currentActivity?.SetTag("ReceivedBytes", recvData.Length);
-
             Interlocked.Increment(ref _queuedPackets);
 
             CheckPacketProcessingTaskIsRunning();
@@ -492,19 +512,11 @@ public sealed class TelemetryClient : ITelemetryClient, IDisposable
             _packetQueue.Enqueue(packetData);
 
             _applicationData.AppMetrics?.PacketsInQueue.Record(Interlocked.Read(ref _queuedPackets));
-
-            currentActivity?.SetStatus(ActivityStatusCode.Ok);
         }
         catch (Exception ex)
         {
-            currentActivity?.SetStatus(ActivityStatusCode.Error, ex.ToString());
-            currentActivity?.AddException(ex);
-
             Logger?.LogError(ex, "Error receiving UDP packet!");
         }
-
-        currentActivity?.Stop();
-        currentActivity?.Dispose();
 
         // Start receiving new data
         _udpClient.BeginReceive(new AsyncCallback(ReceiveCallback), null);
@@ -653,7 +665,7 @@ public sealed class TelemetryClient : ITelemetryClient, IDisposable
                 }
             }
 
-            if (isHighFrequencyPacket && runWatch.Elapsed.TotalMilliseconds > ConstData.SlowPacketProcessingThresholdMs)
+            if (isHighFrequencyPacket)
             {
                 RecordSlowPacketActivity(packetData, runWatch.Elapsed, isProcessed);
             }
@@ -669,32 +681,6 @@ public sealed class TelemetryClient : ITelemetryClient, IDisposable
 
             currentActivity?.Stop();
             currentActivity?.Dispose();
-        }
-    }
-
-    /// <summary>
-    /// Records a best-effort <c>ProcessCurrentPacket</c> span for a high-frequency packet whose processing time
-    /// exceeded <see cref="ConstData.SlowPacketProcessingThresholdMs"/>, backdating the span to when processing started
-    /// </summary>
-    /// <param name="packetData">Received packet data</param>
-    /// <param name="elapsed">Elapsed processing time</param>
-    /// <param name="isProcessed">Whether the packet was processed successfully</param>
-    private void RecordSlowPacketActivity(ReceivedPacketData packetData, TimeSpan elapsed, bool isProcessed)
-    {
-        using var currentActivity = AppActivity.SrvSource.StartActivity("ProcessCurrentPacket", ActivityKind.Internal, null, startTime: DateTime.UtcNow - elapsed);
-
-        currentActivity?.AddTag("f1.packet_id", packetData.PacketNumber);
-        currentActivity?.AddTag("f1.session_id", packetData.PacketHeader?.UniqueSessionId);
-        currentActivity?.AddTag("f1.packet_type", packetData.PacketHeader?.PacketType);
-        currentActivity?.AddTag("f1.packet_process_time_ms", elapsed.TotalMilliseconds);
-
-        if (isProcessed && string.IsNullOrWhiteSpace(_packetProcessor.LastError))
-        {
-            currentActivity?.SetStatus(ActivityStatusCode.Ok);
-        }
-        else
-        {
-            currentActivity?.SetStatus(ActivityStatusCode.Error, "Packet processed with error");
         }
     }
 

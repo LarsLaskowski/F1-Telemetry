@@ -160,7 +160,7 @@ internal class CarTelemetryProcessor : BaseProcessor
 
         LastException = string.Empty;
 
-        var processWatch = Stopwatch.StartNew();
+        var processStartTimestamp = Stopwatch.GetTimestamp();
 
         if (dataObject is CarTelemetry carTelemetryPacket
             && carTelemetryPacket.PacketData != null
@@ -192,9 +192,7 @@ internal class CarTelemetryProcessor : BaseProcessor
             Logger?.LogWarning("Unexpected data object or session not valid (processor: {Processor})!", nameof(CarTelemetryProcessor));
         }
 
-        processWatch.Stop();
-
-        RecordSlowProcessingActivity(nameof(CarTelemetryProcessor), processWatch.Elapsed, isProcessed);
+        RecordSlowProcessingActivity(nameof(CarTelemetryProcessor), Stopwatch.GetElapsedTime(processStartTimestamp), isProcessed);
 
         return isProcessed;
     }
