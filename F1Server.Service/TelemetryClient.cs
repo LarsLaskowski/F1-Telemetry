@@ -325,10 +325,6 @@ public sealed class TelemetryClient : ITelemetryClient, IDisposable
 
         Volatile.Write(ref _lastPacketReceivedTicks, DateTime.UtcNow.Ticks);
 
-        using var currentActivity = AppActivity.SrvSource.StartActivity("ReceiveReplayPacket", ActivityKind.Server);
-
-        currentActivity?.SetTag("ReceivedBytes", packetLength);
-
         var packetData = new ReceivedPacketData();
 
         packetData.SetRawData(recvBuf.AsSpan(0, packetLength).ToArray());
@@ -349,8 +345,6 @@ public sealed class TelemetryClient : ITelemetryClient, IDisposable
 
         _applicationData.AppMetrics?.PacketsReceived.Add(1);
         _applicationData.AppMetrics?.PacketsInQueue.Record(Interlocked.Read(ref _queuedPackets));
-
-        currentActivity?.SetStatus(ActivityStatusCode.Ok);
     }
 
     #endregion // Methods
