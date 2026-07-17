@@ -1,6 +1,6 @@
 {
   "name": "f1-server-app",
-  "version": "1.17.2",
+  "version": "1.17.3",
   "scripts": {
     "ng": "ng",
     "start": "ng serve --port 4810 --host=127.0.0.1",
