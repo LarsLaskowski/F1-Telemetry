@@ -33,9 +33,19 @@ public class FastestLapPerSessionCacheTests
     private const uint FastestLapTime = 80000U;
 
     /// <summary>
+    /// Lap time in milliseconds of a lap that is added after the fastest lap of a session was already cached
+    /// </summary>
+    private const uint FasterLapTime = 78500U;
+
+    /// <summary>
     /// Reference lap time in milliseconds of the track created for the tests in this class
     /// </summary>
     private const uint ReferenceLapTime = 79000U;
+
+    /// <summary>
+    /// Format of a lap time
+    /// </summary>
+    private const string LapTimeLiteral = @"mm\:ss\.fff";
 
     /// <summary>
     /// Name of the driver created for the tests in this class
@@ -55,6 +65,31 @@ public class FastestLapPerSessionCacheTests
     /// Database ids of the sessions created for the tests in this class
     /// </summary>
     private static readonly List<long> _testSessionIds = [];
+
+    /// <summary>
+    /// Database id of the track created for the tests in this class
+    /// </summary>
+    private static long _testTrackId;
+
+    /// <summary>
+    /// Database id of the driver created for the tests in this class
+    /// </summary>
+    private static long _testDriverId;
+
+    /// <summary>
+    /// Database id of the nationality created for the tests in this class
+    /// </summary>
+    private static long _testNationalityId;
+
+    /// <summary>
+    /// Database id of the team created for the tests in this class
+    /// </summary>
+    private static long _testTeamId;
+
+    /// <summary>
+    /// Game session code of the last session created for the tests in this class
+    /// </summary>
+    private static ulong _lastSessionCode = 198000000000UL;
 
     #endregion // Fields
 
@@ -119,36 +154,19 @@ public class FastestLapPerSessionCacheTests
 
             Assert.IsTrue(dbFactory.GetRepository<TrackRepository>()?.Add(trackEntity), "Track entity could not be added to the database!");
 
+            _testTrackId = trackEntity.Id;
+            _testDriverId = driverEntity.Id;
+            _testNationalityId = nationalityEntity.Id;
+            _testTeamId = teamEntity.Id;
+
             for (var sessionIndex = 0; sessionIndex < TestSessionCount; sessionIndex++)
             {
-                var sessionEntity = new SessionEntity
-                                    {
-                                        SessionId = 198000000000UL + (ulong)sessionIndex,
-                                        CreationTimestamp = DateTime.UtcNow,
-                                        SessionType = SessionType.Qualifying1,
-                                        TrackId = trackEntity.Id,
-                                        GameVersionId = 1
-                                    };
+                var sessionId = AddSession(dbFactory, out var participantId);
 
-                Assert.IsTrue(dbFactory.GetRepository<SessionRepository>()?.Add(sessionEntity), "Session entity could not be added to the database!");
+                AddLap(dbFactory, sessionId, participantId, 1, FastestLapTime);
+                AddLap(dbFactory, sessionId, participantId, 2, FastestLapTime + 1500U);
 
-                var participantEntity = new ParticipantEntity
-                                        {
-                                            SessionId = sessionEntity.Id,
-                                            DriverId = driverEntity.Id,
-                                            NationalityId = nationalityEntity.Id,
-                                            TeamId = teamEntity.Id,
-                                            DriverName = TestDriverName,
-                                            ArrayIndex = 1,
-                                            IsHumanControlled = true
-                                        };
-
-                Assert.IsTrue(dbFactory.GetRepository<ParticipantRepository>()?.Add(participantEntity), "Participant entity could not be added to the database!");
-
-                AddLap(dbFactory, sessionEntity.Id, participantEntity.Id, 1, FastestLapTime);
-                AddLap(dbFactory, sessionEntity.Id, participantEntity.Id, 2, FastestLapTime + 1500U);
-
-                _testSessionIds.Add(sessionEntity.Id);
+                _testSessionIds.Add(sessionId);
             }
         }
     }
@@ -286,9 +304,111 @@ public class FastestLapPerSessionCacheTests
         }
     }
 
+    /// <summary>
+    /// Verifies that a lap added to an already cached session is reported after the session was invalidated, so a
+    /// running session does not keep the fastest lap of the moment its entry was calculated
+    /// </summary>
+    /// <returns>A task that represents the asynchronous operation</returns>
+    [TestMethod]
+    public async Task FastestLapPerSessionCacheInvalidateSessionReturnsNewFastestLap()
+    {
+        long sessionId;
+        long participantId;
+
+        using (var dbFactory = RepositoryFactory.CreateInstance())
+        {
+            sessionId = AddSession(dbFactory, out participantId);
+
+            AddLap(dbFactory, sessionId, participantId, 1, FastestLapTime);
+        }
+
+        var cachedLapData = await FastestLapPerSessionCache.GetFastestLapDataForSessionAsync(sessionId).ConfigureAwait(false);
+
+        Assert.AreEqual(TimeSpan.FromMilliseconds(FastestLapTime).ToString(LapTimeLiteral), cachedLapData.FastestLap, "The only lap of the session should be reported as fastest lap!");
+
+        using (var dbFactory = RepositoryFactory.CreateInstance())
+        {
+            AddLap(dbFactory, sessionId, participantId, 2, FasterLapTime);
+        }
+
+        var staleLapData = await FastestLapPerSessionCache.GetFastestLapDataForSessionAsync(sessionId).ConfigureAwait(false);
+
+        Assert.AreSame(cachedLapData, staleLapData, "Without an invalidation the already cached data of the session should be returned!");
+
+        FastestLapPerSessionCache.InvalidateSession(sessionId);
+
+        var updatedLapData = await FastestLapPerSessionCache.GetFastestLapDataForSessionAsync(sessionId).ConfigureAwait(false);
+
+        Assert.AreEqual(TimeSpan.FromMilliseconds(FasterLapTime).ToString(LapTimeLiteral), updatedLapData.FastestLap, "After an invalidation the faster lap added to the session should be reported as fastest lap!");
+    }
+
+    /// <summary>
+    /// Verifies that a removed session is calculated again instead of returning the data of the deleted session
+    /// </summary>
+    /// <returns>A task that represents the asynchronous operation</returns>
+    [TestMethod]
+    public async Task FastestLapPerSessionCacheRemoveSessionDropsCachedData()
+    {
+        long sessionId;
+
+        using (var dbFactory = RepositoryFactory.CreateInstance())
+        {
+            sessionId = AddSession(dbFactory, out var participantId);
+
+            AddLap(dbFactory, sessionId, participantId, 1, FastestLapTime);
+        }
+
+        var cachedLapData = await FastestLapPerSessionCache.GetFastestLapDataForSessionAsync(sessionId).ConfigureAwait(false);
+
+        FastestLapPerSessionCache.RemoveSession(sessionId);
+
+        var reloadedLapData = await FastestLapPerSessionCache.GetFastestLapDataForSessionAsync(sessionId).ConfigureAwait(false);
+
+        Assert.AreNotSame(cachedLapData, reloadedLapData, "A removed session must not be served from the cache anymore!");
+    }
+
     #endregion // Methods
 
     #region Private methods
+
+    /// <summary>
+    /// Adds a session with one participant to the test database
+    /// </summary>
+    /// <param name="dbFactory">Repository factory used to store the session</param>
+    /// <param name="participantId">Database id of the participant created for the session</param>
+    /// <returns>Database id of the created session</returns>
+    private static long AddSession(RepositoryFactory dbFactory, out long participantId)
+    {
+        _lastSessionCode += 1UL;
+
+        var sessionEntity = new SessionEntity
+                            {
+                                SessionId = _lastSessionCode,
+                                CreationTimestamp = DateTime.UtcNow,
+                                SessionType = SessionType.Qualifying1,
+                                TrackId = _testTrackId,
+                                GameVersionId = 1
+                            };
+
+        Assert.IsTrue(dbFactory.GetRepository<SessionRepository>()?.Add(sessionEntity), "Session entity could not be added to the database!");
+
+        var participantEntity = new ParticipantEntity
+                                {
+                                    SessionId = sessionEntity.Id,
+                                    DriverId = _testDriverId,
+                                    NationalityId = _testNationalityId,
+                                    TeamId = _testTeamId,
+                                    DriverName = TestDriverName,
+                                    ArrayIndex = 1,
+                                    IsHumanControlled = true
+                                };
+
+        Assert.IsTrue(dbFactory.GetRepository<ParticipantRepository>()?.Add(participantEntity), "Participant entity could not be added to the database!");
+
+        participantId = participantEntity.Id;
+
+        return sessionEntity.Id;
+    }
 
     /// <summary>
     /// Adds a valid completed lap to the test database

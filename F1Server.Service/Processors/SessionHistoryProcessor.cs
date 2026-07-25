@@ -11,6 +11,7 @@ using F1Server.Db.Entity.Repositories;
 using F1Server.Db.Entity.Tables;
 using F1Server.Service.Cache;
 using F1Server.Service.Runtime;
+using F1Server.WebApi.Cache;
 
 using Microsoft.Extensions.Logging;
 
@@ -221,6 +222,9 @@ internal class SessionHistoryProcessor : BaseProcessor
                 lapDbData.IsInvalidLapTime = isInvalidLapTime;
 
                 LapRepositoryCache.AddOrUpdate(lapDbData);
+
+                // The changed lap times can change the fastest lap of the session
+                FastestLapPerSessionCache.InvalidateSession(lapDbData.SessionId);
             }
         }
         else
@@ -296,6 +300,9 @@ internal class SessionHistoryProcessor : BaseProcessor
                                                                         });
 
         LapRepositoryCache.AddOrUpdate(lapDbData);
+
+        // The refreshed lap is completed now and can be the new fastest lap of the session
+        FastestLapPerSessionCache.InvalidateSession(lapDbData.SessionId);
     }
 
     /// <summary>
@@ -344,6 +351,9 @@ internal class SessionHistoryProcessor : BaseProcessor
         else
         {
             LapRepositoryCache.AddOrUpdate(lapDbData);
+
+            // The new lap is completed and can be the new fastest lap of the session
+            FastestLapPerSessionCache.InvalidateSession(lapDbData.SessionId);
         }
 
         return lapDbData;

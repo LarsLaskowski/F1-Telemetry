@@ -15,6 +15,7 @@ using F1Server.Db.Entity;
 using F1Server.Db.Entity.Repositories;
 using F1Server.Db.Entity.Tables;
 using F1Server.Service.Processors;
+using F1Server.WebApi.Cache;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -645,14 +646,19 @@ internal class PacketProcessor : IDisposable
         {
             try
             {
+                var sessionDbId = Session.SessionDbId;
+
                 using (var dbFactory = RepositoryFactory.CreateInstance())
                 {
-                    var isRemoved = dbFactory.GetRepository<SessionRepository>()?.Remove(s => s.Id == Session.SessionDbId);
+                    var isRemoved = dbFactory.GetRepository<SessionRepository>()?.Remove(s => s.Id == sessionDbId);
 
                     // Removed?
                     if (isRemoved != null && isRemoved.Value)
                     {
                         Session = null;
+
+                        // No data of a removed session may stay in the cache
+                        FastestLapPerSessionCache.RemoveSession(sessionDbId);
                     }
                 }
             }
