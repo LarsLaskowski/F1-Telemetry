@@ -443,13 +443,13 @@ public static class Program
         Console.WriteLine($"Total packets                      : {statistics.PacketsReceivedTotal}");
         Console.WriteLine($"Packets received in current session: {statistics.PacketsReceivedCurrentSession}");
         Console.WriteLine($"Packets received in last session   : {statistics.PacketsReceivedLastSession}");
-        Console.WriteLine($"Average packet processing time     : {statistics.TotalPacketProcessingTime / statistics.TotalPacketsProcessed:D0} ms");
+        Console.WriteLine($"Average packet processing time     : {statistics.AveragePacketProcessingTime:F2} ms");
         Console.WriteLine($"Packages queued for processing     : {statistics.PacketsInQueue}");
         Console.WriteLine($"Packages queued in packet processor: {statistics.PacketsInProcessorQueue}");
 
         if (_useLogging)
         {
-            Console.WriteLine($"Average packet log time            : {statistics.TotalPacketLogTime / statistics.TotalPacketsLogged:D0} ms");
+            Console.WriteLine($"Average packet log time            : {statistics.AveragePacketLogTime:F2} ms");
         }
     }
 
