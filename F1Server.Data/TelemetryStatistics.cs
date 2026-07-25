@@ -81,6 +81,11 @@ public class TelemetryStatistics
     public long TotalPacketsProcessed { get; set; }
 
     /// <summary>
+    /// Average time in milliseconds for processing a single packet, 0 when no packet has been processed yet
+    /// </summary>
+    public double AveragePacketProcessingTime => TotalPacketsProcessed > 0 ? TotalPacketProcessingTime / TotalPacketsProcessed : 0;
+
+    /// <summary>
     /// Current session metrics
     /// </summary>
     public PacketsPerSessionMetrics CurrentSessionMetrics { get; } = new();
@@ -99,6 +104,11 @@ public class TelemetryStatistics
     /// Total number of logged packets
     /// </summary>
     public long TotalPacketsLogged { get; set; }
+
+    /// <summary>
+    /// Average time in milliseconds for logging a single packet, 0 when no packet has been logged yet
+    /// </summary>
+    public double AveragePacketLogTime => TotalPacketsLogged > 0 ? TotalPacketLogTime / TotalPacketsLogged : 0;
 
     #endregion // Properties
 

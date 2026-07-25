@@ -78,6 +78,58 @@ public class TelemetryStatisticsTests
     }
 
     /// <summary>
+    /// Test to verify that the average packet processing time is zero while no packet has been processed
+    /// </summary>
+    [TestMethod]
+    public void TelemetryStatisticsAveragePacketProcessingTimeWithoutProcessedPacketsReturnsZero()
+    {
+        var statistics = new TelemetryStatistics();
+
+        Assert.AreEqual(0d, statistics.AveragePacketProcessingTime, 0.0001, "Average packet processing time must be zero without processed packets!");
+    }
+
+    /// <summary>
+    /// Test to verify that the average packet processing time is the total time divided by the processed packets
+    /// </summary>
+    [TestMethod]
+    public void TelemetryStatisticsAveragePacketProcessingTimeReturnsTotalTimePerPacket()
+    {
+        var statistics = new TelemetryStatistics
+                         {
+                             TotalPacketProcessingTime = 15,
+                             TotalPacketsProcessed = 4
+                         };
+
+        Assert.AreEqual(3.75d, statistics.AveragePacketProcessingTime, 0.0001, "Average packet processing time must be the total time divided by the processed packets!");
+    }
+
+    /// <summary>
+    /// Test to verify that the average packet log time is zero while no packet has been logged
+    /// </summary>
+    [TestMethod]
+    public void TelemetryStatisticsAveragePacketLogTimeWithoutLoggedPacketsReturnsZero()
+    {
+        var statistics = new TelemetryStatistics();
+
+        Assert.AreEqual(0d, statistics.AveragePacketLogTime, 0.0001, "Average packet log time must be zero without logged packets!");
+    }
+
+    /// <summary>
+    /// Test to verify that the average packet log time is the total time divided by the logged packets
+    /// </summary>
+    [TestMethod]
+    public void TelemetryStatisticsAveragePacketLogTimeReturnsTotalTimePerPacket()
+    {
+        var statistics = new TelemetryStatistics
+                         {
+                             TotalPacketLogTime = 9,
+                             TotalPacketsLogged = 6
+                         };
+
+        Assert.AreEqual(1.5d, statistics.AveragePacketLogTime, 0.0001, "Average packet log time must be the total time divided by the logged packets!");
+    }
+
+    /// <summary>
     /// Increments the packet counters of the given statistics the given number of times
     /// </summary>
     /// <param name="statistics">Statistics to increment</param>

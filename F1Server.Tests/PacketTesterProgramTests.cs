@@ -54,7 +54,7 @@ public class PacketTesterProgramTests
     }
 
     /// <summary>
-    /// Invokes <see cref="Program.TestSessionPacket"/> and captures the console output it writes
+    /// Invokes <see cref="F1PacketTester.Program.TestSessionPacket"/> and captures the console output it writes
     /// </summary>
     /// <param name="filePath">Path to the packet file</param>
     /// <param name="gameVersion">Game version passed to the method</param>
@@ -69,7 +69,7 @@ public class PacketTesterProgramTests
 
             Console.SetOut(writer);
 
-            Program.TestSessionPacket(filePath, gameVersion, HeaderSize, new ConsoleProgressBar(1, "Test"));
+            F1PacketTester.Program.TestSessionPacket(filePath, gameVersion, HeaderSize, new ConsoleProgressBar(1, "Test"));
 
             return writer.ToString();
         }
