@@ -221,7 +221,8 @@ internal static class FastestLapPerSessionCache
     }
 
     /// <summary>
-    /// Ensures that the cache is initialized with the fastest lap data for all sessions
+    /// Ensures that the cache is initialized with the fastest lap data for all sessions. A warm up that is aborted by a
+    /// cancellation request leaves the cache uninitialized, so the next caller warms it up again
     /// </summary>
     /// <param name="cancellationToken">Cancellation token to cancel the operation if needed</param>
     /// <returns>A task that represents the asynchronous operation of initializing the cache</returns>
@@ -257,18 +258,19 @@ internal static class FastestLapPerSessionCache
 
                 foreach (var sessionId in sessionIds)
                 {
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        // The warm up was aborted before all sessions were calculated, so the cache stays uninitialized
+                        // and is warmed up again by the next caller
+                        return;
+                    }
+
                     var fastestLapData = await CalculateFastestLapDataAsync(sessionId, dbFactory, cancellationToken).ConfigureAwait(false);
 
                     if (fastestLapData != null)
                     {
                         // Update or add the fastest lap data for the session
                         _fastestLapCache[sessionId] = fastestLapData;
-                    }
-
-                    if (cancellationToken.IsCancellationRequested)
-                    {
-                        // If cancellation is requested, exit the loop
-                        break;
                     }
                 }
             }

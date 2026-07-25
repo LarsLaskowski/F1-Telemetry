@@ -1,3 +1,5 @@
+using System.Reflection;
+
 using F1Server.Core.Enumerations;
 using F1Server.Db.Entity;
 using F1Server.Db.Entity.Repositories;
@@ -39,6 +41,11 @@ public class FastestLapPerSessionCacheTests
     /// Name of the driver created for the tests in this class
     /// </summary>
     private const string TestDriverName = "Fastest Lap Cache Driver";
+
+    /// <summary>
+    /// Name of the private field holding the warm up state of the cache
+    /// </summary>
+    private const string CacheInitializedFieldName = "_cacheInitialized";
 
     #endregion // Constants
 
@@ -233,6 +240,47 @@ public class FastestLapPerSessionCacheTests
 
         Assert.AreEqual(unknownSessionId, fastestLapData.SessionId, "The returned data should belong to the requested session!");
         Assert.IsNull(fastestLapData.FastestLap, "An unknown session should not report a fastest lap!");
+    }
+
+    /// <summary>
+    /// Verifies that a warm up aborted by a cancellation request leaves the cache uninitialized, so the incomplete
+    /// cache is not treated as complete for the rest of the process lifetime
+    /// </summary>
+    /// <returns>A task that represents the asynchronous operation</returns>
+    [TestMethod]
+    public async Task FastestLapPerSessionCacheCancelledWarmUpDoesNotMarkCacheAsInitialized()
+    {
+        var initializedField = typeof(FastestLapPerSessionCache).GetField(CacheInitializedFieldName, BindingFlags.NonPublic | BindingFlags.Static);
+
+        Assert.IsNotNull(initializedField, "The warm up state of the cache could not be resolved!");
+
+        var previousState = initializedField.GetValue(null);
+
+        // Force a new warm up, otherwise the already warmed up cache returns before the cancellation is evaluated
+        initializedField.SetValue(null, false);
+
+        try
+        {
+            using (var cancellationTokenSource = new CancellationTokenSource())
+            {
+                cancellationTokenSource.Cancel();
+
+                try
+                {
+                    await FastestLapPerSessionCache.InitializeCacheAsync(cancellationTokenSource.Token).ConfigureAwait(false);
+                }
+                catch (OperationCanceledException)
+                {
+                    // Expected - the warm up honours the cancellation request
+                }
+            }
+
+            Assert.AreEqual(false, initializedField.GetValue(null), "A warm up aborted by a cancellation request must not mark the cache as initialized!");
+        }
+        finally
+        {
+            initializedField.SetValue(null, previousState);
+        }
     }
 
     #endregion // Methods
