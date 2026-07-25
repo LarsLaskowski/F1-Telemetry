@@ -135,7 +135,7 @@ public void DoSomething()
 
 - **Indentation**: 4 spaces (no tabs)
 - **Line endings**: CRLF
-- **No trailing newline** at end of file (`SA1518`, `layoutRules.newlineAtEndOfFile = "omit"`)
+- **No trailing newline** at end of file (`insert_final_newline = false` in `.editorconfig`)
 - **Braces**: Allman style (new line before opening brace)
 - **Braces always required** for `if`, `for`, `while`, etc. — even for single-line bodies
 

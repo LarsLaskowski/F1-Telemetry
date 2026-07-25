@@ -85,7 +85,7 @@ F1-Telemetry is a multi-project .NET and Angular solution for receiving, process
 - Implicit usings are enabled in the solution
 - XML documentation files are generated
 - Central package management is used via `Directory.Packages.props`
-- Shared files such as `GlobalSuppressions.cs`, `SharedAssemblyInfo.cs`, and `StyleCop.json` are linked across projects
+- Shared files such as `GlobalSuppressions.cs` and `SharedAssemblyInfo.cs` are linked across projects
 - The solution file format is `.slnx`
 
 ### Naming
