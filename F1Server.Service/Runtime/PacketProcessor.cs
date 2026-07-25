@@ -401,7 +401,8 @@ internal class PacketProcessor : IDisposable
                 {
                     RemoveInvalidSessionFromDatabase();
 
-                    Session.IsInvalidSession = false;
+                    // The session is null when the removal succeeded
+                    Session?.IsInvalidSession = false;
                 }
             }
         }
