@@ -1,6 +1,6 @@
-# CLAUDE.md – F1-Telemetry
+# AGENTS.md – F1-Telemetry
 
-Guidance for Claude Code working in this repository. Keep suggestions aligned with the
+Guidance for Codex working in this repository. Keep suggestions aligned with the
 current repository state instead of generic defaults. This file consolidates the project
 conventions from `.github/copilot-instructions.md` and `.github/instructions/csharp.instructions.md`.
 
@@ -18,23 +18,21 @@ conventions from `.github/copilot-instructions.md` and `.github/instructions/csh
 - Subject line: maximum 80 characters, no trailing period.
 - Do not write the message in the first person.
 - Keep the body concise, usually 3-5 sentences.
-- Do not add AI-attribution trailers (e.g. `Co-Authored-By: Claude`, session URLs) unless the
+- Do not add AI-attribution trailers (e.g. `Co-Authored-By: Codex`, session URLs) unless the
   user explicitly asks for them.
 
 ### Pull requests
 
 - Always write the PR title and description in English, regardless of the language used in the
   conversation, issue, or user request.
-- Never mention Claude, Anthropic, "Claude Code", AI assistance, or any session/co-authorship
-  link in the PR title or description. This includes footers such as "Generated with Claude
-  Code" and session URLs.
+- Never mention Codex, OpenAI, AI assistance, or any session/co-authorship link in the PR title
+  or description. This includes footers such as "Generated with Codex" and session URLs.
 - Follow the PR template in `.github/pull_request_template.md`. Use its sections and do not add
   extra sections beyond it.
 - Do not add a "Validation", "Verification", "Testing", or similar section that lists
   `reihitsu-format`, `dotnet build`, `dotnet test`, or other build/test commands. Build and tests
   run automatically as PR checks, so restating them in the description is unnecessary.
-- This applies to every PR created for this repository, whether opened directly or through a
-  skill (see `fix-issue`, `publish-pr`, `review-pr` in `.claude/skills`).
+- This applies to every PR created for this repository, regardless of how it was opened.
 
 ---
 
