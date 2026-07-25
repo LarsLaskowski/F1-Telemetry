@@ -87,7 +87,7 @@ and visualizing telemetry data from EA F1 games.
 - Target framework `net10.0`; nullable reference types and implicit usings enabled.
 - XML documentation files are generated.
 - Central package management via `Directory.Packages.props`.
-- Shared files (`GlobalSuppressions.cs`, `SharedAssemblyInfo.cs`, `StyleCop.json`) are linked across projects.
+- Shared files (`GlobalSuppressions.cs`, `SharedAssemblyInfo.cs`) are linked across projects.
 
 ### Naming
 
