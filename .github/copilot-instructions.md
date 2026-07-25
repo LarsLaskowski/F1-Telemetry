@@ -26,8 +26,11 @@ These instructions apply to the F1-Telemetry solution. Keep suggestions aligned 
 - Never mention Claude, Copilot, Anthropic, "Claude Code", AI assistance, or any session/
   co-authorship link in the PR title or description. This includes footers such as "Generated
   with Claude Code" and session URLs
-- Follow the repository's PR template if one exists; otherwise use a concise Summary and Test
-  plan structure
+- Follow the PR template in `.github/pull_request_template.md`. Use its sections and do not add
+  extra sections beyond it
+- Do not add a "Validation", "Verification", "Testing", or similar section that lists
+  `reihitsu-format`, `dotnet build`, `dotnet test`, or other build/test commands. Build and tests
+  run automatically as PR checks, so restating them in the description is unnecessary
 - This applies to every PR created for this repository, whether opened directly or through a
   skill (see `fix-issue`, `publish-pr`, `review-pr` in `.claude/skills`)
 

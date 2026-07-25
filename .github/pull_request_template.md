@@ -1,17 +1,11 @@
 ## Summary
 
-<!-- Describe the change and why it is needed. For non-trivial changes, list the affected
-     files/components as bullet points, e.g.:
-- `Path/To/File.cs`: what changed and why
--->
+<!-- Briefly describe what changed and why. Keep it short and concrete. -->
 
-## Test plan
+## Linked issues
 
-<!-- List how the change was verified, e.g.: -->
-- [ ] `dotnet build` — 0 warnings (no `RH####` diagnostics)
-- [ ] `reihitsu-format --check` on changed files — clean
-- [ ] `dotnet test F1Server.Tests` — all tests pass
-- [ ] New/updated tests cover the change
+<!-- Use GitHub-native issue linking, for example: Closes #123 -->
 
-<!-- If this PR resolves an issue, uncomment and fill in the line below. Otherwise delete it. -->
-<!-- Closes #<issue-number> -->
+## Review notes
+
+<!-- Call out reviewer-relevant context, risks, trade-offs, or migration notes. -->
