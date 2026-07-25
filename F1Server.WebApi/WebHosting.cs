@@ -1,3 +1,5 @@
+using System.Runtime.CompilerServices;
+
 using F1Server.Core.Observability;
 using F1Server.Data;
 using F1Server.Observability;
@@ -12,6 +14,8 @@ using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
+
+[assembly: InternalsVisibleToAttribute("F1Server.Tests")]
 
 namespace F1Server.WebApi;
 

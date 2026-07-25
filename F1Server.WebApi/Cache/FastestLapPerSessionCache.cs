@@ -1,4 +1,6 @@
-﻿using F1Server.Core.Observability;
+﻿using System.Collections.Concurrent;
+
+using F1Server.Core.Observability;
 using F1Server.Data.ViewData;
 using F1Server.Db.Entity;
 using F1Server.Db.Entity.Repositories;
@@ -21,9 +23,25 @@ internal static class FastestLapPerSessionCache
 
     #region Fields
 
-    private static readonly Dictionary<long, FastestLapSessionViewData> _fastestLapCache = new();
-    private static readonly object _cacheLock = new();
-    private static bool _cacheInitialized = false;
+    /// <summary>
+    /// Cached fastest lap data per session id
+    /// </summary>
+    private static readonly ConcurrentDictionary<long, FastestLapSessionViewData> _fastestLapCache = new();
+
+    /// <summary>
+    /// Gates the calculation of a single session so the same session is not calculated twice in parallel
+    /// </summary>
+    private static readonly ConcurrentDictionary<long, SemaphoreSlim> _sessionLocks = new();
+
+    /// <summary>
+    /// Gates the initial cache warm up so it only runs once
+    /// </summary>
+    private static readonly SemaphoreSlim _initializationLock = new(1, 1);
+
+    /// <summary>
+    /// Is the cache already warmed up?
+    /// </summary>
+    private static volatile bool _cacheInitialized = false;
 
     #endregion // Fields
 
@@ -50,43 +68,59 @@ internal static class FastestLapPerSessionCache
     /// </returns>
     public static async Task<FastestLapSessionViewData> GetFastestLapDataForSessionAsync(long sessionId)
     {
-        await EnsureCacheInitialized().ConfigureAwait(true);
+        await EnsureCacheInitialized().ConfigureAwait(false);
 
-        lock (_cacheLock)
+        if (_fastestLapCache.TryGetValue(sessionId, out var cachedLapData))
         {
-            if (_fastestLapCache.ContainsKey(sessionId) == false)
-            {
-                UpdateCacheForSession(sessionId);
-            }
-
-            if (_fastestLapCache.TryGetValue(sessionId, out var fastestLapData))
-            {
-                return fastestLapData;
-            }
+            return cachedLapData;
         }
 
-        return new FastestLapSessionViewData
-               {
-                   SessionId = sessionId
-               };
+        var fastestLapData = await UpdateCacheForSessionAsync(sessionId).ConfigureAwait(false);
+
+        return fastestLapData ?? new FastestLapSessionViewData
+                                 {
+                                     SessionId = sessionId
+                                 };
     }
 
     /// <summary>
-    /// Updates the cache with the fastest lap data for the specified session
+    /// Updates the cache with the fastest lap data for the specified session without blocking other sessions
     /// </summary>
     /// <param name="sessionId">The unique identifier of the session for which the cache should be updated</param>
-    private static void UpdateCacheForSession(long sessionId)
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>
+    /// The cached <see cref="FastestLapSessionViewData"/> of the session or <see langword="null"/> if no data could be
+    /// calculated
+    /// </returns>
+    private static async Task<FastestLapSessionViewData?> UpdateCacheForSessionAsync(long sessionId, CancellationToken cancellationToken = default)
     {
-        lock (_cacheLock)
+        // Only one calculation per session at a time - requests for other sessions are not blocked
+        var sessionLock = _sessionLocks.GetOrAdd(sessionId, _ => new SemaphoreSlim(1, 1));
+
+        await sessionLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+        try
         {
-            using var dbFactory = RepositoryFactory.CreateInstance();
-
-            var fastestLapData = CalculateFastestLapDataAsync(sessionId, dbFactory).GetAwaiter().GetResult();
-
-            if (fastestLapData != null)
+            if (_fastestLapCache.TryGetValue(sessionId, out var cachedLapData))
             {
-                _fastestLapCache[sessionId] = fastestLapData;
+                return cachedLapData;
             }
+
+            using (var dbFactory = RepositoryFactory.CreateInstance())
+            {
+                var fastestLapData = await CalculateFastestLapDataAsync(sessionId, dbFactory, cancellationToken).ConfigureAwait(false);
+
+                if (fastestLapData != null)
+                {
+                    _fastestLapCache[sessionId] = fastestLapData;
+                }
+
+                return fastestLapData;
+            }
+        }
+        finally
+        {
+            sessionLock.Release();
         }
     }
 
@@ -193,46 +227,58 @@ internal static class FastestLapPerSessionCache
     /// <returns>A task that represents the asynchronous operation of initializing the cache</returns>
     private static async Task EnsureCacheInitialized(CancellationToken cancellationToken = default)
     {
-        if (_cacheInitialized == false)
+        if (_cacheInitialized)
         {
-            using var dbFactory = RepositoryFactory.CreateInstance();
+            return;
+        }
 
-            var sessionQuery = dbFactory.GetRepository<SessionRepository>()?.GetQuery();
+        // Asynchronous gate - concurrent callers wait without blocking a thread pool thread
+        await _initializationLock.WaitAsync(cancellationToken).ConfigureAwait(false);
 
-            List<long> sessionIds = [];
-
-            if (sessionQuery != null)
+        try
+        {
+            if (_cacheInitialized)
             {
-                sessionIds = await sessionQuery.Select(s => s.Id)
-                                               .ToListAsync(cancellationToken)
-                                               .ConfigureAwait(false);
+                return;
             }
 
-            foreach (var sessionId in sessionIds)
+            using (var dbFactory = RepositoryFactory.CreateInstance())
             {
-                var fastestLapData = await CalculateFastestLapDataAsync(sessionId, dbFactory, cancellationToken).ConfigureAwait(true);
+                var sessionQuery = dbFactory.GetRepository<SessionRepository>()?.GetQuery();
 
-                if (fastestLapData != null)
+                List<long> sessionIds = [];
+
+                if (sessionQuery != null)
                 {
-                    lock (_cacheLock)
+                    sessionIds = await sessionQuery.Select(s => s.Id)
+                                                   .ToListAsync(cancellationToken)
+                                                   .ConfigureAwait(false);
+                }
+
+                foreach (var sessionId in sessionIds)
+                {
+                    var fastestLapData = await CalculateFastestLapDataAsync(sessionId, dbFactory, cancellationToken).ConfigureAwait(false);
+
+                    if (fastestLapData != null)
                     {
                         // Update or add the fastest lap data for the session
                         _fastestLapCache[sessionId] = fastestLapData;
                     }
-                }
 
-                if (cancellationToken.IsCancellationRequested)
-                {
-                    // If cancellation is requested, exit the loop
-                    break;
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        // If cancellation is requested, exit the loop
+                        break;
+                    }
                 }
             }
 
-            lock (_cacheLock)
-            {
-                // Set cache initialized flag
-                _cacheInitialized = true;
-            }
+            // Set cache initialized flag
+            _cacheInitialized = true;
+        }
+        finally
+        {
+            _initializationLock.Release();
         }
     }
 
