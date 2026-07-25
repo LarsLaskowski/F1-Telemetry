@@ -51,6 +51,15 @@ public class FastestLapPerSessionCacheTests
 
     #endregion // Fields
 
+    #region Properties
+
+    /// <summary>
+    /// Gets or sets the test context that provides the cancellation token for the running test
+    /// </summary>
+    public TestContext TestContext { get; set; }
+
+    #endregion // Properties
+
     #region Static methods
 
     /// <summary>
@@ -173,7 +182,7 @@ public class FastestLapPerSessionCacheTests
                                  .ToArray();
 
         var results = await Task.WhenAll(requests)
-                                .WaitAsync(TimeSpan.FromSeconds(30))
+                                .WaitAsync(TimeSpan.FromSeconds(30), TestContext.CancellationToken)
                                 .ConfigureAwait(false);
 
         foreach (var result in results)
@@ -194,13 +203,14 @@ public class FastestLapPerSessionCacheTests
                                       .ToArray();
 
         var results = await Task.WhenAll(requests)
-                                .WaitAsync(TimeSpan.FromSeconds(30))
+                                .WaitAsync(TimeSpan.FromSeconds(30), TestContext.CancellationToken)
                                 .ConfigureAwait(false);
 
+        // Task.WhenAll keeps the order of the requests, so the results are in the order of the session ids
         var returnedSessionIds = results.Select(fastestLapData => fastestLapData.SessionId)
                                         .ToList();
 
-        CollectionAssert.AreEquivalent(_testSessionIds, returnedSessionIds, "Every parallel request should return the data of the session it asked for!");
+        Assert.AreSequenceEqual(_testSessionIds, returnedSessionIds, "Every parallel request should return the data of the session it asked for!");
 
         var expectedFastestLap = TimeSpan.FromMilliseconds(FastestLapTime).ToString(@"mm\:ss\.fff");
 
