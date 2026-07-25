@@ -9,6 +9,7 @@ using F1Server.Service.Cache;
 using F1Server.Service.Processors;
 using F1Server.Service.Runtime;
 using F1Server.Tests.Data;
+using F1Server.WebApi.Cache;
 
 namespace F1Server.Tests.Processors;
 
@@ -51,9 +52,49 @@ public class SessionHistoryProcessorTests
     private const ushort TestCarIndex3 = 9;
 
     /// <summary>
+    /// Unique game session id used by the inserted lap test
+    /// </summary>
+    private const ulong TestSessionUniqueId4 = 419419419422UL;
+
+    /// <summary>
+    /// Car index of the test participant of the inserted lap test
+    /// </summary>
+    private const ushort TestCarIndex4 = 10;
+
+    /// <summary>
+    /// Unique game session id used by the refreshed lap test
+    /// </summary>
+    private const ulong TestSessionUniqueId5 = 419419419423UL;
+
+    /// <summary>
+    /// Car index of the test participant of the refreshed lap test
+    /// </summary>
+    private const ushort TestCarIndex5 = 11;
+
+    /// <summary>
     /// Sector 3 sentinel time written directly to the database to detect an unwanted second update
     /// </summary>
     private const uint SentinelSector3Time = 12345;
+
+    /// <summary>
+    /// Lap time in milliseconds reported by the session history packet of the fastest lap cache tests
+    /// </summary>
+    private const uint HistoryLapTime = 90000;
+
+    /// <summary>
+    /// Lap time in milliseconds of the lap that is already stored before the session history packet is processed
+    /// </summary>
+    private const uint StoredLapTime = 92000;
+
+    /// <summary>
+    /// Reference lap time in milliseconds of the tracks created for the tests in this class
+    /// </summary>
+    private const uint ReferenceLapTime = 90000;
+
+    /// <summary>
+    /// Format of a lap time
+    /// </summary>
+    private const string LapTimeLiteral = @"mm\:ss\.fff";
 
     #endregion // Constants
 
@@ -66,7 +107,7 @@ public class SessionHistoryProcessorTests
     [TestMethod]
     public void SessionHistoryProcessorCompletedLapIsNotDuplicated()
     {
-        var (sessionDbId, participantDbId) = CreateTestEntities(419001, 419, 419002, TestSessionUniqueId, TestCarIndex);
+        var (sessionDbId, participantDbId) = CreateTestEntities(419001, 419, 419002, TestSessionUniqueId, TestCarIndex, 191);
 
         var sessionRuntimeData = new SessionRuntimeData(2025, TestSessionUniqueId, SessionType.Race)
                                  {
@@ -165,7 +206,7 @@ public class SessionHistoryProcessorTests
     [TestMethod]
     public void SessionHistoryProcessorUnfinishedLapsAreCompletedAndInvalidated()
     {
-        var (sessionDbId, participantDbId) = CreateTestEntities(419003, 4191, 419004, TestSessionUniqueId2, TestCarIndex2);
+        var (sessionDbId, participantDbId) = CreateTestEntities(419003, 4191, 419004, TestSessionUniqueId2, TestCarIndex2, 192);
 
         var sessionRuntimeData = new SessionRuntimeData(2025, TestSessionUniqueId2, SessionType.Race)
                                  {
@@ -272,7 +313,7 @@ public class SessionHistoryProcessorTests
     [TestMethod]
     public void SessionHistoryProcessorChangedLapValuesAreUpdatedExactlyOnce()
     {
-        var (sessionDbId, participantDbId) = CreateTestEntities(419005, 4192, 419006, TestSessionUniqueId3, TestCarIndex3);
+        var (sessionDbId, participantDbId) = CreateTestEntities(419005, 4192, 419006, TestSessionUniqueId3, TestCarIndex3, 193);
 
         var sessionRuntimeData = new SessionRuntimeData(2025, TestSessionUniqueId3, SessionType.Race)
                                  {
@@ -391,6 +432,77 @@ public class SessionHistoryProcessorTests
         }
     }
 
+    /// <summary>
+    /// A lap inserted by a session history packet invalidates the cached fastest lap of the session, so the new lap is
+    /// reported instead of the state of the last calculation
+    /// </summary>
+    /// <returns>A task that represents the asynchronous operation</returns>
+    [TestMethod]
+    public async Task SessionHistoryProcessorInsertedLapInvalidatesFastestLapCache()
+    {
+        var (sessionDbId, participantDbId) = CreateTestEntities(419007, 4193, 419008, TestSessionUniqueId4, TestCarIndex4, 194);
+
+        var emptyLapData = await FastestLapPerSessionCache.GetFastestLapDataForSessionAsync(sessionDbId).ConfigureAwait(false);
+
+        Assert.IsNull(emptyLapData.FastestLap, "A session without laps must not report a fastest lap!");
+
+        var (sessionRuntimeData, sessionHistoryProcessor, packetHeader) = CreateProcessor(sessionDbId, participantDbId, TestSessionUniqueId4, TestCarIndex4);
+
+        var sessionHistoryData = CreateSessionHistoryData(packetHeader, TestCarIndex4, HistoryLapTime);
+
+        Assert.IsTrue(sessionHistoryProcessor.Process(sessionHistoryData, sessionRuntimeData), "Session history packet not correctly processed!");
+
+        var insertedLapData = await FastestLapPerSessionCache.GetFastestLapDataForSessionAsync(sessionDbId).ConfigureAwait(false);
+
+        Assert.AreEqual(TimeSpan.FromMilliseconds(HistoryLapTime).ToString(LapTimeLiteral), insertedLapData.FastestLap, "The lap inserted by the session history packet should be reported as fastest lap!");
+    }
+
+    /// <summary>
+    /// A stored lap refreshed by a session history packet invalidates the cached fastest lap of the session, so the
+    /// new lap time is reported instead of the state of the last calculation
+    /// </summary>
+    /// <returns>A task that represents the asynchronous operation</returns>
+    [TestMethod]
+    public async Task SessionHistoryProcessorRefreshedLapInvalidatesFastestLapCache()
+    {
+        var (sessionDbId, participantDbId) = CreateTestEntities(419009, 4194, 419010, TestSessionUniqueId5, TestCarIndex5, 195);
+
+        // The lap is stored without being cached, so the session history packet refreshes the stored row
+        using (var dbFactory = RepositoryFactory.CreateInstance())
+        {
+            var lapEntity = new LapEntity
+                            {
+                                LapNumber = 1,
+                                ParticipantId = participantDbId,
+                                SessionId = sessionDbId,
+                                LapTime = StoredLapTime,
+                                Sector1Time = 32000,
+                                Sector2Time = 30000,
+                                Sector3Time = 30000,
+                                IsCompleted = true,
+                                DriverStatus = DriverStatus.OnTrack,
+                                PitStatus = PitStatus.None,
+                                ResultStatus = ResultStatus.Active
+                            };
+
+            Assert.IsTrue(dbFactory.GetRepository<LapRepository>()?.Add(lapEntity), "Lap entity could not be added to the database!");
+        }
+
+        var storedLapData = await FastestLapPerSessionCache.GetFastestLapDataForSessionAsync(sessionDbId).ConfigureAwait(false);
+
+        Assert.AreEqual(TimeSpan.FromMilliseconds(StoredLapTime).ToString(LapTimeLiteral), storedLapData.FastestLap, "The already stored lap should be reported as fastest lap!");
+
+        var (sessionRuntimeData, sessionHistoryProcessor, packetHeader) = CreateProcessor(sessionDbId, participantDbId, TestSessionUniqueId5, TestCarIndex5);
+
+        var sessionHistoryData = CreateSessionHistoryData(packetHeader, TestCarIndex5, HistoryLapTime);
+
+        Assert.IsTrue(sessionHistoryProcessor.Process(sessionHistoryData, sessionRuntimeData), "Session history packet not correctly processed!");
+
+        var refreshedLapData = await FastestLapPerSessionCache.GetFastestLapDataForSessionAsync(sessionDbId).ConfigureAwait(false);
+
+        Assert.AreEqual(TimeSpan.FromMilliseconds(HistoryLapTime).ToString(LapTimeLiteral), refreshedLapData.FastestLap, "The lap time refreshed by the session history packet should be reported as fastest lap!");
+    }
+
     #endregion // Test methods
 
     #region Methods
@@ -403,8 +515,9 @@ public class SessionHistoryProcessorTests
     /// <param name="teamGameId">Game id of the team</param>
     /// <param name="sessionUniqueId">Unique game session id</param>
     /// <param name="carIndex">Car index of the participant in the game packet arrays</param>
+    /// <param name="trackNumber">Game id of the track of the session</param>
     /// <returns>Tuple with the database ids of the created session and participant</returns>
-    private static (long SessionDbId, long ParticipantDbId) CreateTestEntities(int driverGameId, ushort nationalityGameId, int teamGameId, ulong sessionUniqueId, ushort carIndex)
+    private static (long SessionDbId, long ParticipantDbId) CreateTestEntities(int driverGameId, ushort nationalityGameId, int teamGameId, ulong sessionUniqueId, ushort carIndex, int trackNumber)
     {
         using (var dbFactory = RepositoryFactory.CreateInstance())
         {
@@ -432,12 +545,25 @@ public class SessionHistoryProcessorTests
 
             Assert.IsTrue(dbFactory.GetRepository<TeamRepository>()?.Add(teamEntity), "Team entity could not be added to the database!");
 
+            // The session query includes the track, so the session needs a track that exists in the test database
+            var trackEntity = new TrackEntity
+                              {
+                                  TrackNumber = trackNumber,
+                                  Name = "Test Track",
+                                  LapReferenceTime = ReferenceLapTime,
+                                  Sector1ReferenceTime = 30000,
+                                  Sector2ReferenceTime = 30000,
+                                  Sector3ReferenceTime = 30000
+                              };
+
+            Assert.IsTrue(dbFactory.GetRepository<TrackRepository>()?.Add(trackEntity), "Track entity could not be added to the database!");
+
             var sessionEntity = new SessionEntity
                                 {
                                     SessionId = sessionUniqueId,
                                     CreationTimestamp = DateTime.UtcNow,
                                     SessionType = SessionType.Race,
-                                    TrackId = 1,
+                                    TrackId = trackEntity.Id,
                                     GameVersionId = 1
                                 };
 
@@ -457,6 +583,82 @@ public class SessionHistoryProcessorTests
 
             return (sessionEntity.Id, participantEntity.Id);
         }
+    }
+
+    /// <summary>
+    /// Creates the session runtime data, the participant runtime data and the session history processor of a test
+    /// </summary>
+    /// <param name="sessionDbId">Database id of the session</param>
+    /// <param name="participantDbId">Database id of the participant</param>
+    /// <param name="sessionUniqueId">Unique game session id</param>
+    /// <param name="carIndex">Car index of the participant in the game packet arrays</param>
+    /// <returns>Tuple with the created session runtime data, the processor and the packet header</returns>
+    private static (SessionRuntimeData SessionRuntimeData, SessionHistoryProcessor Processor, PacketHeader PacketHeader) CreateProcessor(long sessionDbId, long participantDbId, ulong sessionUniqueId, ushort carIndex)
+    {
+        var sessionRuntimeData = new SessionRuntimeData(2025, sessionUniqueId, SessionType.Race)
+                                 {
+                                     HasParticipants = true,
+                                     IsRecordable = true,
+                                     CurrentSession = new LiveSessionData
+                                                      {
+                                                          DbId = sessionDbId,
+                                                          SessionGameId = sessionUniqueId,
+                                                          SessionType = SessionType.Race
+                                                      }
+                                 };
+
+        var participantRuntimeData = new ParticipantRuntimeData(sessionRuntimeData)
+                                     {
+                                         IsValidObject = true,
+                                         ParticipantDbId = participantDbId,
+                                         ArrayIndex = carIndex
+                                     };
+
+        Assert.IsTrue(sessionRuntimeData.Participants.TryAdd(carIndex, participantRuntimeData), "Participant runtime data could not be registered!");
+
+        var packetHeader = new PacketHeader
+                           {
+                               GameVersion = 2025,
+                               PacketType = PacketTypes.SessionHistory,
+                               UniqueSessionId = sessionUniqueId,
+                               PlayerCarIndex = carIndex
+                           };
+
+        var sessionHistoryProcessor = new SessionHistoryProcessor(TestData.ServiceProvider,
+                                                                  packetHeader,
+                                                                  new LiveGameData
+                                                                  {
+                                                                      GameVersion = 2025
+                                                                  });
+
+        return (sessionRuntimeData, sessionHistoryProcessor, packetHeader);
+    }
+
+    /// <summary>
+    /// Creates a session history packet reporting a single completed lap
+    /// </summary>
+    /// <param name="packetHeader">Header of the packet</param>
+    /// <param name="carIndex">Car index of the participant in the game packet arrays</param>
+    /// <param name="lapTime">Lap time in milliseconds of the reported lap</param>
+    /// <returns>Session history packet data</returns>
+    private static SessionHistoryData CreateSessionHistoryData(PacketHeader packetHeader, ushort carIndex, uint lapTime)
+    {
+        var sessionHistory = new SessionHistoryData2025
+                             {
+                                 CarIndex = carIndex,
+                                 NumberOfLaps = 1
+                             };
+
+        sessionHistory.LapHistory[0] = new SessionHistoryLapData2025
+                                       {
+                                           LapTime = lapTime,
+                                           Sector1Time = (ushort)(lapTime / 3U),
+                                           Sector2Time = (ushort)(lapTime / 3U),
+                                           Sector3Time = (ushort)(lapTime - (2U * (lapTime / 3U))),
+                                           LapValidFlag = 0x0F
+                                       };
+
+        return new SessionHistoryData(packetHeader, sessionHistory);
     }
 
     /// <summary>

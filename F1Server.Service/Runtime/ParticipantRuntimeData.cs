@@ -6,6 +6,7 @@ using F1Server.Db.Entity;
 using F1Server.Db.Entity.Repositories;
 using F1Server.Db.Entity.Tables;
 using F1Server.Service.Cache;
+using F1Server.WebApi.Cache;
 
 namespace F1Server.Service.Runtime;
 
@@ -335,6 +336,12 @@ public class ParticipantRuntimeData : IDisposable
                                                                                         obj.IsCompleted = lapEntity.IsCompleted;
                                                                                     },
                                                                                     obj => LapRepositoryCache.AddOrUpdate(obj)) ?? false;
+            }
+
+            if (isFinished)
+            {
+                // The completed lap can be the new fastest lap of the session
+                FastestLapPerSessionCache.InvalidateSession(lapEntity.SessionId);
             }
         }
 

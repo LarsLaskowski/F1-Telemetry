@@ -13,7 +13,7 @@ namespace F1Server.WebApi.Cache;
 /// <summary>
 /// Provides a caching mechanism for storing and retrieving the fastest lap data for racing sessions
 /// </summary>
-internal static class FastestLapPerSessionCache
+public static class FastestLapPerSessionCache
 {
     #region Constants
 
@@ -32,6 +32,12 @@ internal static class FastestLapPerSessionCache
     /// Gates the calculation of a single session so the same session is not calculated twice in parallel
     /// </summary>
     private static readonly ConcurrentDictionary<long, SemaphoreSlim> _sessionLocks = new();
+
+    /// <summary>
+    /// Change counter per session id, incremented by every invalidation so a calculation that started before the
+    /// invalidation does not store its outdated result
+    /// </summary>
+    private static readonly ConcurrentDictionary<long, long> _sessionVersions = new();
 
     /// <summary>
     /// Gates the initial cache warm up so it only runs once
@@ -84,6 +90,44 @@ internal static class FastestLapPerSessionCache
     }
 
     /// <summary>
+    /// Drops the cached fastest lap data of a session, so the next request calculates it again. Has to be called
+    /// whenever laps of the session were added, changed or removed - otherwise a running session keeps reporting the
+    /// fastest lap of the moment its entry was calculated
+    /// </summary>
+    /// <param name="sessionId">The unique identifier of the session whose cached data is no longer up to date</param>
+    public static void InvalidateSession(long sessionId)
+    {
+        // A calculation that is currently running for this session sees the new version and discards its result
+        _sessionVersions.AddOrUpdate(sessionId, 1L, (_, version) => version + 1L);
+
+        _fastestLapCache.TryRemove(sessionId, out _);
+    }
+
+    /// <summary>
+    /// Removes a session from the cache completely, including its calculation gate. Has to be called when the session
+    /// itself was deleted, so no data of a no longer existing session is kept
+    /// </summary>
+    /// <param name="sessionId">The unique identifier of the deleted session</param>
+    public static void RemoveSession(long sessionId)
+    {
+        InvalidateSession(sessionId);
+
+        _sessionLocks.TryRemove(sessionId, out _);
+    }
+
+    /// <summary>
+    /// Gets the current change counter of a session
+    /// </summary>
+    /// <param name="sessionId">The unique identifier of the session</param>
+    /// <returns>The change counter of the session, or 0 if the session was never invalidated</returns>
+    private static long GetSessionVersion(long sessionId)
+    {
+        return _sessionVersions.TryGetValue(sessionId, out var version)
+                   ? version
+                   : 0L;
+    }
+
+    /// <summary>
     /// Updates the cache with the fastest lap data for the specified session without blocking other sessions
     /// </summary>
     /// <param name="sessionId">The unique identifier of the session for which the cache should be updated</param>
@@ -106,11 +150,14 @@ internal static class FastestLapPerSessionCache
                 return cachedLapData;
             }
 
+            var versionBeforeCalculation = GetSessionVersion(sessionId);
+
             using (var dbFactory = RepositoryFactory.CreateInstance())
             {
                 var fastestLapData = await CalculateFastestLapDataAsync(sessionId, dbFactory, cancellationToken).ConfigureAwait(false);
 
-                if (fastestLapData != null)
+                // An invalidation during the calculation makes the result outdated before it is stored
+                if (fastestLapData != null && GetSessionVersion(sessionId) == versionBeforeCalculation)
                 {
                     _fastestLapCache[sessionId] = fastestLapData;
                 }
@@ -265,9 +312,11 @@ internal static class FastestLapPerSessionCache
                         return;
                     }
 
+                    var versionBeforeCalculation = GetSessionVersion(sessionId);
+
                     var fastestLapData = await CalculateFastestLapDataAsync(sessionId, dbFactory, cancellationToken).ConfigureAwait(false);
 
-                    if (fastestLapData != null)
+                    if (fastestLapData != null && GetSessionVersion(sessionId) == versionBeforeCalculation)
                     {
                         // Update or add the fastest lap data for the session
                         _fastestLapCache[sessionId] = fastestLapData;

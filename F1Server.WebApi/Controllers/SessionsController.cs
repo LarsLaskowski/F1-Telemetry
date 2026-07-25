@@ -5,6 +5,7 @@ using F1Server.Core.Observability;
 using F1Server.Data.ViewData;
 using F1Server.Db.Entity;
 using F1Server.Db.Entity.Repositories;
+using F1Server.WebApi.Cache;
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -613,6 +614,9 @@ public class SessionsController : ControllerBase
 
                 isSessionRemoved = dbFactory.GetRepository<SessionRepository>()
                                             ?.Remove(s => s.Id == session.Id) ?? false;
+
+                // No data of a removed session may stay in the cache
+                FastestLapPerSessionCache.RemoveSession(session.Id);
             }
 
             isDeleted = isSessionRemoved && isParticipantsRemoved && isLapsRemoved && isTelemetryRemoved;
