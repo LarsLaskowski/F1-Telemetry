@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Sockets;
+using System.Runtime.CompilerServices;
 
 using F1Server.Core;
 using F1Server.Core.EventArgs;
@@ -9,6 +10,8 @@ using F1Server.Service;
 using F1Server.Telemetry;
 
 using Microsoft.Extensions.DependencyInjection;
+
+[assembly: InternalsVisibleToAttribute("F1Server.Tests")]
 
 namespace F1Server;
 
@@ -61,6 +64,27 @@ public static class Program
         telemetryClient.StatisticsOutput -= OnStatisticsOutput;
 
         Console.WriteLine("Exit!");
+    }
+
+    /// <summary>
+    /// Writes the telemetry statistics to the console
+    /// </summary>
+    /// <param name="statistics">Statistic data</param>
+    /// <param name="useLogging">Whether the packet logging statistics have to be written</param>
+    internal static void WriteStatistics(TelemetryStatistics statistics, bool useLogging)
+    {
+        Console.WriteLine("-------------------------- Statistics --------------------------");
+        Console.WriteLine($"Total packets                      : {statistics.PacketsReceivedTotal}");
+        Console.WriteLine($"Packets received in current session: {statistics.PacketsReceivedCurrentSession}");
+        Console.WriteLine($"Packets received in last session   : {statistics.PacketsReceivedLastSession}");
+        Console.WriteLine($"Average packet processing time     : {statistics.AveragePacketProcessingTime:F2} ms");
+        Console.WriteLine($"Packages queued for processing     : {statistics.PacketsInQueue}");
+        Console.WriteLine($"Packages queued in packet processor: {statistics.PacketsInProcessorQueue}");
+
+        if (useLogging)
+        {
+            Console.WriteLine($"Average packet log time            : {statistics.AveragePacketLogTime:F2} ms");
+        }
     }
 
     /// <summary>
@@ -439,18 +463,7 @@ public static class Program
     /// <param name="statistics">Statistic data</param>
     private static void OnStatisticsOutput(object? sender, TelemetryStatistics statistics)
     {
-        Console.WriteLine("-------------------------- Statistics --------------------------");
-        Console.WriteLine($"Total packets                      : {statistics.PacketsReceivedTotal}");
-        Console.WriteLine($"Packets received in current session: {statistics.PacketsReceivedCurrentSession}");
-        Console.WriteLine($"Packets received in last session   : {statistics.PacketsReceivedLastSession}");
-        Console.WriteLine($"Average packet processing time     : {statistics.AveragePacketProcessingTime:F2} ms");
-        Console.WriteLine($"Packages queued for processing     : {statistics.PacketsInQueue}");
-        Console.WriteLine($"Packages queued in packet processor: {statistics.PacketsInProcessorQueue}");
-
-        if (_useLogging)
-        {
-            Console.WriteLine($"Average packet log time            : {statistics.AveragePacketLogTime:F2} ms");
-        }
+        WriteStatistics(statistics, _useLogging);
     }
 
     /// <summary>
