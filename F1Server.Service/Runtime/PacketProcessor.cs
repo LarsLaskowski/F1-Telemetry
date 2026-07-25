@@ -646,19 +646,17 @@ internal class PacketProcessor : IDisposable
         {
             try
             {
-                var sessionDbId = Session.SessionDbId;
-
                 using (var dbFactory = RepositoryFactory.CreateInstance())
                 {
-                    var isRemoved = dbFactory.GetRepository<SessionRepository>()?.Remove(s => s.Id == sessionDbId);
+                    var isRemoved = dbFactory.GetRepository<SessionRepository>()?.Remove(s => s.Id == Session.SessionDbId);
 
                     // Removed?
                     if (isRemoved != null && isRemoved.Value)
                     {
-                        Session = null;
-
                         // No data of a removed session may stay in the cache
-                        FastestLapPerSessionCache.RemoveSession(sessionDbId);
+                        FastestLapPerSessionCache.RemoveSession(Session.SessionDbId);
+
+                        Session = null;
                     }
                 }
             }
