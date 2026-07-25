@@ -300,7 +300,9 @@ attribute or class name. Verify `.cs` and `.Designer.cs` are consistent.
 - Test class `{Feature}Tests`; test method `{Class}{Scenario}{ExpectedResult}` — **PascalCase,
   concatenated, no underscores.** The `_`-separated pattern shown in older docs does not match
   the actual codebase and is rejected by the `RH4103` analyzer (member names must be PascalCase).
-- Always provide assert messages. For async exception checks use `Assert.ThrowsExceptionAsync<T>(...)`.
+- Always provide assert messages. For async exception checks use `Assert.ThrowsExactlyAsync<T>(...)`
+  (MSTest 4.x; `ThrowsExceptionAsync` no longer exists — only `Throws`, `ThrowsAsync`,
+  `ThrowsExactly`, `ThrowsExactlyAsync` are available).
 - Prefer the specific MSTest `Assert`/`CollectionAssert` method over `Assert.IsTrue`/`Assert.IsFalse`
   wrapping a boolean expression, e.g. `Assert.Contains(expected, collection, message)` instead of
   `Assert.IsTrue(collection.Contains(expected), message)` — SonarQube flags the latter.
