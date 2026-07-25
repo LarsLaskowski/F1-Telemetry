@@ -50,6 +50,9 @@ HEALTHCHECK --interval=5m --timeout=3s --retries=5 CMD curl --fail http://localh
 WORKDIR /app
 COPY --from=publish /app ./
 
+# aspnet:10.0-alpine listens on 8080 by default since .NET 8; pin it back to
+# 80 to match EXPOSE, the HEALTHCHECK and the documented port mapping.
+ENV ASPNETCORE_HTTP_PORTS=80
 ENV F1SERVER_RUN_TELEMETRY_LOGGING=false
 ENV F1SERVER_DATABASE_TYPE=1
 ENV F1SERVER_WEB=true
