@@ -275,7 +275,10 @@ public class FastestLapPerSessionCacheTests
                 }
             }
 
-            Assert.AreEqual(false, initializedField.GetValue(null), "A warm up aborted by a cancellation request must not mark the cache as initialized!");
+            var stateAfterCancellation = initializedField.GetValue(null) as bool?;
+
+            Assert.IsNotNull(stateAfterCancellation, "The warm up state of the cache could not be read!");
+            Assert.IsFalse(stateAfterCancellation.Value, "A warm up aborted by a cancellation request must not mark the cache as initialized!");
         }
         finally
         {
