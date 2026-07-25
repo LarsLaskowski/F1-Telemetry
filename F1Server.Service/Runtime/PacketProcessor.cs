@@ -399,9 +399,10 @@ internal class PacketProcessor : IDisposable
 
                 if (Session?.IsInvalidSession == true)
                 {
-                    RemoveInvalidSessionFromDatabase();
-
+                    // Reset the flag before the removal, because a successful removal sets the session to null
                     Session.IsInvalidSession = false;
+
+                    RemoveInvalidSessionFromDatabase();
                 }
             }
         }
