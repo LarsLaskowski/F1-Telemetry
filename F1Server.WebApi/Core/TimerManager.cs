@@ -5,11 +5,46 @@
 /// </summary>
 public class TimerManager : IDisposable
 {
+    #region Constants
+
+    /// <summary>
+    /// Delay in milliseconds before the timer callback is invoked for the first time
+    /// </summary>
+    private const int TimerDueTime = 1000;
+
+    /// <summary>
+    /// Interval in milliseconds between two timer callbacks
+    /// </summary>
+    private const int TimerPeriod = 1000;
+
+    #endregion // Constants
+
     #region Fields
 
+    /// <summary>
+    /// Guards the timer state against concurrent access
+    /// </summary>
+    private readonly Lock _lock = new();
+
+    /// <summary>
+    /// Timer invoking the configured action periodically
+    /// </summary>
     private Timer? _timer;
+
+    /// <summary>
+    /// Reset event handed over to the timer callback as state object
+    /// </summary>
     private AutoResetEvent? _autoResetEvent;
+
+    /// <summary>
+    /// Action executed on every timer tick
+    /// </summary>
     private Action? _action;
+
+    /// <summary>
+    /// Has the timer manager already been disposed?
+    /// </summary>
+    private bool _disposed;
 
     #endregion // Fields
 
@@ -30,18 +65,28 @@ public class TimerManager : IDisposable
     #region Methods
 
     /// <summary>
-    /// Prepare the timer
+    /// Prepare the timer, the timer is started only once, further calls are ignored while it is running
     /// </summary>
     /// <param name="action">Action</param>
     public void PrepareTimer(Action action)
     {
-        _action = action;
-        _autoResetEvent = new AutoResetEvent(false);
-        _timer = new Timer(Execute, _autoResetEvent, 1000, 1000);
+        lock (_lock)
+        {
+            ObjectDisposedException.ThrowIf(_disposed, this);
 
-        TimerStarted = DateTime.Now;
+            if (IsTimerStarted)
+            {
+                return;
+            }
 
-        IsTimerStarted = true;
+            _action = action;
+            _autoResetEvent = new AutoResetEvent(false);
+            _timer = new Timer(Execute, _autoResetEvent, TimerDueTime, TimerPeriod);
+
+            TimerStarted = DateTime.Now;
+
+            IsTimerStarted = true;
+        }
     }
 
     /// <summary>
@@ -75,8 +120,25 @@ public class TimerManager : IDisposable
     {
         if (disposing)
         {
-            _autoResetEvent?.Dispose();
-            _timer?.Dispose();
+            lock (_lock)
+            {
+                if (_disposed)
+                {
+                    return;
+                }
+
+                _timer?.Dispose();
+                _timer = null;
+
+                _autoResetEvent?.Dispose();
+                _autoResetEvent = null;
+
+                _action = null;
+
+                IsTimerStarted = false;
+
+                _disposed = true;
+            }
         }
     }
 
