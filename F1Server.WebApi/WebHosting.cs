@@ -8,7 +8,6 @@ using F1Server.WebApi.Core;
 using F1Server.WebApi.Hubs;
 
 using Microsoft.Extensions.Caching.Hybrid;
-using Microsoft.Extensions.Logging;
 
 using OpenTelemetry;
 using OpenTelemetry.Logs;
@@ -29,6 +28,10 @@ public class WebHosting : IDisposable
 
     private CancellationTokenSource? _cts;
     private WebApplication? _webApplication;
+
+    /// <summary>
+    /// Logger used to record diagnostics for the fire-and-forget startup tasks
+    /// </summary>
     private ILogger? _logger;
 
     #endregion // Fields
@@ -289,6 +292,34 @@ public class WebHosting : IDisposable
         }
     }
 
+    /// <summary>
+    /// Initializes the fastest lap per session cache asynchronously
+    /// </summary>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests. If the operation is canceled, the task will be terminated</param>
+    /// <returns>A task representing the asynchronous operation</returns>
+    private async Task StartupCache(CancellationToken cancellationToken)
+    {
+        await FastestLapPerSessionCache.InitializeCacheAsync(cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Observes a fire-and-forget startup task so that a faulting task is logged instead of staying unobserved
+    /// </summary>
+    /// <param name="task">The fire-and-forget task to observe</param>
+    /// <param name="errorMessage">The message logged when the task faults</param>
+    private void ObserveStartupTask(Task task, string errorMessage)
+    {
+        task.ContinueWith(completedTask =>
+                          {
+                              var exception = completedTask.Exception?.GetBaseException();
+
+                              _logger?.LogError(exception, errorMessage);
+                          },
+                          CancellationToken.None,
+                          TaskContinuationOptions.OnlyOnFaulted,
+                          TaskScheduler.Default);
+    }
+
     #endregion // Private methods
 
     #region IDisposable
@@ -317,29 +348,6 @@ public class WebHosting : IDisposable
 
             _ = retVal;
         }
-    }
-
-    /// <summary>
-    /// Initializes the fastest lap per session cache asynchronously
-    /// </summary>
-    /// <param name="cancellationToken">A token to monitor for cancellation requests. If the operation is canceled, the task will be terminated</param>
-    /// <returns>A task representing the asynchronous operation</returns>
-    private async Task StartupCache(CancellationToken cancellationToken)
-    {
-        await FastestLapPerSessionCache.InitializeCacheAsync(cancellationToken).ConfigureAwait(false);
-    }
-
-    /// <summary>
-    /// Observes a fire-and-forget startup task so that a faulting task is logged instead of staying unobserved
-    /// </summary>
-    /// <param name="task">The fire-and-forget task to observe</param>
-    /// <param name="errorMessage">The message logged when the task faults</param>
-    private void ObserveStartupTask(Task task, string errorMessage)
-    {
-        task.ContinueWith(completedTask => _logger?.LogError(completedTask.Exception, errorMessage),
-                          CancellationToken.None,
-                          TaskContinuationOptions.OnlyOnFaulted,
-                          TaskScheduler.Default);
     }
 
     #endregion // IDisposable
