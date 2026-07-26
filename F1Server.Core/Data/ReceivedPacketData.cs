@@ -70,6 +70,11 @@ public sealed class ReceivedPacketData
     /// </summary>
     public Exception? HeaderParseException { get; private set; }
 
+    /// <summary>
+    /// Reason the packet header was rejected without an exception, for example an undersized packet
+    /// </summary>
+    public string? HeaderRejectionReason { get; private set; }
+
     #endregion // Properties
 
     #region Methods
@@ -82,6 +87,7 @@ public sealed class ReceivedPacketData
     {
         PacketHeader = null;
         HeaderParseException = null;
+        HeaderRejectionReason = null;
 
         _rawData = new byte[rawData.Length];
 
@@ -115,6 +121,8 @@ public sealed class ReceivedPacketData
                 // packets here so those reads cannot go past the end of the array.
                 if (gameVersion >= 2023 && dataPacket.Length < ConstData.F12023HeaderSize)
                 {
+                    HeaderRejectionReason = $"Packet reports game version {gameVersion} but is only {dataPacket.Length} bytes, less than the required {ConstData.F12023HeaderSize} byte 2023+ header size";
+
                     return;
                 }
 
@@ -198,6 +206,10 @@ public sealed class ReceivedPacketData
                 PacketHeader = null;
                 HeaderParseException = ex;
             }
+        }
+        else
+        {
+            HeaderRejectionReason = $"Packet is only {dataPacket.Length} bytes, less than the required {ConstData.F12019HeaderSize} byte minimum header size";
         }
     }
 

@@ -199,13 +199,21 @@ internal class PacketProcessor : IDisposable
 
                     isProcessed = InternalProcessPackets(receivedPacketData);
                 }
-                else if (receivedPacketData.HeaderParseException != null)
+                else if (receivedPacketData.HeaderParseException is not null)
                 {
                     LastError = receivedPacketData.HeaderParseException.ToString();
 
                     Logger?.LogError(receivedPacketData.HeaderParseException, "Error parsing packet header!");
 
                     _appData?.AppMetrics?.ProcessingErrors.Add(1, new KeyValuePair<string, object?>("LastError", receivedPacketData.HeaderParseException.Message));
+                }
+                else if (receivedPacketData.HeaderRejectionReason is not null)
+                {
+                    LastError = receivedPacketData.HeaderRejectionReason;
+
+                    Logger?.LogWarning("Rejected packet header: {Reason}", receivedPacketData.HeaderRejectionReason);
+
+                    _appData?.AppMetrics?.ProcessingErrors.Add(1, new KeyValuePair<string, object?>("LastError", receivedPacketData.HeaderRejectionReason));
                 }
             }
             catch (Exception ex)
