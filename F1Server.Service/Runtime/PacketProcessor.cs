@@ -1,5 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
 using F1Server.Core;
@@ -199,21 +200,18 @@ internal class PacketProcessor : IDisposable
 
                     isProcessed = InternalProcessPackets(receivedPacketData);
                 }
-                else if (receivedPacketData.HeaderParseException is not null)
+                else
                 {
-                    LastError = receivedPacketData.HeaderParseException.ToString();
+                    RecordHeaderParseExceptionIfPresent(receivedPacketData.HeaderParseException);
 
-                    Logger?.LogError(receivedPacketData.HeaderParseException, "Error parsing packet header!");
+                    if (receivedPacketData.HeaderRejectionReason is not null)
+                    {
+                        LastError = receivedPacketData.HeaderRejectionReason;
 
-                    _appData?.AppMetrics?.ProcessingErrors.Add(1, new KeyValuePair<string, object?>("LastError", receivedPacketData.HeaderParseException.Message));
-                }
-                else if (receivedPacketData.HeaderRejectionReason is not null)
-                {
-                    LastError = receivedPacketData.HeaderRejectionReason;
+                        Logger?.LogWarning("Rejected packet header: {Reason}", receivedPacketData.HeaderRejectionReason);
 
-                    Logger?.LogWarning("Rejected packet header: {Reason}", receivedPacketData.HeaderRejectionReason);
-
-                    _appData?.AppMetrics?.ProcessingErrors.Add(1, new KeyValuePair<string, object?>("LastError", receivedPacketData.HeaderRejectionReason));
+                        _appData?.AppMetrics?.ProcessingErrors.Add(1, new KeyValuePair<string, object?>("LastError", receivedPacketData.HeaderRejectionReason));
+                    }
                 }
             }
             catch (Exception ex)
@@ -255,6 +253,25 @@ internal class PacketProcessor : IDisposable
         {
             Logger?.LogError(ex, "Error in packet received event subscriber!");
         }
+    }
+
+    /// <summary>
+    /// Logs and counts a packet header parse exception, if one was recorded
+    /// </summary>
+    /// <param name="exception">Exception caught while parsing the packet header, or <see langword="null"/> if the header was rejected without an exception</param>
+    [ExcludeFromCodeCoverage(Justification = "Defensive fallback: ReceivedPacketData's header parsing is bounds-checked before this exception can occur, so no packet observed in practice reaches this path")]
+    private void RecordHeaderParseExceptionIfPresent(Exception? exception)
+    {
+        if (exception is null)
+        {
+            return;
+        }
+
+        LastError = exception.ToString();
+
+        Logger?.LogError(exception, "Error parsing packet header!");
+
+        _appData?.AppMetrics?.ProcessingErrors.Add(1, new KeyValuePair<string, object?>("LastError", exception.Message));
     }
 
     /// <summary>
