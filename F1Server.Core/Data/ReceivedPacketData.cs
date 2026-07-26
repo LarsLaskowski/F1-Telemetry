@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -65,6 +66,21 @@ public sealed class ReceivedPacketData
     /// </summary>
     public PacketHeader? PacketHeader { get; private set; }
 
+    /// <summary>
+    /// Bounded classification of why the packet header was rejected, safe to use as a metric dimension
+    /// </summary>
+    public HeaderRejectionCode HeaderRejectionCode { get; private set; }
+
+    /// <summary>
+    /// Exception caught while parsing the packet header, set only when <see cref="HeaderRejectionCode"/> is <see cref="Enumerations.HeaderRejectionCode.ParseException"/>
+    /// </summary>
+    public Exception? HeaderParseException { get; private set; }
+
+    /// <summary>
+    /// Game version reported by the packet, set only when <see cref="HeaderRejectionCode"/> is <see cref="Enumerations.HeaderRejectionCode.Undersized2023Header"/>
+    /// </summary>
+    public ushort ReportedGameVersion { get; private set; }
+
     #endregion // Properties
 
     #region Methods
@@ -76,6 +92,9 @@ public sealed class ReceivedPacketData
     public void SetRawData(byte[] rawData)
     {
         PacketHeader = null;
+        HeaderRejectionCode = HeaderRejectionCode.None;
+        HeaderParseException = null;
+        ReportedGameVersion = 0;
 
         _rawData = new byte[rawData.Length];
 
@@ -92,105 +111,133 @@ public sealed class ReceivedPacketData
     /// <param name="dataPacket">Complete received packet content</param>
     private void AnalyzePacketHeader(ReadOnlySpan<byte> dataPacket)
     {
-        ref var memRef = ref MemoryMarshal.GetReference(dataPacket);
-
         if (dataPacket.Length >= ConstData.F12019HeaderSize)
         {
-            try
-            {
-                var contentOffset = 0;
+            ParseHeader(dataPacket);
+        }
+        else
+        {
+            HeaderRejectionCode = HeaderRejectionCode.PacketTooShort;
+        }
+    }
 
-                var gameVersion = Unsafe.ReadUnaligned<ushort>(ref memRef);
+    /// <summary>
+    /// Parses the packet header fields, containing any parsing exception so a malformed packet cannot crash the receiver
+    /// </summary>
+    /// <param name="dataPacket">Complete received packet content, at least <see cref="ConstData.F12019HeaderSize"/> bytes long</param>
+    [ExcludeFromCodeCoverage(Justification = "The try/catch wrapper itself cannot be exercised: every offset ParseHeaderFields reads is validated against the packet length by the guards in AnalyzePacketHeader before this method is called, and neither Enum.ToObject nor the object initializer can throw, so no packet observed in practice reaches this catch. Unsafe.ReadUnaligned itself performs no bounds checking; safety here comes entirely from those length guards, not from the read call")]
+    private void ParseHeader(ReadOnlySpan<byte> dataPacket)
+    {
+        try
+        {
+            ParseHeaderFields(dataPacket);
+        }
+        catch (Exception ex)
+        {
+            PacketHeader = null;
+            HeaderRejectionCode = HeaderRejectionCode.ParseException;
+            HeaderParseException = ex;
+        }
+    }
 
-                contentOffset += ConstData.TypeUInt16;
+    /// <summary>
+    /// Reads the packet header fields from the raw packet bytes
+    /// </summary>
+    /// <param name="dataPacket">Complete received packet content, at least <see cref="ConstData.F12019HeaderSize"/> bytes long</param>
+    private void ParseHeaderFields(ReadOnlySpan<byte> dataPacket)
+    {
+        ref var memRef = ref MemoryMarshal.GetReference(dataPacket);
 
-                // From 2023 the header carries additional fields (GameYear, OverallFrameIdentifier)
-                // that are read further below without their own bounds check; reject undersized
-                // packets here so those reads cannot go past the end of the array.
-                if (gameVersion >= 2023 && dataPacket.Length < ConstData.F12023HeaderSize)
-                {
-                    return;
-                }
+        var contentOffset = 0;
 
-                PacketHeader = new()
-                               {
-                                   // Format - uint16
-                                   GameVersion = gameVersion
-                               };
+        var gameVersion = Unsafe.ReadUnaligned<ushort>(ref memRef);
 
-                // Game year (since 2023) - uint8
-                if (PacketHeader.GameVersion >= 2023)
-                {
-                    PacketHeader.GameYear = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref memRef, contentOffset));
+        contentOffset += ConstData.TypeUInt16;
 
-                    contentOffset += ConstData.TypeUInt8;
-                }
+        // From 2023 the header carries additional fields (GameYear, OverallFrameIdentifier)
+        // that are read further below without their own bounds check; reject undersized
+        // packets here so those reads cannot go past the end of the array.
+        if (gameVersion >= 2023 && dataPacket.Length < ConstData.F12023HeaderSize)
+        {
+            HeaderRejectionCode = HeaderRejectionCode.Undersized2023Header;
+            ReportedGameVersion = gameVersion;
 
-                // Major version - uint8
-                PacketHeader.MajorGameVersion = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref memRef, contentOffset));
+            return;
+        }
 
-                contentOffset += ConstData.TypeUInt8;
+        PacketHeader = new()
+                       {
+                           // Format - uint16
+                           GameVersion = gameVersion
+                       };
 
-                // Minor version - uint8
-                PacketHeader.MinorGameVersion = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref memRef, contentOffset));
+        // Game year (since 2023) - uint8
+        if (PacketHeader.GameVersion >= 2023)
+        {
+            PacketHeader.GameYear = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref memRef, contentOffset));
 
-                contentOffset += ConstData.TypeUInt8;
+            contentOffset += ConstData.TypeUInt8;
+        }
 
-                // Packet version - uint8
-                PacketHeader.PacketVersion = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref memRef, contentOffset));
+        // Major version - uint8
+        PacketHeader.MajorGameVersion = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref memRef, contentOffset));
 
-                contentOffset += ConstData.TypeUInt8;
+        contentOffset += ConstData.TypeUInt8;
 
-                // Packet type (id) - uint8
-                var packetType = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref memRef, contentOffset));
+        // Minor version - uint8
+        PacketHeader.MinorGameVersion = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref memRef, contentOffset));
 
-                PacketHeader.PacketType = (PacketTypes)Enum.ToObject(typeof(PacketTypes), packetType + 1);
+        contentOffset += ConstData.TypeUInt8;
 
-                contentOffset += ConstData.TypeUInt8;
+        // Packet version - uint8
+        PacketHeader.PacketVersion = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref memRef, contentOffset));
 
-                // Session id - uint64
-                PacketHeader.UniqueSessionId = Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref memRef, contentOffset));
+        contentOffset += ConstData.TypeUInt8;
 
-                contentOffset += ConstData.TypeUInt64;
+        // Packet type (id) - uint8
+        var packetType = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref memRef, contentOffset));
 
-                // Session time - float
-                PacketHeader.SessionTime = Unsafe.ReadUnaligned<float>(ref Unsafe.Add(ref memRef, contentOffset));
-                PacketHeader.SessionTimeNum = Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref memRef, contentOffset));
+        PacketHeader.PacketType = (PacketTypes)Enum.ToObject(typeof(PacketTypes), packetType + 1);
 
-                contentOffset += ConstData.TypeFloat;
+        contentOffset += ConstData.TypeUInt8;
 
-                // Frame identifier - uint32
-                PacketHeader.FrameIdentifier = Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref memRef, contentOffset));
+        // Session id - uint64
+        PacketHeader.UniqueSessionId = Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref memRef, contentOffset));
 
-                contentOffset += ConstData.TypeUInt32;
+        contentOffset += ConstData.TypeUInt64;
 
-                // Overall frame identifier (doesn't go back after flashbacks)
-                if (PacketHeader.GameVersion >= 2023)
-                {
-                    PacketHeader.OverallFrameIdentifier = Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref memRef, contentOffset));
+        // Session time - float
+        PacketHeader.SessionTime = Unsafe.ReadUnaligned<float>(ref Unsafe.Add(ref memRef, contentOffset));
+        PacketHeader.SessionTimeNum = Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref memRef, contentOffset));
 
-                    contentOffset += ConstData.TypeUInt32;
-                }
+        contentOffset += ConstData.TypeFloat;
 
-                // Car index - uint8
-                PacketHeader.PlayerCarIndex = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref memRef, contentOffset));
+        // Frame identifier - uint32
+        PacketHeader.FrameIdentifier = Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref memRef, contentOffset));
 
-                if (PacketHeader.GameVersion >= 2020 && dataPacket.Length >= ConstData.F12020HeaderSize)
-                {
-                    contentOffset += ConstData.TypeUInt8;
+        contentOffset += ConstData.TypeUInt32;
 
-                    // Secondary car index - uint8
-                    PacketHeader.PlayerCarIndexSecondary = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref memRef, contentOffset));
-                }
-                else
-                {
-                    PacketHeader.PlayerCarIndexSecondary = 255;
-                }
-            }
-            catch
-            {
-                PacketHeader = null;
-            }
+        // Overall frame identifier (doesn't go back after flashbacks)
+        if (PacketHeader.GameVersion >= 2023)
+        {
+            PacketHeader.OverallFrameIdentifier = Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref memRef, contentOffset));
+
+            contentOffset += ConstData.TypeUInt32;
+        }
+
+        // Car index - uint8
+        PacketHeader.PlayerCarIndex = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref memRef, contentOffset));
+
+        if (PacketHeader.GameVersion >= 2020 && dataPacket.Length >= ConstData.F12020HeaderSize)
+        {
+            contentOffset += ConstData.TypeUInt8;
+
+            // Secondary car index - uint8
+            PacketHeader.PlayerCarIndexSecondary = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref memRef, contentOffset));
+        }
+        else
+        {
+            PacketHeader.PlayerCarIndexSecondary = 255;
         }
     }
 
