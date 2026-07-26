@@ -59,8 +59,6 @@ public class WebHosting : IDisposable
 
             var applicationData = serviceProvider.GetRequiredService<F1ServerApplicationData>();
 
-            _logger = applicationData.Logger;
-
             builder.Services.AddSingleton<F1ServerApplicationData>(applicationData);
             builder.Services.AddSingleton<TimerManager>();
 
@@ -86,6 +84,8 @@ public class WebHosting : IDisposable
             builder.Services.AddEndpointsApiExplorer();
 
             _webApplication = builder.Build();
+
+            _logger = applicationData.Logger ?? _webApplication.Services.GetRequiredService<ILoggerFactory>().CreateLogger<WebHosting>();
 
             if (_webApplication.Environment.IsDevelopment() == false)
             {
@@ -126,7 +126,7 @@ public class WebHosting : IDisposable
 
             _cts = new CancellationTokenSource();
 
-            ObserveStartupTask(_webApplication.StartAsync(_cts.Token), "Error starting the web application host!");
+            ObserveStartupTask(_webApplication.StartAsync(_cts.Token), "Error starting the web application host!", () => IsRunning = false);
 
             IsRunning = true;
 
@@ -307,13 +307,16 @@ public class WebHosting : IDisposable
     /// </summary>
     /// <param name="task">The fire-and-forget task to observe</param>
     /// <param name="errorMessage">The message logged when the task faults</param>
-    private void ObserveStartupTask(Task task, string errorMessage)
+    /// <param name="onFault">An optional action invoked when the task faults</param>
+    private void ObserveStartupTask(Task task, string errorMessage, Action? onFault = null)
     {
         task.ContinueWith(completedTask =>
                           {
                               var exception = completedTask.Exception?.GetBaseException();
 
                               _logger?.LogError(exception, errorMessage);
+
+                              onFault?.Invoke();
                           },
                           CancellationToken.None,
                           TaskContinuationOptions.OnlyOnFaulted,
