@@ -1,4 +1,5 @@
 using F1Server.Core.Data;
+using F1Server.Core.Enumerations;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -14,8 +15,8 @@ public class ReceivedPacketDataTests
 
     /// <summary>
     /// Test to verify that a packet reporting game version 2023 but shorter than the 2023 header size
-    /// does not read past the end of the raw data, leaves the header unset, and records a rejection
-    /// reason instead of silently discarding the failure
+    /// does not read past the end of the raw data, leaves the header unset, and records a bounded
+    /// rejection code plus the reported game version instead of silently discarding the failure
     /// </summary>
     [TestMethod]
     public void SetRawDataTruncated2023HeaderReturnsNullHeader()
@@ -30,13 +31,14 @@ public class ReceivedPacketDataTests
 
             Assert.IsNull(packetData.PacketHeader, $"Header should stay null for a {length} byte 2023 packet!");
             Assert.IsNull(packetData.HeaderParseException, $"No exception should be recorded for a {length} byte 2023 packet!");
-            Assert.IsNotNull(packetData.HeaderRejectionReason, $"A rejection reason should be recorded for a {length} byte 2023 packet!");
+            Assert.AreEqual(HeaderRejectionCode.Undersized2023Header, packetData.HeaderRejectionCode, $"Wrong rejection code for a {length} byte 2023 packet!");
+            Assert.AreEqual((ushort)2023, packetData.ReportedGameVersion, $"Wrong reported game version for a {length} byte 2023 packet!");
         }
     }
 
     /// <summary>
     /// Test to verify that a packet shorter than the minimum header size leaves the header unset
-    /// and records a rejection reason instead of silently discarding the failure
+    /// and records a bounded rejection code instead of silently discarding the failure
     /// </summary>
     [TestMethod]
     public void SetRawDataTooShortForHeaderReturnsNullHeader()
@@ -51,13 +53,13 @@ public class ReceivedPacketDataTests
 
             Assert.IsNull(packetData.PacketHeader, $"Header should stay null for a {length} byte packet!");
             Assert.IsNull(packetData.HeaderParseException, $"No exception should be recorded for a {length} byte packet!");
-            Assert.IsNotNull(packetData.HeaderRejectionReason, $"A rejection reason should be recorded for a {length} byte packet!");
+            Assert.AreEqual(HeaderRejectionCode.PacketTooShort, packetData.HeaderRejectionCode, $"Wrong rejection code for a {length} byte packet!");
         }
     }
 
     /// <summary>
     /// Test to verify that a packet reporting game version 2023 with exactly the 2023 header size
-    /// is parsed successfully and leaves no parse exception or rejection reason behind
+    /// is parsed successfully and leaves no parse exception or rejection code behind
     /// </summary>
     [TestMethod]
     public void SetRawDataFullSize2023HeaderReturnsHeader()
@@ -71,7 +73,7 @@ public class ReceivedPacketDataTests
         Assert.IsNotNull(packetData.PacketHeader, "Header should be set for a full size 2023 packet!");
         Assert.AreEqual((ushort)2023, packetData.PacketHeader.GameVersion, "Wrong game version!");
         Assert.IsNull(packetData.HeaderParseException, "No exception should be recorded for a successfully parsed packet!");
-        Assert.IsNull(packetData.HeaderRejectionReason, "No rejection reason should be recorded for a successfully parsed packet!");
+        Assert.AreEqual(HeaderRejectionCode.None, packetData.HeaderRejectionCode, "No rejection code should be recorded for a successfully parsed packet!");
     }
 
     /// <summary>

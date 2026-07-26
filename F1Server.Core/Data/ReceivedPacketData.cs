@@ -67,14 +67,19 @@ public sealed class ReceivedPacketData
     public PacketHeader? PacketHeader { get; private set; }
 
     /// <summary>
-    /// Exception caught while parsing the packet header, if the last header analysis failed
+    /// Bounded classification of why the packet header was rejected, safe to use as a metric dimension
+    /// </summary>
+    public HeaderRejectionCode HeaderRejectionCode { get; private set; }
+
+    /// <summary>
+    /// Exception caught while parsing the packet header, set only when <see cref="HeaderRejectionCode"/> is <see cref="Enumerations.HeaderRejectionCode.ParseException"/>
     /// </summary>
     public Exception? HeaderParseException { get; private set; }
 
     /// <summary>
-    /// Reason the packet header was rejected without an exception, for example an undersized packet
+    /// Game version reported by the packet, set only when <see cref="HeaderRejectionCode"/> is <see cref="Enumerations.HeaderRejectionCode.Undersized2023Header"/>
     /// </summary>
-    public string? HeaderRejectionReason { get; private set; }
+    public ushort ReportedGameVersion { get; private set; }
 
     #endregion // Properties
 
@@ -87,8 +92,9 @@ public sealed class ReceivedPacketData
     public void SetRawData(byte[] rawData)
     {
         PacketHeader = null;
+        HeaderRejectionCode = HeaderRejectionCode.None;
         HeaderParseException = null;
-        HeaderRejectionReason = null;
+        ReportedGameVersion = 0;
 
         _rawData = new byte[rawData.Length];
 
@@ -111,7 +117,7 @@ public sealed class ReceivedPacketData
         }
         else
         {
-            HeaderRejectionReason = $"Packet is only {dataPacket.Length} bytes, less than the required {ConstData.F12019HeaderSize} byte minimum header size";
+            HeaderRejectionCode = HeaderRejectionCode.PacketTooShort;
         }
     }
 
@@ -119,7 +125,7 @@ public sealed class ReceivedPacketData
     /// Parses the packet header fields, containing any parsing exception so a malformed packet cannot crash the receiver
     /// </summary>
     /// <param name="dataPacket">Complete received packet content, at least <see cref="ConstData.F12019HeaderSize"/> bytes long</param>
-    [ExcludeFromCodeCoverage(Justification = "The try/catch wrapper itself cannot be exercised: ParseHeaderFields is bounds-checked by the length guards in AnalyzePacketHeader and never throws for any packet observed in practice")]
+    [ExcludeFromCodeCoverage(Justification = "The try/catch wrapper itself cannot be exercised: every offset ParseHeaderFields reads is validated against the packet length by the guards in AnalyzePacketHeader before this method is called, and neither Enum.ToObject nor the object initializer can throw, so no packet observed in practice reaches this catch. Unsafe.ReadUnaligned itself performs no bounds checking; safety here comes entirely from those length guards, not from the read call")]
     private void ParseHeader(ReadOnlySpan<byte> dataPacket)
     {
         try
@@ -129,6 +135,7 @@ public sealed class ReceivedPacketData
         catch (Exception ex)
         {
             PacketHeader = null;
+            HeaderRejectionCode = HeaderRejectionCode.ParseException;
             HeaderParseException = ex;
         }
     }
@@ -152,7 +159,8 @@ public sealed class ReceivedPacketData
         // packets here so those reads cannot go past the end of the array.
         if (gameVersion >= 2023 && dataPacket.Length < ConstData.F12023HeaderSize)
         {
-            HeaderRejectionReason = $"Packet reports game version {gameVersion} but is only {dataPacket.Length} bytes, less than the required {ConstData.F12023HeaderSize} byte 2023+ header size";
+            HeaderRejectionCode = HeaderRejectionCode.Undersized2023Header;
+            ReportedGameVersion = gameVersion;
 
             return;
         }

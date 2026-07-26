@@ -202,16 +202,7 @@ internal class PacketProcessor : IDisposable
                 }
                 else
                 {
-                    RecordHeaderParseExceptionIfPresent(receivedPacketData.HeaderParseException);
-
-                    if (receivedPacketData.HeaderRejectionReason is not null)
-                    {
-                        LastError = receivedPacketData.HeaderRejectionReason;
-
-                        Logger?.LogWarning("Rejected packet header: {Reason}", receivedPacketData.HeaderRejectionReason);
-
-                        _appData?.AppMetrics?.ProcessingErrors.Add(1, new KeyValuePair<string, object?>("LastError", receivedPacketData.HeaderRejectionReason));
-                    }
+                    RecordRejectedHeader(receivedPacketData);
                 }
             }
             catch (Exception ex)
@@ -256,22 +247,54 @@ internal class PacketProcessor : IDisposable
     }
 
     /// <summary>
-    /// Logs and counts a packet header parse exception, if one was recorded
+    /// Logs and counts a rejected packet header using its bounded <see cref="HeaderRejectionCode"/> as the metric dimension,
+    /// keeping the untrusted packet details (length, reported game version, exception text) in the log message only
     /// </summary>
-    /// <param name="exception">Exception caught while parsing the packet header, or <see langword="null"/> if the header was rejected without an exception</param>
-    [ExcludeFromCodeCoverage(Justification = "Defensive fallback: ReceivedPacketData's header parsing is bounds-checked before this exception can occur, so no packet observed in practice reaches this path")]
-    private void RecordHeaderParseExceptionIfPresent(Exception? exception)
+    /// <param name="receivedPacketData">Received packet whose header was rejected</param>
+    private void RecordRejectedHeader(ReceivedPacketData receivedPacketData)
     {
-        if (exception is null)
+        if (receivedPacketData.HeaderRejectionCode == HeaderRejectionCode.None)
         {
             return;
         }
 
-        LastError = exception.ToString();
+        LastError = receivedPacketData.HeaderRejectionCode.ToString();
 
+        _appData?.AppMetrics?.ProcessingErrors.Add(1, new KeyValuePair<string, object?>("LastError", receivedPacketData.HeaderRejectionCode.ToString()));
+
+        switch (receivedPacketData.HeaderRejectionCode)
+        {
+            case HeaderRejectionCode.ParseException:
+                {
+                    RecordHeaderParseException(receivedPacketData.HeaderParseException);
+                }
+
+                break;
+
+            case HeaderRejectionCode.PacketTooShort:
+                {
+                    Logger?.LogWarning("Rejected packet header: packet is only {PacketLength} bytes, less than the required {MinimumHeaderSize} byte minimum header size", receivedPacketData.PacketLength, ConstData.F12019HeaderSize);
+                }
+
+                break;
+
+            case HeaderRejectionCode.Undersized2023Header:
+                {
+                    Logger?.LogWarning("Rejected packet header: packet reports game version {GameVersion} but is only {PacketLength} bytes, less than the required {RequiredHeaderSize} byte 2023+ header size", receivedPacketData.ReportedGameVersion, receivedPacketData.PacketLength, ConstData.F12023HeaderSize);
+                }
+
+                break;
+        }
+    }
+
+    /// <summary>
+    /// Logs the exception caught while parsing a packet header
+    /// </summary>
+    /// <param name="exception">Exception caught while parsing the packet header</param>
+    [ExcludeFromCodeCoverage(Justification = "Defensive fallback: ReceivedPacketData's header parsing is bounds-checked before this exception can occur, so no packet observed in practice reaches this path")]
+    private void RecordHeaderParseException(Exception? exception)
+    {
         Logger?.LogError(exception, "Error parsing packet header!");
-
-        _appData?.AppMetrics?.ProcessingErrors.Add(1, new KeyValuePair<string, object?>("LastError", exception.Message));
     }
 
     /// <summary>
