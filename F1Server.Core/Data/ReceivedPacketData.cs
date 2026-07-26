@@ -65,6 +65,11 @@ public sealed class ReceivedPacketData
     /// </summary>
     public PacketHeader? PacketHeader { get; private set; }
 
+    /// <summary>
+    /// Exception caught while parsing the packet header, if the last header analysis failed
+    /// </summary>
+    public Exception? HeaderParseException { get; private set; }
+
     #endregion // Properties
 
     #region Methods
@@ -76,6 +81,7 @@ public sealed class ReceivedPacketData
     public void SetRawData(byte[] rawData)
     {
         PacketHeader = null;
+        HeaderParseException = null;
 
         _rawData = new byte[rawData.Length];
 
@@ -187,9 +193,10 @@ public sealed class ReceivedPacketData
                     PacketHeader.PlayerCarIndexSecondary = 255;
                 }
             }
-            catch
+            catch (Exception ex)
             {
                 PacketHeader = null;
+                HeaderParseException = ex;
             }
         }
     }
