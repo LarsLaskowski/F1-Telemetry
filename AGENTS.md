@@ -32,7 +32,8 @@ conventions from `.github/copilot-instructions.md` and `.github/instructions/csh
 - Do not add a "Validation", "Verification", "Testing", or similar section that lists
   `reihitsu-format`, `dotnet build`, `dotnet test`, or other build/test commands. Build and tests
   run automatically as PR checks, so restating them in the description is unnecessary.
-- This applies to every PR created for this repository, regardless of how it was opened.
+- This applies to every PR created for this repository, whether opened directly or through a
+  skill (see `fix-issue`, `publish-pr`, `review-pr`, `rereview-pr` in `.agents/skills`).
 
 ---
 
