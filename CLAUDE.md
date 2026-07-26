@@ -34,7 +34,7 @@ conventions from `.github/copilot-instructions.md` and `.github/instructions/csh
   `reihitsu-format`, `dotnet build`, `dotnet test`, or other build/test commands. Build and tests
   run automatically as PR checks, so restating them in the description is unnecessary.
 - This applies to every PR created for this repository, whether opened directly or through a
-  skill (see `fix-issue`, `publish-pr`, `review-pr` in `.claude/skills`).
+  skill (see `fix-issue`, `publish-pr`, `review-pr`, `rereview-pr` in `.claude/skills`).
 
 ---
 
