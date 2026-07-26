@@ -5,6 +5,7 @@ using F1Server.Data;
 using F1Server.Service.Runtime;
 
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace F1Server.Tests.Runtime;
 
@@ -19,12 +20,20 @@ public class PacketProcessorRejectedHeaderTests
     /// <summary>
     /// Creates a packet processor with an isolated service provider and without database usage
     /// </summary>
+    /// <param name="withLogger">Whether to attach a no-op logger, to exercise the logger-attached code paths</param>
     /// <returns>Packet processor instance</returns>
-    private static PacketProcessor CreatePacketProcessor()
+    private static PacketProcessor CreatePacketProcessor(bool withLogger = false)
     {
         var services = new ServiceCollection();
 
-        services.AddSingleton(new F1ServerApplicationData());
+        var applicationData = new F1ServerApplicationData();
+
+        if (withLogger)
+        {
+            applicationData.Logger = NullLogger.Instance;
+        }
+
+        services.AddSingleton(applicationData);
         services.AddSingleton(new PacketAnalyzer());
 
         return new PacketProcessor(services.BuildServiceProvider(), false);
@@ -35,12 +44,13 @@ public class PacketProcessorRejectedHeaderTests
     #region Methods
 
     /// <summary>
-    /// A packet shorter than the minimum header size must not be processed and must record the bounded rejection code as the last error
+    /// A packet shorter than the minimum header size must not be processed and must record the bounded rejection code as the last error,
+    /// with a logger attached so the rejection warning is actually logged
     /// </summary>
     [TestMethod]
     public void PacketProcessorProcessPacketTooShortHeaderSetsRejectionCodeAsLastError()
     {
-        using (var packetProcessor = CreatePacketProcessor())
+        using (var packetProcessor = CreatePacketProcessor(withLogger: true))
         {
             var packetData = new ReceivedPacketData();
 

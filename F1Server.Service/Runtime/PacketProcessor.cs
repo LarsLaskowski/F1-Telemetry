@@ -248,9 +248,7 @@ internal class PacketProcessor : IDisposable
 
     /// <summary>
     /// Logs and counts a rejected packet header using its bounded <see cref="HeaderRejectionCode"/> as the metric dimension,
-    /// keeping the untrusted packet details (length, reported game version, exception text) in the log message only.
-    /// Only called while <see cref="ReceivedPacketData.PacketHeader"/> is <see langword="null"/>, so the rejection code
-    /// is always set to a value other than <see cref="F1Server.Core.Enumerations.HeaderRejectionCode.None"/>
+    /// keeping the untrusted packet details (length, reported game version, exception text) in the log message only
     /// </summary>
     /// <param name="receivedPacketData">Received packet whose header was rejected</param>
     private void RecordRejectedHeader(ReceivedPacketData receivedPacketData)
@@ -259,27 +257,23 @@ internal class PacketProcessor : IDisposable
 
         _appData?.AppMetrics?.ProcessingErrors.Add(1, new KeyValuePair<string, object?>("LastError", receivedPacketData.HeaderRejectionCode.ToString()));
 
-        if (receivedPacketData.HeaderParseException is not null)
-        {
-            RecordHeaderParseException(receivedPacketData.HeaderParseException);
-        }
-        else if (receivedPacketData.HeaderRejectionCode == HeaderRejectionCode.PacketTooShort)
-        {
-            Logger?.LogWarning("Rejected packet header: packet is only {PacketLength} bytes, less than the required {MinimumHeaderSize} byte minimum header size", receivedPacketData.PacketLength, ConstData.F12019HeaderSize);
-        }
-        else if (receivedPacketData.HeaderRejectionCode == HeaderRejectionCode.Undersized2023Header)
-        {
-            Logger?.LogWarning("Rejected packet header: packet reports game version {GameVersion} but is only {PacketLength} bytes, less than the required {RequiredHeaderSize} byte 2023+ header size", receivedPacketData.ReportedGameVersion, receivedPacketData.PacketLength, ConstData.F12023HeaderSize);
-        }
+        RecordHeaderParseExceptionIfPresent(receivedPacketData.HeaderParseException);
+
+        Logger?.LogWarning("Rejected packet header: {RejectionCode}, packet length {PacketLength} bytes, reported game version {GameVersion}", receivedPacketData.HeaderRejectionCode, receivedPacketData.PacketLength, receivedPacketData.ReportedGameVersion);
     }
 
     /// <summary>
-    /// Logs the exception caught while parsing a packet header
+    /// Logs the exception caught while parsing a packet header, if one was recorded
     /// </summary>
-    /// <param name="exception">Exception caught while parsing the packet header</param>
+    /// <param name="exception">Exception caught while parsing the packet header, or <see langword="null"/> if the header was rejected without an exception</param>
     [ExcludeFromCodeCoverage(Justification = "Defensive fallback: ReceivedPacketData's header parsing is bounds-checked before this exception can occur, so no packet observed in practice reaches this path")]
-    private void RecordHeaderParseException(Exception exception)
+    private void RecordHeaderParseExceptionIfPresent(Exception? exception)
     {
+        if (exception is null)
+        {
+            return;
+        }
+
         Logger?.LogError(exception, "Error parsing packet header!");
     }
 
