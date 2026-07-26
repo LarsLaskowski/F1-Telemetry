@@ -29,6 +29,11 @@ public class WebHosting : IDisposable
     private CancellationTokenSource? _cts;
     private WebApplication? _webApplication;
 
+    /// <summary>
+    /// Logger used to record diagnostics for the fire-and-forget startup tasks
+    /// </summary>
+    private ILogger? _logger;
+
     #endregion // Fields
 
     #region Properties
@@ -80,6 +85,8 @@ public class WebHosting : IDisposable
 
             _webApplication = builder.Build();
 
+            _logger = applicationData.Logger ?? _webApplication.Services.GetRequiredService<ILoggerFactory>().CreateLogger<WebHosting>();
+
             if (_webApplication.Environment.IsDevelopment() == false)
             {
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
@@ -119,11 +126,11 @@ public class WebHosting : IDisposable
 
             _cts = new CancellationTokenSource();
 
-            _webApplication.StartAsync(_cts.Token);
+            ObserveStartupTask(_webApplication.StartAsync(_cts.Token), "Error starting the web application host!", () => IsRunning = false);
 
             IsRunning = true;
 
-            StartupCache(_cts.Token).ConfigureAwait(false);
+            ObserveStartupTask(StartupCache(_cts.Token), "Error initializing the fastest lap per session cache!");
         }
     }
 
@@ -285,6 +292,37 @@ public class WebHosting : IDisposable
         }
     }
 
+    /// <summary>
+    /// Initializes the fastest lap per session cache asynchronously
+    /// </summary>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests. If the operation is canceled, the task will be terminated</param>
+    /// <returns>A task representing the asynchronous operation</returns>
+    private async Task StartupCache(CancellationToken cancellationToken)
+    {
+        await FastestLapPerSessionCache.InitializeCacheAsync(cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Observes a fire-and-forget startup task so that a faulting task is logged instead of staying unobserved
+    /// </summary>
+    /// <param name="task">The fire-and-forget task to observe</param>
+    /// <param name="errorMessage">The message logged when the task faults</param>
+    /// <param name="onFault">An optional action invoked when the task faults</param>
+    private void ObserveStartupTask(Task task, string errorMessage, Action? onFault = null)
+    {
+        task.ContinueWith(completedTask =>
+                          {
+                              var exception = completedTask.Exception?.GetBaseException();
+
+                              _logger?.LogError(exception, errorMessage);
+
+                              onFault?.Invoke();
+                          },
+                          CancellationToken.None,
+                          TaskContinuationOptions.OnlyOnFaulted,
+                          TaskScheduler.Default);
+    }
+
     #endregion // Private methods
 
     #region IDisposable
@@ -313,16 +351,6 @@ public class WebHosting : IDisposable
 
             _ = retVal;
         }
-    }
-
-    /// <summary>
-    /// Initializes the fastest lap per session cache asynchronously
-    /// </summary>
-    /// <param name="cancellationToken">A token to monitor for cancellation requests. If the operation is canceled, the task will be terminated</param>
-    /// <returns>A task representing the asynchronous operation</returns>
-    private async Task StartupCache(CancellationToken cancellationToken)
-    {
-        await FastestLapPerSessionCache.InitializeCacheAsync(cancellationToken).ConfigureAwait(false);
     }
 
     #endregion // IDisposable
