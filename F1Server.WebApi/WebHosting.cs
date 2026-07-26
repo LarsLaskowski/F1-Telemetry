@@ -8,6 +8,7 @@ using F1Server.WebApi.Core;
 using F1Server.WebApi.Hubs;
 
 using Microsoft.Extensions.Caching.Hybrid;
+using Microsoft.Extensions.Logging;
 
 using OpenTelemetry;
 using OpenTelemetry.Logs;
@@ -28,6 +29,7 @@ public class WebHosting : IDisposable
 
     private CancellationTokenSource? _cts;
     private WebApplication? _webApplication;
+    private ILogger? _logger;
 
     #endregion // Fields
 
@@ -53,6 +55,8 @@ public class WebHosting : IDisposable
             var builder = WebApplication.CreateBuilder();
 
             var applicationData = serviceProvider.GetRequiredService<F1ServerApplicationData>();
+
+            _logger = applicationData.Logger;
 
             builder.Services.AddSingleton<F1ServerApplicationData>(applicationData);
             builder.Services.AddSingleton<TimerManager>();
@@ -119,11 +123,11 @@ public class WebHosting : IDisposable
 
             _cts = new CancellationTokenSource();
 
-            _webApplication.StartAsync(_cts.Token);
+            ObserveStartupTask(_webApplication.StartAsync(_cts.Token), "Error starting the web application host!");
 
             IsRunning = true;
 
-            StartupCache(_cts.Token).ConfigureAwait(false);
+            ObserveStartupTask(StartupCache(_cts.Token), "Error initializing the fastest lap per session cache!");
         }
     }
 
@@ -323,6 +327,19 @@ public class WebHosting : IDisposable
     private async Task StartupCache(CancellationToken cancellationToken)
     {
         await FastestLapPerSessionCache.InitializeCacheAsync(cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Observes a fire-and-forget startup task so that a faulting task is logged instead of staying unobserved
+    /// </summary>
+    /// <param name="task">The fire-and-forget task to observe</param>
+    /// <param name="errorMessage">The message logged when the task faults</param>
+    private void ObserveStartupTask(Task task, string errorMessage)
+    {
+        task.ContinueWith(completedTask => _logger?.LogError(completedTask.Exception, errorMessage),
+                          CancellationToken.None,
+                          TaskContinuationOptions.OnlyOnFaulted,
+                          TaskScheduler.Default);
     }
 
     #endregion // IDisposable
