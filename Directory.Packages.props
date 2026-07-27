@@ -23,7 +23,7 @@
     <PackageVersion Include="MSTest.TestFramework" Version="4.3.2" />
     <PackageVersion Include="coverlet.collector" Version="10.0.1" />
     <!-- Code Analysis -->
-    <PackageVersion Include="Reihitsu.Analyzer" Version="1.0.0-beta5" />
+    <PackageVersion Include="Reihitsu.Analyzer" Version="1.0.0-beta6" />
     <!-- API Documentation & Swagger -->
     <PackageVersion Include="Swashbuckle.AspNetCore.Swagger" Version="10.2.3" />
     <PackageVersion Include="Swashbuckle.AspNetCore.SwaggerGen" Version="10.2.3" />
