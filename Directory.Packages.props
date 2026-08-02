@@ -19,8 +19,8 @@
     <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.10" />
     <!-- Testing -->
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.8.1" />
-    <PackageVersion Include="MSTest.TestAdapter" Version="4.3.2" />
-    <PackageVersion Include="MSTest.TestFramework" Version="4.3.2" />
+    <PackageVersion Include="MSTest.TestAdapter" Version="4.3.3" />
+    <PackageVersion Include="MSTest.TestFramework" Version="4.3.3" />
     <PackageVersion Include="coverlet.collector" Version="10.0.1" />
     <!-- Code Analysis -->
     <PackageVersion Include="Reihitsu.Analyzer" Version="1.0.0-beta6" />
