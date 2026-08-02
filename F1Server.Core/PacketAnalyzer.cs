@@ -14,9 +14,9 @@ public class PacketAnalyzer
     #region Properties
 
     /// <summary>
-    /// Last error
+    /// Last error of the most recent transformation, <see cref="string.Empty"/> when the transformation succeeded
     /// </summary>
-    public string LastError { get; private set; }
+    public string LastError { get; private set; } = string.Empty;
 
     #endregion // Properties
 
@@ -30,6 +30,8 @@ public class PacketAnalyzer
     public object? GetPacketData(ReceivedPacketData receivedData)
     {
         object? packetData = null;
+
+        LastError = string.Empty;
 
         if (receivedData.PacketHeader != null)
         {
@@ -127,16 +129,15 @@ public class PacketAnalyzer
     {
         object? sessionData = null;
 
+        LastError = string.Empty;
+
         if (dataPacket.Length > 0 && packetHeader != null)
         {
             var sessionTransformation = new PacketToSessionData(packetHeader);
 
             sessionData = sessionTransformation.ExtractSessionDataPacket(dataPacket);
 
-            if (sessionData == null && string.IsNullOrWhiteSpace(sessionTransformation.LastError) == false)
-            {
-                LastError = sessionTransformation.LastError;
-            }
+            UpdateLastError(sessionData, sessionTransformation);
         }
 
         return sessionData;
@@ -152,11 +153,15 @@ public class PacketAnalyzer
     {
         object? packetLapData = null;
 
+        LastError = string.Empty;
+
         if (dataPacket.Length > 0 && packetHeader != null)
         {
             var lapDataTransformation = new PacketToLapData(packetHeader);
 
             packetLapData = lapDataTransformation.ExtractLapData(dataPacket);
+
+            UpdateLastError(packetLapData, lapDataTransformation);
         }
 
         return packetLapData;
@@ -172,11 +177,15 @@ public class PacketAnalyzer
     {
         object? eventData = null;
 
+        LastError = string.Empty;
+
         if (dataPacket.Length > 0 && packetHeader != null)
         {
             var eventDataTransformation = new PacketToEventData(packetHeader);
 
             eventData = eventDataTransformation.ExtractEventData(dataPacket);
+
+            UpdateLastError(eventData, eventDataTransformation);
         }
 
         return eventData;
@@ -192,11 +201,15 @@ public class PacketAnalyzer
     {
         object? participantsData = null;
 
+        LastError = string.Empty;
+
         if (dataPacket.Length > 0 && packetHeader != null)
         {
             var participantsTransformation = new PacketToParticipants(packetHeader);
 
             participantsData = participantsTransformation.ExtractParticipantsDataPacket(dataPacket);
+
+            UpdateLastError(participantsData, participantsTransformation);
         }
 
         return participantsData;
@@ -212,16 +225,15 @@ public class PacketAnalyzer
     {
         object? carTelemetry = null;
 
+        LastError = string.Empty;
+
         if (dataPacket.Length > 0 && packetHeader != null)
         {
             var carTelemetryTransformation = new PacketToCarTelemetry(packetHeader);
 
             carTelemetry = carTelemetryTransformation.ExtractCarTelemetryData(dataPacket);
 
-            if (carTelemetry == null && string.IsNullOrWhiteSpace(carTelemetryTransformation.LastError) == false)
-            {
-                LastError = carTelemetryTransformation.LastError;
-            }
+            UpdateLastError(carTelemetry, carTelemetryTransformation);
         }
 
         return carTelemetry;
@@ -237,11 +249,15 @@ public class PacketAnalyzer
     {
         object? carStatus = null;
 
+        LastError = string.Empty;
+
         if (dataPacket.Length > 0 && packetHeader != null)
         {
             var carStatusTransformation = new PacketToCarStatus(packetHeader);
 
             carStatus = carStatusTransformation.ExtractCarStatusData(dataPacket);
+
+            UpdateLastError(carStatus, carStatusTransformation);
         }
 
         return carStatus;
@@ -257,11 +273,15 @@ public class PacketAnalyzer
     {
         object? carTelemetry2 = null;
 
+        LastError = string.Empty;
+
         if (dataPacket.Length > 0 && packetHeader != null)
         {
             var carTelemetry2Transformation = new PacketToCarTelemetry2(packetHeader);
 
             carTelemetry2 = carTelemetry2Transformation.ExtractCarTelemetry2Data(dataPacket);
+
+            UpdateLastError(carTelemetry2, carTelemetry2Transformation);
         }
 
         return carTelemetry2;
@@ -277,11 +297,15 @@ public class PacketAnalyzer
     {
         object? timeTrialData = null;
 
+        LastError = string.Empty;
+
         if (dataPacket.Length > 0 && packetHeader != null)
         {
             var timeTrialTransformation = new PacketToTimeTrialData(packetHeader);
 
             timeTrialData = timeTrialTransformation.ExtractTimeTrialDataPacket(dataPacket);
+
+            UpdateLastError(timeTrialData, timeTrialTransformation);
         }
 
         return timeTrialData;
@@ -297,11 +321,15 @@ public class PacketAnalyzer
     {
         object? lapPositionsData = null;
 
+        LastError = string.Empty;
+
         if (dataPacket.Length > 0 && packetHeader != null)
         {
             var lapPositionsTransformation = new PacketToLapPositions(packetHeader);
 
             lapPositionsData = lapPositionsTransformation.ExtractLapPositionsPacket(dataPacket);
+
+            UpdateLastError(lapPositionsData, lapPositionsTransformation);
         }
 
         return lapPositionsData;
@@ -317,11 +345,15 @@ public class PacketAnalyzer
     {
         object? sessionHistoryData = null;
 
+        LastError = string.Empty;
+
         if (dataPacket.Length > 0 && packetHeader != null)
         {
             var sessionHistoryTransformation = new PacketToSessionHistoryData(packetHeader);
 
             sessionHistoryData = sessionHistoryTransformation.ExtractSessionHistoryDataPacket(dataPacket);
+
+            UpdateLastError(sessionHistoryData, sessionHistoryTransformation);
         }
 
         return sessionHistoryData;
@@ -337,15 +369,37 @@ public class PacketAnalyzer
     {
         object? finalClassificationData = null;
 
+        LastError = string.Empty;
+
         if (dataPacket.Length > 0 && packetHeader != null)
         {
             var finalClassificationTransformation = new PacketToFinalClassification(packetHeader);
 
             finalClassificationData = finalClassificationTransformation.ExtractFinalClassificationData(dataPacket);
+
+            UpdateLastError(finalClassificationData, finalClassificationTransformation);
         }
 
         return finalClassificationData;
     }
 
     #endregion // Methods
+
+    #region Private methods
+
+    /// <summary>
+    /// Takes over the error of a transformation when the transformation returned no data object,
+    /// so that the reason for a rejected packet is not lost
+    /// </summary>
+    /// <param name="packetData">Data object returned by the transformation</param>
+    /// <param name="transformation">Transformation that converted the packet</param>
+    private void UpdateLastError(object? packetData, PacketToXBase transformation)
+    {
+        if (packetData is null && string.IsNullOrWhiteSpace(transformation.LastError) == false)
+        {
+            LastError = transformation.LastError;
+        }
+    }
+
+    #endregion // Private methods
 }

@@ -41,9 +41,9 @@ internal abstract class PacketToXBase
     public int HeaderSize => GetHeaderSize();
 
     /// <summary>
-    /// Last error
+    /// Last error of the transformation, <see cref="string.Empty"/> when the transformation succeeded
     /// </summary>
-    public string LastError { get; internal set; }
+    public string LastError { get; internal set; } = string.Empty;
 
     #endregion // Properties
 
