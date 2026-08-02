@@ -15,7 +15,6 @@ public class DetectSessionData
 {
     #region Fields
 
-    private readonly PacketAnalyzer _packetAnalyzer = new();
     private readonly List<string> _files;
     private bool _hasSessionInfo;
 
@@ -136,6 +135,10 @@ public class DetectSessionData
     {
         var isSessionFile = false;
 
+        // The files are analyzed in parallel and a packet analyzer is not thread safe,
+        // therefore every analyzed file uses its own instance
+        var packetAnalyzer = new PacketAnalyzer();
+
         sessionDataContent = new SessionDataInfo();
 
         using (var fs = new FileStream(fileName, FileMode.Open, FileAccess.Read))
@@ -157,7 +160,7 @@ public class DetectSessionData
 
                     if (packetData.PacketHeader?.PacketType == PacketTypes.Session)
                     {
-                        var packetContent = _packetAnalyzer.GetSessionData(packetData.PacketHeader, packetData.PacketRawData);
+                        var packetContent = packetAnalyzer.GetSessionData(packetData.PacketHeader, packetData.PacketRawData);
 
                         if (packetContent is SessionData sessionData && sessionData.PacketData != null)
                         {

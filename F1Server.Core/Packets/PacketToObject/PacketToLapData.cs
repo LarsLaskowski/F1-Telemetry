@@ -13,21 +13,21 @@ namespace F1Server.Core.Packets.PacketToObject;
 /// <summary>
 /// Class to extract a lap data object from received packet
 /// </summary>
-/// <param name="packetHeader">Header of packet</param>
-internal class PacketToLapData(PacketHeader packetHeader) : PacketToXBase(packetHeader)
+internal class PacketToLapData : PacketToXBase
 {
     #region Methods
 
     /// <summary>
     /// Extract lap data depending on actual game version of packet
     /// </summary>
+    /// <param name="packetHeader">Header of packet</param>
     /// <param name="dataPacket">Received packet data</param>
     /// <returns>Lap information</returns>
-    public object? ExtractLapData(ReadOnlySpan<byte> dataPacket)
+    public object? ExtractLapData(PacketHeader packetHeader, ReadOnlySpan<byte> dataPacket)
     {
         object? lapDataObject = null;
 
-        LastError = string.Empty;
+        Reset(packetHeader);
 
         if (dataPacket.Length > 0)
         {

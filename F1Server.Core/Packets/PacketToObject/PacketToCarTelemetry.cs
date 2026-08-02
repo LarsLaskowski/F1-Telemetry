@@ -13,21 +13,21 @@ namespace F1Server.Core.Packets.PacketToObject;
 /// <summary>
 /// Class to extract a car telemetry object from received packet
 /// </summary>
-/// <param name="packetHeader">Header of packet</param>
-internal class PacketToCarTelemetry(PacketHeader packetHeader) : PacketToXBase(packetHeader)
+internal class PacketToCarTelemetry : PacketToXBase
 {
     #region Methods
 
     /// <summary>
     /// Get car telemetry data from received data packet
     /// </summary>
+    /// <param name="packetHeader">Header of packet</param>
     /// <param name="dataPacket">Received data</param>
     /// <returns>Object</returns>
-    public object? ExtractCarTelemetryData(ReadOnlySpan<byte> dataPacket)
+    public object? ExtractCarTelemetryData(PacketHeader packetHeader, ReadOnlySpan<byte> dataPacket)
     {
         object? carTelemetryObject = null;
 
-        LastError = string.Empty;
+        Reset(packetHeader);
 
         if (dataPacket.Length > 0)
         {

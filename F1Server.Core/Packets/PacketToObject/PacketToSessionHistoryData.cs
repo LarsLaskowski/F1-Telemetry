@@ -11,21 +11,21 @@ namespace F1Server.Core.Packets.PacketToObject;
 /// <summary>
 /// Class to extract a session history object from received packet
 /// </summary>
-/// <param name="packetHeader">Packet header</param>
-internal class PacketToSessionHistoryData(PacketHeader packetHeader) : PacketToXBase(packetHeader)
+internal class PacketToSessionHistoryData : PacketToXBase
 {
     #region Methods
 
     /// <summary>
     /// Get session history data from received packet
     /// </summary>
+    /// <param name="packetHeader">Header of packet</param>
     /// <param name="dataPacket">Received data packet</param>
     /// <returns>Session history data object</returns>
-    public object? ExtractSessionHistoryDataPacket(ReadOnlySpan<byte> dataPacket)
+    public object? ExtractSessionHistoryDataPacket(PacketHeader packetHeader, ReadOnlySpan<byte> dataPacket)
     {
         object? sessionHistory = null;
 
-        LastError = string.Empty;
+        Reset(packetHeader);
 
         if (dataPacket.Length > 0)
         {
