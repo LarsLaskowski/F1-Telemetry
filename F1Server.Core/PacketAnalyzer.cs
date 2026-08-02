@@ -217,6 +217,11 @@ public class PacketAnalyzer
             var carTelemetryTransformation = new PacketToCarTelemetry(packetHeader);
 
             carTelemetry = carTelemetryTransformation.ExtractCarTelemetryData(dataPacket);
+
+            if (carTelemetry == null && string.IsNullOrWhiteSpace(carTelemetryTransformation.LastError) == false)
+            {
+                LastError = carTelemetryTransformation.LastError;
+            }
         }
 
         return carTelemetry;

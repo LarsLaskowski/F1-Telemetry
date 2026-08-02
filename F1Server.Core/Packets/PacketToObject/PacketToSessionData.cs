@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -449,6 +450,7 @@ internal class PacketToSessionData(PacketHeader packetHeader) : PacketToXBase(pa
     /// <param name="offsetToStart">Data offset</param>
     /// <param name="sessionDataBase">Base session data object</param>
     /// <returns>Status</returns>
+    [ExcludeFromCodeCoverage(Justification = "The try/catch wrapper itself cannot be exercised: ExtractSessionDataPacket validates the packet length before the extraction starts, Unsafe.ReadUnaligned performs no bounds check and therefore does not throw, and AdjustSessionType only throws for game versions from 2024 on, so no F1 2019 packet reaches this catch. The reachable extraction stays visible to coverage in ExtractBaseSessionData")]
     private bool ExtractSessionData2019(ref byte dataPacket, int packetLength, int offsetToStart, ISessionDataBase? sessionDataBase)
     {
         var retValue = false;
@@ -461,9 +463,9 @@ internal class PacketToSessionData(PacketHeader packetHeader) : PacketToXBase(pa
 
                 retValue = true;
             }
-            catch
+            catch (Exception ex)
             {
-                // Ignore exceptions in this step
+                LastError = ex.ToString();
             }
         }
 
@@ -478,6 +480,7 @@ internal class PacketToSessionData(PacketHeader packetHeader) : PacketToXBase(pa
     /// <param name="offsetToStart">Data offset</param>
     /// <param name="sessionDataBase">Base session data object</param>
     /// <returns>Status</returns>
+    [ExcludeFromCodeCoverage(Justification = "The try/catch wrapper itself cannot be exercised: ExtractSessionDataPacket validates the packet length before the extraction starts, Unsafe.ReadUnaligned performs no bounds check and therefore does not throw, and AdjustSessionType only throws for game versions from 2024 on, so no F1 2020 packet reaches this catch. The reachable extraction stays visible to coverage in ExtractSessionData2020Core")]
     private bool ExtractSessionData2020(ref byte dataPacket, int packetLength, int offsetToStart, ISessionDataBase? sessionDataBase)
     {
         var retValue = false;
@@ -490,22 +493,33 @@ internal class PacketToSessionData(PacketHeader packetHeader) : PacketToXBase(pa
 
                 if (actOffset > offsetToStart)
                 {
-                    sessionData.NumberWeatherForecastSamples = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
-
-                    actOffset += ConstData.TypeUInt8;
-
-                    ExtractWeatherForecast2020(ref dataPacket, actOffset, sessionData);
+                    ExtractSessionData2020Core(ref dataPacket, actOffset, sessionData);
 
                     retValue = true;
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                // Ignore exceptions in this step
+                LastError = ex.ToString();
             }
         }
 
         return retValue;
+    }
+
+    /// <summary>
+    /// Assign the F1 2020 specific fields of a session packet
+    /// </summary>
+    /// <param name="dataPacket">Received data</param>
+    /// <param name="actOffset">Current offset</param>
+    /// <param name="sessionData">Session data object</param>
+    private void ExtractSessionData2020Core(ref byte dataPacket, int actOffset, SessionData2020 sessionData)
+    {
+        sessionData.NumberWeatherForecastSamples = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
+
+        actOffset += ConstData.TypeUInt8;
+
+        ExtractWeatherForecast2020(ref dataPacket, actOffset, sessionData);
     }
 
     /// <summary>
@@ -516,6 +530,7 @@ internal class PacketToSessionData(PacketHeader packetHeader) : PacketToXBase(pa
     /// <param name="offsetToStart">Data offset</param>
     /// <param name="sessionDataBase">Base session data object</param>
     /// <returns>Status</returns>
+    [ExcludeFromCodeCoverage(Justification = "The try/catch wrapper itself cannot be exercised: ExtractSessionDataPacket validates the packet length before the extraction starts, Unsafe.ReadUnaligned performs no bounds check and therefore does not throw, and AdjustSessionType only throws for game versions from 2024 on, so no F1 2021 packet reaches this catch. The reachable extraction stays visible to coverage in ExtractSessionData2021Core")]
     private bool ExtractSessionData2021(ref byte dataPacket, int packetLength, int offsetToStart, ISessionDataBase? sessionDataBase)
     {
         var retValue = false;
@@ -528,98 +543,109 @@ internal class PacketToSessionData(PacketHeader packetHeader) : PacketToXBase(pa
 
                 if (actOffset > offsetToStart && sessionDataBase is SessionData2021 sessionData)
                 {
-                    sessionData.NumberWeatherForecastSamples = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
-
-                    actOffset += ConstData.TypeUInt8;
-
-                    actOffset = ExtractWeatherForecast2021(ref dataPacket, actOffset, sessionDataBase);
-
-                    var accuracy = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
-
-                    sessionData.ForecastAccuracy = (ForecastAccuracy)Enum.ToObject(typeof(ForecastAccuracy), accuracy);
-
-                    actOffset += ConstData.TypeUInt8;
-
-                    sessionData.AiDifficulty = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
-
-                    actOffset += ConstData.TypeUInt8;
-
-                    sessionData.SeasonLinkIdentifier = Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref dataPacket, actOffset));
-
-                    actOffset += ConstData.TypeUInt32;
-
-                    sessionData.WeekendLinkIdentifier = Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref dataPacket, actOffset));
-
-                    actOffset += ConstData.TypeUInt32;
-
-                    sessionData.SessionLinkIdentifier = Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref dataPacket, actOffset));
-
-                    actOffset += ConstData.TypeUInt32;
-
-                    sessionData.PitStopWindowIdealLap = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
-
-                    actOffset += ConstData.TypeUInt8;
-
-                    sessionData.PitStopWindowLatestLap = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
-
-                    actOffset += ConstData.TypeUInt8;
-
-                    sessionData.PitStopRejoinPosition = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
-
-                    actOffset += ConstData.TypeUInt8;
-
-                    sessionData.IsSteeringAssist = Unsafe.ReadUnaligned<bool>(ref Unsafe.Add(ref dataPacket, actOffset));
-
-                    actOffset += ConstData.TypeUInt8;
-
-                    var brakingAssist = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
-
-                    sessionData.BrakingAssist = (BrakingAssist)Enum.ToObject(typeof(BrakingAssist), brakingAssist);
-
-                    actOffset += ConstData.TypeUInt8;
-
-                    var gearboxAssist = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
-
-                    sessionData.GearboxAssist = (GearboxAssist)Enum.ToObject(typeof(GearboxAssist), gearboxAssist);
-
-                    actOffset += ConstData.TypeUInt8;
-
-                    sessionData.IsPitAssist = Unsafe.ReadUnaligned<bool>(ref Unsafe.Add(ref dataPacket, actOffset));
-
-                    actOffset += ConstData.TypeUInt8;
-
-                    sessionData.IsPitReleaseAssist = Unsafe.ReadUnaligned<bool>(ref Unsafe.Add(ref dataPacket, actOffset));
-
-                    actOffset += ConstData.TypeUInt8;
-
-                    sessionData.IsERSAssist = Unsafe.ReadUnaligned<bool>(ref Unsafe.Add(ref dataPacket, actOffset));
-
-                    actOffset += ConstData.TypeUInt8;
-
-                    sessionData.IsDRSAssist = Unsafe.ReadUnaligned<bool>(ref Unsafe.Add(ref dataPacket, actOffset));
-
-                    actOffset += ConstData.TypeUInt8;
-
-                    var raceLine = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
-
-                    sessionData.DynamicRaceLine = (DynamicRaceLine)Enum.ToObject(typeof(DynamicRaceLine), raceLine);
-
-                    actOffset += ConstData.TypeUInt8;
-
-                    var raceLineType = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
-
-                    sessionData.DynamicRaceLineType = (DynamicRaceLineType)Enum.ToObject(typeof(DynamicRaceLineType), raceLineType);
+                    ExtractSessionData2021Core(ref dataPacket, actOffset, sessionData);
 
                     retValue = true;
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                // Ignore exceptions in this step
+                LastError = ex.ToString();
             }
         }
 
         return retValue;
+    }
+
+    /// <summary>
+    /// Assign the F1 2021 specific fields of a session packet
+    /// </summary>
+    /// <param name="dataPacket">Received data</param>
+    /// <param name="actOffset">Current offset</param>
+    /// <param name="sessionData">Session data object</param>
+    private void ExtractSessionData2021Core(ref byte dataPacket, int actOffset, SessionData2021 sessionData)
+    {
+        sessionData.NumberWeatherForecastSamples = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
+
+        actOffset += ConstData.TypeUInt8;
+
+        actOffset = ExtractWeatherForecast2021(ref dataPacket, actOffset, sessionData);
+
+        var accuracy = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
+
+        sessionData.ForecastAccuracy = (ForecastAccuracy)Enum.ToObject(typeof(ForecastAccuracy), accuracy);
+
+        actOffset += ConstData.TypeUInt8;
+
+        sessionData.AiDifficulty = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
+
+        actOffset += ConstData.TypeUInt8;
+
+        sessionData.SeasonLinkIdentifier = Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref dataPacket, actOffset));
+
+        actOffset += ConstData.TypeUInt32;
+
+        sessionData.WeekendLinkIdentifier = Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref dataPacket, actOffset));
+
+        actOffset += ConstData.TypeUInt32;
+
+        sessionData.SessionLinkIdentifier = Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref dataPacket, actOffset));
+
+        actOffset += ConstData.TypeUInt32;
+
+        sessionData.PitStopWindowIdealLap = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
+
+        actOffset += ConstData.TypeUInt8;
+
+        sessionData.PitStopWindowLatestLap = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
+
+        actOffset += ConstData.TypeUInt8;
+
+        sessionData.PitStopRejoinPosition = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
+
+        actOffset += ConstData.TypeUInt8;
+
+        sessionData.IsSteeringAssist = Unsafe.ReadUnaligned<bool>(ref Unsafe.Add(ref dataPacket, actOffset));
+
+        actOffset += ConstData.TypeUInt8;
+
+        var brakingAssist = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
+
+        sessionData.BrakingAssist = (BrakingAssist)Enum.ToObject(typeof(BrakingAssist), brakingAssist);
+
+        actOffset += ConstData.TypeUInt8;
+
+        var gearboxAssist = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
+
+        sessionData.GearboxAssist = (GearboxAssist)Enum.ToObject(typeof(GearboxAssist), gearboxAssist);
+
+        actOffset += ConstData.TypeUInt8;
+
+        sessionData.IsPitAssist = Unsafe.ReadUnaligned<bool>(ref Unsafe.Add(ref dataPacket, actOffset));
+
+        actOffset += ConstData.TypeUInt8;
+
+        sessionData.IsPitReleaseAssist = Unsafe.ReadUnaligned<bool>(ref Unsafe.Add(ref dataPacket, actOffset));
+
+        actOffset += ConstData.TypeUInt8;
+
+        sessionData.IsERSAssist = Unsafe.ReadUnaligned<bool>(ref Unsafe.Add(ref dataPacket, actOffset));
+
+        actOffset += ConstData.TypeUInt8;
+
+        sessionData.IsDRSAssist = Unsafe.ReadUnaligned<bool>(ref Unsafe.Add(ref dataPacket, actOffset));
+
+        actOffset += ConstData.TypeUInt8;
+
+        var raceLine = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
+
+        sessionData.DynamicRaceLine = (DynamicRaceLine)Enum.ToObject(typeof(DynamicRaceLine), raceLine);
+
+        actOffset += ConstData.TypeUInt8;
+
+        var raceLineType = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
+
+        sessionData.DynamicRaceLineType = (DynamicRaceLineType)Enum.ToObject(typeof(DynamicRaceLineType), raceLineType);
     }
 
     /// <summary>
