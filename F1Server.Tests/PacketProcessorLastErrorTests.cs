@@ -1,9 +1,12 @@
 using F1Server.Core;
 using F1Server.Core.Data;
+using F1Server.Core.Enumerations;
 using F1Server.Data;
+using F1Server.Observability;
 using F1Server.Service.Runtime;
 
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace F1Server.Tests;
 
@@ -20,6 +23,11 @@ public class PacketProcessorLastErrorTests
     /// </summary>
     private const int TruncatedPacketLength = 32;
 
+    /// <summary>
+    /// Offset of the packet type inside a packet header of a game version before 2023
+    /// </summary>
+    private const int PacketTypeOffset = 5;
+
     #endregion // Constants
 
     #region Static methods
@@ -30,9 +38,15 @@ public class PacketProcessorLastErrorTests
     /// <returns>Packet processor instance</returns>
     private static PacketProcessor CreatePacketProcessor()
     {
+        var applicationData = new F1ServerApplicationData
+                              {
+                                  AppMetrics = new AppMetrics(),
+                                  Logger = NullLogger.Instance
+                              };
+
         var services = new ServiceCollection();
 
-        services.AddSingleton(new F1ServerApplicationData());
+        services.AddSingleton(applicationData);
         services.AddSingleton(new PacketAnalyzer());
 
         return new PacketProcessor(services.BuildServiceProvider(), false);
@@ -53,6 +67,28 @@ public class PacketProcessorLastErrorTests
         receivedData.SetRawData(isTruncated ? packetContent.AsSpan(0, TruncatedPacketLength).ToArray() : packetContent);
 
         Assert.IsNotNull(receivedData.PacketHeader, $"Header of {fileName} could not be parsed!");
+
+        return receivedData;
+    }
+
+    /// <summary>
+    /// Reads a sample packet file and replaces its packet type, so that a packet type can be tested
+    /// for which the reported game version provides no transformation
+    /// </summary>
+    /// <param name="fileName">Name of the sample packet file of a game version before 2023</param>
+    /// <param name="packetType">Packet type to write into the packet header</param>
+    /// <returns>Received packet data</returns>
+    private static ReceivedPacketData GetPacketDataWithPacketType(string fileName, PacketTypes packetType)
+    {
+        var packetContent = File.ReadAllBytes(Path.Combine("SampleData", fileName));
+
+        packetContent[PacketTypeOffset] = (byte)(packetType - 1);
+
+        var receivedData = new ReceivedPacketData();
+
+        receivedData.SetRawData(packetContent);
+
+        Assert.AreEqual(packetType, receivedData.PacketHeader?.PacketType, $"Packet type of {fileName} could not be replaced!");
 
         return receivedData;
     }
@@ -100,16 +136,32 @@ public class PacketProcessorLastErrorTests
     }
 
     /// <summary>
-    /// A packet type without a transformation must not report an error
+    /// A packet type that is received but not converted must not report an error
     /// </summary>
     [TestMethod]
-    public void PacketProcessorProcessPacketUnsupportedPacketTypeKeepsLastErrorEmpty()
+    public void PacketProcessorProcessPacketUnconvertedPacketTypeKeepsLastErrorEmpty()
     {
         using (var packetProcessor = CreatePacketProcessor())
         {
             packetProcessor.ProcessPacket(GetPacketData("F1-2023-TyreSets.packet", false));
 
-            Assert.IsEmpty(packetProcessor.LastError, "A packet type without a transformation must not report an error!");
+            Assert.IsEmpty(packetProcessor.LastError, "A packet type that is not converted must not report an error!");
+        }
+    }
+
+    /// <summary>
+    /// A packet type that the reported game version does not support must not report an error
+    /// </summary>
+    [TestMethod]
+    public void PacketProcessorProcessPacketUnsupportedGameVersionKeepsLastErrorEmpty()
+    {
+        using (var packetProcessor = CreatePacketProcessor())
+        {
+            // The session history packet exists since F1 2021, so the transformation of a F1 2020 packet returns no object and no reason
+            var isProcessed = packetProcessor.ProcessPacket(GetPacketDataWithPacketType("F1-2020-Session.packet", PacketTypes.SessionHistory));
+
+            Assert.IsFalse(isProcessed, "A packet without a transformation for its game version must not be processed!");
+            Assert.IsEmpty(packetProcessor.LastError, "A packet type that the game version does not support must not report an error!");
         }
     }
 

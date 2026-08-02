@@ -286,7 +286,7 @@ internal class PacketProcessor : IDisposable
     {
         if (string.IsNullOrWhiteSpace(_packetAnalyzer.LastError))
         {
-            // Packet types without a transformation (for example car damage or motion) return no object and no error
+            // A packet type the reported game version does not support has no transformation, it returns no object and no reason
             return;
         }
 
