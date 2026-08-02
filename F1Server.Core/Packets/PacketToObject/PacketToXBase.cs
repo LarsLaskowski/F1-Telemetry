@@ -6,29 +6,13 @@ using F1Server.Core.Packets.Data;
 namespace F1Server.Core.Packets.PacketToObject;
 
 /// <summary>
-/// Base class for bytes to object transformations
+/// Base class for bytes to object transformations. An instance is reused for every packet of its type,
+/// the packet header of the current transformation is provided by <see cref="Reset"/>. Instances are
+/// therefore stateful and must only be used from a single thread at a time
 /// </summary>
 internal abstract class PacketToXBase
 {
-    #region Constructors
-
-    /// <summary>
-    /// Constructor
-    /// </summary>
-    /// <param name="packetHeader">Header of packet</param>
-    protected PacketToXBase(PacketHeader packetHeader)
-    {
-        PacketHeader = packetHeader;
-    }
-
-    #endregion // Constructors
-
     #region Properties
-
-    /// <summary>
-    /// Header of packet
-    /// </summary>
-    public PacketHeader PacketHeader { get; }
 
     /// <summary>
     /// Returns the current game version
@@ -44,6 +28,11 @@ internal abstract class PacketToXBase
     /// Last error of the transformation, <see cref="string.Empty"/> when the transformation succeeded
     /// </summary>
     public string LastError { get; internal set; } = string.Empty;
+
+    /// <summary>
+    /// Header of the packet that is currently transformed, set by <see cref="Reset"/> before every transformation
+    /// </summary>
+    protected PacketHeader PacketHeader { get; private set; }
 
     #endregion // Properties
 
@@ -91,6 +80,18 @@ internal abstract class PacketToXBase
     protected static void ThrowInvalidGameVersion()
     {
         throw new InvalidOperationException("Invalid game version!");
+    }
+
+    /// <summary>
+    /// Prepares the reused transformation instance for the next packet by taking over its header
+    /// and clearing the error of the previous transformation
+    /// </summary>
+    /// <param name="packetHeader">Header of the packet that is transformed next</param>
+    protected void Reset(PacketHeader packetHeader)
+    {
+        PacketHeader = packetHeader;
+
+        LastError = string.Empty;
     }
 
     /// <summary>

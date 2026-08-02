@@ -7,10 +7,71 @@ using F1Server.Core.Packets.PacketToObject;
 namespace F1Server.Core;
 
 /// <summary>
-/// Analyze new packets
+/// Analyze new packets. The analyzer keeps one reusable transformation instance per packet type to avoid
+/// an allocation per received packet, so an instance is stateful and must only be used from a single
+/// thread at a time. Every concurrent processing path needs its own <see cref="PacketAnalyzer"/> instance
 /// </summary>
 public class PacketAnalyzer
 {
+    #region Fields
+
+    /// <summary>
+    /// Reusable transformation for session packets
+    /// </summary>
+    private readonly PacketToSessionData _sessionTransformation = new();
+
+    /// <summary>
+    /// Reusable transformation for lap data packets
+    /// </summary>
+    private readonly PacketToLapData _lapDataTransformation = new();
+
+    /// <summary>
+    /// Reusable transformation for event packets
+    /// </summary>
+    private readonly PacketToEventData _eventDataTransformation = new();
+
+    /// <summary>
+    /// Reusable transformation for participants packets
+    /// </summary>
+    private readonly PacketToParticipants _participantsTransformation = new();
+
+    /// <summary>
+    /// Reusable transformation for car telemetry packets
+    /// </summary>
+    private readonly PacketToCarTelemetry _carTelemetryTransformation = new();
+
+    /// <summary>
+    /// Reusable transformation for car status packets
+    /// </summary>
+    private readonly PacketToCarStatus _carStatusTransformation = new();
+
+    /// <summary>
+    /// Reusable transformation for additional car telemetry packets
+    /// </summary>
+    private readonly PacketToCarTelemetry2 _carTelemetry2Transformation = new();
+
+    /// <summary>
+    /// Reusable transformation for time trial packets
+    /// </summary>
+    private readonly PacketToTimeTrialData _timeTrialTransformation = new();
+
+    /// <summary>
+    /// Reusable transformation for lap positions packets
+    /// </summary>
+    private readonly PacketToLapPositions _lapPositionsTransformation = new();
+
+    /// <summary>
+    /// Reusable transformation for session history packets
+    /// </summary>
+    private readonly PacketToSessionHistoryData _sessionHistoryTransformation = new();
+
+    /// <summary>
+    /// Reusable transformation for final classification packets
+    /// </summary>
+    private readonly PacketToFinalClassification _finalClassificationTransformation = new();
+
+    #endregion // Fields
+
     #region Properties
 
     /// <summary>
@@ -133,11 +194,9 @@ public class PacketAnalyzer
 
         if (dataPacket.Length > 0 && packetHeader != null)
         {
-            var sessionTransformation = new PacketToSessionData(packetHeader);
+            sessionData = _sessionTransformation.ExtractSessionDataPacket(packetHeader, dataPacket);
 
-            sessionData = sessionTransformation.ExtractSessionDataPacket(dataPacket);
-
-            UpdateLastError(sessionData, sessionTransformation);
+            UpdateLastError(sessionData, _sessionTransformation);
         }
 
         return sessionData;
@@ -157,11 +216,9 @@ public class PacketAnalyzer
 
         if (dataPacket.Length > 0 && packetHeader != null)
         {
-            var lapDataTransformation = new PacketToLapData(packetHeader);
+            packetLapData = _lapDataTransformation.ExtractLapData(packetHeader, dataPacket);
 
-            packetLapData = lapDataTransformation.ExtractLapData(dataPacket);
-
-            UpdateLastError(packetLapData, lapDataTransformation);
+            UpdateLastError(packetLapData, _lapDataTransformation);
         }
 
         return packetLapData;
@@ -181,11 +238,9 @@ public class PacketAnalyzer
 
         if (dataPacket.Length > 0 && packetHeader != null)
         {
-            var eventDataTransformation = new PacketToEventData(packetHeader);
+            eventData = _eventDataTransformation.ExtractEventData(packetHeader, dataPacket);
 
-            eventData = eventDataTransformation.ExtractEventData(dataPacket);
-
-            UpdateLastError(eventData, eventDataTransformation);
+            UpdateLastError(eventData, _eventDataTransformation);
         }
 
         return eventData;
@@ -205,11 +260,9 @@ public class PacketAnalyzer
 
         if (dataPacket.Length > 0 && packetHeader != null)
         {
-            var participantsTransformation = new PacketToParticipants(packetHeader);
+            participantsData = _participantsTransformation.ExtractParticipantsDataPacket(packetHeader, dataPacket);
 
-            participantsData = participantsTransformation.ExtractParticipantsDataPacket(dataPacket);
-
-            UpdateLastError(participantsData, participantsTransformation);
+            UpdateLastError(participantsData, _participantsTransformation);
         }
 
         return participantsData;
@@ -229,11 +282,9 @@ public class PacketAnalyzer
 
         if (dataPacket.Length > 0 && packetHeader != null)
         {
-            var carTelemetryTransformation = new PacketToCarTelemetry(packetHeader);
+            carTelemetry = _carTelemetryTransformation.ExtractCarTelemetryData(packetHeader, dataPacket);
 
-            carTelemetry = carTelemetryTransformation.ExtractCarTelemetryData(dataPacket);
-
-            UpdateLastError(carTelemetry, carTelemetryTransformation);
+            UpdateLastError(carTelemetry, _carTelemetryTransformation);
         }
 
         return carTelemetry;
@@ -253,11 +304,9 @@ public class PacketAnalyzer
 
         if (dataPacket.Length > 0 && packetHeader != null)
         {
-            var carStatusTransformation = new PacketToCarStatus(packetHeader);
+            carStatus = _carStatusTransformation.ExtractCarStatusData(packetHeader, dataPacket);
 
-            carStatus = carStatusTransformation.ExtractCarStatusData(dataPacket);
-
-            UpdateLastError(carStatus, carStatusTransformation);
+            UpdateLastError(carStatus, _carStatusTransformation);
         }
 
         return carStatus;
@@ -277,11 +326,9 @@ public class PacketAnalyzer
 
         if (dataPacket.Length > 0 && packetHeader != null)
         {
-            var carTelemetry2Transformation = new PacketToCarTelemetry2(packetHeader);
+            carTelemetry2 = _carTelemetry2Transformation.ExtractCarTelemetry2Data(packetHeader, dataPacket);
 
-            carTelemetry2 = carTelemetry2Transformation.ExtractCarTelemetry2Data(dataPacket);
-
-            UpdateLastError(carTelemetry2, carTelemetry2Transformation);
+            UpdateLastError(carTelemetry2, _carTelemetry2Transformation);
         }
 
         return carTelemetry2;
@@ -301,11 +348,9 @@ public class PacketAnalyzer
 
         if (dataPacket.Length > 0 && packetHeader != null)
         {
-            var timeTrialTransformation = new PacketToTimeTrialData(packetHeader);
+            timeTrialData = _timeTrialTransformation.ExtractTimeTrialDataPacket(packetHeader, dataPacket);
 
-            timeTrialData = timeTrialTransformation.ExtractTimeTrialDataPacket(dataPacket);
-
-            UpdateLastError(timeTrialData, timeTrialTransformation);
+            UpdateLastError(timeTrialData, _timeTrialTransformation);
         }
 
         return timeTrialData;
@@ -325,11 +370,9 @@ public class PacketAnalyzer
 
         if (dataPacket.Length > 0 && packetHeader != null)
         {
-            var lapPositionsTransformation = new PacketToLapPositions(packetHeader);
+            lapPositionsData = _lapPositionsTransformation.ExtractLapPositionsPacket(packetHeader, dataPacket);
 
-            lapPositionsData = lapPositionsTransformation.ExtractLapPositionsPacket(dataPacket);
-
-            UpdateLastError(lapPositionsData, lapPositionsTransformation);
+            UpdateLastError(lapPositionsData, _lapPositionsTransformation);
         }
 
         return lapPositionsData;
@@ -349,11 +392,9 @@ public class PacketAnalyzer
 
         if (dataPacket.Length > 0 && packetHeader != null)
         {
-            var sessionHistoryTransformation = new PacketToSessionHistoryData(packetHeader);
+            sessionHistoryData = _sessionHistoryTransformation.ExtractSessionHistoryDataPacket(packetHeader, dataPacket);
 
-            sessionHistoryData = sessionHistoryTransformation.ExtractSessionHistoryDataPacket(dataPacket);
-
-            UpdateLastError(sessionHistoryData, sessionHistoryTransformation);
+            UpdateLastError(sessionHistoryData, _sessionHistoryTransformation);
         }
 
         return sessionHistoryData;
@@ -373,11 +414,9 @@ public class PacketAnalyzer
 
         if (dataPacket.Length > 0 && packetHeader != null)
         {
-            var finalClassificationTransformation = new PacketToFinalClassification(packetHeader);
+            finalClassificationData = _finalClassificationTransformation.ExtractFinalClassificationData(packetHeader, dataPacket);
 
-            finalClassificationData = finalClassificationTransformation.ExtractFinalClassificationData(dataPacket);
-
-            UpdateLastError(finalClassificationData, finalClassificationTransformation);
+            UpdateLastError(finalClassificationData, _finalClassificationTransformation);
         }
 
         return finalClassificationData;

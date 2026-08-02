@@ -11,21 +11,21 @@ namespace F1Server.Core.Packets.PacketToObject;
 /// <summary>
 /// Class to extract a lap positions object from received packet
 /// </summary>
-/// <param name="packetHeader">Packet header</param>
-internal class PacketToLapPositions(PacketHeader packetHeader) : PacketToXBase(packetHeader)
+internal class PacketToLapPositions : PacketToXBase
 {
     #region Methods
 
     /// <summary>
     /// Get lap positions data from received packet
     /// </summary>
+    /// <param name="packetHeader">Header of packet</param>
     /// <param name="dataPacket">Received data packet</param>
     /// <returns>Lap positions data object</returns>
-    public object? ExtractLapPositionsPacket(ReadOnlySpan<byte> dataPacket)
+    public object? ExtractLapPositionsPacket(PacketHeader packetHeader, ReadOnlySpan<byte> dataPacket)
     {
         object? lapPositions = null;
 
-        LastError = string.Empty;
+        Reset(packetHeader);
 
         if (dataPacket.Length > 0)
         {

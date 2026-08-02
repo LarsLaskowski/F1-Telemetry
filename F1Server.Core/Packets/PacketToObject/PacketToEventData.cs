@@ -13,21 +13,21 @@ namespace F1Server.Core.Packets.PacketToObject;
 /// <summary>
 /// Class to extract event information from event packet
 /// </summary>
-/// <param name="packetHeader">Header of packet</param>
-internal class PacketToEventData(PacketHeader packetHeader) : PacketToXBase(packetHeader)
+internal class PacketToEventData : PacketToXBase
 {
     #region Methods
 
     /// <summary>
     /// Get event data from received data packet
     /// </summary>
+    /// <param name="packetHeader">Header of packet</param>
     /// <param name="dataPacket">Received data</param>
     /// <returns>Object</returns>
-    public object? ExtractEventData(ReadOnlySpan<byte> dataPacket)
+    public object? ExtractEventData(PacketHeader packetHeader, ReadOnlySpan<byte> dataPacket)
     {
         object? eventDataObject = null;
 
-        LastError = string.Empty;
+        Reset(packetHeader);
 
         if (dataPacket.Length > 0)
         {

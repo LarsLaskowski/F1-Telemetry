@@ -12,21 +12,21 @@ namespace F1Server.Core.Packets.PacketToObject;
 /// <summary>
 /// Class to extract a time trial object from received packet
 /// </summary>
-/// <param name="packetHeader">Packet header</param>
-internal class PacketToTimeTrialData(PacketHeader packetHeader) : PacketToXBase(packetHeader)
+internal class PacketToTimeTrialData : PacketToXBase
 {
     #region Methods
 
     /// <summary>
     /// Get time trial data from received packet
     /// </summary>
+    /// <param name="packetHeader">Header of packet</param>
     /// <param name="dataPacket">Received data packet</param>
     /// <returns>Time trial data object</returns>
-    public object? ExtractTimeTrialDataPacket(ReadOnlySpan<byte> dataPacket)
+    public object? ExtractTimeTrialDataPacket(PacketHeader packetHeader, ReadOnlySpan<byte> dataPacket)
     {
         object? timeTrial = null;
 
-        LastError = string.Empty;
+        Reset(packetHeader);
 
         if (dataPacket.Length > 0)
         {

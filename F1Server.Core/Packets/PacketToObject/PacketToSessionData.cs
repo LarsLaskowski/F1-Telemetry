@@ -13,21 +13,21 @@ namespace F1Server.Core.Packets.PacketToObject;
 /// <summary>
 /// Class to extract a session data object from received packet
 /// </summary>
-/// <param name="packetHeader">Header of packet</param>
-internal class PacketToSessionData(PacketHeader packetHeader) : PacketToXBase(packetHeader)
+internal class PacketToSessionData : PacketToXBase
 {
     #region Methods
 
     /// <summary>
     /// Get session data from received data packet
     /// </summary>
+    /// <param name="packetHeader">Header of packet</param>
     /// <param name="dataPacket">Received data</param>
     /// <returns>Session data object</returns>
-    public object? ExtractSessionDataPacket(ReadOnlySpan<byte> dataPacket)
+    public object? ExtractSessionDataPacket(PacketHeader packetHeader, ReadOnlySpan<byte> dataPacket)
     {
         object? sessionObject = null;
 
-        LastError = string.Empty;
+        Reset(packetHeader);
 
         if (dataPacket.Length > 0 && HasValidPacketLength(dataPacket.Length, GetExpectedPayloadSize()))
         {
