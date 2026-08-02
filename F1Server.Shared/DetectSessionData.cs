@@ -151,6 +151,8 @@ public class DetectSessionData
                 {
                     var packetData = new ReceivedPacketData();
 
+                    // SetRawData takes ownership of the buffer instead of copying it; the packet data
+                    // never leaves this scope and is therefore gone before the buffer is returned
                     packetData.SetRawData(buffer);
 
                     if (packetData.PacketHeader?.PacketType == PacketTypes.Session)
