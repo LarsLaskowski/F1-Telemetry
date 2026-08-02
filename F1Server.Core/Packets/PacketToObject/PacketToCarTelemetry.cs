@@ -151,9 +151,9 @@ internal class PacketToCarTelemetry(PacketHeader packetHeader) : PacketToXBase(p
                     ThrowInvalidGameVersion();
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                // Ignore exceptions in this step
+                LastError = ex.ToString();
             }
         }
 

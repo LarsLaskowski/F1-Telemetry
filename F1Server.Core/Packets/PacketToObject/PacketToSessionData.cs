@@ -461,9 +461,9 @@ internal class PacketToSessionData(PacketHeader packetHeader) : PacketToXBase(pa
 
                 retValue = true;
             }
-            catch
+            catch (Exception ex)
             {
-                // Ignore exceptions in this step
+                LastError = ex.ToString();
             }
         }
 
@@ -499,9 +499,9 @@ internal class PacketToSessionData(PacketHeader packetHeader) : PacketToXBase(pa
                     retValue = true;
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                // Ignore exceptions in this step
+                LastError = ex.ToString();
             }
         }
 
@@ -613,9 +613,9 @@ internal class PacketToSessionData(PacketHeader packetHeader) : PacketToXBase(pa
                     retValue = true;
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                // Ignore exceptions in this step
+                LastError = ex.ToString();
             }
         }
 
