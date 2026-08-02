@@ -90,7 +90,7 @@ public class ReceivedPacketDataTests
         packetData.SetRawData(rawData);
 
         Assert.AreEqual(rawData.Length, packetData.PacketLength, "Wrong packet length!");
-        CollectionAssert.AreEqual(rawData, packetData.PacketRawData.ToArray(), "Raw data does not match the bytes passed in!");
+        Assert.AreSequenceEqual(rawData, packetData.PacketRawData.ToArray(), "Raw data does not match the bytes passed in!");
 
         Assert.IsNotNull(packetData.PacketHeader, "Packet header is null!");
         Assert.AreEqual((ushort)2025, packetData.PacketHeader.GameVersion, "Wrong game version!");
