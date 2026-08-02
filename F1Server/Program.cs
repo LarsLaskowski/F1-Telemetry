@@ -164,7 +164,10 @@ public static class Program
         services.AddSingleton(new F1ServerApplicationData());
         services.AddSingleton(new ObservabilityConfiguration());
         services.AddSingleton(new TelemetryConfiguration());
-        services.AddSingleton(new PacketAnalyzer());
+
+        // A packet analyzer reuses its transformations and is therefore stateful, every consumer gets its own instance
+        services.AddTransient<PacketAnalyzer>();
+
         services.AddOpenTelemetry();
 
         return services.BuildServiceProvider();

@@ -15,11 +15,6 @@ internal abstract class PacketToXBase
     #region Properties
 
     /// <summary>
-    /// Header of the packet that is currently transformed
-    /// </summary>
-    public PacketHeader PacketHeader { get; private set; }
-
-    /// <summary>
     /// Returns the current game version
     /// </summary>
     public int GameVersion => PacketHeader?.GameVersion ?? 0;
@@ -33,6 +28,11 @@ internal abstract class PacketToXBase
     /// Last error of the transformation, <see cref="string.Empty"/> when the transformation succeeded
     /// </summary>
     public string LastError { get; internal set; } = string.Empty;
+
+    /// <summary>
+    /// Header of the packet that is currently transformed, set by <see cref="Reset"/> before every transformation
+    /// </summary>
+    protected PacketHeader PacketHeader { get; private set; }
 
     #endregion // Properties
 
