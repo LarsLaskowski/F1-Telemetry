@@ -98,9 +98,9 @@ internal class PacketProcessor : IDisposable
     public bool UseDatabase { get; }
 
     /// <summary>
-    /// Last error
+    /// Last error of the most recent processed packet, <see cref="string.Empty"/> when the packet was processed without an error
     /// </summary>
-    public string? LastError { get; private set; }
+    public string LastError { get; private set; } = string.Empty;
 
     /// <summary>
     /// Number of current game
@@ -278,6 +278,26 @@ internal class PacketProcessor : IDisposable
     }
 
     /// <summary>
+    /// Takes over the error of the packet analyzer when a packet could not be converted into a data object,
+    /// using the bounded packet type as metric dimension and keeping the error text in the log message only
+    /// </summary>
+    /// <param name="receivedPacketData">Received packet that produced no data object</param>
+    private void RecordAnalyzerError(ReceivedPacketData receivedPacketData)
+    {
+        if (string.IsNullOrWhiteSpace(_packetAnalyzer.LastError))
+        {
+            // Packet types without a transformation (for example car damage or motion) return no object and no error
+            return;
+        }
+
+        LastError = _packetAnalyzer.LastError;
+
+        _appData?.AppMetrics?.ProcessingErrors.Add(1, new KeyValuePair<string, object?>("PacketType", receivedPacketData.PacketHeader?.PacketType));
+
+        Logger?.LogError("Error analyzing packet {PacketType}: {LastError}", receivedPacketData.PacketHeader?.PacketType, _packetAnalyzer.LastError);
+    }
+
+    /// <summary>
     /// Internal method for processing received packets
     /// </summary>
     /// <param name="receivedPacketData">Received packet data</param>
@@ -358,6 +378,10 @@ internal class PacketProcessor : IDisposable
             if (packetData != null)
             {
                 retValue = ProcessPacketInternal(receivedPacketData, packetData);
+            }
+            else
+            {
+                RecordAnalyzerError(receivedPacketData);
             }
         }
         catch (Exception ex)
