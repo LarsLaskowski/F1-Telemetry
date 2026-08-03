@@ -23,17 +23,18 @@ required.
 | Port | Protocol | Container | Description |
 | --- | --- | --- | --- |
 | `20777` | UDP | service | Telemetry port the F1 game sends packets to |
-| `20777` | TCP | service | Replay port the `F1ReplayClient` sends recorded packets to |
+| `20778` | TCP | service | Replay port the `F1ReplayClient` sends recorded packets to |
 | `80` | TCP | service | REST API and SignalR hub |
 | `80` | TCP | web app | Web interface (served by nginx) |
 
 Configure the F1 game to send UDP telemetry to the host running the service on
 port `20777`.
 
-The `F1ReplayClient` uses the same port number over TCP, so the telemetry port
-has to be published (and allowed by the firewall of the host) for both protocols
-whenever the client runs on another machine than the service, otherwise the
-client cannot deliver a single packet.
+The service always listens for replay packets on the telemetry port plus one, so
+changing the telemetry port moves the replay port with it. The port has to be
+published (and allowed by the firewall of the host) whenever the
+`F1ReplayClient` runs on another machine than the service, otherwise the client
+cannot deliver a single packet.
 
 ### docker-compose example
 
@@ -44,7 +45,7 @@ services:
     restart: unless-stopped
     ports:
       - "20777:20777/udp"   # telemetry from the game
-      - "20777:20777/tcp"   # packets from the replay client
+      - "20778:20778"       # packets from the replay client
       - "4820:80"           # REST API / SignalR
     environment:
       F1SERVER_DATABASE_TYPE: 3            # 1 = MariaDB, 2 = MSSQL, 3 = PostgreSQL
