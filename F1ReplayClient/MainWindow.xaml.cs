@@ -350,6 +350,7 @@ public partial class MainWindow : Window, IDisposable
             var processingWatch = new Stopwatch();
             var viewWatch = new Stopwatch();
             var packetCounters = new PacketViewTypes();
+            var timings = new ReplayTimingData();
             var processedFiles = 0;
             var sessionFrequency = 0;
             var processingDuration = 0.0D;
@@ -397,13 +398,21 @@ public partial class MainWindow : Window, IDisposable
                             throw new InvalidDataException($"Packet file '{file.FileName}' ({fileLength} bytes) exceeds the maximum buffer size of {maxPayloadLength} bytes.");
                         }
 
+                        var stepTimestamp = Stopwatch.GetTimestamp();
+
                         fs.ReadExactly(buffer, sizeof(int), fileLength);
+
+                        timings.ReadTicks += Stopwatch.GetTimestamp() - stepTimestamp;
+
+                        stepTimestamp = Stopwatch.GetTimestamp();
 
                         var packet = new ReceivedPacketData();
 
                         packet.SetRawData(buffer.AsSpan(sizeof(int), fileLength).ToArray());
 
                         packetType = DeterminePacketType(packet, out var eventCode);
+
+                        timings.AnalyzeTicks += Stopwatch.GetTimestamp() - stepTimestamp;
 
                         if (packetType == PacketTypes.Session)
                         {
@@ -439,30 +448,53 @@ public partial class MainWindow : Window, IDisposable
                                 netStream?.Dispose();
                                 tcpClient?.Dispose();
 
-                                // Nagle would hold back the small replay frames until the server acknowledges the previous one
-                                tcpClient = new TcpClient(hostName, port)
-                                            {
-                                                NoDelay = true
-                                            };
+                                netStream = null;
+                                tcpClient = null;
 
-                                netStream = tcpClient.GetStream();
+                                timings.Connects++;
+
+                                stepTimestamp = Stopwatch.GetTimestamp();
+
+                                try
+                                {
+                                    // Nagle would hold back the small replay frames until the server acknowledges the previous one
+                                    tcpClient = new TcpClient(hostName, port)
+                                                {
+                                                    NoDelay = true
+                                                };
+
+                                    netStream = tcpClient.GetStream();
+                                }
+                                finally
+                                {
+                                    // A failed connection attempt costs time as well, so it is measured too
+                                    timings.ConnectTicks += Stopwatch.GetTimestamp() - stepTimestamp;
+                                }
                             }
 
                             // Prefix every packet with its length so the reused connection can be framed on the server side
                             BinaryPrimitives.WriteInt32LittleEndian(buffer.AsSpan(0, sizeof(int)), fileLength);
 
+                            stepTimestamp = Stopwatch.GetTimestamp();
+
                             // Prefix and payload go out as one write, otherwise every packet costs an additional round trip
                             netStream!.Write(buffer.AsSpan(0, sizeof(int) + fileLength));
+
+                            timings.SendTicks += Stopwatch.GetTimestamp() - stepTimestamp;
                         }
                     }
-                    catch
+                    catch (Exception ex) when (ex is IOException || ex is SocketException)
                     {
-                        // Ignore exceptions in this step, but drop a broken connection so the next packet reconnects
+                        // The connection is broken, so it is dropped here and rebuilt with the next packet
                         netStream?.Dispose();
                         tcpClient?.Dispose();
 
                         netStream = null;
                         tcpClient = null;
+                    }
+                    catch
+                    {
+                        // A problem with a single packet file must not drop the connection
                     }
                     finally
                     {
@@ -504,7 +536,8 @@ public partial class MainWindow : Window, IDisposable
                     UpdateProgressView(processedFiles,
                                        processingDuration,
                                        processingWatch.Elapsed,
-                                       packetCounters);
+                                       packetCounters,
+                                       timings);
 
                     viewWatch.Restart();
                 }
@@ -529,7 +562,8 @@ public partial class MainWindow : Window, IDisposable
             UpdateProgressView(processedFiles,
                                processingDuration,
                                processingWatch.Elapsed,
-                               packetCounters);
+                               packetCounters,
+                               timings);
         }
 
         IsRunning = false;
@@ -726,12 +760,16 @@ public partial class MainWindow : Window, IDisposable
     /// <param name="processingDuration">Accumulated processing duration of all files in milliseconds</param>
     /// <param name="elapsed">Elapsed time since the replay was started</param>
     /// <param name="packetCounters">Counted packet types</param>
+    /// <param name="timings">Collected timings of the replay</param>
     private void UpdateProgressView(int processedFiles,
                                     double processingDuration,
                                     TimeSpan elapsed,
-                                    PacketViewTypes packetCounters)
+                                    PacketViewTypes packetCounters,
+                                    ReplayTimingData timings)
     {
         _viewData.ProcessedFiles = processedFiles;
+
+        _viewData.Status = timings.CreateStatusText(processedFiles, elapsed);
 
         if (processedFiles > 0)
         {
