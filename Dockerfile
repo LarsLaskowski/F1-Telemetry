@@ -42,7 +42,7 @@ LABEL org.opencontainers.image.base.name="${BASE_RUNTIME}"
 LABEL org.opencontainers.image.base.digest="${BASE_RUNTIME_DIGEST}"
 
 EXPOSE 20777/udp
-EXPOSE 20778/tcp
+EXPOSE 20777/tcp
 EXPOSE 80
 
 RUN apk add curl

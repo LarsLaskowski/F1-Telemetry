@@ -24,12 +24,12 @@ public class TelemetryClientTests
     #region Constants
 
     /// <summary>
-    /// UDP port used by the replay listener test, the TCP replay port is the next port number
+    /// Port used by the replay listener test, the TCP replay port uses the same number
     /// </summary>
     private const int ReplayTestPort = 47311;
 
     /// <summary>
-    /// UDP port used by the channel consumer test, the TCP replay port is the next port number
+    /// Port used by the channel consumer test, the TCP replay port uses the same number
     /// </summary>
     private const int ChannelTestPort = 47313;
 
@@ -388,7 +388,7 @@ public class TelemetryClientTests
 
                 using (var firstConnection = new TcpClient())
                 {
-                    await firstConnection.ConnectAsync(IPAddress.Loopback, ReplayTestPort + 1, TestContext.CancellationToken);
+                    await firstConnection.ConnectAsync(IPAddress.Loopback, ReplayTestPort, TestContext.CancellationToken);
 
                     using (var stream = firstConnection.GetStream())
                     {
@@ -405,7 +405,7 @@ public class TelemetryClientTests
 
                 using (var secondConnection = new TcpClient())
                 {
-                    await secondConnection.ConnectAsync(IPAddress.Loopback, ReplayTestPort + 1, TestContext.CancellationToken);
+                    await secondConnection.ConnectAsync(IPAddress.Loopback, ReplayTestPort, TestContext.CancellationToken);
 
                     using (var stream = secondConnection.GetStream())
                     {

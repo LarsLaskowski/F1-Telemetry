@@ -243,10 +243,12 @@ public sealed class TelemetryClient : ITelemetryClient, IDisposable
             _ctsLog = new CancellationTokenSource();
             _udpClient = new UdpClient(_port);
             _ipEndpoint = new IPEndPoint(IPAddress.Any, _port);
-            _tcpServer = new TcpListener(IPAddress.Any, _port + 1);
+
+            // The replay client uses the same port number as the game, UDP and TCP do not collide
+            _tcpServer = new TcpListener(IPAddress.Any, _port);
 
             currentActivity?.AddTag("f1.receiving_port", _port);
-            currentActivity?.AddTag("f1.tcp_receiving_port", _port + 1);
+            currentActivity?.AddTag("f1.tcp_receiving_port", _port);
 
             _tcpServer.Start();
 
