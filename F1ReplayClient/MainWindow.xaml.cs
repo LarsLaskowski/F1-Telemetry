@@ -31,6 +31,11 @@ public partial class MainWindow : Window, IDisposable
 
     private const string AppName = "F1ReplayClient";
 
+    /// <summary>
+    /// Minimum interval in milliseconds between two view refreshes while replaying
+    /// </summary>
+    private const int ViewRefreshIntervalMs = 100;
+
     private readonly PacketAnalyzer _packetAnalyzer = new();
     private readonly ContextViewData _viewData = new();
 
@@ -341,22 +346,24 @@ public partial class MainWindow : Window, IDisposable
 
         if (string.IsNullOrWhiteSpace(hostName) == false && port > 0 && CurrentFolderFiles.Count > 0)
         {
-            var runWatch = new Stopwatch();
             var timeWatch = new Stopwatch();
             var processingWatch = new Stopwatch();
+            var viewWatch = new Stopwatch();
+            var packetCounters = new PacketViewTypes();
             var processedFiles = 0;
             var sessionFrequency = 0;
             var processingDuration = 0.0D;
             var lastFileDuration = 0.0D;
             var packetType = PacketTypes.Unknown;
 
-            runWatch.Start();
             processingWatch.Start();
+            viewWatch.Start();
 
             _viewData.ProcessedFiles = 0;
 
-            var buffer = ArrayPool<byte>.Shared.Rent(ConstData.MaxReplayPacketLength);
-            var lengthPrefix = new byte[sizeof(int)];
+            // The payload is read behind the length prefix, so the complete frame can be sent with a single write
+            var buffer = ArrayPool<byte>.Shared.Rent(sizeof(int) + ConstData.MaxReplayPacketLength);
+            var maxPayloadLength = buffer.Length - sizeof(int);
 
             TcpClient? tcpClient = null;
             NetworkStream? netStream = null;
@@ -377,23 +384,24 @@ public partial class MainWindow : Window, IDisposable
                     cancelToken.WaitHandle.WaitOne(25);
                 }
 
-                using (var fs = new FileStream(file.FileName, FileMode.Open, FileAccess.Read))
+                // The packet is read in one piece, so the internal buffering of the stream is not needed
+                using (var fs = new FileStream(file.FileName, FileMode.Open, FileAccess.Read, FileShare.Read, 0, FileOptions.SequentialScan))
                 {
                     var fileLength = (int)file.FileInfo.Length;
 
                     try
                     {
-                        // fileLength must fit the rented buffer, otherwise ReadExactly would throw
-                        if (fileLength > buffer.Length)
+                        // fileLength must fit the rented buffer behind the length prefix, otherwise ReadExactly would throw
+                        if (fileLength > maxPayloadLength)
                         {
-                            throw new InvalidDataException($"Packet file '{file.FileName}' ({fileLength} bytes) exceeds the maximum buffer size of {buffer.Length} bytes.");
+                            throw new InvalidDataException($"Packet file '{file.FileName}' ({fileLength} bytes) exceeds the maximum buffer size of {maxPayloadLength} bytes.");
                         }
 
-                        fs.ReadExactly(buffer, 0, fileLength);
+                        fs.ReadExactly(buffer, sizeof(int), fileLength);
 
                         var packet = new ReceivedPacketData();
 
-                        packet.SetRawData(buffer.AsSpan(0, fileLength).ToArray());
+                        packet.SetRawData(buffer.AsSpan(sizeof(int), fileLength).ToArray());
 
                         packetType = DeterminePacketType(packet, out var eventCode);
 
@@ -405,10 +413,11 @@ public partial class MainWindow : Window, IDisposable
                         if (string.IsNullOrWhiteSpace(eventCode) == false
                             && eventCode != "BUTN")
                         {
-                            Application.Current.Dispatcher.Invoke(() => _viewData.EventCodes.Insert(0, eventCode));
+                            // BeginInvoke keeps the replay loop running instead of waiting for the dispatcher
+                            Application.Current.Dispatcher.BeginInvoke(() => _viewData.EventCodes.Insert(0, eventCode));
                         }
 
-                        PacketTypeToView(packetType);
+                        PacketTypeToView(packetType, packetCounters);
 
                         if (_viewData.IgnoreCarPackets
                             && (packetType == PacketTypes.CarSetups
@@ -430,17 +439,20 @@ public partial class MainWindow : Window, IDisposable
                                 netStream?.Dispose();
                                 tcpClient?.Dispose();
 
-                                tcpClient = new TcpClient(hostName, port);
+                                // Nagle would hold back the small replay frames until the server acknowledges the previous one
+                                tcpClient = new TcpClient(hostName, port)
+                                            {
+                                                NoDelay = true
+                                            };
+
                                 netStream = tcpClient.GetStream();
                             }
 
                             // Prefix every packet with its length so the reused connection can be framed on the server side
-                            BinaryPrimitives.WriteInt32LittleEndian(lengthPrefix, fileLength);
+                            BinaryPrimitives.WriteInt32LittleEndian(buffer.AsSpan(0, sizeof(int)), fileLength);
 
-                            netStream!.Write(lengthPrefix);
-                            netStream.Write(buffer.AsSpan(0, fileLength));
-
-                            cancelToken.WaitHandle.WaitOne(2);
+                            // Prefix and payload go out as one write, otherwise every packet costs an additional round trip
+                            netStream!.Write(buffer.AsSpan(0, sizeof(int) + fileLength));
                         }
                     }
                     catch
@@ -460,8 +472,6 @@ public partial class MainWindow : Window, IDisposable
 
                 ++processedFiles;
 
-                _viewData.ProcessedFiles = processedFiles;
-
                 timeWatch.Stop();
 
                 if (skipPacket)
@@ -475,37 +485,51 @@ public partial class MainWindow : Window, IDisposable
                     lastFileDuration = timeWatch.Elapsed.TotalMilliseconds;
                 }
 
-                _viewData.TimeEstimated = TimeSpan.FromMilliseconds(CurrentFolderFiles.Count * (processingDuration / processedFiles)).ToString(@"hh\:mm\:ss\.fff");
-
                 // Break after special packets?
-                if ((packetType == PacketTypes.Event && _viewData.BreakAtEventPacket)
-                    || (packetType == PacketTypes.Session && _viewData.BreakAtSessionPacket)
-                    || (packetType == PacketTypes.LapData && _viewData.BreakAtLapDataPacket)
-                    || (packetType == PacketTypes.Participants && _viewData.BreakAtParticipantsPacket)
-                    || (packetType == PacketTypes.FinalClassification && _viewData.BreakAtFinalClassificationPacket)
-                    || (packetType == PacketTypes.SessionHistory && _viewData.BreakAtSessionHistoryPacket)
-                    || (packetType == PacketTypes.CarTelemetry && _viewData.BreakAtCarTelemetryPacket)
-                    || (packetType == PacketTypes.CarTelemetry2 && _viewData.BreakAtCarTelemetry2Packet)
-                    || (packetType == PacketTypes.CarStatus && _viewData.BreakAtCarStatusPacket)
-                    || (packetType == PacketTypes.TimeTrial && _viewData.BreakAtTimeTrialPacket)
-                    || (packetType == PacketTypes.LapPositions && _viewData.BreakAtLapPositionsPacket))
+                var breakAtPacket = (packetType == PacketTypes.Event && _viewData.BreakAtEventPacket)
+                                    || (packetType == PacketTypes.Session && _viewData.BreakAtSessionPacket)
+                                    || (packetType == PacketTypes.LapData && _viewData.BreakAtLapDataPacket)
+                                    || (packetType == PacketTypes.Participants && _viewData.BreakAtParticipantsPacket)
+                                    || (packetType == PacketTypes.FinalClassification && _viewData.BreakAtFinalClassificationPacket)
+                                    || (packetType == PacketTypes.SessionHistory && _viewData.BreakAtSessionHistoryPacket)
+                                    || (packetType == PacketTypes.CarTelemetry && _viewData.BreakAtCarTelemetryPacket)
+                                    || (packetType == PacketTypes.CarTelemetry2 && _viewData.BreakAtCarTelemetry2Packet)
+                                    || (packetType == PacketTypes.CarStatus && _viewData.BreakAtCarStatusPacket)
+                                    || (packetType == PacketTypes.TimeTrial && _viewData.BreakAtTimeTrialPacket)
+                                    || (packetType == PacketTypes.LapPositions && _viewData.BreakAtLapPositionsPacket);
+
+                // Refreshing the view for every single packet floods the dispatcher with change notifications
+                if (breakAtPacket || viewWatch.ElapsedMilliseconds >= ViewRefreshIntervalMs)
+                {
+                    UpdateProgressView(processedFiles,
+                                       processingDuration,
+                                       processingWatch.Elapsed,
+                                       packetCounters);
+
+                    viewWatch.Restart();
+                }
+
+                if (breakAtPacket)
                 {
                     _viewData.CurrentPacketType = packetType;
 
                     _viewData.IsPaused = true;
                 }
-                else
+                else if (_viewData.CurrentPacketType != PacketTypes.Unknown)
                 {
                     _viewData.CurrentPacketType = PacketTypes.Unknown;
                 }
-
-                _viewData.TimeDuration = TimeSpan.FromMilliseconds(processingWatch.Elapsed.TotalMilliseconds).ToString(@"hh\:mm\:ss\.fff");
             }
 
             netStream?.Dispose();
             tcpClient?.Dispose();
 
             ArrayPool<byte>.Shared.Return(buffer);
+
+            UpdateProgressView(processedFiles,
+                               processingDuration,
+                               processingWatch.Elapsed,
+                               packetCounters);
         }
 
         IsRunning = false;
@@ -616,82 +640,107 @@ public partial class MainWindow : Window, IDisposable
     /// Count the packet
     /// </summary>
     /// <param name="packetType">Type of packet</param>
-    private void PacketTypeToView(PacketTypes packetType)
+    /// <param name="packetCounters">Counters which are transferred to the view in the next refresh</param>
+    private void PacketTypeToView(PacketTypes packetType, PacketViewTypes packetCounters)
     {
         switch (packetType)
         {
             case PacketTypes.Motion:
-                _viewData.PacketViewTypes.Motion++;
+                packetCounters.Motion++;
                 break;
 
             case PacketTypes.Session:
-                _viewData.PacketViewTypes.Session++;
+                packetCounters.Session++;
                 break;
 
             case PacketTypes.LapData:
-                _viewData.PacketViewTypes.LapData++;
+                packetCounters.LapData++;
                 break;
 
             case PacketTypes.Event:
-                _viewData.PacketViewTypes.Event++;
+                packetCounters.Event++;
                 break;
 
             case PacketTypes.Participants:
-                _viewData.PacketViewTypes.Participants++;
+                packetCounters.Participants++;
                 break;
 
             case PacketTypes.CarSetups:
-                _viewData.PacketViewTypes.CarSetups++;
+                packetCounters.CarSetups++;
                 break;
 
             case PacketTypes.CarTelemetry:
-                _viewData.PacketViewTypes.CarTelemetry++;
+                packetCounters.CarTelemetry++;
                 break;
 
             case PacketTypes.CarTelemetry2:
-                _viewData.PacketViewTypes.CarTelemetry2++;
+                packetCounters.CarTelemetry2++;
                 break;
 
             case PacketTypes.CarStatus:
-                _viewData.PacketViewTypes.CarStatus++;
+                packetCounters.CarStatus++;
                 break;
 
             case PacketTypes.CarDamage:
-                _viewData.PacketViewTypes.CarDamage++;
+                packetCounters.CarDamage++;
                 break;
 
             case PacketTypes.FinalClassification:
-                _viewData.PacketViewTypes.FinalClassification++;
+                packetCounters.FinalClassification++;
                 break;
 
             case PacketTypes.LobbyInfo:
-                _viewData.PacketViewTypes.LobbyInfo++;
+                packetCounters.LobbyInfo++;
                 break;
 
             case PacketTypes.SessionHistory:
-                _viewData.PacketViewTypes.SessionHistory++;
+                packetCounters.SessionHistory++;
                 break;
 
             case PacketTypes.TyreSets:
-                _viewData.PacketViewTypes.TyreSets++;
+                packetCounters.TyreSets++;
                 break;
 
             case PacketTypes.MotionEx:
-                _viewData.PacketViewTypes.MotionEx++;
+                packetCounters.MotionEx++;
                 break;
 
             case PacketTypes.TimeTrial:
-                _viewData.PacketViewTypes.TimeTrial++;
+                packetCounters.TimeTrial++;
                 break;
 
             case PacketTypes.LapPositions:
-                _viewData.PacketViewTypes.LapPositions++;
+                packetCounters.LapPositions++;
                 break;
 
             default:
-                _viewData.PacketViewTypes.Unknown++;
+                packetCounters.Unknown++;
                 break;
         }
+    }
+
+    /// <summary>
+    /// Transfer the current replay progress to the view
+    /// </summary>
+    /// <param name="processedFiles">Number of processed files</param>
+    /// <param name="processingDuration">Accumulated processing duration of all files in milliseconds</param>
+    /// <param name="elapsed">Elapsed time since the replay was started</param>
+    /// <param name="packetCounters">Counted packet types</param>
+    private void UpdateProgressView(int processedFiles,
+                                    double processingDuration,
+                                    TimeSpan elapsed,
+                                    PacketViewTypes packetCounters)
+    {
+        _viewData.ProcessedFiles = processedFiles;
+
+        if (processedFiles > 0)
+        {
+            _viewData.TimeEstimated = TimeSpan.FromMilliseconds(CurrentFolderFiles.Count * (processingDuration / processedFiles)).ToString(@"hh\:mm\:ss\.fff");
+        }
+
+        _viewData.TimeDuration = elapsed.ToString(@"hh\:mm\:ss\.fff");
+
+        _viewData.PacketViewTypes.CopyFrom(packetCounters);
     }
 
     #endregion // Methods
