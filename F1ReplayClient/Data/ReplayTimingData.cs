@@ -30,9 +30,24 @@ internal class ReplayTimingData
     public long SendTicks { get; set; }
 
     /// <summary>
-    /// Number of established connections, a value above one means the connection was dropped and rebuilt
+    /// Number of connection attempts, a value above one means the connection was dropped and rebuilt
     /// </summary>
     public int Connects { get; set; }
+
+    /// <summary>
+    /// Number of failed connection attempts
+    /// </summary>
+    public int FailedConnects { get; set; }
+
+    /// <summary>
+    /// Number of connections that were closed by the server
+    /// </summary>
+    public int ClosedByServer { get; set; }
+
+    /// <summary>
+    /// Message of the last error while connecting or sending
+    /// </summary>
+    public string LastError { get; set; } = string.Empty;
 
     #endregion // Properties
 
@@ -55,7 +70,14 @@ internal class ReplayTimingData
                                    ? processedFiles / elapsed.TotalSeconds
                                    : 0;
 
-        return $"{packetsPerSecond:F1} packets/s | read {TicksToMilliseconds(ReadTicks, processedFiles):F3} ms | analyze {TicksToMilliseconds(AnalyzeTicks, processedFiles):F3} ms | connect {TicksToMilliseconds(ConnectTicks, processedFiles):F3} ms | send {TicksToMilliseconds(SendTicks, processedFiles):F3} ms | connects {Connects}";
+        var statusText = $"{packetsPerSecond:F1} packets/s | read {TicksToMilliseconds(ReadTicks, processedFiles):F3} ms | analyze {TicksToMilliseconds(AnalyzeTicks, processedFiles):F3} ms | connect {TicksToMilliseconds(ConnectTicks, processedFiles):F3} ms | send {TicksToMilliseconds(SendTicks, processedFiles):F3} ms | connects {Connects} (failed {FailedConnects}, closed by server {ClosedByServer})";
+
+        if (string.IsNullOrWhiteSpace(LastError) == false)
+        {
+            statusText += $" | last error: {LastError}";
+        }
+
+        return statusText;
     }
 
     /// <summary>

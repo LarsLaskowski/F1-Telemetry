@@ -36,6 +36,11 @@ public partial class MainWindow : Window, IDisposable
     /// </summary>
     private const int ViewRefreshIntervalMs = 100;
 
+    /// <summary>
+    /// Number of consecutive failed connection attempts after which the replay is stopped
+    /// </summary>
+    private const int MaxConnectAttemptsInRow = 5;
+
     private readonly PacketAnalyzer _packetAnalyzer = new();
     private readonly ContextViewData _viewData = new();
 
@@ -352,6 +357,7 @@ public partial class MainWindow : Window, IDisposable
             var packetCounters = new PacketViewTypes();
             var timings = new ReplayTimingData();
             var processedFiles = 0;
+            var failedConnectsInRow = 0;
             var sessionFrequency = 0;
             var processingDuration = 0.0D;
             var lastFileDuration = 0.0D;
@@ -445,56 +451,57 @@ public partial class MainWindow : Window, IDisposable
                         {
                             if (tcpClient == null || tcpClient.Connected == false)
                             {
+                                // An existing but no longer connected client means the server has closed the connection
+                                if (tcpClient != null)
+                                {
+                                    timings.ClosedByServer++;
+                                }
+
                                 netStream?.Dispose();
                                 tcpClient?.Dispose();
 
                                 netStream = null;
                                 tcpClient = null;
 
-                                timings.Connects++;
-
-                                stepTimestamp = Stopwatch.GetTimestamp();
-
-                                try
+                                if (Connect(hostName, port, timings, ref tcpClient, ref netStream))
                                 {
-                                    // Nagle would hold back the small replay frames until the server acknowledges the previous one
-                                    tcpClient = new TcpClient(hostName, port)
-                                                {
-                                                    NoDelay = true
-                                                };
-
-                                    netStream = tcpClient.GetStream();
+                                    failedConnectsInRow = 0;
                                 }
-                                finally
+                                else
                                 {
-                                    // A failed connection attempt costs time as well, so it is measured too
-                                    timings.ConnectTicks += Stopwatch.GetTimestamp() - stepTimestamp;
+                                    ++failedConnectsInRow;
                                 }
                             }
 
-                            // Prefix every packet with its length so the reused connection can be framed on the server side
-                            BinaryPrimitives.WriteInt32LittleEndian(buffer.AsSpan(0, sizeof(int)), fileLength);
+                            if (netStream != null)
+                            {
+                                // Prefix every packet with its length so the reused connection can be framed on the server side
+                                BinaryPrimitives.WriteInt32LittleEndian(buffer.AsSpan(0, sizeof(int)), fileLength);
 
-                            stepTimestamp = Stopwatch.GetTimestamp();
+                                stepTimestamp = Stopwatch.GetTimestamp();
 
-                            // Prefix and payload go out as one write, otherwise every packet costs an additional round trip
-                            netStream!.Write(buffer.AsSpan(0, sizeof(int) + fileLength));
+                                // Prefix and payload go out as one write, otherwise every packet costs an additional round trip
+                                netStream.Write(buffer.AsSpan(0, sizeof(int) + fileLength));
 
-                            timings.SendTicks += Stopwatch.GetTimestamp() - stepTimestamp;
+                                timings.SendTicks += Stopwatch.GetTimestamp() - stepTimestamp;
+                            }
                         }
                     }
                     catch (Exception ex) when (ex is IOException || ex is SocketException)
                     {
                         // The connection is broken, so it is dropped here and rebuilt with the next packet
+                        timings.LastError = ex.Message;
+
                         netStream?.Dispose();
                         tcpClient?.Dispose();
 
                         netStream = null;
                         tcpClient = null;
                     }
-                    catch
+                    catch (Exception ex)
                     {
                         // A problem with a single packet file must not drop the connection
+                        timings.LastError = ex.Message;
                     }
                     finally
                     {
@@ -505,6 +512,20 @@ public partial class MainWindow : Window, IDisposable
                 ++processedFiles;
 
                 timeWatch.Stop();
+
+                // A server that cannot be reached would cost a connection timeout for every remaining file
+                if (failedConnectsInRow >= MaxConnectAttemptsInRow)
+                {
+                    timings.LastError = $"{timings.LastError} - replay stopped after {failedConnectsInRow} failed connection attempts";
+
+                    UpdateProgressView(processedFiles,
+                                       processingDuration,
+                                       processingWatch.Elapsed,
+                                       packetCounters,
+                                       timings);
+
+                    break;
+                }
 
                 if (skipPacket)
                 {
@@ -571,6 +592,59 @@ public partial class MainWindow : Window, IDisposable
         _viewData.IsRunning = false;
         _viewData.IsPaused = false;
         _viewData.IsEditable = true;
+    }
+
+    /// <summary>
+    /// Establish the connection to the server and measure the needed time
+    /// </summary>
+    /// <param name="hostName">Hostname</param>
+    /// <param name="port">Port</param>
+    /// <param name="timings">Collected timings of the replay</param>
+    /// <param name="tcpClient">Created client</param>
+    /// <param name="netStream">Stream of the created client</param>
+    /// <returns>True if the connection was established, otherwise false</returns>
+    private bool Connect(string hostName,
+                         int port,
+                         ReplayTimingData timings,
+                         ref TcpClient? tcpClient,
+                         ref NetworkStream? netStream)
+    {
+        var isConnected = false;
+
+        timings.Connects++;
+
+        var stepTimestamp = Stopwatch.GetTimestamp();
+
+        try
+        {
+            // Nagle would hold back the small replay frames until the server acknowledges the previous one
+            tcpClient = new TcpClient(hostName, port)
+                        {
+                            NoDelay = true
+                        };
+
+            netStream = tcpClient.GetStream();
+
+            isConnected = true;
+        }
+        catch (Exception ex) when (ex is SocketException || ex is IOException)
+        {
+            timings.FailedConnects++;
+            timings.LastError = ex.Message;
+
+            netStream?.Dispose();
+            tcpClient?.Dispose();
+
+            netStream = null;
+            tcpClient = null;
+        }
+        finally
+        {
+            // A failed connection attempt costs time as well, so it is measured too
+            timings.ConnectTicks += Stopwatch.GetTimestamp() - stepTimestamp;
+        }
+
+        return isConnected;
     }
 
     /// <summary>
