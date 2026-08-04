@@ -262,4 +262,39 @@ internal class PacketViewTypes : NotifyPropertyBase
     }
 
     #endregion // Properties
+
+    #region Methods
+
+    /// <summary>
+    /// Take over all counter values of another instance
+    /// </summary>
+    /// <param name="packetViewTypes">Source of the counter values</param>
+    public void CopyFrom(PacketViewTypes packetViewTypes)
+    {
+        if (packetViewTypes is null)
+        {
+            return;
+        }
+
+        Unknown = packetViewTypes.Unknown;
+        Motion = packetViewTypes.Motion;
+        Session = packetViewTypes.Session;
+        LapData = packetViewTypes.LapData;
+        Event = packetViewTypes.Event;
+        Participants = packetViewTypes.Participants;
+        CarSetups = packetViewTypes.CarSetups;
+        CarTelemetry = packetViewTypes.CarTelemetry;
+        CarTelemetry2 = packetViewTypes.CarTelemetry2;
+        CarStatus = packetViewTypes.CarStatus;
+        FinalClassification = packetViewTypes.FinalClassification;
+        LobbyInfo = packetViewTypes.LobbyInfo;
+        CarDamage = packetViewTypes.CarDamage;
+        SessionHistory = packetViewTypes.SessionHistory;
+        TyreSets = packetViewTypes.TyreSets;
+        MotionEx = packetViewTypes.MotionEx;
+        TimeTrial = packetViewTypes.TimeTrial;
+        LapPositions = packetViewTypes.LapPositions;
+    }
+
+    #endregion // Methods
 }
