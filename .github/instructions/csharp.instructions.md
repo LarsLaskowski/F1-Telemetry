@@ -537,23 +537,28 @@ public class MyController : ControllerBase
 
 ---
 
-## Suppressed Rules (StyleCop / Analyzer)
+## Suppressed Rules (Analyzer)
 
-The following rules are intentionally disabled:
+`Reihitsu.Analyzer` is the analyzer that runs during every build. StyleCop is **not** referenced
+by the solution, so no `SA####` rule is active and none needs to be suppressed.
 
-| Rule | Description |
-|---|---|
-| SA1101 | No `this.` prefix required |
-| SA1116 | Split parameters do not need to start on a new line |
-| SA1200 | Using directives outside the namespace |
-| SA1309 | Fields may begin with underscore |
-| SA1310 | Fields may contain underscores |
-| SA1413 | No trailing comma required |
-| SA1513 | No blank line required after closing brace |
-| SA1629 | Documentation text does not need to end with a period |
-| SA1633 | No file header required |
-| SA1642 | Constructor documentation freely formulated |
-| IDE0290 | No primary constructors |
-| CS8618 | Non-nullable field warning disabled |
-| CA1822 | Methods do not need to be static when possible |
-| CA2254 | Logger template warning disabled |
+The following rules are intentionally disabled in `.editorconfig`:
+
+| Rule | Severity | Description |
+|---|---|---|
+| CS8618 | none | Non-nullable field warning disabled |
+| IDE0290 | none | No primary constructors |
+| CA1822 | silent | Methods do not need to be static when possible |
+| CA2254 | silent | Logger template warning disabled |
+| RH0396 | none | Reihitsu rule disabled project-wide |
+| RH0428 | none | Reihitsu rule disabled project-wide |
+| RH2102 | none | Reihitsu rule disabled project-wide |
+| RH4119 | none | Reihitsu rule disabled project-wide |
+| RH7004 | none | Reihitsu rule disabled project-wide |
+| RH8027 | none | Reihitsu rule disabled project-wide |
+| RH8306 | none | Reihitsu rule disabled project-wide |
+
+Every other `RH####` rule is active, and a clean build must show 0 warnings from all of them.
+
+`GlobalSuppressions.cs` additionally suppresses a set of SonarQube rules; each entry there
+carries its own justification.

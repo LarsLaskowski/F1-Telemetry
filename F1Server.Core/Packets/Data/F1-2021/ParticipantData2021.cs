@@ -3,7 +3,7 @@
 namespace F1Server.Core.Packets.Data;
 
 /// <summary>
-/// Implementation of participant data interface 2011
+/// Implementation of the participant data 2021
 /// </summary>
 public class ParticipantData2021 : IParticipantData2021
 {

@@ -10,7 +10,7 @@ internal class SessionHistoryTyreStintData2024 : ITyreStintHistoryDataBase
     #region ITyreStintHistoryDataBase
 
     /// <summary>
-    /// Lap the tyre usage ends on (255 of current tyre)
+    /// Lap the tyre usage ends on (255 if current tyre)
     /// </summary>
     public ushort EndLap { get; set; }
 

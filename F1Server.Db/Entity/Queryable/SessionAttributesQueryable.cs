@@ -4,7 +4,7 @@ using F1Server.Db.Entity.Tables;
 namespace F1Server.Db.Entity.Queryable;
 
 /// <summary>
-/// Queryable for accessing session entity
+/// Queryable for accessing session attributes entity
 /// </summary>
 public class SessionAttributesQueryable : QueryableBase<SessionAttributesEntity>
 {

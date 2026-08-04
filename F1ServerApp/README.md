@@ -1,6 +1,7 @@
 # F1ServerApp
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 22.0.2.
+This project was generated with [Angular CLI](https://github.com/angular/angular-cli). The version
+currently pinned in `package.json` is 22.0.8.
 
 ## Development server
 
@@ -26,17 +27,22 @@ Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To u
 
 To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
 
+## Updating packages
 
-======= Update packages =======
+```bash
 npm i -g npm-check-updates
 ncu -u
 npm install
+```
 
-======= Änderungen an der docker_entrypoint.sh =======
-Um die korrekte "Zeilenendung" zu erhalten (Windows: \r\n) muss ein WSL-Command geöffnet werden
-=> Windows-Taste - wsl
+## Line endings of docker_entrypoint.sh
 
-=> Datei auf D:\Downloads kopieren
-=> In der WSL auf /mnt/d/Downloads wechseln und den folgenden Befehl eingeben:
+`docker_entrypoint.sh` has to keep Unix line endings (`\n`), otherwise the container fails to
+start. On Windows the file is easily saved with CRLF, so convert it back before committing:
 
+```bash
 sed $'s/\r$//' ./docker_entrypoint.sh > ./docker_entrypoint.unix.sh
+```
+
+Run this from a shell that leaves the bytes untouched, for example WSL (Windows key, then `wsl`),
+and replace the original with the converted file afterwards.

@@ -1,7 +1,7 @@
 ﻿namespace F1Server.Core.Packets.Data;
 
 /// <summary>
-/// Interface for temperature on brakes or wheels
+/// Temperature on brakes or wheels
 /// </summary>
 public class Temperature
 {

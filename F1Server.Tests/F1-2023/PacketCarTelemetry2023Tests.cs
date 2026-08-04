@@ -72,7 +72,7 @@ public class PacketCarTelemetry2023Tests
     }
 
     /// <summary>
-    /// Check whether the given file is a F1 2020 packet
+    /// Check whether the given file is a F1 2023 packet
     /// </summary>
     [TestMethod]
     public void PacketCarTelemetryCheckCarTelemetry2023IsCorrectGameVersion()

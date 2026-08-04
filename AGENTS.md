@@ -43,7 +43,7 @@ F1-Telemetry is a multi-project .NET and Angular solution for receiving, process
 and visualizing telemetry data from EA F1 games.
 
 - Backend: .NET 10 (`net10.0`)
-- Frontend: Angular 21, TypeScript 5.x
+- Frontend: Angular 22, TypeScript 6.x
 - Databases: Microsoft SQL Server, MySQL/MariaDB, PostgreSQL
 - Observability: OpenTelemetry, metrics, tracing, structured logging
 - Delivery: Docker images and Azure Pipelines
@@ -62,7 +62,7 @@ and visualizing telemetry data from EA F1 games.
 | `F1Server.Telemetry` | Telemetry logging and telemetry-specific runtime work |
 | `F1Server.WebApi` | Controllers, hubs, caching, authentication, hosting |
 | `F1Server.Observability` | Metrics, tracing, logging configuration |
-| `F1Server.Shared` | Cross-cutting shared helpers |
+| `F1Server.Shared` | Shared helpers for the desktop tools (session file detection and file utilities); referenced only by `F1ReplayClient` and `F1SessionFolderRename`, not by the server projects |
 | `F1Server.Tests` | MSTest-based automated tests |
 | `F1ServerApp` | Angular frontend |
 | `F1ReplayClient` | Replay client |
@@ -208,7 +208,8 @@ private readonly ILogger<MyClass> _logger;
   any other `RH` diagnostic unresolved. Always run a full rebuild (delete `obj`/`bin` if in
   doubt, since Roslyn does not always re-emit analyzer warnings for unchanged files) before
   declaring a change warning-free.
-- `.editorconfig` currently has **no** `RH####` suppressions — every rule is active project-wide.
+- `.editorconfig` disables exactly seven `RH####` rules (RH0396, RH0428, RH2102, RH4119, RH7004,
+  RH8027, RH8306). Every other `RH` rule is active project-wide and must build warning-free.
 - The `reihitsu-format` global dotnet tool auto-fixes layout-only findings (chain alignment,
   initializer formatting, spacing, etc.). Prefer it over hand-formatting:
 
@@ -282,7 +283,7 @@ attribute or class name. Verify `.cs` and `.Designer.cs` are consistent.
 
 ## Frontend conventions
 
-- Frontend in `F1ServerApp`; Angular 21 / TypeScript 5.x.
+- Frontend in `F1ServerApp`; Angular 22 / TypeScript 6.x.
 - The app mixes modern Angular bootstrap APIs with module-based structure; follow the surrounding
   pattern in the files you touch.
 - File names in kebab-case; component and service class names in PascalCase.
@@ -341,6 +342,9 @@ transformation logic close to the feature component → keep contract names sync
 
 ## Suppressed analyzer rules (intentional)
 
-SA1101, SA1116, SA1200, SA1309, SA1310, SA1413, SA1513, SA1629, SA1633, SA1642,
-IDE0290, CS8618, CA1822, CA2254 are intentionally disabled — see
-`.github/instructions/csharp.instructions.md` for the rationale of each.
+StyleCop is **not** referenced by the solution, so no `SA####` rule is active or suppressed.
+`.editorconfig` disables CS8618, IDE0290, CA1822, CA2254 and the Reihitsu rules RH0396, RH0428,
+RH2102, RH4119, RH7004, RH8027 and RH8306 — see
+`.github/instructions/csharp.instructions.md` for the rationale of each. Every other `RH####`
+rule is active. `GlobalSuppressions.cs` suppresses a set of SonarQube rules, each with its own
+justification.

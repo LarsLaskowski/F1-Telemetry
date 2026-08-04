@@ -60,7 +60,7 @@ public class PacketSession2021Tests
     #region Methods F1 2021
 
     /// <summary>
-    /// Check whether the given file has a correct participants data content
+    /// Check whether the given file is a session packet
     /// </summary>
     [TestMethod]
     public void PacketSessionCheckSession2021IsCorrectPacketType()

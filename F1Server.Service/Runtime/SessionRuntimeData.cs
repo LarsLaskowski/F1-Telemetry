@@ -57,7 +57,7 @@ public class SessionRuntimeData : ISessionRuntimeData
     }
 
     /// <summary>
-    /// Sollen die Daten für diese Session aufgezeichnet werden?
+    /// Flag whether the data of this session should be recorded
     /// </summary>
     public bool IsRecordable { get; set; }
 

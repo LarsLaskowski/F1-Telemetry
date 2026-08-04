@@ -41,7 +41,7 @@ These instructions apply to the F1-Telemetry solution. Keep suggestions aligned 
 F1-Telemetry is a multi-project .NET and Angular solution for receiving, processing, storing, and visualizing telemetry data from EA F1 games.
 
 - Backend: .NET 10
-- Frontend: Angular 21
+- Frontend: Angular 22
 - Databases: Microsoft SQL Server, MySQL/MariaDB, PostgreSQL
 - Observability: OpenTelemetry, metrics, tracing, structured logging
 - Delivery: Docker images and Azure Pipelines
@@ -59,7 +59,7 @@ F1-Telemetry is a multi-project .NET and Angular solution for receiving, process
 | `F1Server.Telemetry` | Telemetry logging and telemetry-specific runtime work |
 | `F1Server.WebApi` | Controllers, hubs, caching, authentication, hosting |
 | `F1Server.Observability` | Metrics, tracing, logging configuration |
-| `F1Server.Shared` | Cross-cutting shared helpers |
+| `F1Server.Shared` | Shared helpers for the desktop tools (session file detection and file utilities); referenced only by `F1ReplayClient` and `F1SessionFolderRename`, not by the server projects |
 | `F1Server.Tests` | MSTest-based automated tests |
 | `F1ServerApp` | Angular frontend |
 | `F1ReplayClient` | Replay client |
@@ -125,7 +125,7 @@ F1-Telemetry is a multi-project .NET and Angular solution for receiving, process
 ### Documentation
 
 - Add XML documentation to all public members
-- Match the existing codebase style by documenting most non-public members as well, except private fields
+- Document non-public members as well, including private fields and private properties
 - Do not add `<remarks>`
 - Every method with a return type must have a `<returns>` tag
 - Use `/// <inheritdoc/>` for interface implementations where appropriate
@@ -148,8 +148,9 @@ F1-Telemetry is a multi-project .NET and Angular solution for receiving, process
 
 - The `Reihitsu.Analyzer` NuGet package runs during every build. A clean build must show **0
   warnings** from any `RH####` rule (chain alignment `RH5201`, initializer formatting
-  `RH5301`/`RH5410`, member naming `RH4103`, etc.) — `.editorconfig` has no `RH####` suppressions,
-  every rule is active project-wide
+  `RH5301`/`RH5410`, member naming `RH4103`, etc.) — `.editorconfig` disables exactly seven
+  `RH####` rules (RH0396, RH0428, RH2102, RH4119, RH7004, RH8027, RH8306), every other rule is
+  active project-wide
 - Rebuild fully (delete `obj`/`bin` if in doubt) before concluding a change is warning-free, since
   Roslyn does not always re-emit analyzer warnings for unchanged files
 - Use the `reihitsu-format` global dotnet tool (`reihitsu-format --check|--dry-run|<path>`) to
@@ -204,7 +205,7 @@ dotnet ef migrations add Update14 --project F1Server.Db.MsSqlMigrations --startu
 When creating a new migration:
 
 1. Determine the next number by checking existing `Update*.cs` files in the `Migrations` folder
-2. Run: `dotnet ef migrations add UpdateN --project src/SeriesOverwatch.Data --startup-project src/SeriesOverwatch`
+2. Run: `dotnet ef migrations add UpdateN --project F1Server.Db.<Provider>Migrations --startup-project F1Server`
 3. Rename the generated files to remove the timestamp prefix (e.g. `20260406161452_Update1.cs` → `Update1.cs`)
 4. **Do NOT** change the `[Migration]` attribute or class name — keep them as generated
 5. Verify both `.cs` and `.Designer.cs` files exist and are consistent
@@ -243,7 +244,7 @@ When creating a new migration:
 ## Frontend conventions
 
 - Frontend code lives in `F1ServerApp`
-- Angular uses TypeScript 5.x and Angular 21 packages
+- Angular uses TypeScript 6.x and Angular 22 packages
 - The app already mixes modern Angular bootstrap APIs with existing module-based structure; follow the surrounding pattern in the files you touch
 - Keep file names in kebab-case
 - Keep component and service class names in PascalCase

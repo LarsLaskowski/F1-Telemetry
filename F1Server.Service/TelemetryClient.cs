@@ -62,7 +62,7 @@ public sealed class TelemetryClient : ITelemetryClient, IDisposable
     /// <param name="serviceProvider">A <see cref="IServiceProvider"/> containing the configured services</param>
     /// <param name="useDatabase">Database information seems to exists</param>
     /// <param name="useWebHosting">Activating web interface</param>
-    /// <param name="port">Optionaler Port</param>
+    /// <param name="port">Optional port, 0 keeps the configured default port</param>
     public TelemetryClient(IServiceProvider serviceProvider, bool useDatabase, bool useWebHosting, int port = 0)
     {
         using var currentActity = AppActivity.SrvSource.StartActivity("TelemetryClient-Create");

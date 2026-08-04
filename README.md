@@ -135,7 +135,7 @@ is then enabled independently, depending on whether its endpoint variable is set
 
 | Variable | Description |
 | --- | --- |
-| `F1SERVER_OTLP_TARGET` | Export target: `0` (NotSet), `1` (Console), `2` (Zipkin, obsolete), `3` (OpenTelemetry). |
+| `F1SERVER_OTLP_TARGET` | Export target: `0` (NotSet), `1` (Console), `3` (OpenTelemetry). The Docker image defaults to `3`. Value `2` was Zipkin and no longer exists; any value other than `3` falls back to the console exporter. |
 | `F1SERVER_OTLP_TRACES_URL` | OTLP endpoint for traces. |
 | `F1SERVER_OTLP_METRICS_URL` | OTLP endpoint for metrics. |
 | `F1SERVER_OTLP_LOGGING_URL` | OTLP endpoint for logs. |

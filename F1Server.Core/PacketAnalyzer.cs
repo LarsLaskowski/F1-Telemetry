@@ -295,7 +295,7 @@ public class PacketAnalyzer
     /// </summary>
     /// <param name="packetHeader">Packet header</param>
     /// <param name="dataPacket">Received packet data</param>
-    /// <returns>Return car telemetry data object, depending on game version</returns>
+    /// <returns>Return car status data object, depending on game version</returns>
     public object? GetCarStatus(PacketHeader packetHeader, ReadOnlySpan<byte> dataPacket)
     {
         object? carStatus = null;

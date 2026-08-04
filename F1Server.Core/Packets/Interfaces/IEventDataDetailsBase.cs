@@ -15,7 +15,8 @@ public interface IEventDataDetailsBase
     EventType EventType { get; }
 
     /// <summary>
-    /// Car number
+    /// Zero based index of the car in the per-car arrays of the packet. This is the array slot,
+    /// not the race number shown on the car
     /// </summary>
     ushort VehicleIndex { get; }
 
