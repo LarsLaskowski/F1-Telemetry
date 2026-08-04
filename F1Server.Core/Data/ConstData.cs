@@ -626,9 +626,9 @@ public static class ConstData
     public const int F12026CarTelemetry2Size = 240;
 
     /// <summary>
-    /// Size of one time trial packet (three data sets)
+    /// Size of one time trial packet (three data sets of 25 bytes, the team id is a uint16 since F1 2026)
     /// </summary>
-    public const int F12026TimeTrialSize = 72;
+    public const int F12026TimeTrialSize = 75;
 
     #endregion // Consts F1 2026
 
