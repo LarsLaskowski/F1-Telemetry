@@ -145,9 +145,19 @@ internal class PacketToTimeTrialData : PacketToXBase
 
                 actOffset += ConstData.TypeUInt8;
 
-                timeTrialData.TeamId = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
+                // F1 2026 widened the team id from uint8 to uint16, every earlier year still sends one byte
+                if (timeTrialData is TimeTrialDataSet2026)
+                {
+                    timeTrialData.TeamId = Unsafe.ReadUnaligned<ushort>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-                actOffset += ConstData.TypeUInt8;
+                    actOffset += ConstData.TypeUInt16;
+                }
+                else
+                {
+                    timeTrialData.TeamId = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
+
+                    actOffset += ConstData.TypeUInt8;
+                }
 
                 timeTrialData.LapTime = Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref dataPacket, actOffset));
 
