@@ -60,7 +60,7 @@ public class PacketSession2022Tests
     #region Methods F1 2022
 
     /// <summary>
-    /// Check whether the given file has a correct participants data content
+    /// Check whether the given file is a session packet
     /// </summary>
     [TestMethod]
     public void PacketSessionCheckSession2022IsCorrectPacketType()
@@ -71,7 +71,7 @@ public class PacketSession2022Tests
     }
 
     /// <summary>
-    /// Check whether the given file is a F1 2020 packet
+    /// Check whether the given file is a F1 2022 packet
     /// </summary>
     [TestMethod]
     public void PacketSessionCheckSession2022IsCorrectGameVersion()

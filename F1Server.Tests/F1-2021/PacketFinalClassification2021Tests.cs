@@ -59,10 +59,10 @@ public class PacketFinalClassification2021Tests
     #region Methods F1 2021
 
     /// <summary>
-    /// Check whether the given file has a correct participants data content
+    /// Check whether the given file is a final classification packet
     /// </summary>
     [TestMethod]
-    public void PacketSessionCheckFinalClassification2021IsCorrectPacketType()
+    public void PacketFinalClassificationCheck2021IsCorrectPacketType()
     {
         var isCorrect = _packetData.PacketHeader?.PacketType == PacketTypes.FinalClassification;
 
@@ -73,7 +73,7 @@ public class PacketFinalClassification2021Tests
     /// Check whether the analyzer construct the correct class object
     /// </summary>
     [TestMethod]
-    public void PacketSessionCheckFinalClassification2021IsFinalClassificationObject()
+    public void PacketFinalClassificationCheck2021IsFinalClassificationObject()
     {
         if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12021FinalClassificationSize + ConstData.F12020HeaderSize)
         {

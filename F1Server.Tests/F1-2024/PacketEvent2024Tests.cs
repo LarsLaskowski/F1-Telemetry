@@ -113,7 +113,7 @@ public class PacketEvent2024Tests
     }
 
     /// <summary>
-    /// Check whether the given file is a F1 2020 packet
+    /// Check whether the given file is a F1 2024 packet
     /// </summary>
     [TestMethod]
     public void PacketEvent2024IsCorrectGameVersion()

@@ -96,7 +96,7 @@ public class AppMetrics : IAppMetrics
     #region Methods
 
     /// <summary>
-    /// Initializes the meters to zero so they are visible in Prometheus
+    /// Initializes the meters to zero so they are exported before the first real measurement
     /// </summary>
     private void InitMeters()
     {

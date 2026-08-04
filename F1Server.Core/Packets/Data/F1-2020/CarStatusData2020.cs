@@ -145,7 +145,7 @@ public class CarStatusData2020 : ICarStatusData2020
     public float ERSStoreEnergy { get; set; }
 
     /// <summary>
-    /// ERS deployment mode - 0 - none - 1 - medium - 2 - hotlap - 3 - overtake
+    /// ERS deployment mode - 0 - none - 1 - medium - 2 - overtake - 3 - hotlap
     /// </summary>
     public ushort ERSDeployMode { get; set; }
 

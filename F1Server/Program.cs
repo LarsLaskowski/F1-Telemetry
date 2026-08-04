@@ -16,7 +16,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace F1Server;
 
 /// <summary>
-/// Klasse für den Start des Projektes
+/// Class for starting the project
 /// </summary>
 public static class Program
 {
@@ -31,9 +31,9 @@ public static class Program
     #region Methods
 
     /// <summary>
-    /// Haupteintrittspunkt
+    /// Main entry point
     /// </summary>
-    /// <param name="args">Argumente</param>
+    /// <param name="args">Command line arguments</param>
     public static void Main(string[] args)
     {
         var runInDocker = Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") == "true";

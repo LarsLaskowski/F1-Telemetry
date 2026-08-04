@@ -160,7 +160,7 @@ public class PacketParticipants2025Tests
     }
 
     /// <summary>
-    /// Check active cars (2025)
+    /// Check driver name (2025)
     /// </summary>
     [TestMethod]
     public void PacketParticipantsDriverName2025ExpectedValue()

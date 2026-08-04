@@ -89,7 +89,7 @@ public class PacketEvent2022Tests
     }
 
     /// <summary>
-    /// Check whether the given file is a F1 2020 packet
+    /// Check whether the given file is a F1 2022 packet
     /// </summary>
     [TestMethod]
     public void PacketEvent2022IsCorrectGameVersion()

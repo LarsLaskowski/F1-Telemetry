@@ -25,14 +25,10 @@ public class LapData2019 : ILapData2019
     /// </summary>
     public float BestLapTime { get; set; }
 
-    /// <summary>
-    /// Sector 1 time in milliseconds
-    /// </summary>
+    /// <inheritdoc/>
     public float Sector1Time { get; set; }
 
-    /// <summary>
-    /// Sector 2 time in milliseconds
-    /// </summary>
+    /// <inheritdoc/>
     public float Sector2Time { get; set; }
 
     #endregion // ILapData2019
