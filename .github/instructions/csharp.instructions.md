@@ -548,6 +548,7 @@ The following rules are intentionally disabled in `.editorconfig`:
 |---|---|---|
 | CS8618 | none | Non-nullable field warning disabled |
 | IDE0290 | none | No primary constructors |
+| IDE0076 | none | Suppression targets in the shared `GlobalSuppressions.cs` are inert outside their owning assembly |
 | CA1822 | silent | Methods do not need to be static when possible |
 | CA2254 | silent | Logger template warning disabled |
 | RH0396 | none | Reihitsu rule disabled project-wide |

@@ -161,6 +161,14 @@ csharp_prefer_static_local_function = true:suggestion
 # IDE0290: Use primary constructor
 dotnet_diagnostic.IDE0290.severity = none
 
+# IDE0076: Invalid or missing target for 'SuppressMessageAttribute'
+# GlobalSuppressions.cs is Compile-linked into every project, so a namespace-scoped suppression
+# resolves only in the assembly that actually contains that namespace and is inert everywhere
+# else. That is the intended design of the shared file, not a mistake in the individual entries,
+# so the rule would fire once per project for every entry that does not belong to it.
+# IDE0077 (legacy target format) stays active - targets must use the ~N:/~M: documentation ID form.
+dotnet_diagnostic.IDE0076.severity = none
+
 [*.{cs,vb}]
 dotnet_diagnostic.CA1822.severity=silent
 [*.{cs,vb}]

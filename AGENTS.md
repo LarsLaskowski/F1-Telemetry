@@ -343,7 +343,7 @@ transformation logic close to the feature component → keep contract names sync
 ## Suppressed analyzer rules (intentional)
 
 StyleCop is **not** referenced by the solution, so no `SA####` rule is active or suppressed.
-`.editorconfig` disables CS8618, IDE0290, CA1822, CA2254 and the Reihitsu rules RH0396, RH0428,
+`.editorconfig` disables CS8618, IDE0076, IDE0290, CA1822, CA2254 and the Reihitsu rules RH0396, RH0428,
 RH2102, RH4119, RH7004, RH8027 and RH8306 — see
 `.github/instructions/csharp.instructions.md` for the rationale of each. Every other `RH####`
 rule is active. `GlobalSuppressions.cs` suppresses a set of SonarQube rules, each with its own
