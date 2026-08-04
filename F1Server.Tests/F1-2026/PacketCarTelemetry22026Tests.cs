@@ -123,7 +123,7 @@ public class PacketCarTelemetry22026Tests
     [TestMethod]
     public void PacketCarTelemetry22026HasDataForAllCars()
     {
-        Assert.AreEqual(ConstData.F12026MaxCars, GetCarTelemetry2().CarTelemetry2Data.Length, "Wrong number of cars in the additional car telemetry!");
+        Assert.HasCount(ConstData.F12026MaxCars, GetCarTelemetry2().CarTelemetry2Data, "Wrong number of cars in the additional car telemetry!");
     }
 
     /// <summary>
