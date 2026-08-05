@@ -126,6 +126,12 @@ support is provided by provider-specific EF Core migration projects
 `F1Server.Db.PostgreSqlMigrations`). The `F1Server.WebApi` project exposes the
 REST controllers and SignalR hubs that feed the Angular frontend.
 
+NuGet versions are managed centrally in `Directory.Packages.props`. A few
+references deviate from the "latest stable, upstream" rule — the pre-release
+OpenTelemetry instrumentation packages, the MySQL provider fork and the analyzer
+beta. Those decisions are documented in
+[`docs/dependency-decisions.md`](docs/dependency-decisions.md).
+
 ### OpenTelemetry integration
 
 Observability is implemented in `F1Server.Observability` around
