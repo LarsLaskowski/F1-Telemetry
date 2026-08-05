@@ -17,7 +17,7 @@ public class RepositoryCacheTests
     /// Tests the functionality of the <see cref="DriverRepositoryCache"/> class, including adding and retrieving
     /// </summary>
     [TestMethod]
-    public void DriverRepositoryCacheTest()
+    public void DriverRepositoryCacheAddOrUpdateReturnsCachedDriver()
     {
         var driver = new DriverEntity
                      {
@@ -36,7 +36,7 @@ public class RepositoryCacheTests
     /// Tests the functionality of the <see cref="ParticipantsRepositoryCache"/> class, including adding and retrieving
     /// </summary>
     [TestMethod]
-    public void ParticipantsRepositoryCacheTest()
+    public void ParticipantsRepositoryCacheAddOrUpdateReturnsCachedParticipant()
     {
         var part = new ParticipantEntity
                    {
@@ -56,7 +56,7 @@ public class RepositoryCacheTests
     /// Verifies that the <see cref="SessionRepositoryCache"/> correctly handles adding and retrieving
     /// </summary>
     [TestMethod]
-    public void SessionRepositoryCacheTest()
+    public void SessionRepositoryCacheAddOrUpdateReturnsCachedSessionAndAttributes()
     {
         var session = new SessionEntity
                       {
@@ -84,7 +84,7 @@ public class RepositoryCacheTests
     /// Tests the functionality of the <see cref="LapRepositoryCache"/> class, including adding and retrieving
     /// </summary>
     [TestMethod]
-    public void LapRepositoryCacheTest()
+    public void LapRepositoryCacheAddOrUpdateReturnsCachedLap()
     {
         var lap = new LapEntity
                   {

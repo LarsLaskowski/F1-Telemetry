@@ -915,7 +915,7 @@ public static class SeedNames
     /// <summary>
     /// Seed name constant for "Wilheim Kaufmann"
     /// </summary>
-    public const string WileimKaufmann = "Wilheim Kaufmann";
+    public const string WilheimKaufmann = "Wilheim Kaufmann";
 
     /// <summary>
     /// Seed name constant for "Gert Waldmuller"
@@ -1050,7 +1050,7 @@ public static class SeedNames
     /// <summary>
     /// Seed name constant for "Nobuharu Matsushita"
     /// </summary>
-    public const string NobaharuMatsushita = "Nobuharu Matsushita";
+    public const string NobuharuMatsushita = "Nobuharu Matsushita";
 
     /// <summary>
     /// Seed name constant for "Nikita Mazepin"
@@ -1270,7 +1270,7 @@ public static class SeedNames
     /// <summary>
     /// Seed name constant for "Ritomo Miyata"
     /// </summary>
-    public const string Ritomomiyata = "Ritomo Miyata";
+    public const string RitomoMiyata = "Ritomo Miyata";
 
     /// <summary>
     /// Seed name constant for "Rafael Villagómez"

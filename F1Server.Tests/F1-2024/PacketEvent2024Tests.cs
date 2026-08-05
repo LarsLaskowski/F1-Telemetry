@@ -201,7 +201,7 @@ public class PacketEvent2024Tests
     /// Check top speed from packet
     /// </summary>
     [TestMethod]
-    public void PacketEvent2024IsTopSpeedVehicleExpectedZero()
+    public void PacketEvent2024IsTopSpeedVehicleExpectedOne()
     {
         if (_packetDataTopSpeed.PacketHeader != null)
         {
@@ -326,7 +326,7 @@ public class PacketEvent2024Tests
     /// Check penalty infringement type from packet
     /// </summary>
     [TestMethod]
-    public void PacketEvent2024IsPenaltyInfringementTypeExpectedLapInvalidRunningWide()
+    public void PacketEvent2024IsPenaltyInfringementTypeExpectedRetiredMechanicalFailure()
     {
         if (_packetDataPenalty.PacketHeader != null)
         {
@@ -351,7 +351,7 @@ public class PacketEvent2024Tests
     /// Check penalty vehicle from packet
     /// </summary>
     [TestMethod]
-    public void PacketEvent2024IsPenaltyVehicleExpectedZero()
+    public void PacketEvent2024IsPenaltyVehicleExpectedThirteen()
     {
         if (_packetDataPenalty.PacketHeader != null)
         {
@@ -376,7 +376,7 @@ public class PacketEvent2024Tests
     /// Check penalty lap number from packet
     /// </summary>
     [TestMethod]
-    public void PacketEvent2024IsPenaltyLapNumberExpectedThree()
+    public void PacketEvent2024IsPenaltyLapNumberExpectedTwentySix()
     {
         if (_packetDataPenalty.PacketHeader != null)
         {

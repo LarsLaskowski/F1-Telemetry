@@ -207,7 +207,7 @@ public class PacketSignedByteFieldsTests
 
         if (sessionData is SessionData { PacketData: ISessionData2020 sessionData2020 })
         {
-            Assert.AreEqual(ZoneFlagColor.Invalid, sessionData2020.MarshalZone[0].ZoneFlag, "ZoneFlag must decode the documented invalid value -1!");
+            Assert.AreEqual(ZoneFlagColor.Invalid, sessionData2020.MarshalZones[0].ZoneFlag, "ZoneFlag must decode the documented invalid value -1!");
         }
         else
         {

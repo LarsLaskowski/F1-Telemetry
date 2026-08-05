@@ -362,14 +362,14 @@ internal class PacketToSessionData : PacketToXBase
 
             actOffset += ConstData.TypeUInt8;
 
-            sessionData.MarshalZones = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
+            sessionData.NumberOfMarshalZones = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
             actOffset += ConstData.TypeUInt8;
 
             var zoneOffset = actOffset;
 
             // Clamp the packet-provided zone count to the fixed packet layout so manipulated values cannot cause reads past the packet
-            var marshalZoneCount = Math.Min(sessionData.MarshalZones, sessionData.MarshalZone.Length);
+            var marshalZoneCount = Math.Min(sessionData.NumberOfMarshalZones, sessionData.MarshalZones.Length);
 
             for (int marshalZoneIndex = 0; marshalZoneIndex < marshalZoneCount; ++marshalZoneIndex)
             {
@@ -386,7 +386,7 @@ internal class PacketToSessionData : PacketToXBase
 
                 zoneOffset += ConstData.TypeInt8;
 
-                sessionData.MarshalZone[marshalZoneIndex] = marshalZone;
+                sessionData.MarshalZones[marshalZoneIndex] = marshalZone;
             }
 
             actOffset += ConstData.TotalMarshalZoneSize;

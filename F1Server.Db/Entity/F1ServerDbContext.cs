@@ -1075,7 +1075,7 @@ public sealed class F1ServerDbContext : DbContext
                                  {
                                      Id = 31,
                                      DriverGameId = 34,
-                                     Name = SeedNames.WileimKaufmann
+                                     Name = SeedNames.WilheimKaufmann
                                  },
                                  new DriverEntity
                                  {
@@ -1327,7 +1327,7 @@ public sealed class F1ServerDbContext : DbContext
                                  {
                                      Id = 73,
                                      DriverGameId = 78,
-                                     Name = SeedNames.NobaharuMatsushita
+                                     Name = SeedNames.NobuharuMatsushita
                                  },
                                  new DriverEntity
                                  {
@@ -2311,7 +2311,7 @@ public sealed class F1ServerDbContext : DbContext
                                  {
                                      Id = 237,
                                      DriverGameId = 2025166,
-                                     Name = SeedNames.Ritomomiyata
+                                     Name = SeedNames.RitomoMiyata
                                  },
                                  new DriverEntity
                                  {
@@ -2833,7 +2833,7 @@ public sealed class F1ServerDbContext : DbContext
                                  {
                                      Id = 324,
                                      DriverGameId = 2026166,
-                                     Name = SeedNames.Ritomomiyata
+                                     Name = SeedNames.RitomoMiyata
                                  },
                                  new DriverEntity
                                  {

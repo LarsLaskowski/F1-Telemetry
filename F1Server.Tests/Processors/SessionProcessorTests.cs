@@ -466,7 +466,7 @@ public class SessionProcessorTests
     }
 
     /// <summary>
-    /// Method to test changing weather condition from session packet
+    /// Method to test changing steering assist from session packet
     /// </summary>
     /// <param name="gameVersion">Game version</param>
     [TestMethod]
@@ -542,16 +542,16 @@ public class SessionProcessorTests
     }
 
     /// <summary>
-    /// Method to test changing weather condition from session packet
+    /// Method to test changing braking assist from session packet
     /// </summary>
     /// <param name="gameVersion">Game version</param>
     [TestMethod]
-    [DataRow(2021, DisplayName = "ProcessSessionPacket_ExpectedSteeringAssistChanged2021")]
-    [DataRow(2022, DisplayName = "ProcessSessionPacket_ExpectedSteeringAssistChanged2022")]
-    [DataRow(2023, DisplayName = "ProcessSessionPacket_ExpectedSteeringAssistChanged2023")]
-    [DataRow(2024, DisplayName = "ProcessSessionPacket_ExpectedSteeringAssistChanged2024")]
-    [DataRow(2025, DisplayName = "ProcessSessionPacket_ExpectedSteeringAssistChanged2025")]
-    [DataRow(2026, DisplayName = "ProcessSessionPacket_ExpectedSteeringAssistChanged2026")]
+    [DataRow(2021, DisplayName = "ProcessSessionPacket_ExpectedBrakingAssistChanged2021")]
+    [DataRow(2022, DisplayName = "ProcessSessionPacket_ExpectedBrakingAssistChanged2022")]
+    [DataRow(2023, DisplayName = "ProcessSessionPacket_ExpectedBrakingAssistChanged2023")]
+    [DataRow(2024, DisplayName = "ProcessSessionPacket_ExpectedBrakingAssistChanged2024")]
+    [DataRow(2025, DisplayName = "ProcessSessionPacket_ExpectedBrakingAssistChanged2025")]
+    [DataRow(2026, DisplayName = "ProcessSessionPacket_ExpectedBrakingAssistChanged2026")]
     public void ProcessSessionPacketExpectedBrakingAssistChanged(int gameVersion)
     {
         var packetHeader = GetGameDependentPacketHeader(gameVersion);
@@ -618,15 +618,15 @@ public class SessionProcessorTests
     }
 
     /// <summary>
-    /// Method to test changing weather condition from session packet
+    /// Method to test changing gearbox assist from session packet
     /// </summary>
     /// <param name="gameVersion">Game version</param>
     [TestMethod]
-    [DataRow(2021, DisplayName = "ProcessSessionPacket_ExpectedSteeringAssistChanged2021")]
-    [DataRow(2022, DisplayName = "ProcessSessionPacket_ExpectedSteeringAssistChanged2022")]
-    [DataRow(2023, DisplayName = "ProcessSessionPacket_ExpectedSteeringAssistChanged2023")]
-    [DataRow(2024, DisplayName = "ProcessSessionPacket_ExpectedSteeringAssistChanged2024")]
-    [DataRow(2025, DisplayName = "ProcessSessionPacket_ExpectedSteeringAssistChanged2025")]
+    [DataRow(2021, DisplayName = "ProcessSessionPacket_ExpectedGearBoxAssistChanged2021")]
+    [DataRow(2022, DisplayName = "ProcessSessionPacket_ExpectedGearBoxAssistChanged2022")]
+    [DataRow(2023, DisplayName = "ProcessSessionPacket_ExpectedGearBoxAssistChanged2023")]
+    [DataRow(2024, DisplayName = "ProcessSessionPacket_ExpectedGearBoxAssistChanged2024")]
+    [DataRow(2025, DisplayName = "ProcessSessionPacket_ExpectedGearBoxAssistChanged2025")]
     public void ProcessSessionPacketExpectedGearBoxAssistChanged(int gameVersion)
     {
         var packetHeader = GetGameDependentPacketHeader(gameVersion);
