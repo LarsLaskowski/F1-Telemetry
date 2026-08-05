@@ -378,9 +378,9 @@ public static class SeedNames
     public const string GeorgeRussell = "George Russell";
 
     /// <summary>
-    /// Seed name constant for "Guanya Zhou"
+    /// Seed name constant for "Guanyu Zhou"
     /// </summary>
-    public const string GuanyaZhou = "Guanya Zhou";
+    public const string GuanyuZhou = "Guanyu Zhou";
 
     /// <summary>
     /// Seed name constant for "Haas"

@@ -1339,7 +1339,7 @@ public sealed class F1ServerDbContext : DbContext
                                  {
                                      Id = 75,
                                      DriverGameId = 80,
-                                     Name = SeedNames.GuanyaZhou
+                                     Name = SeedNames.GuanyuZhou
                                  },
                                  new DriverEntity
                                  {
@@ -2101,7 +2101,7 @@ public sealed class F1ServerDbContext : DbContext
                                  {
                                      Id = 202,
                                      DriverGameId = 202580,
-                                     Name = SeedNames.GuanyaZhou
+                                     Name = SeedNames.GuanyuZhou
                                  },
                                  new DriverEntity
                                  {
@@ -2623,7 +2623,7 @@ public sealed class F1ServerDbContext : DbContext
                                  {
                                      Id = 289,
                                      DriverGameId = 202680,
-                                     Name = SeedNames.GuanyaZhou
+                                     Name = SeedNames.GuanyuZhou
                                  },
                                  new DriverEntity
                                  {
