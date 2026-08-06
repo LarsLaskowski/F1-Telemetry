@@ -63,7 +63,7 @@ public class PacketSession2025Tests
     /// Check whether the given file is a session packet
     /// </summary>
     [TestMethod]
-    public void PacketSessionCheckSession2025IsCorrectPacketType()
+    public void PacketSessionCheck2025IsCorrectPacketType()
     {
         var isCorrect = _packetData.PacketHeader?.PacketType == PacketTypes.Session;
 
@@ -74,7 +74,7 @@ public class PacketSession2025Tests
     /// Check whether the given file is a F1 2025 packet
     /// </summary>
     [TestMethod]
-    public void PacketSessionCheckSession2025IsCorrectGameVersion()
+    public void PacketSessionCheck2025IsCorrectGameVersion()
     {
         var isCorrect = _packetData.PacketHeader?.GameVersion == 2025;
 
@@ -85,7 +85,7 @@ public class PacketSession2025Tests
     /// Check whether the analyzer construct the correct class object
     /// </summary>
     [TestMethod]
-    public void PacketSessionCheckSession2025IsSessionObject()
+    public void PacketSessionCheck2025IsSessionObject()
     {
         if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12025SessionSize + ConstData.F12025HeaderSize)
         {
@@ -109,7 +109,7 @@ public class PacketSession2025Tests
     /// Check ai difficulty (2025)
     /// </summary>
     [TestMethod]
-    public void PacketSessionAiDifficulty2025ExpectedThirtyOne()
+    public void PacketSessionAiDifficulty2025ExpectedSixty()
     {
         if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12025SessionSize + ConstData.F12025HeaderSize)
         {
@@ -136,7 +136,7 @@ public class PacketSession2025Tests
     /// Check track (2025)
     /// </summary>
     [TestMethod]
-    public void PacketSessionTrack2025ExpectedBahrain()
+    public void PacketSessionTrack2025ExpectedSuzuka()
     {
         if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12025SessionSize + ConstData.F12025HeaderSize)
         {

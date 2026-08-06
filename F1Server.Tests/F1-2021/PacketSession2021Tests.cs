@@ -63,7 +63,7 @@ public class PacketSession2021Tests
     /// Check whether the given file is a session packet
     /// </summary>
     [TestMethod]
-    public void PacketSessionCheckSession2021IsCorrectPacketType()
+    public void PacketSessionCheck2021IsCorrectPacketType()
     {
         var isCorrect = _packetData.PacketHeader?.PacketType == PacketTypes.Session;
 
@@ -74,7 +74,7 @@ public class PacketSession2021Tests
     /// Check whether the given file is a F1 2021 packet
     /// </summary>
     [TestMethod]
-    public void PacketSessionCheckSession2021IsCorrectGameVersion()
+    public void PacketSessionCheck2021IsCorrectGameVersion()
     {
         var isCorrect = _packetData.PacketHeader?.GameVersion == 2021;
 
@@ -85,7 +85,7 @@ public class PacketSession2021Tests
     /// Check whether the analyzer construct the correct class object
     /// </summary>
     [TestMethod]
-    public void PacketSessionCheckSession2021IsSessionObject()
+    public void PacketSessionCheck2021IsSessionObject()
     {
         if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12021SessionSize + ConstData.F12020HeaderSize)
         {
@@ -136,7 +136,7 @@ public class PacketSession2021Tests
     /// Check track (2021)
     /// </summary>
     [TestMethod]
-    public void PacketSessionTrack2021ExpectedSuzuka()
+    public void PacketSessionTrack2021ExpectedAbuDhabi()
     {
         if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12021SessionSize + ConstData.F12020HeaderSize)
         {

@@ -63,7 +63,7 @@ public class PacketSession2026Tests
     /// Check whether the given file has a correct session data content
     /// </summary>
     [TestMethod]
-    public void PacketSessionCheckSession2026IsCorrectPacketType()
+    public void PacketSessionCheck2026IsCorrectPacketType()
     {
         var isCorrect = _packetData.PacketHeader?.PacketType == PacketTypes.Session;
 
@@ -74,7 +74,7 @@ public class PacketSession2026Tests
     /// Check whether the given file is a F1 2026 packet
     /// </summary>
     [TestMethod]
-    public void PacketSessionCheckSession2026IsCorrectGameVersion()
+    public void PacketSessionCheck2026IsCorrectGameVersion()
     {
         var isCorrect = _packetData.PacketHeader?.GameVersion == 2026;
 
@@ -85,7 +85,7 @@ public class PacketSession2026Tests
     /// Check whether the analyzer constructs a F1 2026 session data object
     /// </summary>
     [TestMethod]
-    public void PacketSessionCheckSession2026IsSessionDataObject()
+    public void PacketSessionCheck2026IsSessionDataObject()
     {
         var session = _packetAnalyzer.GetSessionData(_packetData.PacketHeader!, _packetContent);
 

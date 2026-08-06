@@ -98,12 +98,12 @@ public interface ISessionDataBase
     /// <summary>
     /// Number of marshal zones
     /// </summary>
-    ushort MarshalZones { get; set; }
+    ushort NumberOfMarshalZones { get; set; }
 
     /// <summary>
     /// Marshal zone data
     /// </summary>
-    MarshalZone[] MarshalZone { get; }
+    MarshalZone[] MarshalZones { get; }
 
     /// <summary>
     /// Safety car status

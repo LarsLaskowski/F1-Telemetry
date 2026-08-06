@@ -63,7 +63,7 @@ public class PacketSession2024Tests
     /// Check whether the given file is a session packet
     /// </summary>
     [TestMethod]
-    public void PacketSessionCheckSession2024IsCorrectPacketType()
+    public void PacketSessionCheck2024IsCorrectPacketType()
     {
         var isCorrect = _packetData.PacketHeader?.PacketType == PacketTypes.Session;
 
@@ -74,7 +74,7 @@ public class PacketSession2024Tests
     /// Check whether the given file is a F1 2024 packet
     /// </summary>
     [TestMethod]
-    public void PacketSessionCheckSession2024IsCorrectGameVersion()
+    public void PacketSessionCheck2024IsCorrectGameVersion()
     {
         var isCorrect = _packetData.PacketHeader?.GameVersion == 2024;
 
@@ -85,7 +85,7 @@ public class PacketSession2024Tests
     /// Check whether the analyzer construct the correct class object
     /// </summary>
     [TestMethod]
-    public void PacketSessionCheckSession2024IsSessionObject()
+    public void PacketSessionCheck2024IsSessionObject()
     {
         if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12024SessionSize + ConstData.F12024HeaderSize)
         {

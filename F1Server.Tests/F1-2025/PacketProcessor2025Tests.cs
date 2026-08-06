@@ -37,17 +37,17 @@ public class PacketProcessor2025Tests
 
         if (is2024File && is2025File)
         {
-            var packetContent23 = File.ReadAllBytes(@"SampleData/F1-2024-Session.packet");
+            var packetContent24 = File.ReadAllBytes(@"SampleData/F1-2024-Session.packet");
 
             _packetData24 = new ReceivedPacketData();
 
-            _packetData24.SetRawData(packetContent23);
+            _packetData24.SetRawData(packetContent24);
 
-            var packetContent24 = File.ReadAllBytes(@"SampleData/F1-2025-Session.packet");
+            var packetContent25 = File.ReadAllBytes(@"SampleData/F1-2025-Session.packet");
 
             _packetData = new ReceivedPacketData();
 
-            _packetData.SetRawData(packetContent24);
+            _packetData.SetRawData(packetContent25);
 
             var isCorrect = _packetData24.PacketHeader != null && _packetData.PacketHeader != null;
 

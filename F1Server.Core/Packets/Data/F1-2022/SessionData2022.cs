@@ -15,7 +15,7 @@ public class SessionData2022 : ISessionData2022
     /// </summary>
     public SessionData2022()
     {
-        MarshalZone = new MarshalZone[21];
+        MarshalZones = new MarshalZone[21];
         WeatherForecastSamples = new WeatherForecastSample[56];
     }
 
@@ -111,12 +111,12 @@ public class SessionData2022 : ISessionData2022
     /// <summary>
     /// Number of marshal zones
     /// </summary>
-    public ushort MarshalZones { get; set; }
+    public ushort NumberOfMarshalZones { get; set; }
 
     /// <summary>
     /// Marshal zone data
     /// </summary>
-    public MarshalZone[] MarshalZone { get; set; }
+    public MarshalZone[] MarshalZones { get; set; }
 
     /// <summary>
     /// Safety car status

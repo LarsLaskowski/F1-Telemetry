@@ -201,7 +201,7 @@ public class PacketEvent2025Tests
     /// Check top speed from packet
     /// </summary>
     [TestMethod]
-    public void PacketEvent2025IsTopSpeedVehicleExpectedZero()
+    public void PacketEvent2025IsTopSpeedVehicleExpectedTwenty()
     {
         if (_packetDataTopSpeed.PacketHeader != null)
         {
@@ -351,7 +351,7 @@ public class PacketEvent2025Tests
     /// Check penalty vehicle from packet
     /// </summary>
     [TestMethod]
-    public void PacketEvent2025IsPenaltyVehicleExpectedZero()
+    public void PacketEvent2025IsPenaltyVehicleExpectedTwentyOne()
     {
         if (_packetDataPenalty.PacketHeader != null)
         {
@@ -376,7 +376,7 @@ public class PacketEvent2025Tests
     /// Check penalty lap number from packet
     /// </summary>
     [TestMethod]
-    public void PacketEvent2025IsPenaltyLapNumberExpectedThree()
+    public void PacketEvent2025IsPenaltyLapNumberExpectedSixteen()
     {
         if (_packetDataPenalty.PacketHeader != null)
         {

@@ -17,7 +17,7 @@ namespace F1Server.Db.MsSqlMigrations.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.9")
+                .HasAnnotation("ProductVersion", "10.0.10")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -818,7 +818,7 @@ namespace F1Server.Db.MsSqlMigrations.Migrations
                             Id = 75L,
                             DbIsHumanDriver = 0,
                             DriverGameId = 80,
-                            Name = "Guanya Zhou"
+                            Name = "Guanyu Zhou"
                         },
                         new
                         {
@@ -1707,7 +1707,7 @@ namespace F1Server.Db.MsSqlMigrations.Migrations
                             Id = 202L,
                             DbIsHumanDriver = 0,
                             DriverGameId = 202580,
-                            Name = "Guanya Zhou"
+                            Name = "Guanyu Zhou"
                         },
                         new
                         {
@@ -2316,7 +2316,7 @@ namespace F1Server.Db.MsSqlMigrations.Migrations
                             Id = 289L,
                             DbIsHumanDriver = 0,
                             DriverGameId = 202680,
-                            Name = "Guanya Zhou"
+                            Name = "Guanyu Zhou"
                         },
                         new
                         {

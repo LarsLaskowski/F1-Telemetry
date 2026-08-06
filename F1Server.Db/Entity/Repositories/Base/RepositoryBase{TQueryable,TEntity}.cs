@@ -384,7 +384,7 @@ public abstract class RepositoryBase<TQueryable, TEntity> : RepositoryBase
         }
         catch (Exception ex)
         {
-            Logger?.LogError(ex, "Error removing a entity object!");
+            Logger?.LogError(ex, "Error refreshing range of entity objects!");
 
             LastError = ex.ToString();
         }
@@ -393,7 +393,7 @@ public abstract class RepositoryBase<TQueryable, TEntity> : RepositoryBase
     }
 
     /// <summary>
-    /// Remove a entity object
+    /// Remove an entity object
     /// </summary>
     /// <param name="expression">Expression</param>
     /// <param name="beforeRemove">Action before removing</param>
@@ -423,7 +423,7 @@ public abstract class RepositoryBase<TQueryable, TEntity> : RepositoryBase
         }
         catch (Exception ex)
         {
-            Logger?.LogError(ex, "Error removing a entity object!");
+            Logger?.LogError(ex, "Error removing an entity object!");
 
             LastError = ex.ToString();
         }
