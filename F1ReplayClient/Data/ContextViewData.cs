@@ -13,12 +13,6 @@ namespace F1ReplayClient.Data;
 /// </summary>
 internal class ContextViewData : NotifyPropertyBase, IDataErrorInfo
 {
-    #region Fields
-
-    private bool _isStartable;
-
-    #endregion // Fields
-
     #region Constructors
 
     /// <summary>
@@ -256,10 +250,10 @@ internal class ContextViewData : NotifyPropertyBase, IDataErrorInfo
     /// </summary>
     public bool IsStartable
     {
-        get => _isStartable && IsRunning == false;
+        get => field && IsRunning == false;
         set
         {
-            _isStartable = value;
+            field = value;
 
             RaisePropertyChange(nameof(IsStartable));
         }
@@ -270,7 +264,7 @@ internal class ContextViewData : NotifyPropertyBase, IDataErrorInfo
     /// </summary>
     public bool IsSortable
     {
-        get => _isStartable && IsRunning == false && field;
+        get => IsStartable && field;
         set
         {
             field = value;

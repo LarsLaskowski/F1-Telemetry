@@ -61,6 +61,8 @@ public class ChampionshipPointsEntity
     /// </summary>
     public int AdditionalPoints { get; set; }
 
+    #endregion // Properties
+
     #region Navigation properties
 
     /// <summary>
@@ -84,6 +86,4 @@ public class ChampionshipPointsEntity
     public virtual DriverEntity Driver { get; set; }
 
     #endregion // Navigation properties
-
-    #endregion // Properties
 }

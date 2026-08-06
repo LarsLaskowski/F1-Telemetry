@@ -53,7 +53,7 @@ public class Packet2026CoreTests
     /// The documented 2026 packet sizes must match the constants
     /// </summary>
     [TestMethod]
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MSTEST0032:Assertion condition is always true", Justification = "Valid test. If someone changes the enum value, the test will fail")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MSTEST0032:Assertion condition is always true", Justification = "Valid test. If someone changes one of the size constants, the test will fail")]
     public void ConstData2026SizesAreCorrect()
     {
         Assert.AreEqual(29, ConstData.F12026HeaderSize, "Wrong header size!");

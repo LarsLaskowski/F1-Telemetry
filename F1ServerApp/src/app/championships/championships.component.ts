@@ -29,7 +29,7 @@ export class ChampionshipsComponent
   championships: Set<ChampionshipViewData> = new Set();
   selectedChampionship: ChampionshipViewData | undefined;
   preSelectedChampionshipId: number = 0;
-  championshipsCount: any;
+  championshipsCount: number = 0;
 
   csColumns: string[] = ['track', 'race', 'quali', 'sprint', 'sprintShootout', 'difficulty', 'points'];
   displayedColumns: string[] = this.csColumns.slice();

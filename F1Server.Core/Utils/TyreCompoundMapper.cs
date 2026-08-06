@@ -21,38 +21,47 @@ public static class TyreCompoundMapper
         switch (gameTyreCompound)
         {
             case 7:
-                visualTyreCompound = VisualTyreCompound.Inter;
+                {
+                    visualTyreCompound = VisualTyreCompound.Inter;
+                }
                 break;
 
             case 8:
             case 15:
-                visualTyreCompound = VisualTyreCompound.Wet;
+                {
+                    visualTyreCompound = VisualTyreCompound.Wet;
+                }
                 break;
 
+            case 19:
             case 23:
-                visualTyreCompound = VisualTyreCompound.SuperSoft;
+                {
+                    visualTyreCompound = VisualTyreCompound.SuperSoft;
+                }
                 break;
 
             case 16:
             case 20:
             case 24:
-                visualTyreCompound = VisualTyreCompound.Soft;
+                {
+                    visualTyreCompound = VisualTyreCompound.Soft;
+                }
                 break;
 
             case 17:
             case 21:
             case 25:
-                visualTyreCompound = VisualTyreCompound.Medium;
+                {
+                    visualTyreCompound = VisualTyreCompound.Medium;
+                }
                 break;
 
             case 18:
             case 22:
             case 26:
-                visualTyreCompound = VisualTyreCompound.Hard;
-                break;
-
-            case 19:
-                visualTyreCompound = VisualTyreCompound.SuperSoft;
+                {
+                    visualTyreCompound = VisualTyreCompound.Hard;
+                }
                 break;
         }
 

@@ -70,6 +70,8 @@ public class ChampionshipEntity
         }
     }
 
+    #endregion // Properties
+
     #region Navigation properties
 
     /// <summary>
@@ -89,6 +91,4 @@ public class ChampionshipEntity
     public virtual ICollection<ChampionshipPointsEntity> Points { get; } = new List<ChampionshipPointsEntity>();
 
     #endregion // Navigation properties
-
-    #endregion // Properties
 }
