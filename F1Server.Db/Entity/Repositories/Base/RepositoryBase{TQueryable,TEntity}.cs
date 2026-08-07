@@ -197,7 +197,7 @@ public abstract class RepositoryBase<TQueryable, TEntity> : RepositoryBase
 
             var entity = _dbContext.Set<TEntity>().FirstOrDefault(expression);
 
-            if (entity == null)
+            if (entity is null)
             {
                 entity = Activator.CreateInstance<TEntity>();
 
@@ -303,7 +303,7 @@ public abstract class RepositoryBase<TQueryable, TEntity> : RepositoryBase
 
             var entity = dbSet.FirstOrDefault(expression);
 
-            if (entity != null)
+            if (entity is not null)
             {
                 refreshAction(entity);
 
@@ -410,7 +410,7 @@ public abstract class RepositoryBase<TQueryable, TEntity> : RepositoryBase
 
             var entity = dbSet.FirstOrDefault(expression);
 
-            if (entity != null)
+            if (entity is not null)
             {
                 beforeRemove?.Invoke(entity);
 

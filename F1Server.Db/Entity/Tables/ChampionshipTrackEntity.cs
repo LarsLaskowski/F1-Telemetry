@@ -60,6 +60,8 @@ public class ChampionshipTrackEntity
     /// </summary>
     public long? RaceSessionId { get; set; }
 
+    #endregion // Properties
+
     #region Navigation properties
 
     /// <summary>
@@ -104,6 +106,4 @@ public class ChampionshipTrackEntity
     public virtual SessionEntity RaceSession { get; set; }
 
     #endregion // Navigation properties
-
-    #endregion // Properties
 }

@@ -152,8 +152,6 @@ public sealed class RepositoryFactory : IDisposable
 
                     // Execute migration
                     _dbContext.Database.Migrate();
-
-                    _dbContext.Database.GenerateCreateScript();
                 }
 
                 IsInitialized = true;

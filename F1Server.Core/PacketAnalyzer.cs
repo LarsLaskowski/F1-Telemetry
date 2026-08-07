@@ -94,7 +94,7 @@ public class PacketAnalyzer
 
         LastError = string.Empty;
 
-        if (receivedData.PacketHeader != null)
+        if (receivedData.PacketHeader is not null)
         {
             switch (receivedData.PacketHeader.PacketType)
             {
@@ -192,7 +192,7 @@ public class PacketAnalyzer
 
         LastError = string.Empty;
 
-        if (dataPacket.Length > 0 && packetHeader != null)
+        if (dataPacket.Length > 0 && packetHeader is not null)
         {
             sessionData = _sessionTransformation.ExtractSessionDataPacket(packetHeader, dataPacket);
 
@@ -214,7 +214,7 @@ public class PacketAnalyzer
 
         LastError = string.Empty;
 
-        if (dataPacket.Length > 0 && packetHeader != null)
+        if (dataPacket.Length > 0 && packetHeader is not null)
         {
             packetLapData = _lapDataTransformation.ExtractLapData(packetHeader, dataPacket);
 
@@ -236,7 +236,7 @@ public class PacketAnalyzer
 
         LastError = string.Empty;
 
-        if (dataPacket.Length > 0 && packetHeader != null)
+        if (dataPacket.Length > 0 && packetHeader is not null)
         {
             eventData = _eventDataTransformation.ExtractEventData(packetHeader, dataPacket);
 
@@ -258,7 +258,7 @@ public class PacketAnalyzer
 
         LastError = string.Empty;
 
-        if (dataPacket.Length > 0 && packetHeader != null)
+        if (dataPacket.Length > 0 && packetHeader is not null)
         {
             participantsData = _participantsTransformation.ExtractParticipantsDataPacket(packetHeader, dataPacket);
 
@@ -280,7 +280,7 @@ public class PacketAnalyzer
 
         LastError = string.Empty;
 
-        if (dataPacket.Length > 0 && packetHeader != null)
+        if (dataPacket.Length > 0 && packetHeader is not null)
         {
             carTelemetry = _carTelemetryTransformation.ExtractCarTelemetryData(packetHeader, dataPacket);
 
@@ -302,7 +302,7 @@ public class PacketAnalyzer
 
         LastError = string.Empty;
 
-        if (dataPacket.Length > 0 && packetHeader != null)
+        if (dataPacket.Length > 0 && packetHeader is not null)
         {
             carStatus = _carStatusTransformation.ExtractCarStatusData(packetHeader, dataPacket);
 
@@ -324,7 +324,7 @@ public class PacketAnalyzer
 
         LastError = string.Empty;
 
-        if (dataPacket.Length > 0 && packetHeader != null)
+        if (dataPacket.Length > 0 && packetHeader is not null)
         {
             carTelemetry2 = _carTelemetry2Transformation.ExtractCarTelemetry2Data(packetHeader, dataPacket);
 
@@ -346,7 +346,7 @@ public class PacketAnalyzer
 
         LastError = string.Empty;
 
-        if (dataPacket.Length > 0 && packetHeader != null)
+        if (dataPacket.Length > 0 && packetHeader is not null)
         {
             timeTrialData = _timeTrialTransformation.ExtractTimeTrialDataPacket(packetHeader, dataPacket);
 
@@ -368,7 +368,7 @@ public class PacketAnalyzer
 
         LastError = string.Empty;
 
-        if (dataPacket.Length > 0 && packetHeader != null)
+        if (dataPacket.Length > 0 && packetHeader is not null)
         {
             lapPositionsData = _lapPositionsTransformation.ExtractLapPositionsPacket(packetHeader, dataPacket);
 
@@ -390,7 +390,7 @@ public class PacketAnalyzer
 
         LastError = string.Empty;
 
-        if (dataPacket.Length > 0 && packetHeader != null)
+        if (dataPacket.Length > 0 && packetHeader is not null)
         {
             sessionHistoryData = _sessionHistoryTransformation.ExtractSessionHistoryDataPacket(packetHeader, dataPacket);
 
@@ -412,7 +412,7 @@ public class PacketAnalyzer
 
         LastError = string.Empty;
 
-        if (dataPacket.Length > 0 && packetHeader != null)
+        if (dataPacket.Length > 0 && packetHeader is not null)
         {
             finalClassificationData = _finalClassificationTransformation.ExtractFinalClassificationData(packetHeader, dataPacket);
 

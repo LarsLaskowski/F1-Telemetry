@@ -5,12 +5,12 @@
 /// </summary>
 public static class MetricsName
 {
-    #region Properties
+    #region Constants
 
     /// <summary>
     /// The name of the metric meter used for telemetry purposes
     /// </summary>
-    public static string F1MeterName => "F1-Telemetry.Metrics";
+    public const string F1MeterName = "F1-Telemetry.Metrics";
 
-    #endregion // Properties
+    #endregion // Constants
 }
