@@ -586,12 +586,12 @@ public abstract class RepositoryBase<TQueryable, TEntity> : RepositoryBase
         {
             var dbSet = _dbContext.Set<TEntity>();
 
-            await foreach (var entry in dbSet.Where(expression).AsAsyncEnumerable().ConfigureAwait(true))
+            await foreach (var entry in dbSet.Where(expression).AsAsyncEnumerable().ConfigureAwait(false))
             {
                 dbSet.Remove(entry);
             }
 
-            await _dbContext.SaveChangesAsync().ConfigureAwait(true);
+            await _dbContext.SaveChangesAsync().ConfigureAwait(false);
 
             success = true;
         }

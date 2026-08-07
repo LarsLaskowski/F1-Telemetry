@@ -559,8 +559,8 @@ public class SessionsController : ControllerBase
                                                                NumberOfPenalties = dbFinal.NumberOfPenalties,
                                                                PitStops = dbFinal.PitStops,
                                                                PenaltiesTime = dbFinal.PenaltiesTime,
-                                                               TotalRaceTime = TimeSpan.FromSeconds(dbFinal.TotalRaceTime).ToString(@"mm\:ss.fff"),
-                                                               FastestLapTime = TimeSpan.FromMilliseconds(dbFinal.FastestLapTime).ToString(@"mm\:ss.fff")
+                                                               TotalRaceTime = TimeSpan.FromSeconds(dbFinal.TotalRaceTime).ToString(@"mm\:ss\.fff"),
+                                                               FastestLapTime = TimeSpan.FromMilliseconds(dbFinal.FastestLapTime).ToString(@"mm\:ss\.fff")
                                                            });
                         }
                     }
