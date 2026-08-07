@@ -45,7 +45,7 @@ EXPOSE 20777/udp
 EXPOSE 20778/tcp
 EXPOSE 80
 
-RUN apk add curl
+RUN apk add --no-cache curl
 HEALTHCHECK --interval=5m --timeout=3s --retries=5 CMD curl --fail http://localhost/api/serverhealth || exit 1
 
 WORKDIR /app

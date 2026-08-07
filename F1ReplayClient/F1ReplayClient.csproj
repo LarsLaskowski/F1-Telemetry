@@ -5,6 +5,7 @@
     <TargetFramework>net10.0-windows7.0</TargetFramework>
     <UseWPF>true</UseWPF>
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <ApplicationIcon>Images\F1.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>

@@ -61,19 +61,16 @@ public partial class MainWindow : Window, IDisposable
 
         _viewData.IsEditable = true;
 
-        if (Environment.GetCommandLineArgs().Length > 0)
+        var cmdArgs = Environment.GetCommandLineArgs();
+
+        var hostArg = Array.Find(cmdArgs, arg => arg.StartsWith("--host="));
+
+        if (string.IsNullOrWhiteSpace(hostArg) == false)
         {
-            var cmdArgs = Environment.GetCommandLineArgs();
-
-            var hostArg = Array.Find(cmdArgs, arg => arg.StartsWith("--host="));
-
-            if (string.IsNullOrWhiteSpace(hostArg) == false)
-            {
-                _viewData.Host = hostArg["--host=".Length..];
-            }
-
-            _viewData.Status = "Ready";
+            _viewData.Host = hostArg["--host=".Length..];
         }
+
+        _viewData.Status = "Ready";
     }
 
     #endregion // Constructors
@@ -726,7 +723,7 @@ public partial class MainWindow : Window, IDisposable
 
         eventCode = string.Empty;
 
-        if (packetData?.PacketHeader != null && _packetAnalyzer != null)
+        if (packetData?.PacketHeader is not null)
         {
             packetType = packetData.PacketHeader.PacketType;
 

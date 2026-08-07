@@ -157,7 +157,7 @@ public static class FastestLapPerSessionCache
                 var fastestLapData = await CalculateFastestLapDataAsync(sessionId, dbFactory, cancellationToken).ConfigureAwait(false);
 
                 // An invalidation during the calculation makes the result outdated before it is stored
-                if (fastestLapData != null && GetSessionVersion(sessionId) == versionBeforeCalculation)
+                if (GetSessionVersion(sessionId) == versionBeforeCalculation)
                 {
                     _fastestLapCache[sessionId] = fastestLapData;
                 }
@@ -178,8 +178,8 @@ public static class FastestLapPerSessionCache
     /// <param name="dbFactory">The repository factory used to access session and lap data from the database</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>
-    /// A <see cref="FastestLapSessionViewData"/> object containing the fastest lap details for the session,  or <see
-    /// langword="null"/> if the session is invalid or contains no valid laps
+    /// A <see cref="FastestLapSessionViewData"/> object containing the fastest lap details for the session. If the
+    /// session is invalid or contains no valid laps, the object carries only the session id and otherwise stays empty
     /// </returns>
     private static async Task<FastestLapSessionViewData> CalculateFastestLapDataAsync(long sessionId, RepositoryFactory dbFactory, CancellationToken cancellationToken = default)
     {
@@ -316,7 +316,7 @@ public static class FastestLapPerSessionCache
 
                     var fastestLapData = await CalculateFastestLapDataAsync(sessionId, dbFactory, cancellationToken).ConfigureAwait(false);
 
-                    if (fastestLapData != null && GetSessionVersion(sessionId) == versionBeforeCalculation)
+                    if (GetSessionVersion(sessionId) == versionBeforeCalculation)
                     {
                         // Update or add the fastest lap data for the session
                         _fastestLapCache[sessionId] = fastestLapData;

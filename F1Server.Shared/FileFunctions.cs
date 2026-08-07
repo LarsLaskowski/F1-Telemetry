@@ -42,8 +42,6 @@ public static class FileFunctions
             }
             finally
             {
-                fs.Close();
-
                 ArrayPool<byte>.Shared.Return(buffer);
             }
         }
