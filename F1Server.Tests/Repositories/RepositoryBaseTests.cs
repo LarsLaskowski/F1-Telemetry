@@ -12,6 +12,15 @@ namespace F1Server.Tests.Repositories;
 [TestClass]
 public class RepositoryBaseTests
 {
+    #region Properties
+
+    /// <summary>
+    /// Gets or sets the test context that provides the cancellation token for the running test
+    /// </summary>
+    public TestContext TestContext { get; set; }
+
+    #endregion // Properties
+
     #region Methods
 
     /// <summary>
@@ -265,7 +274,7 @@ public class RepositoryBaseTests
 
             Assert.IsNotNull(query, "Query should be resolvable!");
 
-            var storedEntity = await query.FirstOrDefaultAsync(n => n.NationalityGameId == 9009)
+            var storedEntity = await query.FirstOrDefaultAsync(n => n.NationalityGameId == 9009, TestContext.CancellationToken)
                                           .ConfigureAwait(false);
 
             Assert.IsNotNull(storedEntity, "The added entity should be found!");
@@ -304,7 +313,7 @@ public class RepositoryBaseTests
 
             Assert.IsNotNull(query, "Query should be resolvable!");
 
-            var refreshedEntity = await query.FirstOrDefaultAsync(n => n.NationalityGameId == 9010)
+            var refreshedEntity = await query.FirstOrDefaultAsync(n => n.NationalityGameId == 9010, TestContext.CancellationToken)
                                              .ConfigureAwait(false);
 
             Assert.IsNotNull(refreshedEntity, "The refreshed entity should be found!");
@@ -354,7 +363,7 @@ public class RepositoryBaseTests
 
             var remainingNames = await query.Where(n => n.NationalityGameId == 9011 || n.NationalityGameId == 9012)
                                             .Select(n => n.Name)
-                                            .ToListAsync()
+                                            .ToListAsync(TestContext.CancellationToken)
                                             .ConfigureAwait(false);
 
             Assert.DoesNotContain("RemoveAsyncTestA", remainingNames, "The matching entity should be removed!");
@@ -388,19 +397,19 @@ public class RepositoryBaseTests
 
             Assert.IsNotNull(query, "Query should be resolvable!");
 
-            var hasEntity = await query.AnyAsync(n => n.NationalityGameId == 9013)
+            var hasEntity = await query.AnyAsync(n => n.NationalityGameId == 9013, TestContext.CancellationToken)
                                        .ConfigureAwait(false);
 
             Assert.IsTrue(hasEntity, "AnyAsync should find the added entity!");
 
-            var entityCount = await query.CountAsync(n => n.NationalityGameId == 9013)
+            var entityCount = await query.CountAsync(n => n.NationalityGameId == 9013, TestContext.CancellationToken)
                                          .ConfigureAwait(false);
 
             Assert.AreEqual(1, entityCount, "CountAsync should count exactly the added entity!");
 
             var names = await query.Where(n => n.NationalityGameId == 9013)
                                    .Select(n => n.Name)
-                                   .ToListAsync()
+                                   .ToListAsync(TestContext.CancellationToken)
                                    .ConfigureAwait(false);
 
             Assert.Contains("AsyncQueryOperatorsTest", names, "ToListAsync should return the added entity!");
@@ -504,7 +513,7 @@ public class RepositoryBaseTests
 
             Assert.IsNotNull(query, "Query should be resolvable!");
 
-            var isPresent = await query.AnyAsync(n => n.NationalityGameId == 9017).ConfigureAwait(false);
+            var isPresent = await query.AnyAsync(n => n.NationalityGameId == 9017, TestContext.CancellationToken).ConfigureAwait(false);
 
             Assert.IsTrue(isPresent, "An aborted removal must keep the entity!");
         }

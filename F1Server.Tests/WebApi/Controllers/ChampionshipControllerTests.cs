@@ -27,6 +27,15 @@ public class ChampionshipControllerTests
 
     #endregion // Constants
 
+    #region Properties
+
+    /// <summary>
+    /// Gets or sets the test context that provides the cancellation token for the running test
+    /// </summary>
+    public TestContext TestContext { get; set; }
+
+    #endregion // Properties
+
     #region Static methods
 
     /// <summary>
@@ -101,7 +110,7 @@ public class ChampionshipControllerTests
                                                          })
                                      .ConfigureAwait(false);
 
-        Assert.AreEqual(true, (result as OkObjectResult)?.Value, "Creating the championship should report success!");
+        Assert.IsTrue((result as OkObjectResult)?.Value as bool?, "Creating the championship should report success!");
 
         using (var dbFactory = RepositoryFactory.CreateInstance())
         {
@@ -109,7 +118,7 @@ public class ChampionshipControllerTests
 
             Assert.IsNotNull(championshipQuery, "Championship query should be resolvable!");
 
-            var championship = await championshipQuery.FirstOrDefaultAsync(c => c.GameVersionId == gameVersionId).ConfigureAwait(false);
+            var championship = await championshipQuery.FirstOrDefaultAsync(c => c.GameVersionId == gameVersionId, TestContext.CancellationToken).ConfigureAwait(false);
 
             Assert.IsNotNull(championship, "The created championship should be stored!");
             Assert.AreEqual(1, championship.Number, "The first championship of a game version should be season one!");
@@ -118,7 +127,7 @@ public class ChampionshipControllerTests
 
             Assert.IsNotNull(championshipTrackQuery, "Championship track query should be resolvable!");
 
-            var trackCount = await championshipTrackQuery.CountAsync(t => t.ChampionshipId == championship.Id).ConfigureAwait(false);
+            var trackCount = await championshipTrackQuery.CountAsync(t => t.ChampionshipId == championship.Id, TestContext.CancellationToken).ConfigureAwait(false);
 
             Assert.AreEqual(ChampionshipTrackCount, trackCount, "Every requested track should be added to the championship!");
         }
@@ -251,7 +260,8 @@ public class ChampionshipControllerTests
             Assert.IsNotNull(championshipTrackQuery, "Championship track query should be resolvable!");
 
             var isAssigned = await championshipTrackQuery.AnyAsync(t => t.ChampionshipId == championshipId
-                                                                        && t.QualifyingSessionId == sessionId)
+                                                                        && t.QualifyingSessionId == sessionId,
+                                                                   TestContext.CancellationToken)
                                                          .ConfigureAwait(false);
 
             Assert.IsTrue(isAssigned, "The session should be stored as qualifying session of the championship track!");
@@ -285,7 +295,7 @@ public class ChampionshipControllerTests
 
             Assert.IsNotNull(championshipTrackQuery, "Championship track query should be resolvable!");
 
-            var championshipTrack = await championshipTrackQuery.FirstOrDefaultAsync(t => t.ChampionshipId == championshipId).ConfigureAwait(false);
+            var championshipTrack = await championshipTrackQuery.FirstOrDefaultAsync(t => t.ChampionshipId == championshipId, TestContext.CancellationToken).ConfigureAwait(false);
 
             Assert.IsNotNull(championshipTrack, "The championship track should be stored!");
             Assert.AreEqual(raceSessionId, championshipTrack.SprintSessionId, "A race preceded by a sprint shootout should be stored as sprint session!");

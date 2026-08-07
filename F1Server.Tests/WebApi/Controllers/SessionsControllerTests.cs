@@ -18,6 +18,15 @@ namespace F1Server.Tests.WebApi.Controllers;
 [TestClass]
 public class SessionsControllerTests
 {
+    #region Properties
+
+    /// <summary>
+    /// Gets or sets the test context that provides the cancellation token for the running test
+    /// </summary>
+    public TestContext TestContext { get; set; }
+
+    #endregion // Properties
+
     #region Static methods
 
     /// <summary>
@@ -339,7 +348,7 @@ public class SessionsControllerTests
         {
             var result = await controller.DeleteSession(sessionId, sessionCode).ConfigureAwait(false);
 
-            Assert.AreEqual(true, (result as OkObjectResult)?.Value, "Deleting the session should report success!");
+            Assert.IsTrue((result as OkObjectResult)?.Value as bool?, "Deleting the session should report success!");
         }
 
         using (var dbFactory = RepositoryFactory.CreateInstance())
@@ -348,7 +357,7 @@ public class SessionsControllerTests
 
             Assert.IsNotNull(sessionQuery, "Session query should be resolvable!");
 
-            var isSessionPresent = await sessionQuery.AnyAsync(s => s.Id == sessionId).ConfigureAwait(false);
+            var isSessionPresent = await sessionQuery.AnyAsync(s => s.Id == sessionId, TestContext.CancellationToken).ConfigureAwait(false);
 
             Assert.IsFalse(isSessionPresent, "The deleted session must no longer be stored!");
 
@@ -356,7 +365,7 @@ public class SessionsControllerTests
 
             Assert.IsNotNull(participantQuery, "Participant query should be resolvable!");
 
-            var isParticipantPresent = await participantQuery.AnyAsync(p => p.SessionId == sessionId).ConfigureAwait(false);
+            var isParticipantPresent = await participantQuery.AnyAsync(p => p.SessionId == sessionId, TestContext.CancellationToken).ConfigureAwait(false);
 
             Assert.IsFalse(isParticipantPresent, "The participants of the deleted session must no longer be stored!");
         }
@@ -375,7 +384,7 @@ public class SessionsControllerTests
         {
             var result = await controller.DeleteSession(ControllerTestData.SessionId, ControllerTestData.SessionCode + 1UL).ConfigureAwait(false);
 
-            Assert.AreEqual(false, (result as OkObjectResult)?.Value, "A session code that does not match must not delete the session!");
+            Assert.IsFalse((result as OkObjectResult)?.Value as bool?, "A session code that does not match must not delete the session!");
         }
 
         using (var dbFactory = RepositoryFactory.CreateInstance())
@@ -384,7 +393,7 @@ public class SessionsControllerTests
 
             Assert.IsNotNull(sessionQuery, "Session query should be resolvable!");
 
-            var isSessionPresent = await sessionQuery.AnyAsync(s => s.Id == ControllerTestData.SessionId).ConfigureAwait(false);
+            var isSessionPresent = await sessionQuery.AnyAsync(s => s.Id == ControllerTestData.SessionId, TestContext.CancellationToken).ConfigureAwait(false);
 
             Assert.IsTrue(isSessionPresent, "The test session should still be stored!");
         }
