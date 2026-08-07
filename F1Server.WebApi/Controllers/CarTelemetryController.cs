@@ -6,6 +6,7 @@ using F1Server.Db.Entity;
 using F1Server.Db.Entity.Repositories;
 
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace F1Server.WebApi.Controllers;
 
@@ -44,7 +45,7 @@ public class CarTelemetryController : ControllerBase
     /// <returns>User telemetry data available?</returns>
     [Route("HasUserTelemetry/{sessionId}")]
     [HttpGet]
-    public bool HasUserTelemetryData(long sessionId)
+    public async Task<bool> HasUserTelemetryData(long sessionId)
     {
         var hasUserTelemetryData = false;
 
@@ -59,9 +60,10 @@ public class CarTelemetryController : ControllerBase
 
             if (telemetryQuery != null && lapQuery != null)
             {
-                hasUserTelemetryData = telemetryQuery.Any(t => lapQuery.Any(l => l.Id == t.LapNumberId
-                                                                                 && l.Participant.SessionId == sessionId
-                                                                                 && l.Participant.DbIsHumanControlled == 1));
+                hasUserTelemetryData = await telemetryQuery.AnyAsync(t => lapQuery.Any(l => l.Id == t.LapNumberId
+                                                                                            && l.Participant.SessionId == sessionId
+                                                                                            && l.Participant.DbIsHumanControlled == 1))
+                                                           .ConfigureAwait(false);
             }
 
             currentActivity?.SetStatus(ActivityStatusCode.Ok);
@@ -79,9 +81,9 @@ public class CarTelemetryController : ControllerBase
     /// <returns>Telemetry data</returns>
     [Route("TelemetryByLap/{lapId}")]
     [HttpGet]
-    public IActionResult TelemetryOfLap(long lapId)
+    public async Task<IActionResult> TelemetryOfLap(long lapId)
     {
-        List<TelemetryViewData>? telemetryData;
+        List<TelemetryViewData>? telemetryData = null;
 
         using var currentActivity = AppActivity.ApiSource.StartActivity(nameof(TelemetryOfLap));
 
@@ -89,21 +91,25 @@ public class CarTelemetryController : ControllerBase
 
         using (var dbFactory = RepositoryFactory.CreateInstance())
         {
-            telemetryData = dbFactory.GetRepository<CarTelemetryRepository>()
-                                     ?.GetQuery()
-                                     ?.Where(t => t.LapNumberId == lapId)
-                                     .OrderBy(t => t.PacketNumber)
-                                     .Select(t => new TelemetryViewData
-                                                  {
-                                                      PacketId = t.PacketNumber,
-                                                      Distance = t.LapDistance,
-                                                      Speed = t.Speed,
-                                                      Brake = t.Brake,
-                                                      Throttle = t.Throttle,
-                                                      Gear = t.Gear,
-                                                      EngineRPM = t.EngineRPM
-                                                  })
-                                     .ToList();
+            var telemetryQuery = dbFactory.GetRepository<CarTelemetryRepository>()?.GetQuery();
+
+            if (telemetryQuery != null)
+            {
+                telemetryData = await telemetryQuery.Where(t => t.LapNumberId == lapId)
+                                                    .OrderBy(t => t.PacketNumber)
+                                                    .Select(t => new TelemetryViewData
+                                                                 {
+                                                                     PacketId = t.PacketNumber,
+                                                                     Distance = t.LapDistance,
+                                                                     Speed = t.Speed,
+                                                                     Brake = t.Brake,
+                                                                     Throttle = t.Throttle,
+                                                                     Gear = t.Gear,
+                                                                     EngineRPM = t.EngineRPM
+                                                                 })
+                                                    .ToListAsync()
+                                                    .ConfigureAwait(false);
+            }
 
             currentActivity?.SetStatus(ActivityStatusCode.Ok);
         }
@@ -123,7 +129,7 @@ public class CarTelemetryController : ControllerBase
     /// <returns>Telemetry data</returns>
     [Route("TelemetryByParticipantFastestLap/{participantId}")]
     [HttpGet]
-    public IActionResult TelemetryOfParticipantFastestLap(long participantId)
+    public async Task<IActionResult> TelemetryOfParticipantFastestLap(long participantId)
     {
         var telemetryData = new List<TelemetryViewData>();
 
@@ -133,32 +139,36 @@ public class CarTelemetryController : ControllerBase
 
         using (var dbFactory = RepositoryFactory.CreateInstance())
         {
-            var laps = dbFactory.GetRepository<LapRepository>()
-                                ?.GetQuery()
-                                ?.Where(l => l.ParticipantId == participantId && l.DbIsCompleted == 1)
-                                .ToList();
+            var lapQuery = dbFactory.GetRepository<LapRepository>()?.GetQuery();
+
+            var laps = lapQuery == null
+                           ? null
+                           : await lapQuery.Where(l => l.ParticipantId == participantId && l.DbIsCompleted == 1)
+                                           .ToListAsync()
+                                           .ConfigureAwait(false);
 
             if (laps?.Count > 0)
             {
                 var fastestLap = laps.MinBy(l => l.LapTime);
 
-                if (fastestLap != null)
+                var telemetryQuery = dbFactory.GetRepository<CarTelemetryRepository>()?.GetQuery();
+
+                if (fastestLap != null && telemetryQuery != null)
                 {
-                    telemetryData = dbFactory.GetRepository<CarTelemetryRepository>()
-                                             ?.GetQuery()
-                                             ?.Where(t => t.LapNumberId == fastestLap.Id)
-                                             .OrderBy(t => t.PacketNumber)
-                                             .Select(t => new TelemetryViewData
-                                                          {
-                                                              PacketId = t.PacketNumber,
-                                                              Distance = t.LapDistance,
-                                                              Speed = t.Speed,
-                                                              Brake = t.Brake,
-                                                              Throttle = t.Throttle,
-                                                              Gear = t.Gear,
-                                                              EngineRPM = t.EngineRPM
-                                                          })
-                                             .ToList();
+                    telemetryData = await telemetryQuery.Where(t => t.LapNumberId == fastestLap.Id)
+                                                        .OrderBy(t => t.PacketNumber)
+                                                        .Select(t => new TelemetryViewData
+                                                                     {
+                                                                         PacketId = t.PacketNumber,
+                                                                         Distance = t.LapDistance,
+                                                                         Speed = t.Speed,
+                                                                         Brake = t.Brake,
+                                                                         Throttle = t.Throttle,
+                                                                         Gear = t.Gear,
+                                                                         EngineRPM = t.EngineRPM
+                                                                     })
+                                                        .ToListAsync()
+                                                        .ConfigureAwait(false);
                 }
             }
 

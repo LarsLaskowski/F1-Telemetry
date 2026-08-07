@@ -73,7 +73,7 @@ public class FastestLapController : ControllerBase
     /// <returns>Fastest laps</returns>
     [Route("FastestLap/{trackId?}")]
     [HttpGet]
-    public IActionResult GetFastestLaps(long? trackId)
+    public async Task<IActionResult> GetFastestLaps(long? trackId)
     {
         var fastestLaps = new List<FastestLapOfTrackViewData>();
 
@@ -84,10 +84,10 @@ public class FastestLapController : ControllerBase
         if (trackId.HasValue)
         {
             // F1
-            var fastestF1Laps = GetFastestF1Laps(trackId.Value);
+            var fastestF1Laps = await GetFastestF1LapsAsync(trackId.Value).ConfigureAwait(false);
 
             // F2
-            var fastestF2Laps = GetFastestF2Laps(trackId.Value);
+            var fastestF2Laps = await GetFastestF2LapsAsync(trackId.Value).ConfigureAwait(false);
 
             if (fastestF1Laps?.Count > 0)
             {
@@ -116,7 +116,7 @@ public class FastestLapController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetFastestLapDataOfSession(long sessionId)
     {
-        using var currentActivity = AppActivity.ApiSource.StartActivity(nameof(GetFastestLapsOfSessions));
+        using var currentActivity = AppActivity.ApiSource.StartActivity(nameof(GetFastestLapDataOfSession));
 
         var fastestLapData = await FastestLapPerSessionCache.GetFastestLapDataForSessionAsync(sessionId).ConfigureAwait(false);
 
@@ -132,24 +132,27 @@ public class FastestLapController : ControllerBase
     /// </summary>
     /// <param name="trackId">Id of track</param>
     /// <returns>List with fastest sessions laps</returns>
-    private List<FastestLapOfTrackViewData>? GetFastestF1Laps(long trackId)
+    private async Task<List<FastestLapOfTrackViewData>?> GetFastestF1LapsAsync(long trackId)
     {
         List<FastestLapOfTrackViewData>? fastestLaps = null;
 
-        using var currentActivity = AppActivity.ApiSource.StartActivity(nameof(GetFastestF1Laps));
+        using var currentActivity = AppActivity.ApiSource.StartActivity(nameof(GetFastestF1LapsAsync));
 
         using (var dbFactory = RepositoryFactory.CreateInstance())
         {
-            var dbSessions = dbFactory.GetRepository<SessionRepository>()
-                                      ?.GetQuery()
-                                      ?.Where(s => s.TrackId == trackId
-                                                   && (s.FormulaType == Formula.F1Modern
-                                                       || s.FormulaType == Formula.F12026))
-                                      .ToList();
+            var sessionQuery = dbFactory.GetRepository<SessionRepository>()?.GetQuery();
+
+            var dbSessions = sessionQuery == null
+                                 ? null
+                                 : await sessionQuery.Where(s => s.TrackId == trackId
+                                                                 && (s.FormulaType == Formula.F1Modern
+                                                                     || s.FormulaType == Formula.F12026))
+                                                     .ToListAsync()
+                                                     .ConfigureAwait(false);
 
             if (dbSessions?.Count > 0)
             {
-                fastestLaps = GetFastestLapsOfSessions(trackId, dbFactory, dbSessions, Formula.F1Modern);
+                fastestLaps = await GetFastestLapsOfSessionsAsync(trackId, dbFactory, dbSessions, Formula.F1Modern).ConfigureAwait(false);
             }
 
             currentActivity?.SetStatus(ActivityStatusCode.Ok);
@@ -163,24 +166,27 @@ public class FastestLapController : ControllerBase
     /// </summary>
     /// <param name="trackId">Id of track</param>
     /// <returns>List with fastest session laps</returns>
-    private List<FastestLapOfTrackViewData>? GetFastestF2Laps(long trackId)
+    private async Task<List<FastestLapOfTrackViewData>?> GetFastestF2LapsAsync(long trackId)
     {
         List<FastestLapOfTrackViewData>? fastestLaps = null;
 
-        using var currentActivity = AppActivity.ApiSource.StartActivity(nameof(GetFastestF2Laps));
+        using var currentActivity = AppActivity.ApiSource.StartActivity(nameof(GetFastestF2LapsAsync));
 
         using (var dbFactory = RepositoryFactory.CreateInstance())
         {
-            var dbSessions = dbFactory.GetRepository<SessionRepository>()
-                                      ?.GetQuery()
-                                      ?.Where(s => s.TrackId == trackId
-                                                   && (s.FormulaType == Formula.F2
-                                                       || s.FormulaType == Formula.F2TwentyOne))
-                                      .ToList();
+            var sessionQuery = dbFactory.GetRepository<SessionRepository>()?.GetQuery();
+
+            var dbSessions = sessionQuery == null
+                                 ? null
+                                 : await sessionQuery.Where(s => s.TrackId == trackId
+                                                                 && (s.FormulaType == Formula.F2
+                                                                     || s.FormulaType == Formula.F2TwentyOne))
+                                                     .ToListAsync()
+                                                     .ConfigureAwait(false);
 
             if (dbSessions?.Count > 0)
             {
-                fastestLaps = GetFastestLapsOfSessions(trackId, dbFactory, dbSessions, Formula.F2);
+                fastestLaps = await GetFastestLapsOfSessionsAsync(trackId, dbFactory, dbSessions, Formula.F2).ConfigureAwait(false);
             }
 
             currentActivity?.SetStatus(ActivityStatusCode.Ok);
@@ -197,21 +203,26 @@ public class FastestLapController : ControllerBase
     /// <param name="dbSessions">Sessions</param>
     /// <param name="formulaType">Type of formula</param>
     /// <returns>List with fastest laps</returns>
-    private List<FastestLapOfTrackViewData>? GetFastestLapsOfSessions(long trackId, RepositoryFactory dbFactory, List<SessionEntity> dbSessions, Formula formulaType)
+    private async Task<List<FastestLapOfTrackViewData>?> GetFastestLapsOfSessionsAsync(long trackId, RepositoryFactory dbFactory, List<SessionEntity> dbSessions, Formula formulaType)
     {
         List<FastestLapOfTrackViewData>? fastestLaps = null;
         FastestLapOfTrackViewData? fastestLap = null;
 
-        using var currentActivity = AppActivity.ApiSource.StartActivity(nameof(GetFastestLapsOfSessions));
+        using var currentActivity = AppActivity.ApiSource.StartActivity(nameof(GetFastestLapsOfSessionsAsync));
 
-        var trackData = dbFactory.GetRepository<TrackRepository>()?.GetQuery()?.FirstOrDefault(t => t.Id == trackId);
+        var trackQuery = dbFactory.GetRepository<TrackRepository>()?.GetQuery();
+
+        var trackData = trackQuery == null
+                            ? null
+                            : await trackQuery.FirstOrDefaultAsync(t => t.Id == trackId)
+                                              .ConfigureAwait(false);
 
         // Practice
         using (var currentActivityPractice = AppActivity.ApiSource.StartActivity("FastestLapsOfSessions-Practice"))
         {
-            var fastestPracticeLap = FastestLapInSessions(dbFactory, dbSessions, _practiceSessions);
+            var fastestPracticeLap = await FastestLapInSessionsAsync(dbFactory, dbSessions, _practiceSessions).ConfigureAwait(false);
 
-            fastestLap = GetFastestLapData(dbFactory, fastestPracticeLap, FastestLapSessionType.Practice);
+            fastestLap = await GetFastestLapDataAsync(dbFactory, fastestPracticeLap, FastestLapSessionType.Practice).ConfigureAwait(false);
 
             if (fastestLap != null)
             {
@@ -234,9 +245,9 @@ public class FastestLapController : ControllerBase
         // Qualifying
         using (var currentActivityQualifying = AppActivity.ApiSource.StartActivity("FastestLapsOfSessions-Qualifying"))
         {
-            var fastestQualifyingLap = FastestLapInSessions(dbFactory, dbSessions, _qualifyingSessions);
+            var fastestQualifyingLap = await FastestLapInSessionsAsync(dbFactory, dbSessions, _qualifyingSessions).ConfigureAwait(false);
 
-            fastestLap = GetFastestLapData(dbFactory, fastestQualifyingLap, FastestLapSessionType.Qualifying);
+            fastestLap = await GetFastestLapDataAsync(dbFactory, fastestQualifyingLap, FastestLapSessionType.Qualifying).ConfigureAwait(false);
 
             if (fastestLap != null)
             {
@@ -258,9 +269,9 @@ public class FastestLapController : ControllerBase
         // Race
         using (var currentActivityRace = AppActivity.ApiSource.StartActivity("FastestLapsOfSessions-Race"))
         {
-            var fastestRaceLap = FastestLapInSessions(dbFactory, dbSessions, _raceSessions);
+            var fastestRaceLap = await FastestLapInSessionsAsync(dbFactory, dbSessions, _raceSessions).ConfigureAwait(false);
 
-            fastestLap = GetFastestLapData(dbFactory, fastestRaceLap, FastestLapSessionType.Race);
+            fastestLap = await GetFastestLapDataAsync(dbFactory, fastestRaceLap, FastestLapSessionType.Race).ConfigureAwait(false);
 
             if (fastestLap != null)
             {
@@ -291,18 +302,21 @@ public class FastestLapController : ControllerBase
     /// <param name="fastestLap">Fastest lap entity</param>
     /// <param name="sessionType">Type of session</param>
     /// <returns>Data of this fastest lap</returns>
-    private FastestLapOfTrackViewData? GetFastestLapData(RepositoryFactory dbFactory, LapEntity? fastestLap, FastestLapSessionType sessionType)
+    private async Task<FastestLapOfTrackViewData?> GetFastestLapDataAsync(RepositoryFactory dbFactory, LapEntity? fastestLap, FastestLapSessionType sessionType)
     {
         FastestLapOfTrackViewData? fastestLapData = null;
 
-        using var currentActivity = AppActivity.ApiSource.StartActivity(nameof(GetFastestLapData));
+        using var currentActivity = AppActivity.ApiSource.StartActivity(nameof(GetFastestLapDataAsync));
 
         if (fastestLap != null)
         {
-            var driver = dbFactory.GetRepository<ParticipantRepository>()
-                                  ?.GetQuery()
-                                  ?.Include(obj => obj.Driver)
-                                  ?.FirstOrDefault(p => p.Id == fastestLap.ParticipantId);
+            var participantQuery = dbFactory.GetRepository<ParticipantRepository>()?.GetQuery();
+
+            var driver = participantQuery == null
+                             ? null
+                             : await participantQuery.Include(obj => obj.Driver)
+                                                     .FirstOrDefaultAsync(p => p.Id == fastestLap.ParticipantId)
+                                                     .ConfigureAwait(false);
 
             if (driver != null)
             {
@@ -314,10 +328,12 @@ public class FastestLapController : ControllerBase
                                      DriverId = driver.DriverId
                                  };
 
-                if (GetGameDataOfSession(dbFactory, driver.SessionId, out var gameVersionId, out var gameVersionName))
+                var gameData = await GetGameDataOfSessionAsync(dbFactory, driver.SessionId).ConfigureAwait(false);
+
+                if (gameData.HasData)
                 {
-                    fastestLapData.GameVersionId = gameVersionId;
-                    fastestLapData.GameVersionName = gameVersionName;
+                    fastestLapData.GameVersionId = gameData.GameVersionId;
+                    fastestLapData.GameVersionName = gameData.GameVersionName;
                 }
             }
         }
@@ -334,11 +350,11 @@ public class FastestLapController : ControllerBase
     /// <param name="dbSessions">Practice sessions</param>
     /// <param name="sessionTypes">Type of sessions</param>
     /// <returns>Lap entity</returns>
-    private LapEntity? FastestLapInSessions(RepositoryFactory dbFactory, List<SessionEntity> dbSessions, List<SessionType> sessionTypes)
+    private async Task<LapEntity?> FastestLapInSessionsAsync(RepositoryFactory dbFactory, List<SessionEntity> dbSessions, List<SessionType> sessionTypes)
     {
         LapEntity? fastestLap = null;
 
-        using var currentActivity = AppActivity.ApiSource.StartActivity(nameof(FastestLapInSessions));
+        using var currentActivity = AppActivity.ApiSource.StartActivity(nameof(FastestLapInSessionsAsync));
 
         if (dbSessions.Count > 0)
         {
@@ -348,15 +364,18 @@ public class FastestLapController : ControllerBase
 
             if (sessions.Count > 0)
             {
+                var lapQuery = dbFactory.GetRepository<LapRepository>()?.GetQuery();
+
                 // Fastests valid and completed lap within session
-                var fastestLaps = dbFactory.GetRepository<LapRepository>()
-                                           ?.GetQuery()
-                                           ?.Where(l => l.DbIsInvalid == 0
-                                                        && l.DbIsCompleted == 1
-                                                        && sessions.Contains(l.SessionId)
-                                                        && l.LapTime > 0
-                                                        && l.DbIsInvalidLapTime == 0)
-                                           .ToList();
+                var fastestLaps = lapQuery == null
+                                      ? null
+                                      : await lapQuery.Where(l => l.DbIsInvalid == 0
+                                                                  && l.DbIsCompleted == 1
+                                                                  && sessions.Contains(l.SessionId)
+                                                                  && l.LapTime > 0
+                                                                  && l.DbIsInvalidLapTime == 0)
+                                                      .ToListAsync()
+                                                      .ConfigureAwait(false);
 
                 if (fastestLaps?.Count > 0)
                 {
@@ -375,27 +394,30 @@ public class FastestLapController : ControllerBase
     /// </summary>
     /// <param name="dbFactory">Database factory object</param>
     /// <param name="sessionId">Id of session</param>
-    /// <param name="gameVersionId">Game version id</param>
-    /// <param name="gameVersionName">Game version name</param>
-    /// <returns>Success?</returns>
-    private bool GetGameDataOfSession(RepositoryFactory dbFactory, long sessionId, out long gameVersionId, out string gameVersionName)
+    /// <returns>Game version id and name of the session together with the information whether the game version was found</returns>
+    private async Task<(bool HasData, long GameVersionId, string GameVersionName)> GetGameDataOfSessionAsync(RepositoryFactory dbFactory, long sessionId)
     {
         var hasData = false;
+        var gameVersionId = 0L;
+        var gameVersionName = string.Empty;
 
-        using var currentActivity = AppActivity.ApiSource.StartActivity(nameof(GetGameDataOfSession));
+        using var currentActivity = AppActivity.ApiSource.StartActivity(nameof(GetGameDataOfSessionAsync));
 
-        gameVersionId = 0;
-        gameVersionName = string.Empty;
+        var sessionQuery = dbFactory.GetRepository<SessionRepository>()?.GetQuery();
 
-        var sessionData = dbFactory.GetRepository<SessionRepository>()
-                                   ?.GetQuery()
-                                   ?.FirstOrDefault(s => s.Id == sessionId);
+        var sessionData = sessionQuery == null
+                              ? null
+                              : await sessionQuery.FirstOrDefaultAsync(s => s.Id == sessionId)
+                                                  .ConfigureAwait(false);
 
         if (sessionData != null)
         {
-            var gameData = dbFactory.GetRepository<GameVersionRepository>()
-                                    ?.GetQuery()
-                                    ?.FirstOrDefault(g => g.Id == sessionData.GameVersionId);
+            var gameQuery = dbFactory.GetRepository<GameVersionRepository>()?.GetQuery();
+
+            var gameData = gameQuery == null
+                               ? null
+                               : await gameQuery.FirstOrDefaultAsync(g => g.Id == sessionData.GameVersionId)
+                                                .ConfigureAwait(false);
 
             if (gameData != null)
             {
@@ -409,7 +431,7 @@ public class FastestLapController : ControllerBase
             currentActivity?.SetStatus(ActivityStatusCode.Ok);
         }
 
-        return hasData;
+        return (hasData, gameVersionId, gameVersionName);
     }
 
     #endregion // Private methods

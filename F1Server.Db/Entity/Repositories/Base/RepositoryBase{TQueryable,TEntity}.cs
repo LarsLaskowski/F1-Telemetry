@@ -111,6 +111,36 @@ public abstract class RepositoryBase<TQueryable, TEntity> : RepositoryBase
     }
 
     /// <summary>
+    /// Add a new entity object without blocking the calling thread while the changes are saved
+    /// </summary>
+    /// <param name="entity">Entity object</param>
+    /// <returns>Status</returns>
+    public async Task<bool> AddAsync(TEntity entity)
+    {
+        var success = false;
+
+        LastError = string.Empty;
+
+        try
+        {
+            _dbContext.Set<TEntity>()
+                      .Add(entity);
+
+            await _dbContext.SaveChangesAsync().ConfigureAwait(false);
+
+            success = true;
+        }
+        catch (Exception ex)
+        {
+            Logger?.LogError(ex, "Error adding entity object!");
+
+            LastError = ex.ToString();
+        }
+
+        return success;
+    }
+
+    /// <summary>
     /// Add a range of entities
     /// </summary>
     /// <param name="entities">Entities</param>
@@ -323,6 +353,43 @@ public abstract class RepositoryBase<TQueryable, TEntity> : RepositoryBase
     }
 
     /// <summary>
+    /// Refresh an entity object without blocking the calling thread while the database is accessed
+    /// </summary>
+    /// <param name="expression">Expression</param>
+    /// <param name="refreshAction">Refresh action</param>
+    /// <returns>Status</returns>
+    public async Task<bool> RefreshAsync(Expression<Func<TEntity, bool>> expression, Action<TEntity> refreshAction)
+    {
+        var success = false;
+
+        LastError = string.Empty;
+
+        try
+        {
+            var dbSet = _dbContext.Set<TEntity>();
+
+            var entity = await dbSet.FirstOrDefaultAsync(expression).ConfigureAwait(false);
+
+            if (entity is not null)
+            {
+                refreshAction(entity);
+
+                await _dbContext.SaveChangesAsync().ConfigureAwait(false);
+            }
+
+            success = true;
+        }
+        catch (Exception ex)
+        {
+            Logger?.LogError(ex, "Error refreshing entity object!");
+
+            LastError = ex.ToString();
+        }
+
+        return success;
+    }
+
+    /// <summary>
     /// Refresh a range of entity objects
     /// </summary>
     /// <param name="expression">Expression</param>
@@ -417,6 +484,45 @@ public abstract class RepositoryBase<TQueryable, TEntity> : RepositoryBase
                 dbSet.Remove(entity);
 
                 _dbContext.SaveChanges();
+            }
+
+            success = true;
+        }
+        catch (Exception ex)
+        {
+            Logger?.LogError(ex, "Error removing an entity object!");
+
+            LastError = ex.ToString();
+        }
+
+        return success;
+    }
+
+    /// <summary>
+    /// Remove an entity object without blocking the calling thread while the database is accessed
+    /// </summary>
+    /// <param name="expression">Expression</param>
+    /// <param name="beforeRemove">Action before removing</param>
+    /// <returns>Status</returns>
+    public async Task<bool> RemoveAsync(Expression<Func<TEntity, bool>> expression, Action<TEntity>? beforeRemove = null)
+    {
+        var success = false;
+
+        LastError = string.Empty;
+
+        try
+        {
+            var dbSet = _dbContext.Set<TEntity>();
+
+            var entity = await dbSet.FirstOrDefaultAsync(expression).ConfigureAwait(false);
+
+            if (entity is not null)
+            {
+                beforeRemove?.Invoke(entity);
+
+                dbSet.Remove(entity);
+
+                await _dbContext.SaveChangesAsync().ConfigureAwait(false);
             }
 
             success = true;

@@ -45,7 +45,7 @@ public class FinalClassificationController : ControllerBase
     /// <returns>Final classification data</returns>
     [Route("{sessionId?}")]
     [HttpGet]
-    public IActionResult GetFromSession(long? sessionId)
+    public async Task<IActionResult> GetFromSession(long? sessionId)
     {
         var finalClassifications = new List<FinalClassificationViewData>();
 
@@ -57,12 +57,15 @@ public class FinalClassificationController : ControllerBase
         {
             using (var dbFactory = RepositoryFactory.CreateInstance())
             {
-                var dbFinals = dbFactory.GetRepository<FinalClassificationRepository>()
-                                        ?.GetQuery()
-                                        ?.Include(f => f.Participant)
-                                        ?.Where(f => f.SessionId == sessionId)
-                                        ?.OrderBy(f => f.FinishPosition)
-                                        ?.ToList();
+                var finalQuery = dbFactory.GetRepository<FinalClassificationRepository>()?.GetQuery();
+
+                var dbFinals = finalQuery == null
+                                   ? null
+                                   : await finalQuery.Include(f => f.Participant)
+                                                     .Where(f => f.SessionId == sessionId)
+                                                     .OrderBy(f => f.FinishPosition)
+                                                     .ToListAsync()
+                                                     .ConfigureAwait(false);
 
                 if (dbFinals?.Count > 0)
                 {

@@ -8,6 +8,7 @@ using F1Server.Db.Entity.Repositories;
 using F1Server.Db.Entity.Tables;
 
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace F1Server.WebApi.Controllers;
 
@@ -46,7 +47,7 @@ public class ParticipantsController : ControllerBase
     /// <returns>List of participants</returns>
     [Route("ParticipantsOfSession/{sessionId?}")]
     [HttpGet]
-    public IActionResult GetParticipantsOfSession(long? sessionId)
+    public async Task<IActionResult> GetParticipantsOfSession(long? sessionId)
     {
         List<ParticipantViewData>? participants = null;
 
@@ -56,11 +57,17 @@ public class ParticipantsController : ControllerBase
 
         using (var dbFactory = RepositoryFactory.CreateInstance())
         {
-            var dbParticipants = dbFactory.GetRepository<ParticipantRepository>()
-                                          ?.GetQuery()
-                                          ?.Where(s => s.SessionId == sessionId)
-                                          .OrderByDescending(s => s.DriverId)
-                                          .ToList() ?? [];
+            var participantQuery = dbFactory.GetRepository<ParticipantRepository>()?.GetQuery();
+
+            List<ParticipantEntity> dbParticipants = [];
+
+            if (participantQuery != null)
+            {
+                dbParticipants = await participantQuery.Where(s => s.SessionId == sessionId)
+                                                       .OrderByDescending(s => s.DriverId)
+                                                       .ToListAsync()
+                                                       .ConfigureAwait(false);
+            }
 
             if (dbParticipants.Count > 0)
             {
@@ -74,9 +81,9 @@ public class ParticipantsController : ControllerBase
                 {
                     foreach (var dbParticipant in dbParticipants)
                     {
-                        var driverName = GetDriverName(driverQuery, dbParticipant, dbParticipant.DriverName);
-                        var driverNat = GetNationality(natQuery, dbParticipant);
-                        var teamName = GetTeam(teamQuery, dbParticipant);
+                        var driverName = await GetDriverNameAsync(driverQuery, dbParticipant, dbParticipant.DriverName).ConfigureAwait(false);
+                        var driverNat = await GetNationalityAsync(natQuery, dbParticipant).ConfigureAwait(false);
+                        var teamName = await GetTeamAsync(teamQuery, dbParticipant).ConfigureAwait(false);
 
                         var participant = new ParticipantViewData
                                           {
@@ -112,15 +119,16 @@ public class ParticipantsController : ControllerBase
     /// <param name="teamQuery">Team query</param>
     /// <param name="dbParticipant">Participant</param>
     /// <returns>Team name</returns>
-    private string GetTeam(TeamQueryable? teamQuery, ParticipantEntity dbParticipant)
+    private async Task<string> GetTeamAsync(TeamQueryable? teamQuery, ParticipantEntity dbParticipant)
     {
         var teamName = string.Empty;
 
-        using var currentActivity = AppActivity.ApiSource.StartActivity(nameof(GetTeam));
+        using var currentActivity = AppActivity.ApiSource.StartActivity(nameof(GetTeamAsync));
 
         if (teamQuery != null)
         {
-            var team = teamQuery.FirstOrDefault(t => t.Id == dbParticipant.TeamId);
+            var team = await teamQuery.FirstOrDefaultAsync(t => t.Id == dbParticipant.TeamId)
+                                      .ConfigureAwait(false);
 
             if (team != null)
             {
@@ -139,15 +147,16 @@ public class ParticipantsController : ControllerBase
     /// <param name="natQuery">Nationality query</param>
     /// <param name="dbParticipant">Participant</param>
     /// <returns>Nationality</returns>
-    private string GetNationality(NationalityQueryable? natQuery, ParticipantEntity dbParticipant)
+    private async Task<string> GetNationalityAsync(NationalityQueryable? natQuery, ParticipantEntity dbParticipant)
     {
         var driverNat = string.Empty;
 
-        using var currentActivity = AppActivity.ApiSource.StartActivity(nameof(GetNationality));
+        using var currentActivity = AppActivity.ApiSource.StartActivity(nameof(GetNationalityAsync));
 
         if (natQuery != null)
         {
-            var nat = natQuery.FirstOrDefault(n => n.Id == dbParticipant.NationalityId);
+            var nat = await natQuery.FirstOrDefaultAsync(n => n.Id == dbParticipant.NationalityId)
+                                    .ConfigureAwait(false);
 
             if (nat != null)
             {
@@ -167,13 +176,14 @@ public class ParticipantsController : ControllerBase
     /// <param name="dbParticipant">Participant</param>
     /// <param name="driverName">Driver name</param>
     /// <returns>Driver name</returns>
-    private string GetDriverName(DriverQueryable? driverQuery, ParticipantEntity dbParticipant, string driverName)
+    private async Task<string> GetDriverNameAsync(DriverQueryable? driverQuery, ParticipantEntity dbParticipant, string driverName)
     {
-        using var currentActivity = AppActivity.ApiSource.StartActivity(nameof(GetDriverName));
+        using var currentActivity = AppActivity.ApiSource.StartActivity(nameof(GetDriverNameAsync));
 
         if (driverQuery != null)
         {
-            var driver = driverQuery.FirstOrDefault(d => d.Id == dbParticipant.DriverId);
+            var driver = await driverQuery.FirstOrDefaultAsync(d => d.Id == dbParticipant.DriverId)
+                                          .ConfigureAwait(false);
 
             if (driver != null)
             {

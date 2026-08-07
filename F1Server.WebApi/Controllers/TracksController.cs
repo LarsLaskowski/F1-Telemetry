@@ -6,6 +6,7 @@ using F1Server.Db.Entity;
 using F1Server.Db.Entity.Repositories;
 
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace F1Server.WebApi.Controllers;
 
@@ -42,7 +43,7 @@ public class TracksController : ControllerBase
     /// </summary>
     /// <returns>Tracks</returns>
     [HttpGet]
-    public IEnumerable<TrackViewData>? Get()
+    public async Task<IEnumerable<TrackViewData>?> Get()
     {
         List<TrackViewData>? tracks = [];
 
@@ -52,27 +53,32 @@ public class TracksController : ControllerBase
 
         using (var dbFactory = RepositoryFactory.CreateInstance())
         {
-            var uniqueSessionTracks = dbFactory.GetRepository<SessionRepository>()
-                                               ?.GetQuery()
-                                               ?.Select(s => s.TrackId)
-                                               .Distinct()
-                                               .ToList();
-
             var sessionQuery = dbFactory.GetRepository<SessionRepository>()?.GetQuery();
 
-            tracks = dbFactory.GetRepository<TrackRepository>()
-                              ?.GetQuery()
-                              ?.OrderBy(t => t.Id)
-                              ?.Select(obj => new TrackViewData
-                                              {
-                                                  TrackId = obj.Id,
-                                                  TrackNumber = obj.TrackNumber,
-                                                  TrackName = obj.Name,
-                                                  HasSession = uniqueSessionTracks != null && uniqueSessionTracks.Contains(obj.Id),
-                                                  Sessions = sessionQuery != null ? sessionQuery.Count(s => s.TrackId == obj.Id) : 0,
-                                                  ReferenceLapTime = TimeSpan.FromMilliseconds(obj.LapReferenceTime, 0).ToString(@"mm\:ss\.fff")
-                                              })
-                              .ToList();
+            var uniqueSessionTracks = sessionQuery == null
+                                          ? null
+                                          : await sessionQuery.Select(s => s.TrackId)
+                                                              .Distinct()
+                                                              .ToListAsync()
+                                                              .ConfigureAwait(false);
+
+            var trackQuery = dbFactory.GetRepository<TrackRepository>()?.GetQuery();
+
+            if (trackQuery != null)
+            {
+                tracks = await trackQuery.OrderBy(t => t.Id)
+                                         .Select(obj => new TrackViewData
+                                                        {
+                                                            TrackId = obj.Id,
+                                                            TrackNumber = obj.TrackNumber,
+                                                            TrackName = obj.Name,
+                                                            HasSession = uniqueSessionTracks != null && uniqueSessionTracks.Contains(obj.Id),
+                                                            Sessions = sessionQuery != null ? sessionQuery.Count(s => s.TrackId == obj.Id) : 0,
+                                                            ReferenceLapTime = TimeSpan.FromMilliseconds(obj.LapReferenceTime, 0).ToString(@"mm\:ss\.fff")
+                                                        })
+                                         .ToListAsync()
+                                         .ConfigureAwait(false);
+            }
 
             currentActivity?.SetStatus(ActivityStatusCode.Ok);
         }
@@ -89,7 +95,7 @@ public class TracksController : ControllerBase
     /// <returns>Track data</returns>
     [Route("Track/{trackId}")]
     [HttpGet]
-    public IActionResult GetTrack(long trackId)
+    public async Task<IActionResult> GetTrack(long trackId)
     {
         TrackViewData? trackData = null;
 
@@ -99,9 +105,12 @@ public class TracksController : ControllerBase
 
         using (var dbFactory = RepositoryFactory.CreateInstance())
         {
-            var track = dbFactory.GetRepository<TrackRepository>()
-                                 ?.GetQuery()
-                                 ?.FirstOrDefault(t => t.Id == trackId);
+            var trackQuery = dbFactory.GetRepository<TrackRepository>()?.GetQuery();
+
+            var track = trackQuery == null
+                            ? null
+                            : await trackQuery.FirstOrDefaultAsync(t => t.Id == trackId)
+                                              .ConfigureAwait(false);
 
             if (track != null)
             {
