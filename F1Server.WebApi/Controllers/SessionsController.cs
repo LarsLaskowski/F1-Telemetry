@@ -337,7 +337,7 @@ public class SessionsController : ControllerBase
 
                     if (dbSessions.Count > 0)
                     {
-                        sessions = new List<SessionViewData>();
+                        sessions = [];
 
                         foreach (var dbSession in dbSessions)
                         {

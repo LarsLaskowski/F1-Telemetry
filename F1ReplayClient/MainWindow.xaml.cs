@@ -105,7 +105,7 @@ public partial class MainWindow : Window, IDisposable
     /// <summary>
     /// List of current files in selected folder
     /// </summary>
-    internal List<FileData> CurrentFolderFiles { get; private set; } = new();
+    internal List<FileData> CurrentFolderFiles { get; private set; } = [];
 
     #endregion // Properties
 

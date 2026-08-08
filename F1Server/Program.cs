@@ -384,10 +384,7 @@ public static class Program
 
             if (subDirectories.Count == 0)
             {
-                subDirectories = new List<string>
-                                 {
-                                     sourceDirectory
-                                 };
+                subDirectories = [sourceDirectory];
             }
 
             foreach (var subDirectory in subDirectories)

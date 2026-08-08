@@ -71,7 +71,7 @@ public class ParticipantsController : ControllerBase
 
             if (dbParticipants.Count > 0)
             {
-                participants = new List<ParticipantViewData>();
+                participants = [];
 
                 var driverQuery = dbFactory.GetRepository<DriverRepository>()?.GetQuery();
                 var natQuery = dbFactory.GetRepository<NationalityRepository>()?.GetQuery();

@@ -48,7 +48,7 @@ public class ChampionshipController : ControllerBase
     [HttpGet]
     public async Task<IEnumerable<ChampionshipViewData>> Get()
     {
-        List<ChampionshipViewData> championships = new List<ChampionshipViewData>();
+        List<ChampionshipViewData> championships = [];
 
         using var currentActivity = AppActivity.ApiSource.StartActivity("GetChampionships");
 
@@ -382,7 +382,7 @@ public class ChampionshipController : ControllerBase
 
         if (tracks.Count > 0)
         {
-            championshipData.Tracks = new List<ChampionshipTrackViewData>();
+            championshipData.Tracks = [];
 
             foreach (var track in tracks)
             {

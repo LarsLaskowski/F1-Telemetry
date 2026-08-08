@@ -579,11 +579,11 @@ public sealed class TelemetryClient : ITelemetryClient, IDisposable
     {
         if (sessionChangedEventArgs.LastSessionId > 0)
         {
-            Task.Run(() => WriteLastSessionStatistics(sessionChangedEventArgs.LastSessionId, sessionChangedEventArgs.LastSessionGameVersion, sessionChangedEventArgs.LastSessionMetrics));
+            Task.Run(() => WriteLastSessionStatistics(sessionChangedEventArgs.LastSessionId, sessionChangedEventArgs.LastSessionGameVersion, sessionChangedEventArgs.LastSessionMetrics), CancellationToken.None);
         }
         else
         {
-            Task.Run(() => WriteNewSessionStarts(sessionChangedEventArgs.CurrentSessionId, sessionChangedEventArgs.CurrentSessionGameVersion));
+            Task.Run(() => WriteNewSessionStarts(sessionChangedEventArgs.CurrentSessionId, sessionChangedEventArgs.CurrentSessionGameVersion), CancellationToken.None);
         }
     }
 
