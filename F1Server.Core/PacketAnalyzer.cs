@@ -178,6 +178,12 @@ public class PacketAnalyzer
                         packetData = GetFinalClassificationData(receivedData.PacketHeader, receivedData.PacketRawData);
                     }
                     break;
+
+                default:
+                    {
+                        packetData = new UnknownData(receivedData.PacketHeader);
+                    }
+                    break;
             }
         }
 

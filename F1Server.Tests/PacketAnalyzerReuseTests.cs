@@ -1,5 +1,6 @@
 using F1Server.Core;
 using F1Server.Core.Data;
+using F1Server.Core.Enumerations;
 using F1Server.Core.PacketData;
 using F1Server.Core.Packets.Data;
 using F1Server.Core.Packets.Interfaces;
@@ -18,6 +19,17 @@ public class PacketAnalyzerReuseTests
     /// Length of a truncated test packet, longer than every packet header but shorter than every expected packet size
     /// </summary>
     private const int TruncatedPacketLength = 32;
+
+    /// <summary>
+    /// Byte offset of the packet type id within a 2023+ format header (game version, game year, major
+    /// version, minor version and packet version each take one field before it)
+    /// </summary>
+    private const int PacketTypeByteOffset = 6;
+
+    /// <summary>
+    /// Packet type id that maps to a <see cref="PacketTypes"/> value far beyond every known member
+    /// </summary>
+    private const byte UnknownPacketTypeId = 200;
 
     #endregion // Constants
 
@@ -190,6 +202,28 @@ public class PacketAnalyzerReuseTests
 
         Assert.IsNotNull(carStatus, "Full size car status packet must produce an object!");
         Assert.AreEqual(string.Empty, packetAnalyzer.LastError, "Error of the rejected packet must not leak into the next transformation!");
+    }
+
+    /// <summary>
+    /// Test to verify that a packet type id not covered by any known <see cref="PacketTypes"/> value
+    /// produces an <see cref="UnknownData"/> object instead of silently returning null
+    /// </summary>
+    [TestMethod]
+    public void GetPacketDataUnknownPacketTypeReturnsUnknownData()
+    {
+        _ = GetPacketHeader("F1-2025-CarStatus.packet", out var packetContent);
+
+        packetContent[PacketTypeByteOffset] = UnknownPacketTypeId;
+
+        var receivedData = new ReceivedPacketData();
+
+        receivedData.SetRawData(packetContent);
+
+        var packetAnalyzer = new PacketAnalyzer();
+
+        var packetData = packetAnalyzer.GetPacketData(receivedData);
+
+        Assert.IsInstanceOfType<UnknownData>(packetData, "Unknown packet type id must produce an UnknownData object!");
     }
 
     #endregion // Methods
