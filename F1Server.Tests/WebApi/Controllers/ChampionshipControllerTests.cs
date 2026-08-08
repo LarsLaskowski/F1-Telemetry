@@ -134,6 +134,67 @@ public class ChampionshipControllerTests
     }
 
     /// <summary>
+    /// Verifies that a second season of the same mode and game version gets its own tracks instead of extending the
+    /// tracks of the first season
+    /// </summary>
+    /// <returns>Task</returns>
+    [TestMethod]
+    public async Task ChampionshipControllerCreateChampionshipStoresTracksOfSecondSeason()
+    {
+        var gameVersionId = ControllerTestData.AddGameVersion(3788);
+
+        var firstSeasonTracks = ControllerTestData.AddTracks(ChampionshipTrackCount);
+        var secondSeasonTracks = ControllerTestData.AddTracks(ChampionshipTrackCount);
+
+        var controller = CreateController();
+
+        var firstResult = await controller.CreateChampionship(new ChampionshipCreateData
+                                                              {
+                                                                  GameVersionId = gameVersionId,
+                                                                  Mode = (int)ChampionshipMode.Career,
+                                                                  Tracks = firstSeasonTracks
+                                                              })
+                                          .ConfigureAwait(false);
+
+        Assert.IsTrue((firstResult as OkObjectResult)?.Value as bool?, "Creating the first season should report success!");
+
+        var secondResult = await controller.CreateChampionship(new ChampionshipCreateData
+                                                               {
+                                                                   GameVersionId = gameVersionId,
+                                                                   Mode = (int)ChampionshipMode.Career,
+                                                                   Tracks = secondSeasonTracks
+                                                               })
+                                           .ConfigureAwait(false);
+
+        Assert.IsTrue((secondResult as OkObjectResult)?.Value as bool?, "Creating the second season should report success!");
+
+        using (var dbFactory = RepositoryFactory.CreateInstance())
+        {
+            var championshipQuery = dbFactory.GetRepository<ChampionshipRepository>()?.GetQuery();
+
+            Assert.IsNotNull(championshipQuery, "Championship query should be resolvable!");
+
+            var championships = await championshipQuery.Where(c => c.GameVersionId == gameVersionId)
+                                                       .OrderBy(c => c.Number)
+                                                       .ToListAsync(TestContext.CancellationToken)
+                                                       .ConfigureAwait(false);
+
+            Assert.HasCount(2, championships, "Both seasons of the game version should be stored!");
+            Assert.AreEqual(2, championships[1].Number, "The second championship of a game version should be season two!");
+
+            var championshipTrackQuery = dbFactory.GetRepository<ChampionshipTrackRepository>()?.GetQuery();
+
+            Assert.IsNotNull(championshipTrackQuery, "Championship track query should be resolvable!");
+
+            var firstSeasonTrackCount = await championshipTrackQuery.CountAsync(t => t.ChampionshipId == championships[0].Id, TestContext.CancellationToken).ConfigureAwait(false);
+            var secondSeasonTrackCount = await championshipTrackQuery.CountAsync(t => t.ChampionshipId == championships[1].Id, TestContext.CancellationToken).ConfigureAwait(false);
+
+            Assert.AreEqual(ChampionshipTrackCount, firstSeasonTrackCount, "The first season should keep only the tracks it was created with!");
+            Assert.AreEqual(ChampionshipTrackCount, secondSeasonTrackCount, "The tracks of the second season should be added to the second season!");
+        }
+    }
+
+    /// <summary>
     /// Verifies that championship data without enough tracks is rejected
     /// </summary>
     /// <returns>Task</returns>

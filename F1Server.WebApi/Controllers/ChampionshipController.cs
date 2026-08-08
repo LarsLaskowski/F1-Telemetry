@@ -134,24 +134,19 @@ public class ChampionshipController : ControllerBase
                 seasonNumber = (ushort)(championships + 1);
             }
 
-            if (championshipRepository != null)
-            {
-                await championshipRepository.AddAsync(new ChampionshipEntity
-                                                      {
-                                                          GameVersionId = championshipCreateData.GameVersionId,
-                                                          Mode = (ChampionshipMode)championshipCreateData.Mode,
-                                                          Number = seasonNumber
-                                                      })
-                                            .ConfigureAwait(false);
-            }
+            var championship = new ChampionshipEntity
+                               {
+                                   GameVersionId = championshipCreateData.GameVersionId,
+                                   Mode = (ChampionshipMode)championshipCreateData.Mode,
+                                   Number = seasonNumber
+                               };
 
-            var championship = championshipQuery == null
-                                   ? null
-                                   : await championshipQuery.FirstOrDefaultAsync(c => c.Mode == (ChampionshipMode)championshipCreateData.Mode
-                                                                                      && c.GameVersionId == championshipCreateData.GameVersionId)
-                                                            .ConfigureAwait(false);
+            // The insert fills the generated id, so the new season is used directly instead of re-reading it - a
+            // lookup by mode and game version would return the first season as soon as a second one is created
+            var isCreated = championshipRepository != null
+                            && await championshipRepository.AddAsync(championship).ConfigureAwait(false);
 
-            if (championship != null)
+            if (isCreated)
             {
                 await AddTracksToChampionshipAsync(championshipCreateData.Tracks, dbFactory, championship).ConfigureAwait(false);
 
