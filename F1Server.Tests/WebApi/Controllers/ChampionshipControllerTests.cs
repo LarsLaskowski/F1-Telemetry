@@ -90,6 +90,74 @@ public class ChampionshipControllerTests
     }
 
     /// <summary>
+    /// Verifies that the grid positions are resolved per championship when several championships are returned at once
+    /// </summary>
+    /// <returns>Task</returns>
+    [TestMethod]
+    public async Task ChampionshipControllerGetResolvesGridPositionsOfEveryChampionship()
+    {
+        const int firstFinishPosition = 2;
+        const int secondFinishPosition = 5;
+
+        var firstSessionId = ControllerTestData.AddSessionWithFinalClassification(firstFinishPosition);
+        var secondSessionId = ControllerTestData.AddSessionWithFinalClassification(secondFinishPosition);
+
+        var firstChampionshipId = ControllerTestData.AddChampionship(ControllerTestData.AddGameVersion(3793), firstSessionId);
+        var secondChampionshipId = ControllerTestData.AddChampionship(ControllerTestData.AddGameVersion(3794), secondSessionId);
+
+        var controller = CreateController();
+
+        var championships = (await controller.Get().ConfigureAwait(false)).ToList();
+
+        var firstChampionship = championships.Find(c => c.ChampionshipId == firstChampionshipId);
+        var secondChampionship = championships.Find(c => c.ChampionshipId == secondChampionshipId);
+
+        Assert.IsNotNull(firstChampionship, "The first created championship should be returned!");
+        Assert.IsNotNull(secondChampionship, "The second created championship should be returned!");
+        Assert.IsNotNull(firstChampionship.Tracks, "The tracks of the first championship should be returned!");
+        Assert.IsNotNull(secondChampionship.Tracks, "The tracks of the second championship should be returned!");
+        Assert.HasCount(1, firstChampionship.Tracks, "The single track of the first championship should be returned!");
+        Assert.HasCount(1, secondChampionship.Tracks, "The single track of the second championship should be returned!");
+
+        // The qualifying session is reported as sprint qualifying position, so every championship keeps the finish
+        // position of the human driver of its own session
+        Assert.AreEqual(firstFinishPosition,
+                        firstChampionship.Tracks[0].SprintQualifyingPosition,
+                        "The first championship should report the finish position of its own qualifying session!");
+
+        Assert.AreEqual(secondFinishPosition,
+                        secondChampionship.Tracks[0].SprintQualifyingPosition,
+                        "The second championship should report the finish position of its own qualifying session!");
+    }
+
+    /// <summary>
+    /// Verifies that a championship without assigned sessions reports no grid positions
+    /// </summary>
+    /// <returns>Task</returns>
+    [TestMethod]
+    public async Task ChampionshipControllerGetReturnsZeroGridPositionsWithoutAssignedSessions()
+    {
+        var championshipId = ControllerTestData.AddChampionship(ControllerTestData.AddGameVersion(3795));
+
+        var controller = CreateController();
+
+        var championships = await controller.Get().ConfigureAwait(false);
+
+        var championship = championships.ToList()
+                                        .Find(c => c.ChampionshipId == championshipId);
+
+        Assert.IsNotNull(championship, "The created championship should be returned!");
+        Assert.IsNotNull(championship.Tracks, "The tracks of the championship should be returned!");
+
+        var trackData = championship.Tracks[0];
+
+        Assert.AreEqual(0, trackData.QualifyingPosition, "Without an assigned session the qualifying position should be zero!");
+        Assert.AreEqual(0, trackData.SprintQualifyingPosition, "Without an assigned session the sprint qualifying position should be zero!");
+        Assert.AreEqual(0, trackData.SprintPosition, "Without an assigned session the sprint position should be zero!");
+        Assert.AreEqual(0, trackData.RacePosition, "Without an assigned session the race position should be zero!");
+    }
+
+    /// <summary>
     /// Verifies that a championship is created with the requested tracks
     /// </summary>
     /// <returns>Task</returns>
