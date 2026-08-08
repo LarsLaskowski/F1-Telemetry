@@ -49,7 +49,7 @@ public class GamesController : ControllerBase
 
         using var currentActivity = AppActivity.ApiSource.StartActivity("GetGames");
 
-        _logger?.LogInformation("Games loading...");
+        _logger?.LoadingGames();
 
         using (var dbFactory = RepositoryFactory.CreateInstance())
         {
@@ -86,7 +86,7 @@ public class GamesController : ControllerBase
             currentActivity?.SetStatus(ActivityStatusCode.Ok);
         }
 
-        _logger?.LogInformation("Games loaded ({LoadedGames}).", games?.Count ?? 0);
+        _logger?.GamesLoaded(games?.Count ?? 0);
 
         return games;
     }

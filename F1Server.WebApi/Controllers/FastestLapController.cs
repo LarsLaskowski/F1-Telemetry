@@ -76,7 +76,7 @@ public class FastestLapController : ControllerBase
 
         using var currentActivity = AppActivity.ApiSource.StartActivity(nameof(GetFastestLaps));
 
-        _logger?.LogInformation("Fastest laps of track {TrackId}...", trackId);
+        _logger?.LoadingFastestLapsOfTrack(trackId);
 
         if (trackId.HasValue)
         {
@@ -99,7 +99,7 @@ public class FastestLapController : ControllerBase
             currentActivity?.SetStatus(ActivityStatusCode.Ok);
         }
 
-        _logger?.LogInformation("Fastest laps of track loaded ({FastestLaps})", fastestLaps.Count);
+        _logger?.FastestLapsOfTrackLoaded(fastestLaps.Count);
 
         return Ok(fastestLaps);
     }

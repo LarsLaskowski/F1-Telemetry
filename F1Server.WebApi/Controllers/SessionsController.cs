@@ -74,7 +74,7 @@ public class SessionsController : ControllerBase
 
             using var currentActivity = AppActivity.ApiSource.StartActivity(nameof(GetSessions));
 
-            _logger?.LogInformation("Sessions loading...");
+            _logger?.LoadingSessions();
 
             using (var dbFactory = RepositoryFactory.CreateInstance())
             {
@@ -118,7 +118,7 @@ public class SessionsController : ControllerBase
                 }
                 catch (Exception ex)
                 {
-                    _logger?.LogError(ex, "Exception while loading sessions => {Exception}", ex.ToString());
+                    _logger?.ErrorLoadingSessions(ex);
 
                     currentActivity?.SetStatus(ActivityStatusCode.Error, ex.ToString());
                     currentActivity?.AddException(ex);
@@ -141,7 +141,7 @@ public class SessionsController : ControllerBase
                              TotalCount = totalCount
                          };
 
-        _logger?.LogInformation("Sessions loaded for page {PageIndex} - page size: {PageSize} - total sessions: {Sessions}", pageIndex, pageSize, sessions?.Count);
+        _logger?.SessionsLoaded(pageIndex, pageSize, sessions?.Count);
 
         return Ok(pageResult);
     }
@@ -158,7 +158,7 @@ public class SessionsController : ControllerBase
 
         using var currentActivity = AppActivity.ApiSource.StartActivity(nameof(GetSessionsCount));
 
-        _logger?.LogInformation("Sessions count...");
+        _logger?.CountingSessions();
 
         using (var dbFactory = RepositoryFactory.CreateInstance())
         {
@@ -173,7 +173,7 @@ public class SessionsController : ControllerBase
             currentActivity?.SetStatus(ActivityStatusCode.Ok);
         }
 
-        _logger?.LogInformation("Sessions found ({Sessions}).", numSessions);
+        _logger?.SessionsCounted(numSessions);
 
         return numSessions;
     }
@@ -190,7 +190,7 @@ public class SessionsController : ControllerBase
 
         using var currentActivity = AppActivity.ApiSource.StartActivity(nameof(GetLastFinishedSession));
 
-        _logger?.LogInformation("Get last finished session...");
+        _logger?.LoadingLastFinishedSession();
 
         try
         {
@@ -215,13 +215,13 @@ public class SessionsController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger?.LogError(ex, "Exception while reading last finished session => {Exception}", ex.ToString());
+            _logger?.ErrorLoadingLastFinishedSession(ex);
 
             currentActivity?.SetStatus(ActivityStatusCode.Error, ex.ToString());
             currentActivity?.AddException(ex);
         }
 
-        _logger?.LogInformation("Last finished session: {LastFinishedSession}.", lastFinishedSession);
+        _logger?.LastFinishedSessionLoaded(lastFinishedSession);
 
         return lastFinishedSession;
     }
@@ -239,11 +239,11 @@ public class SessionsController : ControllerBase
 
         using var currentActivity = AppActivity.ApiSource.StartActivity(nameof(GetSession));
 
-        _logger?.LogInformation("Session loading ({SessionId})...", id ?? -1);
+        _logger?.LoadingSession(id ?? -1);
 
         if (id == null || id == 0)
         {
-            _logger?.LogWarning("Session id is null or zero!");
+            _logger?.SessionIdNullOrZero();
 
             return NotFound();
         }
@@ -291,7 +291,7 @@ public class SessionsController : ControllerBase
             currentActivity?.SetStatus(ActivityStatusCode.Ok);
         }
 
-        _logger?.LogInformation("Session loaded ({SessionLoaded}).", session != null);
+        _logger?.SessionLoaded(session != null);
 
         return Ok(session);
     }
@@ -309,7 +309,7 @@ public class SessionsController : ControllerBase
 
         using var currentActivity = AppActivity.ApiSource.StartActivity(nameof(GetSessionsOfTrack));
 
-        _logger?.LogInformation("Load session for track {TrackId}...", trackId);
+        _logger?.LoadingSessionsOfTrack(trackId);
 
         using (var dbFactory = RepositoryFactory.CreateInstance())
         {
@@ -362,7 +362,7 @@ public class SessionsController : ControllerBase
             }
             catch (Exception ex)
             {
-                _logger?.LogError(ex, "Exception while loading sessions for track {TrackId} => {Exception}", trackId, ex.ToString());
+                _logger?.ErrorLoadingSessionsOfTrack(ex, trackId);
 
                 currentActivity?.SetStatus(ActivityStatusCode.Error, ex.ToString());
                 currentActivity?.AddException(ex);
@@ -387,7 +387,7 @@ public class SessionsController : ControllerBase
 
         using var currentActivity = AppActivity.ApiSource.StartActivity(nameof(GetFastestLapOfSession));
 
-        _logger?.LogInformation("Load fastest lap of session {SessionId}...", sessionId);
+        _logger?.LoadingFastestLapOfSession(sessionId);
 
         using (var dbFactory = RepositoryFactory.CreateInstance())
         {
@@ -443,7 +443,7 @@ public class SessionsController : ControllerBase
 
         using var currentActivity = AppActivity.ApiSource.StartActivity(nameof(GetFastestLapsOfSession));
 
-        _logger?.LogInformation("Load fastest lap of session {SessionId}...", sessionId);
+        _logger?.LoadingFastestLapOfSession(sessionId);
 
         using (var dbFactory = RepositoryFactory.CreateInstance())
         {
@@ -508,7 +508,7 @@ public class SessionsController : ControllerBase
 
         using var currentActivity = AppActivity.ApiSource.StartActivity(nameof(LoadSessionTimeTable));
 
-        _logger?.LogInformation("Loading session time table ({SessionId})...", sessionId);
+        _logger?.LoadingSessionTimeTable(sessionId);
 
         using (var dbFactory = RepositoryFactory.CreateInstance())
         {
@@ -566,7 +566,7 @@ public class SessionsController : ControllerBase
             }
             catch (Exception ex)
             {
-                _logger?.LogError(ex, "Exception while loading session time table => {Exception}", ex.ToString());
+                _logger?.ErrorLoadingSessionTimeTable(ex);
 
                 currentActivity?.SetStatus(ActivityStatusCode.Error, ex.ToString());
                 currentActivity?.AddException(ex);
@@ -590,7 +590,7 @@ public class SessionsController : ControllerBase
 
         using var currentActivity = AppActivity.ApiSource.StartActivity(nameof(DeleteSession));
 
-        _logger?.LogInformation("Delete session {SessionId}...", sessionId);
+        _logger?.DeletingSession(sessionId);
 
         using (var dbFactory = RepositoryFactory.CreateInstance())
         {
@@ -619,7 +619,7 @@ public class SessionsController : ControllerBase
             currentActivity?.SetStatus(ActivityStatusCode.Ok);
         }
 
-        _logger?.LogInformation("Session deleted: {Deleted}", isDeleted);
+        _logger?.SessionDeleted(isDeleted);
 
         return Ok(isDeleted);
     }

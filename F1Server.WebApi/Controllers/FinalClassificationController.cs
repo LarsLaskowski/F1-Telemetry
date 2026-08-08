@@ -52,7 +52,7 @@ public class FinalClassificationController : ControllerBase
 
         using var currentActivity = AppActivity.ApiSource.StartActivity(nameof(GetFromSession));
 
-        _logger?.LogInformation("Get final classification for session {SessionId}...", sessionId);
+        _logger?.LoadingFinalClassification(sessionId);
 
         try
         {
@@ -114,13 +114,13 @@ public class FinalClassificationController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger?.LogError(ex, "Exception while loading final classifications => {Exception}", ex.ToString());
+            _logger?.ErrorLoadingFinalClassifications(ex);
 
             currentActivity?.SetStatus(ActivityStatusCode.Error, ex.ToString());
             currentActivity?.AddException(ex);
         }
 
-        _logger?.LogInformation("Final classification for session loaded: {Count}", finalClassifications.Count);
+        _logger?.FinalClassificationLoaded(finalClassifications.Count);
 
         return Ok(finalClassifications);
     }

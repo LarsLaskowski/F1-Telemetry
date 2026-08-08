@@ -52,7 +52,7 @@ public class ParticipantsController : ControllerBase
 
         using var currentActivity = AppActivity.ApiSource.StartActivity(nameof(GetParticipantsOfSession));
 
-        _logger?.LogInformation("Load participants for session {SessionId}...", sessionId);
+        _logger?.LoadingParticipants(sessionId);
 
         using (var dbFactory = RepositoryFactory.CreateInstance())
         {
@@ -97,7 +97,7 @@ public class ParticipantsController : ControllerBase
             currentActivity?.SetStatus(ActivityStatusCode.Ok);
         }
 
-        _logger?.LogInformation("Loaded {Participants} participants for session {SessionId}.", participants?.Count ?? 0, sessionId);
+        _logger?.ParticipantsLoaded(participants?.Count ?? 0, sessionId);
 
         return Ok(participants);
     }
