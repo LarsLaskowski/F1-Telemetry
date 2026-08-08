@@ -534,8 +534,8 @@ public class ChampionshipController : ControllerBase
             var trackData = new ChampionshipTrackViewData
                             {
                                 ChampionshipTrackId = track.TrackId,
-                                QualifyingPosition = GetGridPosition(gridPositions, track.SprintQualifyingSessionId),
-                                SprintQualifyingPosition = GetGridPosition(gridPositions, track.QualifyingSessionId),
+                                QualifyingPosition = GetGridPosition(gridPositions, track.QualifyingSessionId),
+                                SprintQualifyingPosition = GetGridPosition(gridPositions, track.SprintQualifyingSessionId),
                                 SprintPosition = GetGridPosition(gridPositions, track.SprintSessionId),
                                 RacePosition = GetGridPosition(gridPositions, track.RaceSessionId)
                             };
