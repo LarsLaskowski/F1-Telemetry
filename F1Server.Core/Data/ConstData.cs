@@ -55,7 +55,7 @@ public static class ConstData
     /// <summary>
     /// Size of one lap data x 20 cars
     /// </summary>
-    public const int F12019TotalLapSize = 840;
+    public const int F12019TotalLapSize = 820;
 
     /// <summary>
     /// Size of one car telemetry packet
