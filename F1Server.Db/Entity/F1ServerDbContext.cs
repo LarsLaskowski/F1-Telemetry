@@ -110,7 +110,7 @@ public sealed class F1ServerDbContext : DbContext
 
             if (string.IsNullOrWhiteSpace(value) == false)
             {
-                AppMetrics?.DbErrorCount.Add(1, new KeyValuePair<string, object?>("LastError", field));
+                AppMetrics?.DbErrorCount.Add(1);
             }
         }
     }
@@ -493,7 +493,7 @@ public sealed class F1ServerDbContext : DbContext
     /// <param name="exception">Exception that occurred</param>
     private static void RecordConfigurationError(IAppMetrics? appMetrics, Exception exception)
     {
-        appMetrics?.DbErrorCount.Add(1, new KeyValuePair<string, object?>("LastError", exception.ToString()));
+        appMetrics?.DbErrorCount.Add(1, new KeyValuePair<string, object?>("ExceptionType", exception.GetType().Name));
     }
 
     /// <summary>
