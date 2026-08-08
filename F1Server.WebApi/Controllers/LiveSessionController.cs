@@ -68,12 +68,14 @@ public class LiveSessionController : ControllerBase
                                                lastIsLiveSession = isLiveSession;
                                                lastLiveSessionId = liveSessionId;
 
-                                               _hub.Clients.All.SendAsync("IsLiveSession", isLiveSession, liveSessionId);
+                                               _hub.Clients.All.SendAsync("IsLiveSession", isLiveSession, liveSessionId)
+                                                               .ContinueWith(LogBroadcastFailure, TaskContinuationOptions.OnlyOnFaulted);
                                            }
 
-                                           if (isLiveSession && _appData?.LiveSessionData != null)
+                                           if (_appData?.LiveSessionData != null)
                                            {
-                                               _hub.Clients.All.SendAsync("LiveSessionDataUpdated", _appData.LiveSessionData);
+                                               _hub.Clients.All.SendAsync("LiveSessionDataUpdated", _appData.LiveSessionData)
+                                                               .ContinueWith(LogBroadcastFailure, TaskContinuationOptions.OnlyOnFaulted);
                                            }
                                        });
         }
@@ -82,4 +84,17 @@ public class LiveSessionController : ControllerBase
     }
 
     #endregion // Methods
+
+    #region Private methods
+
+    /// <summary>
+    /// Logs a faulted SignalR broadcast so it is not silently swallowed by the fire-and-forget timer callback
+    /// </summary>
+    /// <param name="task">Faulted broadcast task</param>
+    private void LogBroadcastFailure(Task task)
+    {
+        _logger?.LogError(task.Exception, "Failed to broadcast live session update via SignalR.");
+    }
+
+    #endregion // Private methods
 }
