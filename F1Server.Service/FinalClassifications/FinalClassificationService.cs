@@ -134,14 +134,9 @@ public class FinalClassificationService
 
         if (leaderLaps.HasValue && leaderTime.HasValue && leaderTime.Value < raceTime)
         {
-            if (driverLaps < leaderLaps)
-            {
-                timeDiff = $"+ {leaderLaps.Value - driverLaps} lap(s)";
-            }
-            else
-            {
-                timeDiff = FormatTimeDifference(TimeSpan.FromSeconds(raceTime - leaderTime.Value));
-            }
+            timeDiff = driverLaps < leaderLaps
+                           ? $"+ {leaderLaps.Value - driverLaps} lap(s)"
+                           : FormatTimeDifference(TimeSpan.FromSeconds(raceTime - leaderTime.Value));
         }
 
         return timeDiff;
