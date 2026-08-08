@@ -70,6 +70,11 @@ public class LiveSessionController : ControllerBase
 
                                                _hub.Clients.All.SendAsync("IsLiveSession", isLiveSession, liveSessionId);
                                            }
+
+                                           if (isLiveSession && _appData?.LiveSessionData != null)
+                                           {
+                                               _hub.Clients.All.SendAsync("LiveSessionDataUpdated", _appData.LiveSessionData);
+                                           }
                                        });
         }
 
