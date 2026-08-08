@@ -85,7 +85,7 @@ public class ChampionshipControllerTests
 
         // The human driver finished the qualifying session first, so the grid position is read from its final classification
         Assert.AreEqual(ControllerTestData.HumanFinishPosition,
-                        championship.Tracks[0].SprintQualifyingPosition,
+                        championship.Tracks[0].QualifyingPosition,
                         "The finish position of the human driver of the qualifying session should be returned!");
     }
 
@@ -119,14 +119,14 @@ public class ChampionshipControllerTests
         Assert.HasCount(1, firstChampionship.Tracks, "The single track of the first championship should be returned!");
         Assert.HasCount(1, secondChampionship.Tracks, "The single track of the second championship should be returned!");
 
-        // The qualifying session is reported as sprint qualifying position, so every championship keeps the finish
+        // The qualifying session is reported as qualifying position, so every championship keeps the finish
         // position of the human driver of its own session
         Assert.AreEqual(firstFinishPosition,
-                        firstChampionship.Tracks[0].SprintQualifyingPosition,
+                        firstChampionship.Tracks[0].QualifyingPosition,
                         "The first championship should report the finish position of its own qualifying session!");
 
         Assert.AreEqual(secondFinishPosition,
-                        secondChampionship.Tracks[0].SprintQualifyingPosition,
+                        secondChampionship.Tracks[0].QualifyingPosition,
                         "The second championship should report the finish position of its own qualifying session!");
     }
 
