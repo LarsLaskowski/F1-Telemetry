@@ -6,6 +6,7 @@ using F1Server.Db.Entity;
 using F1Server.Db.Entity.Repositories;
 
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace F1Server.WebApi.Controllers;
 
@@ -42,7 +43,7 @@ public class GamesController : ControllerBase
     /// </summary>
     /// <returns>Games</returns>
     [HttpGet]
-    public IEnumerable<GameViewData>? Get()
+    public async Task<IEnumerable<GameViewData>?> Get()
     {
         List<GameViewData>? games = null;
 
@@ -52,29 +53,34 @@ public class GamesController : ControllerBase
 
         using (var dbFactory = RepositoryFactory.CreateInstance())
         {
-            games = dbFactory.GetRepository<GameVersionRepository>()
-                             ?.GetQuery()
-                             ?.OrderBy(g => g.Version)
-                             ?.Select(obj => new GameViewData
-                                             {
-                                                 Id = obj.Id,
-                                                 GameVersion = obj.Name,
-                                                 GameVersionCode = $"{obj.MajorVersion}.{obj.MinorVersion}",
-                                                 LastUsed = obj.LastUsed.HasValue
-                                                                ? $"{obj.LastUsed.Value.ToShortDateString()} {obj.LastUsed.Value.ToShortTimeString()}"
-                                                                : "-"
-                                             })
-                             .ToList();
+            var gameQuery = dbFactory.GetRepository<GameVersionRepository>()?.GetQuery();
+
+            if (gameQuery != null)
+            {
+                games = await gameQuery.OrderBy(g => g.Version)
+                                       .Select(obj => new GameViewData
+                                                      {
+                                                          Id = obj.Id,
+                                                          GameVersion = obj.Name,
+                                                          GameVersionCode = $"{obj.MajorVersion}.{obj.MinorVersion}",
+                                                          LastUsed = obj.LastUsed.HasValue
+                                                                         ? $"{obj.LastUsed.Value.ToShortDateString()} {obj.LastUsed.Value.ToShortTimeString()}"
+                                                                         : "-"
+                                                      })
+                                       .ToListAsync()
+                                       .ConfigureAwait(false);
+            }
 
             if (games?.Count > 0)
             {
+                var sessionQuery = dbFactory.GetRepository<SessionRepository>()?.GetQuery();
+
                 foreach (var game in games)
                 {
-                    var sessions = dbFactory.GetRepository<SessionRepository>()
-                                            ?.GetQuery()
-                                            ?.Count(s => s.DbIsFinished == 1 && s.GameVersionId == game.Id);
-
-                    game.Sessions = sessions != null ? sessions.Value : 0;
+                    game.Sessions = sessionQuery == null
+                                        ? 0
+                                        : await sessionQuery.CountAsync(s => s.DbIsFinished == 1 && s.GameVersionId == game.Id)
+                                                            .ConfigureAwait(false);
                 }
             }
 

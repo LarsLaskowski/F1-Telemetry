@@ -5,6 +5,7 @@ using F1Server.Core.Observability;
 using F1Server.Data.ViewData;
 using F1Server.Db.Entity;
 using F1Server.Db.Entity.Repositories;
+using F1Server.Db.Entity.Tables;
 using F1Server.WebApi.Cache;
 
 using Microsoft.AspNetCore.Mvc;
@@ -59,7 +60,7 @@ public class SessionsController : ControllerBase
     /// <param name="pageSize">Page size</param>
     /// <returns>Sessions</returns>
     [HttpGet]
-    public ActionResult<PageResultData<SessionViewData>> GetSessions([FromQuery] int pageIndex = 0, [FromQuery] int pageSize = 15)
+    public async Task<ActionResult<PageResultData<SessionViewData>>> GetSessions([FromQuery] int pageIndex = 0, [FromQuery] int pageSize = 15)
     {
         if (pageIndex < 0 || pageSize <= 0 || pageSize > MaxPageSize)
         {
@@ -79,35 +80,35 @@ public class SessionsController : ControllerBase
                 try
                 {
                     var attrQuery = dbFactory.GetRepository<SessionAttributesRepository>()?.GetQuery()?.Select(obj => obj);
+                    var sessionQuery = dbFactory.GetRepository<SessionRepository>()?.GetQuery();
 
-                    if (attrQuery != null)
+                    if (attrQuery != null && sessionQuery != null)
                     {
-                        sessions = dbFactory.GetRepository<SessionRepository>()
-                                            ?.GetQuery()
-                                            ?.Join(attrQuery,
-                                                   obj => obj.Id,
-                                                   obj => obj.SessionId,
-                                                   (obj1, obj2) => new
-                                                                   {
-                                                                       Session = obj1,
-                                                                       obj2.WeatherStart
-                                                                   })
-                                            .Where(s => s.Session.DbIsFinished == 1)
-                                            .OrderByDescending(s => s.Session.Id)
-                                            .Select(obj => new SessionViewData
-                                                           {
-                                                               SessionDbId = obj.Session.Id,
-                                                               GameVersionId = obj.Session.GameVersionId,
-                                                               GameVersion = obj.Session.GameVersion.Name,
-                                                               Track = obj.Session.Track.Name,
-                                                               TrackId = obj.Session.TrackId,
-                                                               Cars = obj.Session.ActiveCars,
-                                                               FormulaType = obj.Session.FormulaType,
-                                                               SessionType = obj.Session.SessionType,
-                                                               AiDifficulty = obj.Session.AiDifficulty,
-                                                               Weather = obj.WeatherStart
-                                                           })
-                                            .ToList();
+                        sessions = await sessionQuery.Join(attrQuery,
+                                                           obj => obj.Id,
+                                                           obj => obj.SessionId,
+                                                           (obj1, obj2) => new
+                                                                           {
+                                                                               Session = obj1,
+                                                                               obj2.WeatherStart
+                                                                           })
+                                                     .Where(s => s.Session.DbIsFinished == 1)
+                                                     .OrderByDescending(s => s.Session.Id)
+                                                     .Select(obj => new SessionViewData
+                                                                    {
+                                                                        SessionDbId = obj.Session.Id,
+                                                                        GameVersionId = obj.Session.GameVersionId,
+                                                                        GameVersion = obj.Session.GameVersion.Name,
+                                                                        Track = obj.Session.Track.Name,
+                                                                        TrackId = obj.Session.TrackId,
+                                                                        Cars = obj.Session.ActiveCars,
+                                                                        FormulaType = obj.Session.FormulaType,
+                                                                        SessionType = obj.Session.SessionType,
+                                                                        AiDifficulty = obj.Session.AiDifficulty,
+                                                                        Weather = obj.WeatherStart
+                                                                    })
+                                                     .ToListAsync()
+                                                     .ConfigureAwait(false);
 
                         AdjustSessionTypes(sessions);
                     }
@@ -150,7 +151,7 @@ public class SessionsController : ControllerBase
     /// <returns>Number of all known sessions</returns>
     [Route("SessionsCount")]
     [HttpGet]
-    public int GetSessionsCount()
+    public async Task<int> GetSessionsCount()
     {
         var numSessions = 0;
 
@@ -160,11 +161,13 @@ public class SessionsController : ControllerBase
 
         using (var dbFactory = RepositoryFactory.CreateInstance())
         {
-            var sessions = dbFactory.GetRepository<SessionRepository>()
-                                    ?.GetQuery()
-                                    ?.Count(s => s.DbIsFinished == 1) ?? 0;
+            var sessionQuery = dbFactory.GetRepository<SessionRepository>()?.GetQuery();
 
-            numSessions = sessions;
+            if (sessionQuery != null)
+            {
+                numSessions = await sessionQuery.CountAsync(s => s.DbIsFinished == 1)
+                                                .ConfigureAwait(false);
+            }
 
             currentActivity?.SetStatus(ActivityStatusCode.Ok);
         }
@@ -180,7 +183,7 @@ public class SessionsController : ControllerBase
     /// <returns>Database id of session</returns>
     [Route("LastFinishedSession")]
     [HttpGet]
-    public long GetLastFinishedSession()
+    public async Task<long> GetLastFinishedSession()
     {
         var lastFinishedSession = 0L;
 
@@ -192,11 +195,14 @@ public class SessionsController : ControllerBase
         {
             using (var dbFactory = RepositoryFactory.CreateInstance())
             {
-                var session = dbFactory.GetRepository<SessionRepository>()
-                                       ?.GetQuery()
-                                       ?.Where(s => s.DbIsFinished == 1 && s.FormulaType != Formula.SuperCars)
-                                       .OrderByDescending(s => s.Id)
-                                       .FirstOrDefault();
+                var sessionQuery = dbFactory.GetRepository<SessionRepository>()?.GetQuery();
+
+                var session = sessionQuery == null
+                                  ? null
+                                  : await sessionQuery.Where(s => s.DbIsFinished == 1 && s.FormulaType != Formula.SuperCars)
+                                                      .OrderByDescending(s => s.Id)
+                                                      .FirstOrDefaultAsync()
+                                                      .ConfigureAwait(false);
 
                 if (session != null)
                 {
@@ -226,7 +232,7 @@ public class SessionsController : ControllerBase
     /// <returns>Session view data</returns>
     [Route("Session/{id?}")]
     [HttpGet]
-    public IActionResult GetSession(long? id)
+    public async Task<IActionResult> GetSession(long? id)
     {
         SessionViewData? session = null;
 
@@ -248,17 +254,18 @@ public class SessionsController : ControllerBase
 
             if (attrQuery != null && sessionQuery != null)
             {
-                var dbSession = sessionQuery.Include(s => s.GameVersion)
-                                            .Include(s => s.Track)
-                                            .Join(attrQuery,
-                                                  obj => obj.Id,
-                                                  obj => obj.SessionId,
-                                                  (obj1, obj2) => new
-                                                                  {
-                                                                      Session = obj1,
-                                                                      obj2.WeatherStart
-                                                                  })
-                                            .FirstOrDefault(s => s.Session.Id == id);
+                var dbSession = await sessionQuery.Include(s => s.GameVersion)
+                                                  .Include(s => s.Track)
+                                                  .Join(attrQuery,
+                                                        obj => obj.Id,
+                                                        obj => obj.SessionId,
+                                                        (obj1, obj2) => new
+                                                                        {
+                                                                            Session = obj1,
+                                                                            obj2.WeatherStart
+                                                                        })
+                                                  .FirstOrDefaultAsync(s => s.Session.Id == id)
+                                                  .ConfigureAwait(false);
 
                 if (dbSession != null)
                 {
@@ -276,7 +283,7 @@ public class SessionsController : ControllerBase
                                   Weather = dbSession.WeatherStart
                               };
 
-                    AdjustSessionType(session, dbFactory);
+                    await AdjustSessionTypeAsync(session, dbFactory).ConfigureAwait(false);
                 }
             }
 
@@ -295,7 +302,7 @@ public class SessionsController : ControllerBase
     /// <returns>List of sessions view data</returns>
     [Route("SessionsOfTrack/{trackId?}")]
     [HttpGet]
-    public IActionResult GetSessionsOfTrack(long? trackId)
+    public async Task<IActionResult> GetSessionsOfTrack(long? trackId)
     {
         List<SessionViewData>? sessions = null;
 
@@ -312,19 +319,20 @@ public class SessionsController : ControllerBase
 
                 if (attrQuery != null && sessionQuery != null)
                 {
-                    var dbSessions = sessionQuery.Include(s => s.GameVersion)
-                                                 .Include(s => s.Track)
-                                                 .Where(s => s.TrackId == trackId)
-                                                 .Join(attrQuery,
-                                                       obj => obj.Id,
-                                                       obj => obj.SessionId,
-                                                       (obj1, obj2) => new
-                                                                       {
-                                                                           Session = obj1,
-                                                                           obj2.WeatherStart
-                                                                       })
-                                                 .OrderByDescending(s => s.Session.CreationTimestamp)
-                                                 .ToList();
+                    var dbSessions = await sessionQuery.Include(s => s.GameVersion)
+                                                       .Include(s => s.Track)
+                                                       .Where(s => s.TrackId == trackId)
+                                                       .Join(attrQuery,
+                                                             obj => obj.Id,
+                                                             obj => obj.SessionId,
+                                                             (obj1, obj2) => new
+                                                                             {
+                                                                                 Session = obj1,
+                                                                                 obj2.WeatherStart
+                                                                             })
+                                                       .OrderByDescending(s => s.Session.CreationTimestamp)
+                                                       .ToListAsync()
+                                                       .ConfigureAwait(false);
 
                     if (dbSessions.Count > 0)
                     {
@@ -372,7 +380,7 @@ public class SessionsController : ControllerBase
     /// <returns>Data of fastest lap</returns>
     [Route("FastestLapOfSession/{sessionId?}")]
     [HttpGet]
-    public IActionResult GetFastestLapOfSession(long? sessionId)
+    public async Task<IActionResult> GetFastestLapOfSession(long? sessionId)
     {
         FastestLapViewData fastestLapData = new();
 
@@ -382,18 +390,22 @@ public class SessionsController : ControllerBase
 
         using (var dbFactory = RepositoryFactory.CreateInstance())
         {
-            var dbSession = dbFactory.GetRepository<SessionRepository>()
-                                     ?.GetQuery()
-                                     ?.FirstOrDefault(s => s.Id == sessionId);
+            var sessionQuery = dbFactory.GetRepository<SessionRepository>()?.GetQuery();
+
+            var dbSession = sessionQuery == null
+                                ? null
+                                : await sessionQuery.FirstOrDefaultAsync(s => s.Id == sessionId)
+                                                    .ConfigureAwait(false);
 
             var lapQuery = dbFactory.GetRepository<LapRepository>()?.GetQuery();
 
             if (dbSession != null && lapQuery != null)
             {
-                var fastestLap = lapQuery.Include(l => l.Participant)
-                                         .Where(l => l.SessionId == sessionId && l.LapTime > 0 && l.DbIsCompleted == 1 && l.DbIsInvalidLapTime == 0)
-                                         .OrderBy(l => l.LapTime)
-                                         .FirstOrDefault();
+                var fastestLap = await lapQuery.Include(l => l.Participant)
+                                               .Where(l => l.SessionId == sessionId && l.LapTime > 0 && l.DbIsCompleted == 1 && l.DbIsInvalidLapTime == 0)
+                                               .OrderBy(l => l.LapTime)
+                                               .FirstOrDefaultAsync()
+                                               .ConfigureAwait(false);
 
                 if (fastestLap != null)
                 {
@@ -424,7 +436,7 @@ public class SessionsController : ControllerBase
     /// <returns>Data of fastest lap</returns>
     [Route("FastestLapsOfSession/{sessionId?}")]
     [HttpGet]
-    public IActionResult GetFastestLapsOfSession(long? sessionId)
+    public async Task<IActionResult> GetFastestLapsOfSession(long? sessionId)
     {
         List<FastestLapViewData> fastestLapsList = [];
 
@@ -434,19 +446,28 @@ public class SessionsController : ControllerBase
 
         using (var dbFactory = RepositoryFactory.CreateInstance())
         {
-            var dbSession = dbFactory.GetRepository<SessionRepository>()
-                                     ?.GetQuery()
-                                     ?.Include(s => s.Participants)
-                                     .FirstOrDefault(s => s.Id == sessionId);
+            var sessionQuery = dbFactory.GetRepository<SessionRepository>()?.GetQuery();
+
+            var dbSession = sessionQuery == null
+                                ? null
+                                : await sessionQuery.Include(s => s.Participants)
+                                                    .FirstOrDefaultAsync(s => s.Id == sessionId)
+                                                    .ConfigureAwait(false);
 
             if (dbSession != null)
             {
-                var fastestLaps = dbFactory.GetRepository<LapRepository>()
-                                           ?.GetQuery()
-                                           ?.Include(l => l.Participant)
-                                           .Where(l => l.SessionId == sessionId && l.LapTime > 0 && l.DbIsCompleted == 1 && l.DbIsInvalidLapTime == 0)
-                                           .OrderBy(l => l.LapTime)
-                                           .ToList() ?? [];
+                var lapQuery = dbFactory.GetRepository<LapRepository>()?.GetQuery();
+
+                List<LapEntity> fastestLaps = [];
+
+                if (lapQuery != null)
+                {
+                    fastestLaps = await lapQuery.Include(l => l.Participant)
+                                                .Where(l => l.SessionId == sessionId && l.LapTime > 0 && l.DbIsCompleted == 1 && l.DbIsInvalidLapTime == 0)
+                                                .OrderBy(l => l.LapTime)
+                                                .ToListAsync()
+                                                .ConfigureAwait(false);
+                }
 
                 foreach (var fastestLap in fastestLaps)
                 {
@@ -480,7 +501,7 @@ public class SessionsController : ControllerBase
     /// <returns>Time table</returns>
     [Route("LoadSessionTimeTable/{sessionId?}")]
     [HttpGet]
-    public IActionResult LoadSessionTimeTable(long? sessionId)
+    public async Task<IActionResult> LoadSessionTimeTable(long? sessionId)
     {
         var sessionTimeTable = new SessionTimeTableViewData();
 
@@ -492,13 +513,18 @@ public class SessionsController : ControllerBase
         {
             try
             {
-                var dbSession = dbFactory.GetRepository<SessionRepository>()
-                                         ?.GetQuery()
-                                         ?.Include(s => s.Participants)
-                                         .FirstOrDefault(s => s.Id == sessionId);
+                var sessionQuery = dbFactory.GetRepository<SessionRepository>()?.GetQuery();
+
+                var dbSession = sessionQuery == null
+                                    ? null
+                                    : await sessionQuery.Include(s => s.Participants)
+                                                        .FirstOrDefaultAsync(s => s.Id == sessionId)
+                                                        .ConfigureAwait(false);
 
                 if (dbSession != null)
                 {
+                    var finalQuery = dbFactory.GetRepository<FinalClassificationRepository>()?.GetQuery();
+
                     foreach (var attendee in dbSession.Participants)
                     {
                         sessionTimeTable.Drivers.Add(new DriverViewData
@@ -511,9 +537,10 @@ public class SessionsController : ControllerBase
                                                          TeamName = attendee.Team.Name
                                                      });
 
-                        var dbFinal = dbFactory.GetRepository<FinalClassificationRepository>()
-                                               ?.GetQuery()
-                                               ?.FirstOrDefault(f => f.ParticipantId == attendee.Id);
+                        var dbFinal = finalQuery == null
+                                          ? null
+                                          : await finalQuery.FirstOrDefaultAsync(f => f.ParticipantId == attendee.Id)
+                                                            .ConfigureAwait(false);
 
                         if (dbFinal != null)
                         {
@@ -532,8 +559,8 @@ public class SessionsController : ControllerBase
                                                                NumberOfPenalties = dbFinal.NumberOfPenalties,
                                                                PitStops = dbFinal.PitStops,
                                                                PenaltiesTime = dbFinal.PenaltiesTime,
-                                                               TotalRaceTime = TimeSpan.FromSeconds(dbFinal.TotalRaceTime).ToString(@"mm\:ss.fff"),
-                                                               FastestLapTime = TimeSpan.FromMilliseconds(dbFinal.FastestLapTime).ToString(@"mm\:ss.fff")
+                                                               TotalRaceTime = TimeSpan.FromSeconds(dbFinal.TotalRaceTime).ToString(@"mm\:ss\.fff"),
+                                                               FastestLapTime = TimeSpan.FromMilliseconds(dbFinal.FastestLapTime).ToString(@"mm\:ss\.fff")
                                                            });
                         }
                     }
@@ -561,7 +588,7 @@ public class SessionsController : ControllerBase
     /// <returns>Status whether the session was deleted</returns>
     [Route("DeleteSession/{sessionId}/{sessionCode}")]
     [HttpDelete]
-    public IActionResult DeleteSession(long sessionId, ulong sessionCode)
+    public async Task<IActionResult> DeleteSession(long sessionId, ulong sessionCode)
     {
         var isDeleted = false;
 
@@ -576,44 +603,68 @@ public class SessionsController : ControllerBase
             var isParticipantsRemoved = true;
             var isSessionRemoved = false;
 
-            var session = dbFactory.GetRepository<SessionRepository>()
-                                   ?.GetQuery()
-                                   ?.FirstOrDefault(s => s.Id == sessionId && s.SessionId == sessionCode);
+            var sessionRepository = dbFactory.GetRepository<SessionRepository>();
+            var sessionQuery = sessionRepository?.GetQuery();
+
+            var session = sessionQuery == null
+                              ? null
+                              : await sessionQuery.FirstOrDefaultAsync(s => s.Id == sessionId && s.SessionId == sessionCode)
+                                                  .ConfigureAwait(false);
 
             if (session != null)
             {
                 // Get participants of session
-                var participants = dbFactory.GetRepository<ParticipantRepository>()
-                                            ?.GetQuery()
-                                            ?.Where(p => p.SessionId == session.Id)
-                                            .Select(p => p.Id)
-                                            .ToList() ?? [];
+                var participantRepository = dbFactory.GetRepository<ParticipantRepository>();
+                var participantQuery = participantRepository?.GetQuery();
+
+                List<long> participants = [];
+
+                if (participantQuery != null)
+                {
+                    participants = await participantQuery.Where(p => p.SessionId == session.Id)
+                                                         .Select(p => p.Id)
+                                                         .ToListAsync()
+                                                         .ConfigureAwait(false);
+                }
 
                 if (participants.Count > 0)
                 {
                     // Get laps of participants
-                    var laps = dbFactory.GetRepository<LapRepository>()
-                                        ?.GetQuery()
-                                        ?.Where(l => participants.Contains(l.ParticipantId))
-                                        .Select(l => l.Id)
-                                        .ToList() ?? [];
+                    var lapRepository = dbFactory.GetRepository<LapRepository>();
+                    var lapQuery = lapRepository?.GetQuery();
+
+                    List<long> laps = [];
+
+                    if (lapQuery != null)
+                    {
+                        laps = await lapQuery.Where(l => participants.Contains(l.ParticipantId))
+                                             .Select(l => l.Id)
+                                             .ToListAsync()
+                                             .ConfigureAwait(false);
+                    }
 
                     if (laps.Count > 0)
                     {
                         // Get telemetry data
-                        isTelemetryRemoved = dbFactory.GetRepository<CarTelemetryRepository>()
-                                                      ?.RemoveRange(t => laps.Contains(t.LapNumberId)) ?? false;
+                        var telemetryRepository = dbFactory.GetRepository<CarTelemetryRepository>();
 
-                        isLapsRemoved = dbFactory.GetRepository<LapRepository>()
-                                                 ?.RemoveRange(l => laps.Contains(l.Id)) ?? false;
+                        isTelemetryRemoved = telemetryRepository != null
+                                             && await telemetryRepository.RemoveRangeAsync(t => laps.Contains(t.LapNumberId))
+                                                                         .ConfigureAwait(false);
+
+                        isLapsRemoved = lapRepository != null
+                                        && await lapRepository.RemoveRangeAsync(l => laps.Contains(l.Id))
+                                                              .ConfigureAwait(false);
                     }
 
-                    isParticipantsRemoved = dbFactory.GetRepository<ParticipantRepository>()
-                                                     ?.RemoveRange(p => participants.Contains(p.Id)) ?? false;
+                    isParticipantsRemoved = participantRepository != null
+                                            && await participantRepository.RemoveRangeAsync(p => participants.Contains(p.Id))
+                                                                          .ConfigureAwait(false);
                 }
 
-                isSessionRemoved = dbFactory.GetRepository<SessionRepository>()
-                                            ?.Remove(s => s.Id == session.Id) ?? false;
+                isSessionRemoved = sessionRepository != null
+                                   && await sessionRepository.RemoveAsync(s => s.Id == session.Id)
+                                                             .ConfigureAwait(false);
 
                 // No data of a removed session may stay in the cache
                 FastestLapPerSessionCache.RemoveSession(session.Id);
@@ -693,17 +744,24 @@ public class SessionsController : ControllerBase
     /// </summary>
     /// <param name="session">The session data to be adjusted. This parameter cannot be null</param>
     /// <param name="dbFactory">The repository factory used to query session data. This parameter cannot be null</param>
-    private void AdjustSessionType(SessionViewData session, RepositoryFactory dbFactory)
+    /// <returns>Task</returns>
+    private async Task AdjustSessionTypeAsync(SessionViewData session, RepositoryFactory dbFactory)
     {
-        var hasSprintQualifyings = dbFactory.GetRepository<SessionRepository>()
-                                            ?.GetQuery()
-                                            ?.Any(s => s.Id < session.SessionDbId
-                                                       && s.SessionType >= SessionType.SprintShootout1
-                                                       && s.SessionType <= SessionType.OneShotSprintShootout
-                                                       && s.GameVersionId == session.GameVersionId
-                                                       && s.TrackId == session.TrackId);
+        var sessionQuery = dbFactory.GetRepository<SessionRepository>()?.GetQuery();
 
-        if (hasSprintQualifyings == true)
+        if (sessionQuery == null)
+        {
+            return;
+        }
+
+        var hasSprintQualifyings = await sessionQuery.AnyAsync(s => s.Id < session.SessionDbId
+                                                                    && s.SessionType >= SessionType.SprintShootout1
+                                                                    && s.SessionType <= SessionType.OneShotSprintShootout
+                                                                    && s.GameVersionId == session.GameVersionId
+                                                                    && s.TrackId == session.TrackId)
+                                                     .ConfigureAwait(false);
+
+        if (hasSprintQualifyings)
         {
             session.SessionType = SessionType.Sprint;
         }

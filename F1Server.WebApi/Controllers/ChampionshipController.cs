@@ -9,6 +9,7 @@ using F1Server.Db.Entity.Repositories;
 using F1Server.Db.Entity.Tables;
 
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace F1Server.WebApi.Controllers;
 
@@ -45,7 +46,7 @@ public class ChampionshipController : ControllerBase
     /// </summary>
     /// <returns>Championships</returns>
     [HttpGet]
-    public IEnumerable<ChampionshipViewData> Get()
+    public async Task<IEnumerable<ChampionshipViewData>> Get()
     {
         List<ChampionshipViewData> championships = new List<ChampionshipViewData>();
 
@@ -55,10 +56,13 @@ public class ChampionshipController : ControllerBase
 
         using (var dbFactory = RepositoryFactory.CreateInstance())
         {
-            var dbChampionships = dbFactory.GetRepository<ChampionshipRepository>()
-                                           ?.GetQuery()
-                                           ?.OrderBy(c => c.GameVersionId)
-                                           .ToList();
+            var championshipQuery = dbFactory.GetRepository<ChampionshipRepository>()?.GetQuery();
+
+            var dbChampionships = championshipQuery == null
+                                      ? null
+                                      : await championshipQuery.OrderBy(c => c.GameVersionId)
+                                                               .ToListAsync()
+                                                               .ConfigureAwait(false);
 
             if (dbChampionships?.Count > 0)
             {
@@ -73,7 +77,7 @@ public class ChampionshipController : ControllerBase
                                                Number = dbChampionship.Number
                                            };
 
-                    LoadTracks(dbFactory, championshipData);
+                    await LoadTracksAsync(dbFactory, championshipData).ConfigureAwait(false);
 
                     championships.Add(championshipData);
                 }
@@ -94,7 +98,7 @@ public class ChampionshipController : ControllerBase
     /// <returns>Status</returns>
     [Route("CreateChampionship")]
     [HttpPost]
-    public IActionResult CreateChampionship([FromBody] ChampionshipCreateData championshipCreateData)
+    public async Task<IActionResult> CreateChampionship([FromBody] ChampionshipCreateData championshipCreateData)
     {
         using var currentActivity = AppActivity.ApiSource.StartActivity(nameof(CreateChampionship));
 
@@ -115,31 +119,41 @@ public class ChampionshipController : ControllerBase
         using (var dbFactory = RepositoryFactory.CreateInstance())
         {
             ushort seasonNumber = 1;
-            var championships = dbFactory.GetRepository<ChampionshipRepository>()
-                                         ?.GetQuery()
-                                         ?.Count(c => c.Mode == (ChampionshipMode)championshipCreateData.Mode
-                                                      && c.GameVersionId == championshipCreateData.GameVersionId);
+
+            var championshipRepository = dbFactory.GetRepository<ChampionshipRepository>();
+            var championshipQuery = championshipRepository?.GetQuery();
+
+            var championships = championshipQuery == null
+                                    ? 0
+                                    : await championshipQuery.CountAsync(c => c.Mode == (ChampionshipMode)championshipCreateData.Mode
+                                                                              && c.GameVersionId == championshipCreateData.GameVersionId)
+                                                             .ConfigureAwait(false);
 
             if (championships > 0)
             {
                 seasonNumber = (ushort)(championships + 1);
             }
 
-            dbFactory.GetRepository<ChampionshipRepository>()?.Add(new ChampionshipEntity
-                                                                   {
-                                                                       GameVersionId = championshipCreateData.GameVersionId,
-                                                                       Mode = (ChampionshipMode)championshipCreateData.Mode,
-                                                                       Number = seasonNumber
-                                                                   });
+            if (championshipRepository != null)
+            {
+                await championshipRepository.AddAsync(new ChampionshipEntity
+                                                      {
+                                                          GameVersionId = championshipCreateData.GameVersionId,
+                                                          Mode = (ChampionshipMode)championshipCreateData.Mode,
+                                                          Number = seasonNumber
+                                                      })
+                                            .ConfigureAwait(false);
+            }
 
-            var championship = dbFactory.GetRepository<ChampionshipRepository>()
-                                        ?.GetQuery()
-                                        ?.FirstOrDefault(c => c.Mode == (ChampionshipMode)championshipCreateData.Mode
-                                                              && c.GameVersionId == championshipCreateData.GameVersionId);
+            var championship = championshipQuery == null
+                                   ? null
+                                   : await championshipQuery.FirstOrDefaultAsync(c => c.Mode == (ChampionshipMode)championshipCreateData.Mode
+                                                                                      && c.GameVersionId == championshipCreateData.GameVersionId)
+                                                            .ConfigureAwait(false);
 
             if (championship != null)
             {
-                AddTracksToChampionship(championshipCreateData.Tracks, dbFactory, championship);
+                await AddTracksToChampionshipAsync(championshipCreateData.Tracks, dbFactory, championship).ConfigureAwait(false);
 
                 currentActivity?.SetStatus(ActivityStatusCode.Ok);
 
@@ -163,7 +177,7 @@ public class ChampionshipController : ControllerBase
     /// <returns>Id of championship</returns>
     [Route("IsActiveChampionship/{sessionId}")]
     [HttpGet]
-    public long IsActiveChampionship(long sessionId)
+    public async Task<long> IsActiveChampionship(long sessionId)
     {
         var activeChampionship = 0L;
 
@@ -173,23 +187,32 @@ public class ChampionshipController : ControllerBase
 
         using (var dbFactory = RepositoryFactory.CreateInstance())
         {
-            var sessionData = dbFactory.GetRepository<SessionRepository>()
-                                       ?.GetQuery()
-                                       ?.FirstOrDefault(s => s.Id == sessionId);
+            var sessionQuery = dbFactory.GetRepository<SessionRepository>()?.GetQuery();
+
+            var sessionData = sessionQuery == null
+                                  ? null
+                                  : await sessionQuery.FirstOrDefaultAsync(s => s.Id == sessionId)
+                                                      .ConfigureAwait(false);
 
             if (sessionData != null && IsSessionTypeValid(sessionData.SessionType) && sessionData.FormulaType == Formula.F1Modern)
             {
-                var championship = dbFactory.GetRepository<ChampionshipRepository>()
-                                            ?.GetQuery()
-                                            ?.FirstOrDefault(c => c.GameVersionId == sessionData.GameVersionId
-                                                                  && c.DbIsFinished == 0);
+                var championshipQuery = dbFactory.GetRepository<ChampionshipRepository>()?.GetQuery();
+
+                var championship = championshipQuery == null
+                                       ? null
+                                       : await championshipQuery.FirstOrDefaultAsync(c => c.GameVersionId == sessionData.GameVersionId
+                                                                                          && c.DbIsFinished == 0)
+                                                                .ConfigureAwait(false);
 
                 if (championship != null)
                 {
-                    var track = dbFactory.GetRepository<ChampionshipTrackRepository>()
-                                         ?.GetQuery()
-                                         ?.FirstOrDefault(t => t.TrackId == sessionData.TrackId
-                                                               && t.ChampionshipId == championship.Id);
+                    var trackQuery = dbFactory.GetRepository<ChampionshipTrackRepository>()?.GetQuery();
+
+                    var track = trackQuery == null
+                                    ? null
+                                    : await trackQuery.FirstOrDefaultAsync(t => t.TrackId == sessionData.TrackId
+                                                                                && t.ChampionshipId == championship.Id)
+                                                      .ConfigureAwait(false);
 
                     if (track != null)
                     {
@@ -214,7 +237,7 @@ public class ChampionshipController : ControllerBase
     /// <returns>Status</returns>
     [Route("IsSessionInChampionshipActive/{championshipId}/{sessionId}")]
     [HttpGet]
-    public bool IsSessionInChampionshipActive(long championshipId, long sessionId)
+    public async Task<bool> IsSessionInChampionshipActive(long championshipId, long sessionId)
     {
         var sessionIsActive = false;
 
@@ -224,35 +247,41 @@ public class ChampionshipController : ControllerBase
 
         using (var dbFactory = RepositoryFactory.CreateInstance())
         {
-            var sessionData = dbFactory.GetRepository<SessionRepository>()
-                                       ?.GetQuery()
-                                       ?.Where(s => s.Id == sessionId)
-                                       .Select(s => new SessionBaseData
-                                                    {
-                                                        SessionId = s.Id,
-                                                        SessionType = s.SessionType,
-                                                        GameVersionId = s.GameVersionId,
-                                                        TrackId = s.TrackId,
-                                                        FormulaType = s.FormulaType
-                                                    })
-                                       .FirstOrDefault();
+            var sessionQuery = dbFactory.GetRepository<SessionRepository>()?.GetQuery();
+
+            var sessionData = sessionQuery == null
+                                  ? null
+                                  : await sessionQuery.Where(s => s.Id == sessionId)
+                                                      .Select(s => new SessionBaseData
+                                                                   {
+                                                                       SessionId = s.Id,
+                                                                       SessionType = s.SessionType,
+                                                                       GameVersionId = s.GameVersionId,
+                                                                       TrackId = s.TrackId,
+                                                                       FormulaType = s.FormulaType
+                                                                   })
+                                                      .FirstOrDefaultAsync()
+                                                      .ConfigureAwait(false);
 
             if (sessionData != null)
             {
-                var track = dbFactory.GetRepository<ChampionshipTrackRepository>()
-                                     ?.GetQuery()
-                                     ?.Where(t => t.ChampionshipId == championshipId
-                                                  && t.TrackId == sessionData.TrackId)
-                                     .Select(t => new
-                                                  {
-                                                      t.QualifyingSessionId,
-                                                      t.SprintQualifyingSessionId,
-                                                      t.RaceSessionId,
-                                                      t.SprintSessionId
-                                                  })
-                                     .FirstOrDefault();
+                var championshipTrackQuery = dbFactory.GetRepository<ChampionshipTrackRepository>()?.GetQuery();
 
-                AdjustSessionType(sessionData, dbFactory);
+                var track = championshipTrackQuery == null
+                                ? null
+                                : await championshipTrackQuery.Where(t => t.ChampionshipId == championshipId
+                                                                          && t.TrackId == sessionData.TrackId)
+                                                              .Select(t => new
+                                                                           {
+                                                                               t.QualifyingSessionId,
+                                                                               t.SprintQualifyingSessionId,
+                                                                               t.RaceSessionId,
+                                                                               t.SprintSessionId
+                                                                           })
+                                                              .FirstOrDefaultAsync()
+                                                              .ConfigureAwait(false);
+
+                await AdjustSessionTypeAsync(sessionData, dbFactory).ConfigureAwait(false);
 
                 if (track != null)
                 {
@@ -287,7 +316,7 @@ public class ChampionshipController : ControllerBase
     /// </returns>
     [Route("AddToChampionship/{sessionId}")]
     [HttpPost]
-    public IActionResult AddToChampionship(long sessionId)
+    public async Task<IActionResult> AddToChampionship(long sessionId)
     {
         IActionResult result = BadRequest("Invalid session");
         using var currentActivity = AppActivity.ApiSource.StartActivity(nameof(AddToChampionship));
@@ -300,28 +329,34 @@ public class ChampionshipController : ControllerBase
         {
             using (var dbFactory = RepositoryFactory.CreateInstance())
             {
-                var sessionData = dbFactory.GetRepository<SessionRepository>()
-                                           ?.GetQuery()
-                                           ?.Select(s => new SessionBaseData
-                                                         {
-                                                             SessionId = s.Id,
-                                                             SessionType = s.SessionType,
-                                                             TrackId = s.TrackId,
-                                                             GameVersionId = s.GameVersionId,
-                                                             FormulaType = s.FormulaType
-                                                         })
-                                           .FirstOrDefault(s => s.SessionId == sessionId);
+                var sessionQuery = dbFactory.GetRepository<SessionRepository>()?.GetQuery();
+
+                var sessionData = sessionQuery == null
+                                      ? null
+                                      : await sessionQuery.Select(s => new SessionBaseData
+                                                                       {
+                                                                           SessionId = s.Id,
+                                                                           SessionType = s.SessionType,
+                                                                           TrackId = s.TrackId,
+                                                                           GameVersionId = s.GameVersionId,
+                                                                           FormulaType = s.FormulaType
+                                                                       })
+                                                          .FirstOrDefaultAsync(s => s.SessionId == sessionId)
+                                                          .ConfigureAwait(false);
 
                 if (sessionData != null)
                 {
-                    var championship = dbFactory.GetRepository<ChampionshipRepository>()
-                                                ?.GetQuery()
-                                                ?.FirstOrDefault(c => c.GameVersionId == sessionData.GameVersionId
-                                                                      && c.DbIsFinished == 0);
+                    var championshipQuery = dbFactory.GetRepository<ChampionshipRepository>()?.GetQuery();
 
-                    AdjustSessionType(sessionData, dbFactory);
+                    var championship = championshipQuery == null
+                                           ? null
+                                           : await championshipQuery.FirstOrDefaultAsync(c => c.GameVersionId == sessionData.GameVersionId
+                                                                                              && c.DbIsFinished == 0)
+                                                                    .ConfigureAwait(false);
 
-                    result = SaveSessionToChampionship(dbFactory, sessionData, championship);
+                    await AdjustSessionTypeAsync(sessionData, dbFactory).ConfigureAwait(false);
+
+                    result = await SaveSessionToChampionshipAsync(dbFactory, sessionData, championship).ConfigureAwait(false);
                 }
             }
 
@@ -336,12 +371,19 @@ public class ChampionshipController : ControllerBase
     /// </summary>
     /// <param name="dbFactory">Database factory</param>
     /// <param name="championshipData">Championship data</param>
-    private void LoadTracks(RepositoryFactory dbFactory, ChampionshipViewData championshipData)
+    /// <returns>Task</returns>
+    private async Task LoadTracksAsync(RepositoryFactory dbFactory, ChampionshipViewData championshipData)
     {
-        var tracks = dbFactory.GetRepository<ChampionshipTrackRepository>()
-                              ?.GetQuery()
-                              ?.Where(c => c.ChampionshipId == championshipData.ChampionshipId)
-                              .ToList() ?? [];
+        var championshipTrackQuery = dbFactory.GetRepository<ChampionshipTrackRepository>()?.GetQuery();
+
+        List<ChampionshipTrackEntity> tracks = [];
+
+        if (championshipTrackQuery != null)
+        {
+            tracks = await championshipTrackQuery.Where(c => c.ChampionshipId == championshipData.ChampionshipId)
+                                                 .ToListAsync()
+                                                 .ConfigureAwait(false);
+        }
 
         if (tracks.Count > 0)
         {
@@ -352,10 +394,10 @@ public class ChampionshipController : ControllerBase
                 var trackData = new ChampionshipTrackViewData
                                 {
                                     ChampionshipTrackId = track.TrackId,
-                                    QualifyingPosition = GetGridPosition(dbFactory, track.SprintQualifyingSessionId),
-                                    SprintQualifyingPosition = GetGridPosition(dbFactory, track.QualifyingSessionId),
-                                    SprintPosition = GetGridPosition(dbFactory, track.SprintSessionId),
-                                    RacePosition = GetGridPosition(dbFactory, track.RaceSessionId)
+                                    QualifyingPosition = await GetGridPositionAsync(dbFactory, track.SprintQualifyingSessionId).ConfigureAwait(false),
+                                    SprintQualifyingPosition = await GetGridPositionAsync(dbFactory, track.QualifyingSessionId).ConfigureAwait(false),
+                                    SprintPosition = await GetGridPositionAsync(dbFactory, track.SprintSessionId).ConfigureAwait(false),
+                                    RacePosition = await GetGridPositionAsync(dbFactory, track.RaceSessionId).ConfigureAwait(false)
                                 };
 
                 CalculatePoints(trackData);
@@ -371,22 +413,30 @@ public class ChampionshipController : ControllerBase
     /// <param name="tracks">Tracks</param>
     /// <param name="dbFactory">Database factory</param>
     /// <param name="championship">Championship</param>
-    private void AddTracksToChampionship(List<long> tracks, RepositoryFactory dbFactory, ChampionshipEntity championship)
+    /// <returns>Task</returns>
+    private async Task AddTracksToChampionshipAsync(List<long> tracks, RepositoryFactory dbFactory, ChampionshipEntity championship)
     {
+        var trackQuery = dbFactory.GetRepository<TrackRepository>()?.GetQuery();
+        var championshipTrackRepository = dbFactory.GetRepository<ChampionshipTrackRepository>();
+
         foreach (var track in tracks)
         {
-            var dbTrack = dbFactory.GetRepository<TrackRepository>()
-                                   ?.GetQuery()
-                                   ?.FirstOrDefault(t => t.TrackNumber == track);
+            var dbTrack = trackQuery == null
+                              ? null
+                              : await trackQuery.FirstOrDefaultAsync(t => t.TrackNumber == track)
+                                                .ConfigureAwait(false);
 
             if (dbTrack != null)
             {
-                dbFactory.GetRepository<ChampionshipTrackRepository>()
-                         ?.Add(new ChampionshipTrackEntity
-                               {
-                                   ChampionshipId = championship.Id,
-                                   TrackId = dbTrack.Id
-                               });
+                if (championshipTrackRepository != null)
+                {
+                    await championshipTrackRepository.AddAsync(new ChampionshipTrackEntity
+                                                               {
+                                                                   ChampionshipId = championship.Id,
+                                                                   TrackId = dbTrack.Id
+                                                               })
+                                                     .ConfigureAwait(false);
+                }
             }
             else
             {
@@ -433,29 +483,34 @@ public class ChampionshipController : ControllerBase
     /// session is successfully added to the championship; otherwise, returns <see cref="NotFoundResult"/> with an
     /// appropriate error message
     /// </returns>
-    private IActionResult SaveSessionToChampionship(RepositoryFactory dbFactory, SessionBaseData sessionData, ChampionshipEntity? championship)
+    private async Task<IActionResult> SaveSessionToChampionshipAsync(RepositoryFactory dbFactory, SessionBaseData sessionData, ChampionshipEntity? championship)
     {
         IActionResult result = NotFound("Track is not part of the championship!");
 
         if (championship != null)
         {
-            var championshipTrack = dbFactory.GetRepository<ChampionshipTrackRepository>()
-                                             ?.GetQuery()
-                                             ?.FirstOrDefault(t => t.TrackId == sessionData.TrackId
-                                                                   && t.ChampionshipId == championship.Id);
+            var championshipTrackRepository = dbFactory.GetRepository<ChampionshipTrackRepository>();
+            var championshipTrackQuery = championshipTrackRepository?.GetQuery();
+
+            var championshipTrack = championshipTrackQuery == null
+                                        ? null
+                                        : await championshipTrackQuery.FirstOrDefaultAsync(t => t.TrackId == sessionData.TrackId
+                                                                                                && t.ChampionshipId == championship.Id)
+                                                                      .ConfigureAwait(false);
 
             if (championshipTrack != null
                 && SetChampionShipSession(sessionData, championshipTrack))
             {
-                var isRefreshed = dbFactory.GetRepository<ChampionshipTrackRepository>()
-                                           ?.Refresh(ct => ct.Id == championshipTrack.Id,
-                                                     obj =>
-                                                     {
-                                                         obj.QualifyingSessionId = championshipTrack.QualifyingSessionId;
-                                                         obj.SprintQualifyingSessionId = championshipTrack.SprintQualifyingSessionId;
-                                                         obj.RaceSessionId = championshipTrack.RaceSessionId;
-                                                         obj.SprintSessionId = championshipTrack.SprintSessionId;
-                                                     }) ?? false;
+                var isRefreshed = championshipTrackRepository != null
+                                  && await championshipTrackRepository.RefreshAsync(ct => ct.Id == championshipTrack.Id,
+                                                                                    obj =>
+                                                                                    {
+                                                                                        obj.QualifyingSessionId = championshipTrack.QualifyingSessionId;
+                                                                                        obj.SprintQualifyingSessionId = championshipTrack.SprintQualifyingSessionId;
+                                                                                        obj.RaceSessionId = championshipTrack.RaceSessionId;
+                                                                                        obj.SprintSessionId = championshipTrack.SprintSessionId;
+                                                                                    })
+                                                                      .ConfigureAwait(false);
 
                 result = isRefreshed ? Ok() : NotFound("Session not added to championship!");
             }
@@ -469,17 +524,20 @@ public class ChampionshipController : ControllerBase
     /// </summary>
     /// <param name="session">The session data to be adjusted. This parameter cannot be null</param>
     /// <param name="dbFactory">The repository factory used to query session data. This parameter cannot be null</param>
-    private void AdjustSessionType(SessionBaseData session, RepositoryFactory dbFactory)
+    /// <returns>Task</returns>
+    private async Task AdjustSessionTypeAsync(SessionBaseData session, RepositoryFactory dbFactory)
     {
         if (session.SessionType is SessionType.Race)
         {
-            var hasSprintQualifyings = dbFactory.GetRepository<SessionRepository>()
-                                                ?.GetQuery()
-                                                ?.Any(s => s.Id < session.SessionId
-                                                           && s.SessionType >= SessionType.SprintShootout1
-                                                           && s.SessionType <= SessionType.OneShotSprintShootout
-                                                           && s.GameVersionId == session.GameVersionId
-                                                           && s.TrackId == session.TrackId) ?? false;
+            var sessionQuery = dbFactory.GetRepository<SessionRepository>()?.GetQuery();
+
+            var hasSprintQualifyings = sessionQuery != null
+                                       && await sessionQuery.AnyAsync(s => s.Id < session.SessionId
+                                                                           && s.SessionType >= SessionType.SprintShootout1
+                                                                           && s.SessionType <= SessionType.OneShotSprintShootout
+                                                                           && s.GameVersionId == session.GameVersionId
+                                                                           && s.TrackId == session.TrackId)
+                                                            .ConfigureAwait(false);
 
             if (hasSprintQualifyings)
             {
@@ -554,27 +612,33 @@ public class ChampionshipController : ControllerBase
     /// The grid position of the human-controlled participant in the specified session. Returns 0 if no human-controlled
     /// participant is found or if <paramref name="sessionId"/> is null or less than 1
     /// </returns>
-    private int GetGridPosition(RepositoryFactory dbFactory, long? sessionId)
+    private async Task<int> GetGridPositionAsync(RepositoryFactory dbFactory, long? sessionId)
     {
         var gridPosition = 0;
 
         if (sessionId > 0)
         {
-            var humanDriverId = dbFactory.GetRepository<ParticipantRepository>()
-                                         ?.GetQuery()
-                                         ?.Where(p => p.SessionId == sessionId
-                                                      && p.DbIsHumanControlled == 1)
-                                         .Select(p => p.Id)
-                                         .FirstOrDefault() ?? 0;
+            var participantQuery = dbFactory.GetRepository<ParticipantRepository>()?.GetQuery();
+
+            var humanDriverId = participantQuery == null
+                                    ? 0
+                                    : await participantQuery.Where(p => p.SessionId == sessionId
+                                                                        && p.DbIsHumanControlled == 1)
+                                                            .Select(p => p.Id)
+                                                            .FirstOrDefaultAsync()
+                                                            .ConfigureAwait(false);
 
             if (humanDriverId > 0)
             {
-                gridPosition = dbFactory.GetRepository<FinalClassificationRepository>()
-                                        ?.GetQuery()
-                                        ?.Where(f => f.SessionId == sessionId
-                                                     && f.ParticipantId == humanDriverId)
-                                        .Select(f => f.FinishPosition)
-                                        .FirstOrDefault() ?? 0;
+                var finalQuery = dbFactory.GetRepository<FinalClassificationRepository>()?.GetQuery();
+
+                gridPosition = finalQuery == null
+                                   ? 0
+                                   : await finalQuery.Where(f => f.SessionId == sessionId
+                                                                 && f.ParticipantId == humanDriverId)
+                                                     .Select(f => f.FinishPosition)
+                                                     .FirstOrDefaultAsync()
+                                                     .ConfigureAwait(false);
             }
         }
 
