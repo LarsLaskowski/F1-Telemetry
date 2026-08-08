@@ -102,12 +102,12 @@ public interface ILiveSessionData : ILiveBaseData
     /// <summary>
     /// Participants in session
     /// </summary>
-    List<ILiveDriverData> Drivers { get; }
+    IReadOnlyList<ILiveDriverData> Drivers { get; }
 
     /// <summary>
     /// Current time table
     /// </summary>
-    List<int> TimeTable { get; }
+    IReadOnlyList<int> TimeTable { get; }
 
     #endregion // Properties
 }
