@@ -182,15 +182,44 @@ public class ChampionshipControllerTests
             Assert.HasCount(2, championships, "Both seasons of the game version should be stored!");
             Assert.AreEqual(2, championships[1].Number, "The second championship of a game version should be season two!");
 
+            var trackQuery = dbFactory.GetRepository<TrackRepository>()?.GetQuery();
+
+            Assert.IsNotNull(trackQuery, "Track query should be resolvable!");
+
+            var expectedFirstSeasonTrackIds = await trackQuery.Where(t => firstSeasonTracks.Contains(t.TrackNumber))
+                                                              .Select(t => t.Id)
+                                                              .ToListAsync(TestContext.CancellationToken)
+                                                              .ConfigureAwait(false);
+
+            var expectedSecondSeasonTrackIds = await trackQuery.Where(t => secondSeasonTracks.Contains(t.TrackNumber))
+                                                               .Select(t => t.Id)
+                                                               .ToListAsync(TestContext.CancellationToken)
+                                                               .ConfigureAwait(false);
+
+            Assert.HasCount(ChampionshipTrackCount, expectedFirstSeasonTrackIds, "Every requested track of the first season should be stored!");
+            Assert.HasCount(ChampionshipTrackCount, expectedSecondSeasonTrackIds, "Every requested track of the second season should be stored!");
+
             var championshipTrackQuery = dbFactory.GetRepository<ChampionshipTrackRepository>()?.GetQuery();
 
             Assert.IsNotNull(championshipTrackQuery, "Championship track query should be resolvable!");
 
-            var firstSeasonTrackCount = await championshipTrackQuery.CountAsync(t => t.ChampionshipId == championships[0].Id, TestContext.CancellationToken).ConfigureAwait(false);
-            var secondSeasonTrackCount = await championshipTrackQuery.CountAsync(t => t.ChampionshipId == championships[1].Id, TestContext.CancellationToken).ConfigureAwait(false);
+            var firstSeasonTrackIds = await championshipTrackQuery.Where(t => t.ChampionshipId == championships[0].Id)
+                                                                  .Select(t => t.TrackId)
+                                                                  .ToListAsync(TestContext.CancellationToken)
+                                                                  .ConfigureAwait(false);
 
-            Assert.AreEqual(ChampionshipTrackCount, firstSeasonTrackCount, "The first season should keep only the tracks it was created with!");
-            Assert.AreEqual(ChampionshipTrackCount, secondSeasonTrackCount, "The tracks of the second season should be added to the second season!");
+            var secondSeasonTrackIds = await championshipTrackQuery.Where(t => t.ChampionshipId == championships[1].Id)
+                                                                   .Select(t => t.TrackId)
+                                                                   .ToListAsync(TestContext.CancellationToken)
+                                                                   .ConfigureAwait(false);
+
+            CollectionAssert.AreEquivalent(expectedFirstSeasonTrackIds,
+                                           firstSeasonTrackIds,
+                                           "The first season should keep exactly the tracks it was created with!");
+
+            CollectionAssert.AreEquivalent(expectedSecondSeasonTrackIds,
+                                           secondSeasonTrackIds,
+                                           "The second season should carry exactly the tracks it was created with!");
         }
     }
 
