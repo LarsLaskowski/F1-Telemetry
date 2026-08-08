@@ -33,6 +33,15 @@ public class TimerManagerTests
 
     #endregion // Constants
 
+    #region Properties
+
+    /// <summary>
+    /// Gets or sets the test context which provides information about and functionality for the current test run
+    /// </summary>
+    public TestContext TestContext { get; set; }
+
+    #endregion // Properties
+
     #region Static methods
 
     /// <summary>
@@ -179,8 +188,6 @@ public class TimerManagerTests
 
         Assert.ThrowsExactly<ObjectDisposedException>(() => timerManager.PrepareTimer(NoOperation), "A disposed timer manager should not start a timer.");
     }
-
-    public TestContext TestContext { get; set; }
 
     #endregion // Methods
 }

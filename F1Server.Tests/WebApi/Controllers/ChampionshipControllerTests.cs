@@ -55,7 +55,7 @@ public class ChampionshipControllerTests
     /// <returns>Controller</returns>
     private static ChampionshipController CreateController()
     {
-        return new ChampionshipController(NullLogger<TracksController>.Instance);
+        return new ChampionshipController(NullLogger<ChampionshipController>.Instance);
     }
 
     #endregion // Static methods
