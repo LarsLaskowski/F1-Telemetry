@@ -290,7 +290,7 @@ public sealed class TelemetryWriter : ITelemetryWriter, IDisposable
                 {
                     currentActivity?.SetTag("f1.telemetry_records", records.Count);
 
-                    await writeApi.WriteRecordsAsync(records, WritePrecision.Ms, Configuration.Bucket, Configuration.Organization, cancellationToken).ConfigureAwait(true);
+                    await writeApi.WriteRecordsAsync(records, WritePrecision.Ms, Configuration.Bucket, Configuration.Organization, cancellationToken).ConfigureAwait(false);
 
                     currentActivity?.SetStatus(ActivityStatusCode.Ok);
                 }
