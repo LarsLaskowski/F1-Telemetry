@@ -177,13 +177,13 @@ internal class PacketToTimeTrialData : PacketToXBase
 
                 var enumValue = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-                timeTrialData.TractionControl = (TractionControl)Enum.ToObject(typeof(TractionControl), enumValue);
+                timeTrialData.TractionControl = (TractionControl)enumValue;
 
                 actOffset += ConstData.TypeUInt8;
 
                 enumValue = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-                timeTrialData.GearboxAssist = (GearboxAssist)Enum.ToObject(typeof(GearboxAssist), enumValue);
+                timeTrialData.GearboxAssist = (GearboxAssist)enumValue;
 
                 actOffset += ConstData.TypeUInt8;
 

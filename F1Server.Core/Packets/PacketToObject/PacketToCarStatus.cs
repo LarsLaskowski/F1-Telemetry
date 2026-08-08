@@ -220,7 +220,7 @@ internal class PacketToCarStatus : PacketToXBase
 
                     var flagsByte = (sbyte)Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-                    status2019.FiaFlags = (VehicleFiaFlagColor)Enum.ToObject(typeof(VehicleFiaFlagColor), flagsByte);
+                    status2019.FiaFlags = (VehicleFiaFlagColor)flagsByte;
 
                     actOffset += ConstData.TypeInt8;
 
@@ -321,7 +321,7 @@ internal class PacketToCarStatus : PacketToXBase
 
                     var flagsByte = (sbyte)Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-                    status2020.FiaFlags = (VehicleFiaFlagColor)Enum.ToObject(typeof(VehicleFiaFlagColor), flagsByte);
+                    status2020.FiaFlags = (VehicleFiaFlagColor)flagsByte;
 
                     actOffset += ConstData.TypeInt8;
 
@@ -366,7 +366,7 @@ internal class PacketToCarStatus : PacketToXBase
 
                     var flagsByte = (sbyte)Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-                    status2021.FiaFlags = (VehicleFiaFlagColor)Enum.ToObject(typeof(VehicleFiaFlagColor), flagsByte);
+                    status2021.FiaFlags = (VehicleFiaFlagColor)flagsByte;
 
                     actOffset += ConstData.TypeInt8;
 
@@ -415,7 +415,7 @@ internal class PacketToCarStatus : PacketToXBase
 
                     var flagsByte = (sbyte)Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-                    status2022.FiaFlags = (VehicleFiaFlagColor)Enum.ToObject(typeof(VehicleFiaFlagColor), flagsByte);
+                    status2022.FiaFlags = (VehicleFiaFlagColor)flagsByte;
 
                     actOffset += ConstData.TypeInt8;
 
@@ -464,7 +464,7 @@ internal class PacketToCarStatus : PacketToXBase
 
                     var flagsByte = (sbyte)Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-                    status2023.FiaFlags = (VehicleFiaFlagColor)Enum.ToObject(typeof(VehicleFiaFlagColor), flagsByte);
+                    status2023.FiaFlags = (VehicleFiaFlagColor)flagsByte;
 
                     actOffset += ConstData.TypeInt8;
 
@@ -513,7 +513,7 @@ internal class PacketToCarStatus : PacketToXBase
 
                     var flagsByte = (sbyte)Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-                    status2024.FiaFlags = (VehicleFiaFlagColor)Enum.ToObject(typeof(VehicleFiaFlagColor), flagsByte);
+                    status2024.FiaFlags = (VehicleFiaFlagColor)flagsByte;
 
                     actOffset += ConstData.TypeInt8;
 
@@ -562,7 +562,7 @@ internal class PacketToCarStatus : PacketToXBase
 
                     var flagsByte = (sbyte)Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-                    status2025.FiaFlags = (VehicleFiaFlagColor)Enum.ToObject(typeof(VehicleFiaFlagColor), flagsByte);
+                    status2025.FiaFlags = (VehicleFiaFlagColor)flagsByte;
 
                     actOffset += ConstData.TypeInt8;
 
@@ -611,7 +611,7 @@ internal class PacketToCarStatus : PacketToXBase
 
                     var flagsByte = (sbyte)Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-                    status2026.FiaFlags = (VehicleFiaFlagColor)Enum.ToObject(typeof(VehicleFiaFlagColor), flagsByte);
+                    status2026.FiaFlags = (VehicleFiaFlagColor)flagsByte;
 
                     actOffset += ConstData.TypeInt8;
 

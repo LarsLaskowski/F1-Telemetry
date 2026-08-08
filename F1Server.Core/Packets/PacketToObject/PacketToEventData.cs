@@ -197,7 +197,7 @@ internal class PacketToEventData : PacketToXBase
                 // First value of game is zero based, enumeration zero value is a default value, corresponding type is one for first value and so on
                 penaltyType += 1;
 
-                eventDetailsData.PenaltyType = (PenaltyType)Enum.ToObject(typeof(PenaltyType), penaltyType);
+                eventDetailsData.PenaltyType = (PenaltyType)penaltyType;
 
                 actOffset += ConstData.TypeUInt8;
 
@@ -219,7 +219,7 @@ internal class PacketToEventData : PacketToXBase
                     infringementType += 1;
                 }
 
-                eventDetailsData.PenaltyInfringementType = (InfringementType)Enum.ToObject(typeof(InfringementType), infringementType);
+                eventDetailsData.PenaltyInfringementType = (InfringementType)infringementType;
 
                 actOffset += ConstData.TypeUInt8;
 
@@ -613,7 +613,7 @@ internal class PacketToEventData : PacketToXBase
 
                         var safetyCarType = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-                        eventDetailsData.SafetyCarType = (SafetyCarStatus)Enum.ToObject(typeof(SafetyCarStatus), safetyCarType);
+                        eventDetailsData.SafetyCarType = (SafetyCarStatus)safetyCarType;
 
                         actOffset += ConstData.TypeUInt8;
 
@@ -622,7 +622,7 @@ internal class PacketToEventData : PacketToXBase
                         // First value of game is zero based, enumeration zero value is a default value, corresponding type is one for first value and so on
                         eventType += 1;
 
-                        eventDetailsData.SafetyCarEvent = (SafetyCarEventType)Enum.ToObject(typeof(SafetyCarEventType), eventType);
+                        eventDetailsData.SafetyCarEvent = (SafetyCarEventType)eventType;
                     }
                     break;
 
@@ -667,7 +667,7 @@ internal class PacketToEventData : PacketToXBase
 
                         var retirementReason = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-                        eventDetailsData.RetirementReason = (ResultReason)Enum.ToObject(typeof(ResultReason), retirementReason + 1);
+                        eventDetailsData.RetirementReason = (ResultReason)retirementReason + 1;
                     }
                     break;
 
@@ -755,7 +755,7 @@ internal class PacketToEventData : PacketToXBase
 
                         var safetyCarType = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-                        eventDetailsData.SafetyCarType = (SafetyCarStatus)Enum.ToObject(typeof(SafetyCarStatus), safetyCarType);
+                        eventDetailsData.SafetyCarType = (SafetyCarStatus)safetyCarType;
 
                         actOffset += ConstData.TypeUInt8;
 
@@ -764,7 +764,7 @@ internal class PacketToEventData : PacketToXBase
                         // First value of game is zero based, enumeration zero value is a default value, corresponding type is one for first value and so on
                         eventType += 1;
 
-                        eventDetailsData.SafetyCarEvent = (SafetyCarEventType)Enum.ToObject(typeof(SafetyCarEventType), eventType);
+                        eventDetailsData.SafetyCarEvent = (SafetyCarEventType)eventType;
                     }
                     break;
 
@@ -785,7 +785,7 @@ internal class PacketToEventData : PacketToXBase
 
                         var drsDisabledReason = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-                        eventDetailsData.DrsDisabledReason = (DrsDisabledReason)Enum.ToObject(typeof(DrsDisabledReason), drsDisabledReason + 1);
+                        eventDetailsData.DrsDisabledReason = (DrsDisabledReason)drsDisabledReason + 1;
                     }
                     break;
             }
@@ -809,7 +809,7 @@ internal class PacketToEventData : PacketToXBase
         // First value of game is zero based, enumeration zero value is a default value, corresponding type is one for first value and so on
         penaltyType += 1;
 
-        eventDetails21Data.PenaltyType = (PenaltyType)Enum.ToObject(typeof(PenaltyType), penaltyType);
+        eventDetails21Data.PenaltyType = (PenaltyType)penaltyType;
 
         actOffset += ConstData.TypeUInt8;
 
@@ -831,7 +831,7 @@ internal class PacketToEventData : PacketToXBase
             infringementType += 1;
         }
 
-        eventDetails21Data.PenaltyInfringementType = (InfringementType)Enum.ToObject(typeof(InfringementType), infringementType);
+        eventDetails21Data.PenaltyInfringementType = (InfringementType)infringementType;
 
         actOffset += ConstData.TypeUInt8;
 
@@ -867,7 +867,7 @@ internal class PacketToEventData : PacketToXBase
         // First value of game is zero based, enumeration zero value is a default value, corresponding type is one for first value and so on
         penaltyType += 1;
 
-        eventDetails22Data.PenaltyType = (PenaltyType)Enum.ToObject(typeof(PenaltyType), penaltyType);
+        eventDetails22Data.PenaltyType = (PenaltyType)penaltyType;
 
         actOffset += ConstData.TypeUInt8;
 
@@ -876,7 +876,7 @@ internal class PacketToEventData : PacketToXBase
         // First value of game is zero based, enumeration zero value is a default value, corresponding type is one for first value and so on
         infringementType += 1;
 
-        eventDetails22Data.PenaltyInfringementType = (InfringementType)Enum.ToObject(typeof(InfringementType), infringementType);
+        eventDetails22Data.PenaltyInfringementType = (InfringementType)infringementType;
 
         actOffset += ConstData.TypeUInt8;
 
@@ -912,7 +912,7 @@ internal class PacketToEventData : PacketToXBase
         // First value of game is zero based, enumeration zero value is a default value, corresponding type is one for first value and so on
         penaltyType += 1;
 
-        eventDetails23Data.PenaltyType = (PenaltyType)Enum.ToObject(typeof(PenaltyType), penaltyType);
+        eventDetails23Data.PenaltyType = (PenaltyType)penaltyType;
 
         actOffset += ConstData.TypeUInt8;
 
@@ -921,7 +921,7 @@ internal class PacketToEventData : PacketToXBase
         // First value of game is zero based, enumeration zero value is a default value, corresponding type is one for first value and so on
         infringementType += 1;
 
-        eventDetails23Data.PenaltyInfringementType = (InfringementType)Enum.ToObject(typeof(InfringementType), infringementType);
+        eventDetails23Data.PenaltyInfringementType = (InfringementType)infringementType;
 
         actOffset += ConstData.TypeUInt8;
 
@@ -957,7 +957,7 @@ internal class PacketToEventData : PacketToXBase
         // First value of game is zero based, enumeration zero value is a default value, corresponding type is one for first value and so on
         penaltyType += 1;
 
-        eventDetails24Data.PenaltyType = (PenaltyType)Enum.ToObject(typeof(PenaltyType), penaltyType);
+        eventDetails24Data.PenaltyType = (PenaltyType)penaltyType;
 
         actOffset += ConstData.TypeUInt8;
 
@@ -966,7 +966,7 @@ internal class PacketToEventData : PacketToXBase
         // First value of game is zero based, enumeration zero value is a default value, corresponding type is one for first value and so on
         infringementType += 1;
 
-        eventDetails24Data.PenaltyInfringementType = (InfringementType)Enum.ToObject(typeof(InfringementType), infringementType);
+        eventDetails24Data.PenaltyInfringementType = (InfringementType)infringementType;
 
         actOffset += ConstData.TypeUInt8;
 
@@ -1002,7 +1002,7 @@ internal class PacketToEventData : PacketToXBase
         // First value of game is zero based, enumeration zero value is a default value, corresponding type is one for first value and so on
         penaltyType += 1;
 
-        eventDetails25Data.PenaltyType = (PenaltyType)Enum.ToObject(typeof(PenaltyType), penaltyType);
+        eventDetails25Data.PenaltyType = (PenaltyType)penaltyType;
 
         actOffset += ConstData.TypeUInt8;
 
@@ -1011,7 +1011,7 @@ internal class PacketToEventData : PacketToXBase
         // First value of game is zero based, enumeration zero value is a default value, corresponding type is one for first value and so on
         infringementType += 1;
 
-        eventDetails25Data.PenaltyInfringementType = (InfringementType)Enum.ToObject(typeof(InfringementType), infringementType);
+        eventDetails25Data.PenaltyInfringementType = (InfringementType)infringementType;
 
         actOffset += ConstData.TypeUInt8;
 

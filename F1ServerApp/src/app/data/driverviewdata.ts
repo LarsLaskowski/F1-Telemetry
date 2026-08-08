@@ -18,6 +18,10 @@ export class DriverViewData
   fastestLaptime: string = "";
   lapsDriven: number = 0;
   currentTyre: string = "";
+  sector1Class: string = "normalTime";
+  sector2Class: string = "normalTime";
+  sector3Class: string = "normalTime";
+  fastestLapClass: string = "normalTime";
 
   // Constructor
   constructor(driverApiData: LiveDriverApiData)
@@ -60,6 +64,15 @@ export class DriverViewData
   setPosition(position: number)
   {
     this.position = position;
+  }
+
+  // Precompute the fastest-time highlight classes for the current session state
+  setTimeClasses(fastestSector1DriverId: number, fastestSector2DriverId: number, fastestSector3DriverId: number, fastestLapDriverId: number)
+  {
+    this.sector1Class = this.arrayIndex == fastestSector1DriverId ? "fastestTime" : "normalTime";
+    this.sector2Class = this.arrayIndex == fastestSector2DriverId ? "fastestTime" : "normalTime";
+    this.sector3Class = this.arrayIndex == fastestSector3DriverId ? "fastestTime" : "normalTime";
+    this.fastestLapClass = this.arrayIndex == fastestLapDriverId ? "fastestTime" : "normalTime";
   }
 
   // Generate time output
