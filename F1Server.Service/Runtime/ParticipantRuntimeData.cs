@@ -6,7 +6,6 @@ using F1Server.Db.Entity;
 using F1Server.Db.Entity.Repositories;
 using F1Server.Db.Entity.Tables;
 using F1Server.Service.Cache;
-using F1Server.WebApi.Cache;
 
 namespace F1Server.Service.Runtime;
 

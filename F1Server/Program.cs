@@ -4,10 +4,12 @@ using System.Runtime.CompilerServices;
 
 using F1Server.Core;
 using F1Server.Core.EventArgs;
+using F1Server.Core.Interfaces;
 using F1Server.Data;
 using F1Server.Observability;
 using F1Server.Service;
 using F1Server.Telemetry;
+using F1Server.WebApi;
 
 using Microsoft.Extensions.DependencyInjection;
 
@@ -167,6 +169,9 @@ public static class Program
 
         // A packet analyzer reuses its transformations and is therefore stateful, every consumer gets its own instance
         services.AddTransient<PacketAnalyzer>();
+
+        // The startup project wires the transport layer, so the service layer only depends on the abstraction
+        services.AddSingleton<IWebHosting, WebHosting>();
 
         services.AddOpenTelemetry();
 

@@ -70,13 +70,5 @@ internal static partial class ChampionshipControllerLog
     [LoggerMessage(EventId = 8, Level = LogLevel.Information, Message = "Adding session {SessionId} to championship...")]
     public static partial void AddingSessionToChampionship(this ILogger logger, long sessionId);
 
-    /// <summary>
-    /// Logs an unknown track number while creating a championship
-    /// </summary>
-    /// <param name="logger">Logger instance</param>
-    /// <param name="track">Unknown track number</param>
-    [LoggerMessage(EventId = 9, Level = LogLevel.Warning, Message = "[CreateChampionship] Unknown track number {track}!")]
-    public static partial void UnknownTrackNumber(this ILogger logger, long track);
-
     #endregion // Methods
 }

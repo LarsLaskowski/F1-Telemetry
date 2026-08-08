@@ -9,7 +9,6 @@ using F1Server.Service.Cache;
 using F1Server.Service.Processors;
 using F1Server.Service.Runtime;
 using F1Server.Tests.Data;
-using F1Server.WebApi.Cache;
 
 namespace F1Server.Tests.Processors;
 

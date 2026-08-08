@@ -15,8 +15,8 @@ using F1Server.Data;
 using F1Server.Db.Entity;
 using F1Server.Db.Entity.Repositories;
 using F1Server.Db.Entity.Tables;
+using F1Server.Service.Cache;
 using F1Server.Service.Processors;
-using F1Server.WebApi.Cache;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;

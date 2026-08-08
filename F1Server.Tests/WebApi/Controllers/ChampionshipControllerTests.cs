@@ -3,6 +3,7 @@ using F1Server.Data;
 using F1Server.Data.ViewData;
 using F1Server.Db.Entity;
 using F1Server.Db.Entity.Repositories;
+using F1Server.Service.Championships;
 using F1Server.WebApi.Controllers;
 
 using Microsoft.AspNetCore.Mvc;
@@ -55,7 +56,8 @@ public class ChampionshipControllerTests
     /// <returns>Controller</returns>
     private static ChampionshipController CreateController()
     {
-        return new ChampionshipController(NullLogger<ChampionshipController>.Instance);
+        return new ChampionshipController(NullLogger<ChampionshipController>.Instance,
+                                          new ChampionshipService(NullLogger<ChampionshipService>.Instance));
     }
 
     #endregion // Static methods

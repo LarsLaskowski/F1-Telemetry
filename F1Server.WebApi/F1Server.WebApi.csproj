@@ -34,6 +34,7 @@
     <ProjectReference Include="..\F1Server.Data\F1Server.Data.csproj" />
     <ProjectReference Include="..\F1Server.Db\F1Server.Db.csproj" />
     <ProjectReference Include="..\F1Server.Observability\F1Server.Observability.csproj" />
+    <ProjectReference Include="..\F1Server.Service\F1Server.Service.csproj" />
   </ItemGroup>
 
 </Project>
