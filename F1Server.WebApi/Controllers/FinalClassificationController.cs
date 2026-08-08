@@ -4,6 +4,7 @@ using F1Server.Core.Observability;
 using F1Server.Data.ViewData;
 using F1Server.Db.Entity;
 using F1Server.Db.Entity.Repositories;
+using F1Server.WebApi.Core;
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -89,7 +90,7 @@ public class FinalClassificationController : ControllerBase
                                                      NumberOfPenalties = finalClassification.NumberOfPenalties,
                                                      PitStops = finalClassification.PitStops,
                                                      PenaltiesTime = finalClassification.PenaltiesTime,
-                                                     TotalRaceTime = TimeSpan.FromSeconds(finalClassification.TotalRaceTime).ToString(@"mm\:ss\.fff"),
+                                                     TotalRaceTime = RaceTimeFormatter.FormatTotalRaceTime(finalClassification.TotalRaceTime),
                                                      TotalRaceTimeRaw = finalClassification.TotalRaceTime,
                                                      FastestLapTime = finalClassification.FastestLapTime > 0 ? TimeSpan.FromMilliseconds(finalClassification.FastestLapTime).ToString(@"mm\:ss\.fff") : "-",
                                                      FastestLapTimeRaw = finalClassification.FastestLapTime,
