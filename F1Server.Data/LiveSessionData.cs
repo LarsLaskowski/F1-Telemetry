@@ -119,5 +119,15 @@ public class LiveSessionData : ILiveSessionData
     /// </summary>
     public List<int> TimeTable { get; set; } = [];
 
+    /// <summary>
+    /// Participants in session, exposed read-only to callers holding the <see cref="ILiveSessionData"/> contract
+    /// </summary>
+    IReadOnlyList<ILiveDriverData> ILiveSessionData.Drivers => Drivers;
+
+    /// <summary>
+    /// Current time table, exposed read-only to callers holding the <see cref="ILiveSessionData"/> contract
+    /// </summary>
+    IReadOnlyList<int> ILiveSessionData.TimeTable => TimeTable;
+
     #endregion // ILiveSessionData
 }
