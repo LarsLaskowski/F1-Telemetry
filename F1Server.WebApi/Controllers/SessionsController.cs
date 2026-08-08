@@ -524,7 +524,7 @@ public class SessionsController : ControllerBase
 
                 if (dbSession != null)
                 {
-                    var finalQuery = dbFactory.GetRepository<FinalClassificationRepository>()?.GetQuery();
+                    var finalClassifications = await LoadFinalClassificationsAsync(dbFactory, dbSession.Participants).ConfigureAwait(false);
 
                     foreach (var attendee in dbSession.Participants)
                     {
@@ -538,12 +538,7 @@ public class SessionsController : ControllerBase
                                                          TeamName = attendee.Team.Name
                                                      });
 
-                        var dbFinal = finalQuery == null
-                                          ? null
-                                          : await finalQuery.FirstOrDefaultAsync(f => f.ParticipantId == attendee.Id)
-                                                            .ConfigureAwait(false);
-
-                        if (dbFinal != null)
+                        if (finalClassifications.TryGetValue(attendee.Id, out var dbFinal))
                         {
                             sessionTimeTable.TimeTable.Add(new FinalClassificationViewData
                                                            {
@@ -684,6 +679,38 @@ public class SessionsController : ControllerBase
     #endregion // Methods
 
     #region Private methods
+
+    /// <summary>
+    /// Loads the final classifications of the given participants with a single query
+    /// </summary>
+    /// <param name="dbFactory">Database factory</param>
+    /// <param name="participants">Participants of the session</param>
+    /// <returns>Final classification per database id of the participant</returns>
+    private async Task<Dictionary<long, FinalClassificationEntity>> LoadFinalClassificationsAsync(RepositoryFactory dbFactory, ICollection<ParticipantEntity> participants)
+    {
+        var finalClassifications = new Dictionary<long, FinalClassificationEntity>();
+
+        var finalQuery = dbFactory.GetRepository<FinalClassificationRepository>()?.GetQuery();
+
+        if (finalQuery == null || participants.Count == 0)
+        {
+            return finalClassifications;
+        }
+
+        var participantIds = participants.Select(p => p.Id)
+                                         .ToList();
+
+        var dbFinals = await finalQuery.Where(f => participantIds.Contains(f.ParticipantId))
+                                       .ToListAsync()
+                                       .ConfigureAwait(false);
+
+        foreach (var dbFinal in dbFinals)
+        {
+            finalClassifications.TryAdd(dbFinal.ParticipantId, dbFinal);
+        }
+
+        return finalClassifications;
+    }
 
     /// <summary>
     /// Adjusts the session types for sprint races based on their relationship to subsequent races

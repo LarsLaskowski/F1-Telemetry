@@ -321,6 +321,25 @@ internal static class ControllerTestData
     }
 
     /// <summary>
+    /// Adds a finished qualifying session together with a human controlled participant and its final classification
+    /// </summary>
+    /// <param name="finishPosition">Finish position of the human controlled participant</param>
+    /// <returns>Database id of the created session</returns>
+    public static long AddSessionWithFinalClassification(int finishPosition)
+    {
+        using (var dbFactory = RepositoryFactory.CreateInstance())
+        {
+            var sessionId = AddSession(dbFactory, SessionType.Qualifying3, isFinished: true, GameVersionId, TrackId, Formula.F1Modern, out _);
+
+            var participantId = AddParticipant(dbFactory, sessionId, HumanDriverName, isHumanControlled: true, out _);
+
+            AddFinalClassification(dbFactory, sessionId, participantId, finishPosition, FastestLapTime);
+
+            return sessionId;
+        }
+    }
+
+    /// <summary>
     /// Adds a track and returns its database id
     /// </summary>
     /// <returns>Database id of the created track</returns>

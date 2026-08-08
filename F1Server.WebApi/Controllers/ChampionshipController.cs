@@ -66,6 +66,9 @@ public class ChampionshipController : ControllerBase
 
             if (dbChampionships?.Count > 0)
             {
+                var championshipTracks = await LoadChampionshipTracksAsync(dbFactory, dbChampionships).ConfigureAwait(false);
+                var gridPositions = await LoadGridPositionsAsync(dbFactory, championshipTracks).ConfigureAwait(false);
+
                 foreach (var dbChampionship in dbChampionships)
                 {
                     var championshipData = new ChampionshipViewData
@@ -77,7 +80,7 @@ public class ChampionshipController : ControllerBase
                                                Number = dbChampionship.Number
                                            };
 
-                    await LoadTracksAsync(dbFactory, championshipData).ConfigureAwait(false);
+                    LoadTracks(championshipData, championshipTracks, gridPositions);
 
                     championships.Add(championshipData);
                 }
@@ -362,43 +365,184 @@ public class ChampionshipController : ControllerBase
     }
 
     /// <summary>
-    /// Load tracks of championship
+    /// Loads the tracks of all given championships with a single query
     /// </summary>
     /// <param name="dbFactory">Database factory</param>
-    /// <param name="championshipData">Championship data</param>
-    /// <returns>Task</returns>
-    private async Task LoadTracksAsync(RepositoryFactory dbFactory, ChampionshipViewData championshipData)
+    /// <param name="dbChampionships">Championships whose tracks are loaded</param>
+    /// <returns>Tracks per database id of the championship</returns>
+    private async Task<Dictionary<long, List<ChampionshipTrackEntity>>> LoadChampionshipTracksAsync(RepositoryFactory dbFactory, List<ChampionshipEntity> dbChampionships)
     {
-        var championshipTrackQuery = dbFactory.GetRepository<ChampionshipTrackRepository>()?.GetQuery();
+        var championshipTracks = new Dictionary<long, List<ChampionshipTrackEntity>>();
 
-        List<ChampionshipTrackEntity> tracks = [];
+        // Only the track and the session ids are read, so the auto-included sessions are not needed
+        var championshipTrackQuery = dbFactory.GetRepository<ChampionshipTrackRepository>()?.GetQuery(ignoreAutoIncludes: true);
 
-        if (championshipTrackQuery != null)
+        if (championshipTrackQuery == null)
         {
-            tracks = await championshipTrackQuery.Where(c => c.ChampionshipId == championshipData.ChampionshipId)
-                                                 .ToListAsync()
-                                                 .ConfigureAwait(false);
+            return championshipTracks;
         }
 
-        if (tracks.Count > 0)
+        var championshipIds = dbChampionships.Select(c => c.Id)
+                                             .ToList();
+
+        var tracks = await championshipTrackQuery.Where(t => championshipIds.Contains(t.ChampionshipId))
+                                                 .OrderBy(t => t.Id)
+                                                 .ToListAsync()
+                                                 .ConfigureAwait(false);
+
+        foreach (var track in tracks)
         {
-            championshipData.Tracks = [];
-
-            foreach (var track in tracks)
+            if (championshipTracks.TryGetValue(track.ChampionshipId, out var tracksOfChampionship) == false)
             {
-                var trackData = new ChampionshipTrackViewData
-                                {
-                                    ChampionshipTrackId = track.TrackId,
-                                    QualifyingPosition = await GetGridPositionAsync(dbFactory, track.SprintQualifyingSessionId).ConfigureAwait(false),
-                                    SprintQualifyingPosition = await GetGridPositionAsync(dbFactory, track.QualifyingSessionId).ConfigureAwait(false),
-                                    SprintPosition = await GetGridPositionAsync(dbFactory, track.SprintSessionId).ConfigureAwait(false),
-                                    RacePosition = await GetGridPositionAsync(dbFactory, track.RaceSessionId).ConfigureAwait(false)
-                                };
+                tracksOfChampionship = [];
 
-                CalculatePoints(trackData);
-
-                championshipData.Tracks.Add(trackData);
+                championshipTracks[track.ChampionshipId] = tracksOfChampionship;
             }
+
+            tracksOfChampionship.Add(track);
+        }
+
+        return championshipTracks;
+    }
+
+    /// <summary>
+    /// Loads the finish position of the human controlled participant of every session referenced by the given tracks
+    /// </summary>
+    /// <param name="dbFactory">Database factory</param>
+    /// <param name="championshipTracks">Tracks per database id of the championship</param>
+    /// <returns>Finish position per database id of the session</returns>
+    private async Task<Dictionary<long, int>> LoadGridPositionsAsync(RepositoryFactory dbFactory, Dictionary<long, List<ChampionshipTrackEntity>> championshipTracks)
+    {
+        var gridPositions = new Dictionary<long, int>();
+
+        var sessionIds = CollectSessionIds(championshipTracks);
+
+        if (sessionIds.Count == 0)
+        {
+            return gridPositions;
+        }
+
+        var participantQuery = dbFactory.GetRepository<ParticipantRepository>()?.GetQuery(ignoreAutoIncludes: true);
+        var finalQuery = dbFactory.GetRepository<FinalClassificationRepository>()?.GetQuery();
+
+        if (participantQuery == null || finalQuery == null)
+        {
+            return gridPositions;
+        }
+
+        var humanParticipants = await participantQuery.Where(p => sessionIds.Contains(p.SessionId)
+                                                                  && p.DbIsHumanControlled == 1)
+                                                      .OrderBy(p => p.Id)
+                                                      .Select(p => new
+                                                                   {
+                                                                       p.SessionId,
+                                                                       p.Id
+                                                                   })
+                                                      .ToListAsync()
+                                                      .ConfigureAwait(false);
+
+        var humanParticipantPerSession = new Dictionary<long, long>();
+
+        foreach (var humanParticipant in humanParticipants)
+        {
+            humanParticipantPerSession.TryAdd(humanParticipant.SessionId, humanParticipant.Id);
+        }
+
+        if (humanParticipantPerSession.Count == 0)
+        {
+            return gridPositions;
+        }
+
+        var humanParticipantIds = humanParticipantPerSession.Values.ToList();
+
+        var finishPositions = await finalQuery.Where(f => sessionIds.Contains(f.SessionId)
+                                                          && humanParticipantIds.Contains(f.ParticipantId))
+                                              .Select(f => new
+                                                           {
+                                                               f.SessionId,
+                                                               f.ParticipantId,
+                                                               f.FinishPosition
+                                                           })
+                                              .ToListAsync()
+                                              .ConfigureAwait(false);
+
+        foreach (var finishPosition in finishPositions)
+        {
+            if (humanParticipantPerSession.TryGetValue(finishPosition.SessionId, out var participantId)
+                && participantId == finishPosition.ParticipantId)
+            {
+                gridPositions.TryAdd(finishPosition.SessionId, finishPosition.FinishPosition);
+            }
+        }
+
+        return gridPositions;
+    }
+
+    /// <summary>
+    /// Collects the database ids of all sessions referenced by the given championship tracks
+    /// </summary>
+    /// <param name="championshipTracks">Tracks per database id of the championship</param>
+    /// <returns>Database ids of the referenced sessions</returns>
+    private List<long> CollectSessionIds(Dictionary<long, List<ChampionshipTrackEntity>> championshipTracks)
+    {
+        var sessionIds = new HashSet<long>();
+
+        foreach (var track in championshipTracks.Values.SelectMany(tracks => tracks))
+        {
+            AddSessionId(sessionIds, track.QualifyingSessionId);
+            AddSessionId(sessionIds, track.SprintQualifyingSessionId);
+            AddSessionId(sessionIds, track.SprintSessionId);
+            AddSessionId(sessionIds, track.RaceSessionId);
+        }
+
+        return sessionIds.ToList();
+    }
+
+    /// <summary>
+    /// Adds the database id of a session to the given set when it references an existing session
+    /// </summary>
+    /// <param name="sessionIds">Set the database id is added to</param>
+    /// <param name="sessionId">Database id of the session</param>
+    private void AddSessionId(HashSet<long> sessionIds, long? sessionId)
+    {
+        if (sessionId > 0)
+        {
+            sessionIds.Add(sessionId.Value);
+        }
+    }
+
+    /// <summary>
+    /// Fills the tracks of a championship from the already loaded tracks and grid positions
+    /// </summary>
+    /// <param name="championshipData">Championship data</param>
+    /// <param name="championshipTracks">Tracks per database id of the championship</param>
+    /// <param name="gridPositions">Finish position per database id of the session</param>
+    private void LoadTracks(ChampionshipViewData championshipData,
+                            Dictionary<long, List<ChampionshipTrackEntity>> championshipTracks,
+                            Dictionary<long, int> gridPositions)
+    {
+        if (championshipTracks.TryGetValue(championshipData.ChampionshipId, out var tracks) == false
+            || tracks.Count == 0)
+        {
+            return;
+        }
+
+        championshipData.Tracks = [];
+
+        foreach (var track in tracks)
+        {
+            var trackData = new ChampionshipTrackViewData
+                            {
+                                ChampionshipTrackId = track.TrackId,
+                                QualifyingPosition = GetGridPosition(gridPositions, track.SprintQualifyingSessionId),
+                                SprintQualifyingPosition = GetGridPosition(gridPositions, track.QualifyingSessionId),
+                                SprintPosition = GetGridPosition(gridPositions, track.SprintSessionId),
+                                RacePosition = GetGridPosition(gridPositions, track.RaceSessionId)
+                            };
+
+            CalculatePoints(trackData);
+
+            championshipData.Tracks.Add(trackData);
         }
     }
 
@@ -598,7 +742,7 @@ public class ChampionshipController : ControllerBase
     /// <summary>
     /// Retrieves the grid position of a human-controlled participant in a specified session
     /// </summary>
-    /// <param name="dbFactory">The <see cref="RepositoryFactory"/> instance used to access the data repositories</param>
+    /// <param name="gridPositions">Finish position per database id of the session</param>
     /// <param name="sessionId">
     /// The identifier of the session for which the grid position is being retrieved. Must be greater than 0 to perform
     /// the lookup; otherwise, the method returns 0
@@ -607,37 +751,11 @@ public class ChampionshipController : ControllerBase
     /// The grid position of the human-controlled participant in the specified session. Returns 0 if no human-controlled
     /// participant is found or if <paramref name="sessionId"/> is null or less than 1
     /// </returns>
-    private async Task<int> GetGridPositionAsync(RepositoryFactory dbFactory, long? sessionId)
+    private int GetGridPosition(Dictionary<long, int> gridPositions, long? sessionId)
     {
-        var gridPosition = 0;
-
-        if (sessionId > 0)
-        {
-            var participantQuery = dbFactory.GetRepository<ParticipantRepository>()?.GetQuery();
-
-            var humanDriverId = participantQuery == null
-                                    ? 0
-                                    : await participantQuery.Where(p => p.SessionId == sessionId
-                                                                        && p.DbIsHumanControlled == 1)
-                                                            .Select(p => p.Id)
-                                                            .FirstOrDefaultAsync()
-                                                            .ConfigureAwait(false);
-
-            if (humanDriverId > 0)
-            {
-                var finalQuery = dbFactory.GetRepository<FinalClassificationRepository>()?.GetQuery();
-
-                gridPosition = finalQuery == null
-                                   ? 0
-                                   : await finalQuery.Where(f => f.SessionId == sessionId
-                                                                 && f.ParticipantId == humanDriverId)
-                                                     .Select(f => f.FinishPosition)
-                                                     .FirstOrDefaultAsync()
-                                                     .ConfigureAwait(false);
-            }
-        }
-
-        return gridPosition;
+        return sessionId > 0 && gridPositions.TryGetValue(sessionId.Value, out var gridPosition)
+                   ? gridPosition
+                   : 0;
     }
 
     /// <summary>
