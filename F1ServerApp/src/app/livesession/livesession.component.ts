@@ -2,7 +2,6 @@ import { ChangeDetectorRef, Component, Inject, OnDestroy, OnInit } from '@angula
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { SignalrService } from '../services/signalr.service';
-import { interval, Subscription } from 'rxjs';
 import { SessionViewApiData } from '../data/sessiondata_api';
 import { SessionLiveViewApiData } from '../data/livesessiondata_api';
 import { LiveSessionViewData } from '../data/livesessionviewdata';
@@ -19,9 +18,9 @@ export class LiveSessionComponent implements OnInit, OnDestroy
 {
   public liveSession!: LiveSessionViewData;
   public timeTable: DriverViewData[] = [];
-  private updateSubscription!: Subscription;
   private readonly http!: HttpClient;
   private readonly serviceUrl!: string;
+  private readonly onLiveSessionDataUpdated = (liveSessionApiData: SessionLiveViewApiData) => { this.handleLiveSessionDataUpdated(liveSessionApiData); };
 
   // Constructor
   constructor(http: HttpClient, public liveSessionService: SignalrService , @Inject('BASE_URL') baseUrl: string, private readonly changeDetector: ChangeDetectorRef)
@@ -34,13 +33,13 @@ export class LiveSessionComponent implements OnInit, OnDestroy
   // Initialization
   ngOnInit()
   {
-    this.updateSubscription = interval(250).subscribe(() => { this.updateLiveSession() });
+    this.liveSessionService.addLiveSessionDataListener(this.onLiveSessionDataUpdated);
   }
 
   // Deinitialization
   ngOnDestroy()
   {
-    this.updateSubscription.unsubscribe();
+    this.liveSessionService.removeLiveSessionDataListener(this.onLiveSessionDataUpdated);
   }
 
   // Recompute the time table and the fastest-time highlight classes from the current live session state
@@ -80,38 +79,40 @@ export class LiveSessionComponent implements OnInit, OnDestroy
     this.timeTable = timeTable;
   }
 
-  // Update live session data
-  private updateLiveSession()
+  // Handle a live session data update pushed by the SignalR hub
+  private handleLiveSessionDataUpdated(liveSessionApiData: SessionLiveViewApiData)
   {
-    this.http.get<SessionLiveViewApiData>(this.serviceUrl + 'api/livesessiondata/').subscribe(
+    if (liveSessionApiData)
     {
-      next: (liveSessionApiData) =>
+      const previousSessionDbId = this.liveSession.sessionDbId;
+
+      this.liveSession.setLiveSessionApiData(liveSessionApiData);
+      this.refreshTimeTable();
+      this.changeDetector.markForCheck();
+
+      if (this.liveSession.sessionDbId > 0 && this.liveSession.sessionDbId != previousSessionDbId)
       {
-        if (liveSessionApiData)
+        console.log("Live session db id " + this.liveSession.sessionDbId);
+
+        this.loadSessionDetails(this.liveSession.sessionDbId);
+      }
+    }
+  }
+
+  // Load session details for the given session once, e.g. when the live session id changes
+  private loadSessionDetails(sessionDbId: number)
+  {
+    this.http.get<SessionViewApiData>(this.serviceUrl + 'api/sessions/session/' + sessionDbId).subscribe(
+    {
+      next: (sessionApiData) =>
+      {
+        if (sessionApiData)
         {
-          this.liveSession.setLiveSessionApiData(liveSessionApiData);
-          this.refreshTimeTable();
+          this.liveSession.setSessionApiData(sessionApiData, () => this.changeDetector.markForCheck());
           this.changeDetector.markForCheck();
         }
-      }, error: (err) => { console.error(err) }
+      },
+      error: (err) => { console.error(err); }
     });
-
-    if (this.liveSession && this.liveSession.sessionDbId > 0)
-    {
-      console.log("Live session db id " + this.liveSession.sessionDbId);
-
-      this.http.get<SessionViewApiData>(this.serviceUrl + 'api/sessions/session/' + this.liveSession.sessionDbId).subscribe(
-      {
-        next: (sessionApiData) =>
-        {
-          if (sessionApiData)
-          {
-            this.liveSession.setSessionApiData(sessionApiData, () => this.changeDetector.markForCheck());
-            this.changeDetector.markForCheck();
-          }
-        },
-        error: (err) => { console.error(err); }
-      });
-    }
   }
 }
