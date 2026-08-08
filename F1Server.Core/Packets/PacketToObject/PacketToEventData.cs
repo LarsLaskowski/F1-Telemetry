@@ -140,7 +140,7 @@ internal class PacketToEventData : PacketToXBase
         {
             switch (eventData.EventCode)
             {
-                case "FTLP":
+                case EventCodes.FastestLap:
                     {
                         eventDetailsData.EventType = EventType.FastestLap;
                         eventDetailsData.VehicleIndex = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
@@ -151,21 +151,21 @@ internal class PacketToEventData : PacketToXBase
                     }
                     break;
 
-                case "RTMT":
+                case EventCodes.Retirement:
                     {
                         eventDetailsData.EventType = EventType.Retirement;
                         eventDetailsData.VehicleIndex = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
                     }
                     break;
 
-                case "TMPT":
+                case EventCodes.TeamMateInPits:
                     {
                         eventDetailsData.EventType = EventType.TeamMateInPit;
                         eventDetailsData.VehicleIndex = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
                     }
                     break;
 
-                case "RCWN":
+                case EventCodes.RaceWinner:
                     {
                         eventDetailsData.EventType = EventType.RaceWinner;
                         eventDetailsData.VehicleIndex = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
@@ -188,7 +188,7 @@ internal class PacketToEventData : PacketToXBase
 
         if (eventData.EventDetails is EventDataDetails2020 eventDetailsData)
         {
-            if (eventData.EventCode == "PENA")
+            if (eventData.EventCode == EventCodes.PenaltyIssued)
             {
                 eventDetailsData.EventType = EventType.Penalty;
 
@@ -242,7 +242,7 @@ internal class PacketToEventData : PacketToXBase
                 eventDetailsData.PenaltyPlacesGained = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
             }
 
-            if (eventData.EventCode == "SPTP")
+            if (eventData.EventCode == EventCodes.SpeedTrapTriggered)
             {
                 eventDetailsData.EventType = EventType.SpeedTrap;
                 eventDetailsData.VehicleIndex = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
@@ -273,7 +273,7 @@ internal class PacketToEventData : PacketToXBase
         {
             switch (eventData.EventCode)
             {
-                case "PENA":
+                case EventCodes.PenaltyIssued:
                     {
                         eventDetails21Data.EventType = EventType.Penalty;
 
@@ -281,7 +281,7 @@ internal class PacketToEventData : PacketToXBase
                     }
                     break;
 
-                case "SPTP":
+                case EventCodes.SpeedTrapTriggered:
                     {
                         eventDetails21Data.EventType = EventType.SpeedTrap;
                         eventDetails21Data.VehicleIndex = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
@@ -300,21 +300,21 @@ internal class PacketToEventData : PacketToXBase
                     }
                     break;
 
-                case "STLG":
+                case EventCodes.StartLights:
                     {
                         eventDetails21Data.EventType = EventType.StartLights;
                         eventDetails21Data.StartLightsNumbers = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
                     }
                     break;
 
-                case "DTSV":
+                case EventCodes.DriveThroughServed:
                     {
                         eventDetails21Data.EventType = EventType.DriveThroughPenaltyServed;
                         eventDetails21Data.VehicleIndex = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
                     }
                     break;
 
-                case "SGSV":
+                case EventCodes.StopGoServed:
                     {
                         eventDetails21Data.EventType = EventType.StopAndGoPenaltyServed;
                         eventDetails21Data.VehicleIndex = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
@@ -332,7 +332,7 @@ internal class PacketToEventData : PacketToXBase
                     }
                     break;
 
-                case "BUTN":
+                case EventCodes.ButtonStatus:
                     {
                         eventDetails21Data.EventType = EventType.Buttons;
                         eventDetails21Data.ButtonsTriggered = Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref dataPacket, actOffset));
@@ -361,7 +361,7 @@ internal class PacketToEventData : PacketToXBase
         {
             switch (eventData.EventCode)
             {
-                case "PENA":
+                case EventCodes.PenaltyIssued:
                     {
                         eventDetails22Data.EventType = EventType.Penalty;
 
@@ -369,7 +369,7 @@ internal class PacketToEventData : PacketToXBase
                     }
                     break;
 
-                case "SPTP":
+                case EventCodes.SpeedTrapTriggered:
                     {
                         eventDetails22Data.EventType = EventType.SpeedTrap;
 
@@ -377,7 +377,7 @@ internal class PacketToEventData : PacketToXBase
                     }
                     break;
 
-                case "STLG":
+                case EventCodes.StartLights:
                     {
                         eventDetails22Data.EventType = EventType.StartLights;
 
@@ -385,14 +385,14 @@ internal class PacketToEventData : PacketToXBase
                     }
                     break;
 
-                case "DTSV":
+                case EventCodes.DriveThroughServed:
                     {
                         eventDetails22Data.EventType = EventType.DriveThroughPenaltyServed;
                         eventDetails22Data.VehicleIndex = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
                     }
                     break;
 
-                case "SGSV":
+                case EventCodes.StopGoServed:
                     {
                         eventDetails22Data.EventType = EventType.StopAndGoPenaltyServed;
                         eventDetails22Data.VehicleIndex = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
@@ -410,7 +410,7 @@ internal class PacketToEventData : PacketToXBase
                     }
                     break;
 
-                case "BUTN":
+                case EventCodes.ButtonStatus:
                     {
                         eventDetails22Data.EventType = EventType.Buttons;
                         eventDetails22Data.ButtonsTriggered = Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref dataPacket, actOffset));
@@ -439,7 +439,7 @@ internal class PacketToEventData : PacketToXBase
         {
             switch (eventData.EventCode)
             {
-                case "PENA":
+                case EventCodes.PenaltyIssued:
                     {
                         eventDetails23Data.EventType = EventType.Penalty;
 
@@ -447,7 +447,7 @@ internal class PacketToEventData : PacketToXBase
                     }
                     break;
 
-                case "SPTP":
+                case EventCodes.SpeedTrapTriggered:
                     {
                         eventDetails23Data.EventType = EventType.SpeedTrap;
 
@@ -455,21 +455,21 @@ internal class PacketToEventData : PacketToXBase
                     }
                     break;
 
-                case "STLG":
+                case EventCodes.StartLights:
                     {
                         eventDetails23Data.EventType = EventType.StartLights;
                         eventDetails23Data.StartLightsNumbers = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
                     }
                     break;
 
-                case "DTSV":
+                case EventCodes.DriveThroughServed:
                     {
                         eventDetails23Data.EventType = EventType.DriveThroughPenaltyServed;
                         eventDetails23Data.VehicleIndex = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
                     }
                     break;
 
-                case "SGSV":
+                case EventCodes.StopGoServed:
                     {
                         eventDetails23Data.EventType = EventType.StopAndGoPenaltyServed;
                         eventDetails23Data.VehicleIndex = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
@@ -487,21 +487,21 @@ internal class PacketToEventData : PacketToXBase
                     }
                     break;
 
-                case "BUTN":
+                case EventCodes.ButtonStatus:
                     {
                         eventDetails23Data.EventType = EventType.Buttons;
                         eventDetails23Data.ButtonsTriggered = Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref dataPacket, actOffset));
                     }
                     break;
 
-                case "RDFL":
+                case EventCodes.RedFlag:
                     {
                         eventDetails23Data.EventType = EventType.RedFlag;
                         eventDetails23Data.IsRedFlag = true;
                     }
                     break;
 
-                case "OVTK":
+                case EventCodes.Overtake:
                     {
                         eventDetails23Data.EventType = EventType.Overtake;
                         eventDetails23Data.OvertakingVehicleIndex = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
@@ -534,7 +534,7 @@ internal class PacketToEventData : PacketToXBase
         {
             switch (eventData.EventCode)
             {
-                case "PENA":
+                case EventCodes.PenaltyIssued:
                     {
                         eventDetailsData.EventType = EventType.Penalty;
 
@@ -542,7 +542,7 @@ internal class PacketToEventData : PacketToXBase
                     }
                     break;
 
-                case "SPTP":
+                case EventCodes.SpeedTrapTriggered:
                     {
                         eventDetailsData.EventType = EventType.SpeedTrap;
 
@@ -550,21 +550,21 @@ internal class PacketToEventData : PacketToXBase
                     }
                     break;
 
-                case "STLG":
+                case EventCodes.StartLights:
                     {
                         eventDetailsData.EventType = EventType.StartLights;
                         eventDetailsData.StartLightsNumbers = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
                     }
                     break;
 
-                case "DTSV":
+                case EventCodes.DriveThroughServed:
                     {
                         eventDetailsData.EventType = EventType.DriveThroughPenaltyServed;
                         eventDetailsData.VehicleIndex = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
                     }
                     break;
 
-                case "SGSV":
+                case EventCodes.StopGoServed:
                     {
                         eventDetailsData.EventType = EventType.StopAndGoPenaltyServed;
                         eventDetailsData.VehicleIndex = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
@@ -582,21 +582,21 @@ internal class PacketToEventData : PacketToXBase
                     }
                     break;
 
-                case "BUTN":
+                case EventCodes.ButtonStatus:
                     {
                         eventDetailsData.EventType = EventType.Buttons;
                         eventDetailsData.ButtonsTriggered = Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref dataPacket, actOffset));
                     }
                     break;
 
-                case "RDFL":
+                case EventCodes.RedFlag:
                     {
                         eventDetailsData.EventType = EventType.RedFlag;
                         eventDetailsData.IsRedFlag = true;
                     }
                     break;
 
-                case "OVTK":
+                case EventCodes.Overtake:
                     {
                         eventDetailsData.EventType = EventType.Overtake;
                         eventDetailsData.OvertakingVehicleIndex = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
@@ -607,7 +607,7 @@ internal class PacketToEventData : PacketToXBase
                     }
                     break;
 
-                case "SCAR":
+                case EventCodes.SafetyCar:
                     {
                         eventDetailsData.EventType = EventType.SafetyCar;
 
@@ -626,7 +626,7 @@ internal class PacketToEventData : PacketToXBase
                     }
                     break;
 
-                case "COLL":
+                case EventCodes.Collision:
                     {
                         eventDetailsData.EventType = EventType.Collision;
                         eventDetailsData.CollisionVehicleIndex1 = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
@@ -659,7 +659,7 @@ internal class PacketToEventData : PacketToXBase
         {
             switch (eventData.EventCode)
             {
-                case "RTMT":
+                case EventCodes.Retirement:
                     {
                         eventDetailsData.EventType = EventType.Retirement;
 
@@ -671,7 +671,7 @@ internal class PacketToEventData : PacketToXBase
                     }
                     break;
 
-                case "PENA":
+                case EventCodes.PenaltyIssued:
                     {
                         eventDetailsData.EventType = EventType.Penalty;
 
@@ -679,7 +679,7 @@ internal class PacketToEventData : PacketToXBase
                     }
                     break;
 
-                case "SPTP":
+                case EventCodes.SpeedTrapTriggered:
                     {
                         eventDetailsData.EventType = EventType.SpeedTrap;
 
@@ -687,7 +687,7 @@ internal class PacketToEventData : PacketToXBase
                     }
                     break;
 
-                case "STLG":
+                case EventCodes.StartLights:
                     {
                         eventDetailsData.EventType = EventType.StartLights;
 
@@ -695,14 +695,14 @@ internal class PacketToEventData : PacketToXBase
                     }
                     break;
 
-                case "DTSV":
+                case EventCodes.DriveThroughServed:
                     {
                         eventDetailsData.EventType = EventType.DriveThroughPenaltyServed;
                         eventDetailsData.VehicleIndex = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
                     }
                     break;
 
-                case "SGSV":
+                case EventCodes.StopGoServed:
                     {
                         eventDetailsData.EventType = EventType.StopAndGoPenaltyServed;
                         eventDetailsData.VehicleIndex = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
@@ -724,21 +724,21 @@ internal class PacketToEventData : PacketToXBase
                     }
                     break;
 
-                case "BUTN":
+                case EventCodes.ButtonStatus:
                     {
                         eventDetailsData.EventType = EventType.Buttons;
                         eventDetailsData.ButtonsTriggered = Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref dataPacket, actOffset));
                     }
                     break;
 
-                case "RDFL":
+                case EventCodes.RedFlag:
                     {
                         eventDetailsData.EventType = EventType.RedFlag;
                         eventDetailsData.IsRedFlag = true;
                     }
                     break;
 
-                case "OVTK":
+                case EventCodes.Overtake:
                     {
                         eventDetailsData.EventType = EventType.Overtake;
                         eventDetailsData.OvertakingVehicleIndex = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
@@ -749,7 +749,7 @@ internal class PacketToEventData : PacketToXBase
                     }
                     break;
 
-                case "SCAR":
+                case EventCodes.SafetyCar:
                     {
                         eventDetailsData.EventType = EventType.SafetyCar;
 
@@ -768,7 +768,7 @@ internal class PacketToEventData : PacketToXBase
                     }
                     break;
 
-                case "COLL":
+                case EventCodes.Collision:
                     {
                         eventDetailsData.EventType = EventType.Collision;
                         eventDetailsData.CollisionVehicleIndex1 = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
@@ -779,7 +779,7 @@ internal class PacketToEventData : PacketToXBase
                     }
                     break;
 
-                case "DRSD":
+                case EventCodes.DRSDisabled:
                     {
                         eventDetailsData.EventType = EventType.DrsDisabled;
 
