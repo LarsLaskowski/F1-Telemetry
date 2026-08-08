@@ -16,7 +16,7 @@ internal static class ResultStatusMapper
     /// <returns>Enumeration-Value</returns>
     public static ResultStatus MapResultStatus2019(byte gameResultStatus)
     {
-        return (ResultStatus)Enum.ToObject(typeof(ResultStatus), gameResultStatus + 1);
+        return (ResultStatus)(gameResultStatus + 1);
     }
 
     /// <summary>
@@ -47,7 +47,7 @@ internal static class ResultStatusMapper
             ++gameResultStatus;
         }
 
-        return (ResultStatus)Enum.ToObject(typeof(ResultStatus), gameResultStatus);
+        return (ResultStatus)gameResultStatus;
     }
 
     /// <summary>
