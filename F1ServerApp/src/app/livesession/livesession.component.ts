@@ -34,6 +34,12 @@ export class LiveSessionComponent implements OnInit, OnDestroy
   ngOnInit()
   {
     this.liveSessionService.addLiveSessionDataListener(this.onLiveSessionDataUpdated);
+
+    this.http.get<SessionLiveViewApiData>(this.serviceUrl + 'api/livesessiondata/').subscribe(
+    {
+      next: (liveSessionApiData) => { this.handleLiveSessionDataUpdated(liveSessionApiData); },
+      error: (err) => { console.error(err); }
+    });
   }
 
   // Deinitialization
@@ -85,12 +91,16 @@ export class LiveSessionComponent implements OnInit, OnDestroy
     if (liveSessionApiData)
     {
       const previousSessionDbId = this.liveSession.sessionDbId;
+      const previousIsFinished = this.liveSession.isFinished;
 
       this.liveSession.setLiveSessionApiData(liveSessionApiData);
       this.refreshTimeTable();
       this.changeDetector.markForCheck();
 
-      if (this.liveSession.sessionDbId > 0 && this.liveSession.sessionDbId != previousSessionDbId)
+      const sessionChanged = this.liveSession.sessionDbId > 0 && this.liveSession.sessionDbId != previousSessionDbId;
+      const sessionJustFinished = this.liveSession.isFinished && this.liveSession.isFinished != previousIsFinished;
+
+      if (this.liveSession.sessionDbId > 0 && (sessionChanged || sessionJustFinished))
       {
         console.log("Live session db id " + this.liveSession.sessionDbId);
 
