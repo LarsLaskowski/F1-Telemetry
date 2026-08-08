@@ -64,7 +64,7 @@ public class GamesController : ControllerBase
                                                           GameVersion = obj.Name,
                                                           GameVersionCode = $"{obj.MajorVersion}.{obj.MinorVersion}",
                                                           LastUsed = obj.LastUsed.HasValue
-                                                                         ? $"{obj.LastUsed.Value.ToShortDateString()} {obj.LastUsed.Value.ToShortTimeString()}"
+                                                                         ? $"{obj.LastUsed.Value:d} {obj.LastUsed.Value:t}"
                                                                          : "-"
                                                       })
                                        .ToListAsync()

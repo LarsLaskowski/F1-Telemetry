@@ -48,7 +48,7 @@ public class TelemetryStatisticsTests
 
         for (var worker = 0; worker < workerCount; worker++)
         {
-            workers[worker] = Task.Run(() => IncrementStatistics(statistics, incrementsPerWorker));
+            workers[worker] = Task.Run(() => IncrementStatistics(statistics, incrementsPerWorker), TestContext.CancellationToken);
         }
 
         Task.WaitAll(workers, TestContext.CancellationToken);

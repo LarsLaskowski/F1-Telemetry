@@ -106,7 +106,7 @@ public class TimerManagerTests
                                               });
                 }
 
-                Assert.IsTrue(firstTick.Wait(FirstTickTimeout), "The timer should have ticked at least once.");
+                Assert.IsTrue(firstTick.Wait(FirstTickTimeout, TestContext.CancellationToken), "The timer should have ticked at least once.");
 
                 Thread.Sleep(TickObservationTime);
 
@@ -179,6 +179,8 @@ public class TimerManagerTests
 
         Assert.ThrowsExactly<ObjectDisposedException>(() => timerManager.PrepareTimer(NoOperation), "A disposed timer manager should not start a timer.");
     }
+
+    public TestContext TestContext { get; set; }
 
     #endregion // Methods
 }
