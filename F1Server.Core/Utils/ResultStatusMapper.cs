@@ -16,7 +16,7 @@ internal static class ResultStatusMapper
     /// <returns>Enumeration-Value</returns>
     public static ResultStatus MapResultStatus2019(byte gameResultStatus)
     {
-        return (ResultStatus)(gameResultStatus + 1);
+        return gameResultStatus > 7 ? ResultStatus.Unknown : (ResultStatus)(gameResultStatus + 1);
     }
 
     /// <summary>
@@ -37,6 +37,11 @@ internal static class ResultStatusMapper
     /// <returns>Enumeration-Value</returns>
     public static ResultStatus MapResultStatus2021(byte gameResultStatus)
     {
+        if (gameResultStatus > 7)
+        {
+            return ResultStatus.Unknown;
+        }
+
         if (gameResultStatus == 4)
         {
             gameResultStatus = 8;

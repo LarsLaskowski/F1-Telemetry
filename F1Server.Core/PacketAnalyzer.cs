@@ -1,8 +1,12 @@
-﻿using F1Server.Core.Data;
+﻿using System.Runtime.CompilerServices;
+
+using F1Server.Core.Data;
 using F1Server.Core.Enumerations;
 using F1Server.Core.PacketData;
 using F1Server.Core.Packets.Data;
 using F1Server.Core.Packets.PacketToObject;
+
+[assembly: InternalsVisibleToAttribute("F1Server.Tests")]
 
 namespace F1Server.Core;
 
