@@ -624,7 +624,7 @@ internal class PacketToFinalClassification : PacketToXBase
 
             var resultReason = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-            finalClassData.ResultReason = (ResultReason)Enum.ToObject(typeof(ResultReason), resultReason + 1);
+            finalClassData.ResultReason = (ResultReason)resultReason + 1;
 
             actOffset += ConstData.TypeUInt8;
 
@@ -716,7 +716,7 @@ internal class PacketToFinalClassification : PacketToXBase
 
             var resultReason = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-            finalClassData.ResultReason = (ResultReason)Enum.ToObject(typeof(ResultReason), resultReason + 1);
+            finalClassData.ResultReason = (ResultReason)resultReason + 1;
 
             actOffset += ConstData.TypeUInt8;
 

@@ -18,6 +18,7 @@ import { DriverViewData } from '../data/driverviewdata';
 export class LiveSessionComponent implements OnInit, OnDestroy
 {
   public liveSession!: LiveSessionViewData;
+  public timeTable: DriverViewData[] = [];
   private updateSubscription!: Subscription;
   private readonly http!: HttpClient;
   private readonly serviceUrl!: string;
@@ -42,7 +43,8 @@ export class LiveSessionComponent implements OnInit, OnDestroy
     this.updateSubscription.unsubscribe();
   }
 
-  public getTimeTable(): DriverViewData[]
+  // Recompute the time table and the fastest-time highlight classes from the current live session state
+  private refreshTimeTable(): void
   {
     let timeTable: DriverViewData[] = [];
     let position = 1;
@@ -58,6 +60,10 @@ export class LiveSessionComponent implements OnInit, OnDestroy
           if (driverData)
           {
             driverData.setPosition(position);
+            driverData.setTimeClasses(this.liveSession.fastestSector1DriverId,
+                                       this.liveSession.fastestSector2DriverId,
+                                       this.liveSession.fastestSector3DriverId,
+                                       this.liveSession.fastestLapDriverId);
 
             timeTable.push(driverData);
 
@@ -71,37 +77,7 @@ export class LiveSessionComponent implements OnInit, OnDestroy
       console.log("No timetable data available!");
     }
 
-    return timeTable;
-  }
-
-  public getTimeColor(driver: DriverViewData, timeType: number): string
-  {
-    let classType = 'normalTime';
-
-    if (driver)
-    {
-      if (timeType == 1 && this.liveSession.fastestSector1DriverId == driver.arrayIndex)
-      {
-        classType = 'fastestTime';
-      }
-
-      if (timeType == 2 && this.liveSession.fastestSector2DriverId == driver.arrayIndex)
-      {
-        classType = 'fastestTime';
-      }
-
-      if (timeType == 3 && this.liveSession.fastestSector3DriverId == driver.arrayIndex)
-      {
-        classType = 'fastestTime';
-      }
-
-      if (timeType == 4 && this.liveSession.fastestLapDriverId == driver.arrayIndex)
-      {
-        classType = 'fastestTime';
-      }
-    }
-
-    return classType;
+    this.timeTable = timeTable;
   }
 
   // Update live session data
@@ -114,6 +90,7 @@ export class LiveSessionComponent implements OnInit, OnDestroy
         if (liveSessionApiData)
         {
           this.liveSession.setLiveSessionApiData(liveSessionApiData);
+          this.refreshTimeTable();
           this.changeDetector.markForCheck();
         }
       }, error: (err) => { console.error(err) }

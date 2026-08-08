@@ -320,7 +320,7 @@ internal class PacketToParticipants : PacketToXBase
 
             try
             {
-                participantData2023.Platform = (Platforms)Enum.ToObject(typeof(Platforms), platform);
+                participantData2023.Platform = (Platforms)platform;
             }
             catch
             {

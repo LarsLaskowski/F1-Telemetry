@@ -56,13 +56,11 @@ public class CarTelemetryController : ControllerBase
         using (var dbFactory = RepositoryFactory.CreateInstance())
         {
             var telemetryQuery = dbFactory.GetRepository<CarTelemetryRepository>()?.GetQuery();
-            var lapQuery = dbFactory.GetRepository<LapRepository>()?.GetQuery();
 
-            if (telemetryQuery != null && lapQuery != null)
+            if (telemetryQuery != null)
             {
-                hasUserTelemetryData = await telemetryQuery.AnyAsync(t => lapQuery.Any(l => l.Id == t.LapNumberId
-                                                                                            && l.Participant.SessionId == sessionId
-                                                                                            && l.Participant.DbIsHumanControlled == 1))
+                hasUserTelemetryData = await telemetryQuery.AnyAsync(t => t.Lap.SessionId == sessionId
+                                                                          && t.Lap.Participant.DbIsHumanControlled == 1)
                                                            .ConfigureAwait(false);
             }
 
