@@ -186,12 +186,16 @@ public class ChampionshipControllerTests
 
             Assert.IsNotNull(trackQuery, "Track query should be resolvable!");
 
+            // Both sides are ordered by the track id, so the sequences stay comparable regardless of the order the
+            // database returns the rows in
             var expectedFirstSeasonTrackIds = await trackQuery.Where(t => firstSeasonTracks.Contains(t.TrackNumber))
+                                                              .OrderBy(t => t.Id)
                                                               .Select(t => t.Id)
                                                               .ToListAsync(TestContext.CancellationToken)
                                                               .ConfigureAwait(false);
 
             var expectedSecondSeasonTrackIds = await trackQuery.Where(t => secondSeasonTracks.Contains(t.TrackNumber))
+                                                               .OrderBy(t => t.Id)
                                                                .Select(t => t.Id)
                                                                .ToListAsync(TestContext.CancellationToken)
                                                                .ConfigureAwait(false);
@@ -204,22 +208,24 @@ public class ChampionshipControllerTests
             Assert.IsNotNull(championshipTrackQuery, "Championship track query should be resolvable!");
 
             var firstSeasonTrackIds = await championshipTrackQuery.Where(t => t.ChampionshipId == championships[0].Id)
+                                                                  .OrderBy(t => t.TrackId)
                                                                   .Select(t => t.TrackId)
                                                                   .ToListAsync(TestContext.CancellationToken)
                                                                   .ConfigureAwait(false);
 
             var secondSeasonTrackIds = await championshipTrackQuery.Where(t => t.ChampionshipId == championships[1].Id)
+                                                                   .OrderBy(t => t.TrackId)
                                                                    .Select(t => t.TrackId)
                                                                    .ToListAsync(TestContext.CancellationToken)
                                                                    .ConfigureAwait(false);
 
-            CollectionAssert.AreEquivalent(expectedFirstSeasonTrackIds,
-                                           firstSeasonTrackIds,
-                                           "The first season should keep exactly the tracks it was created with!");
+            Assert.AreSequenceEqual(expectedFirstSeasonTrackIds,
+                                    firstSeasonTrackIds,
+                                    "The first season should keep exactly the tracks it was created with!");
 
-            CollectionAssert.AreEquivalent(expectedSecondSeasonTrackIds,
-                                           secondSeasonTrackIds,
-                                           "The second season should carry exactly the tracks it was created with!");
+            Assert.AreSequenceEqual(expectedSecondSeasonTrackIds,
+                                    secondSeasonTrackIds,
+                                    "The second season should carry exactly the tracks it was created with!");
         }
     }
 
