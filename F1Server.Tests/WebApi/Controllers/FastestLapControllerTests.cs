@@ -14,6 +14,20 @@ namespace F1Server.Tests.WebApi.Controllers;
 [TestClass]
 public class FastestLapControllerTests
 {
+    #region Constants
+
+    /// <summary>
+    /// Lap time in milliseconds of the practice session of the tests in this class
+    /// </summary>
+    private const uint PracticeLapTime = 82500U;
+
+    /// <summary>
+    /// Lap time in milliseconds of the qualifying session of the tests in this class
+    /// </summary>
+    private const uint QualifyingLapTime = 80750U;
+
+    #endregion // Constants
+
     #region Static methods
 
     /// <summary>
@@ -89,6 +103,62 @@ public class FastestLapControllerTests
         Assert.IsNotNull(raceLap, "The fastest race lap of the formula two session should be returned!");
         Assert.AreEqual(Formula.F2, raceLap.FormulaType, "The lap should be reported for formula two!");
         Assert.AreEqual(ControllerTestData.FastestLapTime, raceLap.LapTime, "The lap time of the formula two lap should be returned!");
+    }
+
+    /// <summary>
+    /// Verifies that the fastest practice and qualifying laps of a track are reported for their session type
+    /// </summary>
+    /// <returns>Task</returns>
+    [TestMethod]
+    public async Task FastestLapControllerGetFastestLapsReturnsPracticeAndQualifyingLapsOfTrack()
+    {
+        var trackId = ControllerTestData.AddTrack();
+
+        ControllerTestData.AddSessionWithLap(SessionType.Practice2, Formula.F1Modern, trackId, PracticeLapTime);
+        ControllerTestData.AddSessionWithLap(SessionType.Qualifying3, Formula.F1Modern, trackId, QualifyingLapTime);
+
+        var controller = CreateController();
+
+        var result = await controller.GetFastestLaps(trackId).ConfigureAwait(false);
+
+        var fastestLaps = (result as OkObjectResult)?.Value as List<FastestLapOfTrackViewData>;
+
+        Assert.IsNotNull(fastestLaps, "The fastest laps of the track should be returned!");
+
+        var practiceLap = fastestLaps.Find(l => l.LapSessionType == FastestLapSessionType.Practice);
+        var qualifyingLap = fastestLaps.Find(l => l.LapSessionType == FastestLapSessionType.Qualifying);
+
+        Assert.IsNotNull(practiceLap, "The fastest practice lap of the track should be returned!");
+        Assert.IsNotNull(qualifyingLap, "The fastest qualifying lap of the track should be returned!");
+        Assert.AreEqual(PracticeLapTime, practiceLap.LapTime, "The lap time of the practice session should be returned!");
+        Assert.AreEqual(QualifyingLapTime, qualifyingLap.LapTime, "The lap time of the qualifying session should be returned!");
+        Assert.IsNull(fastestLaps.Find(l => l.LapSessionType == FastestLapSessionType.Race), "A track without race sessions must not report a fastest race lap!");
+    }
+
+    /// <summary>
+    /// Verifies that the difference of a fastest lap to the reference lap time of its track is returned
+    /// </summary>
+    /// <returns>Task</returns>
+    [TestMethod]
+    public async Task FastestLapControllerGetFastestLapsReturnsDifferenceToReferenceTime()
+    {
+        var trackId = ControllerTestData.AddTrack();
+
+        ControllerTestData.AddSessionWithLap(SessionType.Race, Formula.F1Modern, trackId, QualifyingLapTime);
+
+        var controller = CreateController();
+
+        var result = await controller.GetFastestLaps(trackId).ConfigureAwait(false);
+
+        var fastestLaps = (result as OkObjectResult)?.Value as List<FastestLapOfTrackViewData>;
+
+        Assert.IsNotNull(fastestLaps, "The fastest laps of the track should be returned!");
+
+        var raceLap = fastestLaps.Find(l => l.LapSessionType == FastestLapSessionType.Race);
+
+        Assert.IsNotNull(raceLap, "The fastest race lap of the track should be returned!");
+        Assert.AreEqual(ControllerTestData.ReferenceLapTime, raceLap.ReferenceTime, "The reference lap time of the track should be returned!");
+        Assert.AreEqual(QualifyingLapTime - ControllerTestData.ReferenceLapTime, raceLap.DiffReference, "The difference of the fastest lap to the reference lap time should be returned!");
     }
 
     /// <summary>

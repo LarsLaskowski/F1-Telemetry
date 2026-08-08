@@ -82,6 +82,78 @@ public class FinalClassificationControllerTests
     }
 
     /// <summary>
+    /// Verifies that the race time difference to the leader is returned for a driver on the same lap
+    /// </summary>
+    /// <returns>Task</returns>
+    [TestMethod]
+    public async Task FinalClassificationControllerGetFromSessionReturnsRaceTimeDifferenceToLeader()
+    {
+        var sessionId = ControllerTestData.AddRaceSession();
+
+        ControllerTestData.AddClassifiedParticipant(sessionId, "Time Difference Leader", 1, 10, 90.0, ControllerTestData.FastestLapTime);
+        ControllerTestData.AddClassifiedParticipant(sessionId, "Time Difference Follower", 2, 10, 91.5, ControllerTestData.SlowerLapTime);
+
+        var controller = CreateController();
+
+        var result = await controller.GetFromSession(sessionId).ConfigureAwait(false);
+
+        var finalClassifications = (result as OkObjectResult)?.Value as List<FinalClassificationViewData>;
+
+        Assert.IsNotNull(finalClassifications, "The final classification of the session should be returned!");
+        Assert.HasCount(2, finalClassifications, "Both classified participants should be returned!");
+        Assert.AreEqual("0.000", finalClassifications[0].RaceTimeDifference, "The leader should not be reported with a race time difference!");
+        Assert.AreEqual("+1.500", finalClassifications[1].RaceTimeDifference, "The race time difference of the follower to the leader should be returned!");
+    }
+
+    /// <summary>
+    /// Verifies that a driver with fewer driven laps than the leader is reported with the lap difference
+    /// </summary>
+    /// <returns>Task</returns>
+    [TestMethod]
+    public async Task FinalClassificationControllerGetFromSessionReportsLappedDriverWithLapDifference()
+    {
+        var sessionId = ControllerTestData.AddRaceSession();
+
+        ControllerTestData.AddClassifiedParticipant(sessionId, "Lapped Leader", 1, 10, 90.0, ControllerTestData.FastestLapTime);
+        ControllerTestData.AddClassifiedParticipant(sessionId, "Lapped Follower", 2, 8, 95.0, ControllerTestData.SlowerLapTime);
+
+        var controller = CreateController();
+
+        var result = await controller.GetFromSession(sessionId).ConfigureAwait(false);
+
+        var finalClassifications = (result as OkObjectResult)?.Value as List<FinalClassificationViewData>;
+
+        Assert.IsNotNull(finalClassifications, "The final classification of the session should be returned!");
+        Assert.HasCount(2, finalClassifications, "Both classified participants should be returned!");
+        Assert.AreEqual("+ 2 lap(s)", finalClassifications[1].RaceTimeDifference, "A driver with fewer driven laps should be reported with the lap difference!");
+    }
+
+    /// <summary>
+    /// Verifies that the difference to the fastest lap of the session is returned for the slower driver
+    /// </summary>
+    /// <returns>Task</returns>
+    [TestMethod]
+    public async Task FinalClassificationControllerGetFromSessionReturnsFastestLapTimeDifference()
+    {
+        var sessionId = ControllerTestData.AddRaceSession();
+
+        ControllerTestData.AddClassifiedParticipant(sessionId, "Fastest Lap Leader", 1, 10, 90.0, ControllerTestData.FastestLapTime);
+        ControllerTestData.AddClassifiedParticipant(sessionId, "Fastest Lap Follower", 2, 10, 91.5, ControllerTestData.SlowerLapTime);
+
+        var controller = CreateController();
+
+        var result = await controller.GetFromSession(sessionId).ConfigureAwait(false);
+
+        var finalClassifications = (result as OkObjectResult)?.Value as List<FinalClassificationViewData>;
+
+        Assert.IsNotNull(finalClassifications, "The final classification of the session should be returned!");
+        Assert.HasCount(2, finalClassifications, "Both classified participants should be returned!");
+        Assert.IsTrue(finalClassifications[0].IsFastestSessionLapTime, "The driver of the fastest lap of the session should be marked!");
+        Assert.AreEqual(string.Empty, finalClassifications[0].FastestLapTimeDifference, "The driver of the fastest lap of the session should not be reported with a difference!");
+        Assert.AreEqual("+2.500", finalClassifications[1].FastestLapTimeDifference, "The difference of the slower driver to the fastest lap of the session should be returned!");
+    }
+
+    /// <summary>
     /// Verifies that an unknown session returns an empty final classification
     /// </summary>
     /// <returns>Task</returns>

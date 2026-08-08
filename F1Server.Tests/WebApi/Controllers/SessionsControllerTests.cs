@@ -67,7 +67,9 @@ public class SessionsControllerTests
 
         using (cache)
         {
-            var result = await controller.GetSessions().ConfigureAwait(false);
+            // The session list is ordered by the newest session, so the page has to be large enough to also contain
+            // the shared test session behind the sessions created by the other tests
+            var result = await controller.GetSessions(pageIndex: 0, pageSize: 100).ConfigureAwait(false);
 
             var pageResult = (result.Result as OkObjectResult)?.Value as PageResultData<SessionViewData>;
 
@@ -100,6 +102,107 @@ public class SessionsControllerTests
 
             Assert.IsNotNull(pageResult, "The action should return a page result!");
             Assert.HasCount(1, pageResult.Items, "A page size of one should return a single session!");
+        }
+    }
+
+    /// <summary>
+    /// Verifies that the race preceding a second race at the same track is reported as sprint race
+    /// </summary>
+    /// <returns>Task</returns>
+    [TestMethod]
+    public async Task SessionsControllerGetSessionsReportsRaceBeforeSecondRaceAsSprint()
+    {
+        // A dedicated game version keeps the sprint detection limited to the sessions of this test
+        var gameVersionId = ControllerTestData.AddGameVersion(3771003);
+
+        var sprintSessionId = ControllerTestData.AddSession(SessionType.Race, isFinished: true, gameVersionId);
+        var raceSessionId = ControllerTestData.AddSession(SessionType.Race2, isFinished: true, gameVersionId);
+
+        var controller = CreateController(out var cache);
+
+        using (cache)
+        {
+            var result = await controller.GetSessions(pageIndex: 0, pageSize: 100).ConfigureAwait(false);
+
+            var pageResult = (result.Result as OkObjectResult)?.Value as PageResultData<SessionViewData>;
+
+            Assert.IsNotNull(pageResult, "The action should return a page result!");
+
+            var sprintSession = pageResult.Items.Find(s => s.SessionDbId == sprintSessionId);
+            var raceSession = pageResult.Items.Find(s => s.SessionDbId == raceSessionId);
+
+            Assert.IsNotNull(sprintSession, "The race preceding the second race should be part of the session list!");
+            Assert.IsNotNull(raceSession, "The second race should be part of the session list!");
+            Assert.AreEqual(SessionType.Sprint, sprintSession.SessionType, "The race preceding a second race should be reported as sprint race!");
+            Assert.AreEqual(SessionType.Race2, raceSession.SessionType, "The second race should keep its session type!");
+        }
+    }
+
+    /// <summary>
+    /// Verifies that a race preceded by a sprint shootout is reported as sprint race in the session list
+    /// </summary>
+    /// <returns>Task</returns>
+    [TestMethod]
+    public async Task SessionsControllerGetSessionsReportsRaceAfterSprintShootoutAsSprint()
+    {
+        var gameVersionId = ControllerTestData.AddGameVersion(3771004);
+
+        ControllerTestData.AddSession(SessionType.SprintShootout1, isFinished: true, gameVersionId);
+
+        var raceSessionId = ControllerTestData.AddSession(SessionType.Race, isFinished: true, gameVersionId);
+
+        var controller = CreateController(out var cache);
+
+        using (cache)
+        {
+            var result = await controller.GetSessions(pageIndex: 0, pageSize: 100).ConfigureAwait(false);
+
+            var pageResult = (result.Result as OkObjectResult)?.Value as PageResultData<SessionViewData>;
+
+            Assert.IsNotNull(pageResult, "The action should return a page result!");
+
+            var raceSession = pageResult.Items.Find(s => s.SessionDbId == raceSessionId);
+
+            Assert.IsNotNull(raceSession, "The race session should be part of the session list!");
+            Assert.AreEqual(SessionType.Sprint, raceSession.SessionType, "A race preceded by a sprint shootout should be reported as sprint race!");
+        }
+    }
+
+    /// <summary>
+    /// Verifies that a page size above the allowed maximum is rejected
+    /// </summary>
+    /// <returns>Task</returns>
+    [TestMethod]
+    public async Task SessionsControllerGetSessionsWithTooLargePageSizeReturnsBadRequest()
+    {
+        var controller = CreateController(out var cache);
+
+        using (cache)
+        {
+            var result = await controller.GetSessions(pageIndex: 0, pageSize: 101).ConfigureAwait(false);
+
+            Assert.IsInstanceOfType<BadRequestObjectResult>(result.Result, "A page size above the maximum should be rejected!");
+        }
+    }
+
+    /// <summary>
+    /// Verifies that a page behind the last session is returned empty while the total count stays complete
+    /// </summary>
+    /// <returns>Task</returns>
+    [TestMethod]
+    public async Task SessionsControllerGetSessionsBehindLastPageReturnsEmptyPage()
+    {
+        var controller = CreateController(out var cache);
+
+        using (cache)
+        {
+            var result = await controller.GetSessions(pageIndex: 100000, pageSize: 15).ConfigureAwait(false);
+
+            var pageResult = (result.Result as OkObjectResult)?.Value as PageResultData<SessionViewData>;
+
+            Assert.IsNotNull(pageResult, "The action should return a page result!");
+            Assert.IsEmpty(pageResult.Items, "A page behind the last session must not contain sessions!");
+            Assert.IsGreaterThan(0, pageResult.TotalCount, "The total count should stay complete on a page behind the last session!");
         }
     }
 
