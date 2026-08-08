@@ -45,7 +45,7 @@ public sealed class RepositoryFactory : IDisposable
     {
         _dbContext = _contextPool.Value.CreateDbContext();
         _dbContext.LastError = null;
-        _repositories = new Dictionary<Type, RepositoryBase>();
+        _repositories = [];
     }
 
     #endregion // Constructors

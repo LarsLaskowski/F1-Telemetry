@@ -49,7 +49,7 @@ public class TracksController : ControllerBase
 
         using var currentActivity = AppActivity.ApiSource.StartActivity(nameof(Get));
 
-        _logger?.LogInformation("Tracks loading...");
+        _logger?.LoadingTracks();
 
         using (var dbFactory = RepositoryFactory.CreateInstance())
         {
@@ -83,7 +83,7 @@ public class TracksController : ControllerBase
             currentActivity?.SetStatus(ActivityStatusCode.Ok);
         }
 
-        _logger?.LogInformation("Tracks loaded ({TracksLoaded}).", tracks?.Count);
+        _logger?.TracksLoaded(tracks?.Count);
 
         return tracks;
     }
@@ -101,7 +101,7 @@ public class TracksController : ControllerBase
 
         using var currentActivity = AppActivity.ApiSource.StartActivity(nameof(GetTrack));
 
-        _logger?.LogInformation("Track loading ({TrackId})...", trackId);
+        _logger?.LoadingTrack(trackId);
 
         using (var dbFactory = RepositoryFactory.CreateInstance())
         {
@@ -125,7 +125,7 @@ public class TracksController : ControllerBase
             currentActivity?.SetStatus(ActivityStatusCode.Ok);
         }
 
-        _logger?.LogInformation("Track loaded ({TrackLoaded}).", trackData != null);
+        _logger?.TrackLoaded(trackData != null);
 
         return Ok(trackData);
     }

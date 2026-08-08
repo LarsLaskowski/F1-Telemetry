@@ -39,27 +39,24 @@ public class FastestLapController : ControllerBase
     {
         _logger = logger;
 
-        _practiceSessions = new List<SessionType>()
-                            {
+        _practiceSessions = [
                                 SessionType.Practice1,
                                 SessionType.Practice2,
                                 SessionType.Practice3,
                                 SessionType.ShortPractice
-                            };
-        _qualifyingSessions = new List<SessionType>()
-                              {
+                            ];
+        _qualifyingSessions = [
                                   SessionType.Qualifying1,
                                   SessionType.Qualifying2,
                                   SessionType.Qualifying3,
                                   SessionType.ShortQualifying,
                                   SessionType.OneShotQualifying
-                              };
-        _raceSessions = new List<SessionType>()
-                        {
+                              ];
+        _raceSessions = [
                             SessionType.Race,
                             SessionType.Race2,
                             SessionType.Race3
-                        };
+                        ];
     }
 
     #endregion // Constructors
@@ -79,7 +76,7 @@ public class FastestLapController : ControllerBase
 
         using var currentActivity = AppActivity.ApiSource.StartActivity(nameof(GetFastestLaps));
 
-        _logger?.LogInformation("Fastest laps of track {TrackId}...", trackId);
+        _logger?.LoadingFastestLapsOfTrack(trackId);
 
         if (trackId.HasValue)
         {
@@ -102,7 +99,7 @@ public class FastestLapController : ControllerBase
             currentActivity?.SetStatus(ActivityStatusCode.Ok);
         }
 
-        _logger?.LogInformation("Fastest laps of track loaded ({FastestLaps})", fastestLaps.Count);
+        _logger?.FastestLapsOfTrackLoaded(fastestLaps.Count);
 
         return Ok(fastestLaps);
     }
@@ -235,10 +232,7 @@ public class FastestLapController : ControllerBase
                     fastestLap.DiffReference = fastestLap.LapTime - trackData.LapReferenceTime;
                 }
 
-                fastestLaps = new List<FastestLapOfTrackViewData>
-                              {
-                                  fastestLap
-                              };
+                fastestLaps = [fastestLap];
             }
         }
 
@@ -260,7 +254,7 @@ public class FastestLapController : ControllerBase
                     fastestLap.DiffReference = fastestLap.LapTime - trackData.LapReferenceTime;
                 }
 
-                fastestLaps ??= new List<FastestLapOfTrackViewData>();
+                fastestLaps ??= [];
 
                 fastestLaps.Add(fastestLap);
             }
@@ -284,7 +278,7 @@ public class FastestLapController : ControllerBase
                     fastestLap.DiffReference = fastestLap.LapTime - trackData.LapReferenceTime;
                 }
 
-                fastestLaps ??= new List<FastestLapOfTrackViewData>();
+                fastestLaps ??= [];
 
                 fastestLaps.Add(fastestLap);
             }

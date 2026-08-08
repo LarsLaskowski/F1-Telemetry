@@ -576,7 +576,7 @@ internal class PacketToSessionHistoryData : PacketToXBase
 
                     if (lap < sessionHistoryData.NumberOfLaps && lapData is not null)
                     {
-                        ExtractSessionHistoryLapData(ref dataPacket, ref actOffset, lapData!);
+                        ExtractSessionHistoryLapData(ref dataPacket, ref actOffset, lapData);
 
                         sessionHistoryData.LapHistory[lap] = lapData;
                     }

@@ -51,7 +51,7 @@ public class CarTelemetryController : ControllerBase
 
         using var currentActivity = AppActivity.ApiSource.StartActivity(nameof(hasUserTelemetryData));
 
-        _logger?.LogInformation("Exists user telemetry data for session {SessionId}...", sessionId);
+        _logger?.CheckingUserTelemetryData(sessionId);
 
         using (var dbFactory = RepositoryFactory.CreateInstance())
         {
@@ -69,7 +69,7 @@ public class CarTelemetryController : ControllerBase
             currentActivity?.SetStatus(ActivityStatusCode.Ok);
         }
 
-        _logger?.LogInformation("User telemetry data exists: {HasUserTelemetryData}...", hasUserTelemetryData);
+        _logger?.UserTelemetryDataChecked(hasUserTelemetryData);
 
         return hasUserTelemetryData;
     }
@@ -87,7 +87,7 @@ public class CarTelemetryController : ControllerBase
 
         using var currentActivity = AppActivity.ApiSource.StartActivity(nameof(TelemetryOfLap));
 
-        _logger?.LogInformation("Telemetry values for lap: {LapId}...", lapId);
+        _logger?.LoadingTelemetryValuesOfLap(lapId);
 
         using (var dbFactory = RepositoryFactory.CreateInstance())
         {
@@ -114,10 +114,7 @@ public class CarTelemetryController : ControllerBase
             currentActivity?.SetStatus(ActivityStatusCode.Ok);
         }
 
-        if (_logger?.IsEnabled(LogLevel.Information) == true)
-        {
-            _logger.LogInformation("Telemetry values loaded: ({LoadedValues})", telemetryData?.Count ?? 0);
-        }
+        _logger?.TelemetryValuesLoaded(telemetryData?.Count ?? 0);
 
         return Ok(telemetryData);
     }
@@ -135,7 +132,7 @@ public class CarTelemetryController : ControllerBase
 
         using var currentActivity = AppActivity.ApiSource.StartActivity(nameof(TelemetryOfParticipantFastestLap));
 
-        _logger?.LogInformation("Telemetry values for participant of fastest lap: {ParticipantId}...", participantId);
+        _logger?.LoadingTelemetryValuesOfFastestLap(participantId);
 
         using (var dbFactory = RepositoryFactory.CreateInstance())
         {
@@ -175,10 +172,7 @@ public class CarTelemetryController : ControllerBase
             currentActivity?.SetStatus(ActivityStatusCode.Ok);
         }
 
-        if (_logger?.IsEnabled(LogLevel.Information) == true)
-        {
-            _logger.LogInformation("Telemetry values loaded: ({LoadedValues})", telemetryData?.Count ?? 0);
-        }
+        _logger?.TelemetryValuesLoaded(telemetryData?.Count ?? 0);
 
         return Ok(telemetryData);
     }

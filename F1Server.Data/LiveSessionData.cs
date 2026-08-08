@@ -112,12 +112,12 @@ public class LiveSessionData : ILiveSessionData
     /// <summary>
     /// Participants in session
     /// </summary>
-    public List<ILiveDriverData> Drivers { get; } = new List<ILiveDriverData>();
+    public List<ILiveDriverData> Drivers { get; } = [];
 
     /// <summary>
     /// Current time table
     /// </summary>
-    public List<int> TimeTable { get; set; } = new List<int>();
+    public List<int> TimeTable { get; set; } = [];
 
     #endregion // ILiveSessionData
 }

@@ -22,7 +22,7 @@ public class ChampionshipController : ControllerBase
 {
     #region Fields
 
-    private readonly ILogger<TracksController> _logger;
+    private readonly ILogger<ChampionshipController> _logger;
 
     #endregion // Fields
 
@@ -32,7 +32,7 @@ public class ChampionshipController : ControllerBase
     /// Constructor
     /// </summary>
     /// <param name="logger">Logging interface</param>
-    public ChampionshipController(ILogger<TracksController> logger)
+    public ChampionshipController(ILogger<ChampionshipController> logger)
     {
         _logger = logger;
     }
@@ -48,11 +48,11 @@ public class ChampionshipController : ControllerBase
     [HttpGet]
     public async Task<IEnumerable<ChampionshipViewData>> Get()
     {
-        List<ChampionshipViewData> championships = new List<ChampionshipViewData>();
+        List<ChampionshipViewData> championships = [];
 
         using var currentActivity = AppActivity.ApiSource.StartActivity("GetChampionships");
 
-        _logger?.LogInformation("Championschips loading...");
+        _logger?.LoadingChampionships();
 
         using (var dbFactory = RepositoryFactory.CreateInstance())
         {
@@ -89,7 +89,7 @@ public class ChampionshipController : ControllerBase
             currentActivity?.SetStatus(ActivityStatusCode.Ok);
         }
 
-        _logger?.LogInformation("Championship loaded ({ChampionshipsLoaded}).", championships.Count);
+        _logger?.ChampionshipsLoaded(championships.Count);
 
         return championships;
     }
@@ -105,7 +105,7 @@ public class ChampionshipController : ControllerBase
     {
         using var currentActivity = AppActivity.ApiSource.StartActivity(nameof(CreateChampionship));
 
-        _logger?.LogInformation("Create championship...");
+        _logger?.CreatingChampionship();
 
         if (championshipCreateData is null
             || championshipCreateData.Tracks is null
@@ -181,7 +181,7 @@ public class ChampionshipController : ControllerBase
 
         using var currentActivity = AppActivity.ApiSource.StartActivity(nameof(IsActiveChampionship));
 
-        _logger?.LogInformation("Exists an active championship for this session {SessionId}...", sessionId);
+        _logger?.CheckingActiveChampionship(sessionId);
 
         using (var dbFactory = RepositoryFactory.CreateInstance())
         {
@@ -222,7 +222,7 @@ public class ChampionshipController : ControllerBase
             currentActivity?.SetStatus(ActivityStatusCode.Ok);
         }
 
-        _logger?.LogInformation("Active championship exists: {ActiveChampionship}...", activeChampionship);
+        _logger?.ActiveChampionshipChecked(activeChampionship);
 
         return activeChampionship;
     }
@@ -241,7 +241,7 @@ public class ChampionshipController : ControllerBase
 
         using var currentActivity = AppActivity.ApiSource.StartActivity(nameof(IsSessionInChampionshipActive));
 
-        _logger?.LogInformation("Checking session {SessionId} is active in championship {ChampionshipId}...", sessionId, championshipId);
+        _logger?.CheckingSessionActiveInChampionship(sessionId, championshipId);
 
         using (var dbFactory = RepositoryFactory.CreateInstance())
         {
@@ -299,7 +299,7 @@ public class ChampionshipController : ControllerBase
             currentActivity?.SetStatus(ActivityStatusCode.Ok);
         }
 
-        _logger?.LogInformation("Active session in championship exists: {SessionIsActive}...", sessionIsActive);
+        _logger?.SessionActiveInChampionshipChecked(sessionIsActive);
 
         return sessionIsActive;
     }
@@ -321,7 +321,7 @@ public class ChampionshipController : ControllerBase
 
         currentActivity?.SetTag("SessionId", sessionId);
 
-        _logger?.LogInformation("Adding session {SessionId} to championship...", sessionId);
+        _logger?.AddingSessionToChampionship(sessionId);
 
         if (sessionId > 0)
         {
@@ -527,7 +527,7 @@ public class ChampionshipController : ControllerBase
             return;
         }
 
-        championshipData.Tracks = new List<ChampionshipTrackViewData>();
+        championshipData.Tracks = [];
 
         foreach (var track in tracks)
         {
@@ -579,7 +579,7 @@ public class ChampionshipController : ControllerBase
             }
             else
             {
-                _logger?.LogWarning("[CreateChampionship] Unknown track number {track}!", track);
+                _logger?.UnknownTrackNumber(track);
             }
         }
     }

@@ -97,7 +97,7 @@ public class ParticipantsProcessorTests
 
         var validParticipants = sessionRuntimeData.Participants.Values.Where(p => p.IsValidObject).ToList();
 
-        Assert.IsFalse(validParticipants.Count == 0, $"No valid participants created ({TestData.LiveSessionGameVersion})!");
+        Assert.IsNotEmpty(validParticipants, $"No valid participants created ({TestData.LiveSessionGameVersion})!");
 
         foreach (var participantData in validParticipants)
         {

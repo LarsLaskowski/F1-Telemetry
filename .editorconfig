@@ -240,6 +240,8 @@ end_of_line = crlf
 dotnet_style_predefined_type_for_locals_parameters_members = true:error
 dotnet_diagnostic.CA2254.severity = silent
 
+dotnet_diagnostic.CA1873.severity = warning
+
 # Reihitsu analyzer rule suppressions (replaces the legacy .ruleset files)
 dotnet_diagnostic.RH0396.severity = none
 dotnet_diagnostic.RH0428.severity = none

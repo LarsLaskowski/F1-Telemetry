@@ -83,12 +83,12 @@ public class ChampionshipEntity
     /// <summary>
     /// Tracks in this championship
     /// </summary>
-    public virtual ICollection<ChampionshipTrackEntity> Tracks { get; } = new List<ChampionshipTrackEntity>();
+    public virtual ICollection<ChampionshipTrackEntity> Tracks { get; } = [];
 
     /// <summary>
     /// Points in this championship
     /// </summary>
-    public virtual ICollection<ChampionshipPointsEntity> Points { get; } = new List<ChampionshipPointsEntity>();
+    public virtual ICollection<ChampionshipPointsEntity> Points { get; } = [];
 
     #endregion // Navigation properties
 }

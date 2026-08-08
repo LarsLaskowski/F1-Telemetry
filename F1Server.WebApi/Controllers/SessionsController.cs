@@ -74,7 +74,7 @@ public class SessionsController : ControllerBase
 
             using var currentActivity = AppActivity.ApiSource.StartActivity(nameof(GetSessions));
 
-            _logger?.LogInformation("Sessions loading...");
+            _logger?.LoadingSessions();
 
             using (var dbFactory = RepositoryFactory.CreateInstance())
             {
@@ -118,7 +118,7 @@ public class SessionsController : ControllerBase
                 }
                 catch (Exception ex)
                 {
-                    _logger?.LogError(ex, "Exception while loading sessions => {Exception}", ex.ToString());
+                    _logger?.ErrorLoadingSessions(ex);
 
                     currentActivity?.SetStatus(ActivityStatusCode.Error, ex.ToString());
                     currentActivity?.AddException(ex);
@@ -141,7 +141,7 @@ public class SessionsController : ControllerBase
                              TotalCount = totalCount
                          };
 
-        _logger?.LogInformation("Sessions loaded for page {PageIndex} - page size: {PageSize} - total sessions: {Sessions}", pageIndex, pageSize, sessions?.Count);
+        _logger?.SessionsLoaded(pageIndex, pageSize, sessions?.Count);
 
         return Ok(pageResult);
     }
@@ -158,7 +158,7 @@ public class SessionsController : ControllerBase
 
         using var currentActivity = AppActivity.ApiSource.StartActivity(nameof(GetSessionsCount));
 
-        _logger?.LogInformation("Sessions count...");
+        _logger?.CountingSessions();
 
         using (var dbFactory = RepositoryFactory.CreateInstance())
         {
@@ -173,7 +173,7 @@ public class SessionsController : ControllerBase
             currentActivity?.SetStatus(ActivityStatusCode.Ok);
         }
 
-        _logger?.LogInformation("Sessions found ({Sessions}).", numSessions);
+        _logger?.SessionsCounted(numSessions);
 
         return numSessions;
     }
@@ -190,7 +190,7 @@ public class SessionsController : ControllerBase
 
         using var currentActivity = AppActivity.ApiSource.StartActivity(nameof(GetLastFinishedSession));
 
-        _logger?.LogInformation("Get last finished session...");
+        _logger?.LoadingLastFinishedSession();
 
         try
         {
@@ -215,13 +215,13 @@ public class SessionsController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger?.LogError(ex, "Exception while reading last finished session => {Exception}", ex.ToString());
+            _logger?.ErrorLoadingLastFinishedSession(ex);
 
             currentActivity?.SetStatus(ActivityStatusCode.Error, ex.ToString());
             currentActivity?.AddException(ex);
         }
 
-        _logger?.LogInformation("Last finished session: {LastFinishedSession}.", lastFinishedSession);
+        _logger?.LastFinishedSessionLoaded(lastFinishedSession);
 
         return lastFinishedSession;
     }
@@ -239,11 +239,11 @@ public class SessionsController : ControllerBase
 
         using var currentActivity = AppActivity.ApiSource.StartActivity(nameof(GetSession));
 
-        _logger?.LogInformation("Session loading ({SessionId})...", id ?? -1);
+        _logger?.LoadingSession(id ?? -1);
 
         if (id == null || id == 0)
         {
-            _logger?.LogWarning("Session id is null or zero!");
+            _logger?.SessionIdNullOrZero();
 
             return NotFound();
         }
@@ -291,7 +291,7 @@ public class SessionsController : ControllerBase
             currentActivity?.SetStatus(ActivityStatusCode.Ok);
         }
 
-        _logger?.LogInformation("Session loaded ({SessionLoaded}).", session != null);
+        _logger?.SessionLoaded(session != null);
 
         return Ok(session);
     }
@@ -309,7 +309,7 @@ public class SessionsController : ControllerBase
 
         using var currentActivity = AppActivity.ApiSource.StartActivity(nameof(GetSessionsOfTrack));
 
-        _logger?.LogInformation("Load session for track {TrackId}...", trackId);
+        _logger?.LoadingSessionsOfTrack(trackId);
 
         using (var dbFactory = RepositoryFactory.CreateInstance())
         {
@@ -337,7 +337,7 @@ public class SessionsController : ControllerBase
 
                     if (dbSessions.Count > 0)
                     {
-                        sessions = new List<SessionViewData>();
+                        sessions = [];
 
                         foreach (var dbSession in dbSessions)
                         {
@@ -362,7 +362,7 @@ public class SessionsController : ControllerBase
             }
             catch (Exception ex)
             {
-                _logger?.LogError(ex, "Exception while loading sessions for track {TrackId} => {Exception}", trackId, ex.ToString());
+                _logger?.ErrorLoadingSessionsOfTrack(ex, trackId);
 
                 currentActivity?.SetStatus(ActivityStatusCode.Error, ex.ToString());
                 currentActivity?.AddException(ex);
@@ -387,7 +387,7 @@ public class SessionsController : ControllerBase
 
         using var currentActivity = AppActivity.ApiSource.StartActivity(nameof(GetFastestLapOfSession));
 
-        _logger?.LogInformation("Load fastest lap of session {SessionId}...", sessionId);
+        _logger?.LoadingFastestLapOfSession(sessionId);
 
         using (var dbFactory = RepositoryFactory.CreateInstance())
         {
@@ -443,7 +443,7 @@ public class SessionsController : ControllerBase
 
         using var currentActivity = AppActivity.ApiSource.StartActivity(nameof(GetFastestLapsOfSession));
 
-        _logger?.LogInformation("Load fastest lap of session {SessionId}...", sessionId);
+        _logger?.LoadingFastestLapOfSession(sessionId);
 
         using (var dbFactory = RepositoryFactory.CreateInstance())
         {
@@ -508,7 +508,7 @@ public class SessionsController : ControllerBase
 
         using var currentActivity = AppActivity.ApiSource.StartActivity(nameof(LoadSessionTimeTable));
 
-        _logger?.LogInformation("Loading session time table ({SessionId})...", sessionId);
+        _logger?.LoadingSessionTimeTable(sessionId);
 
         using (var dbFactory = RepositoryFactory.CreateInstance())
         {
@@ -566,7 +566,7 @@ public class SessionsController : ControllerBase
             }
             catch (Exception ex)
             {
-                _logger?.LogError(ex, "Exception while loading session time table => {Exception}", ex.ToString());
+                _logger?.ErrorLoadingSessionTimeTable(ex);
 
                 currentActivity?.SetStatus(ActivityStatusCode.Error, ex.ToString());
                 currentActivity?.AddException(ex);
@@ -590,15 +590,10 @@ public class SessionsController : ControllerBase
 
         using var currentActivity = AppActivity.ApiSource.StartActivity(nameof(DeleteSession));
 
-        _logger?.LogInformation("Delete session {SessionId}...", sessionId);
+        _logger?.DeletingSession(sessionId);
 
         using (var dbFactory = RepositoryFactory.CreateInstance())
         {
-            var isTelemetryRemoved = true;
-            var isLapsRemoved = true;
-            var isParticipantsRemoved = true;
-            var isSessionRemoved = false;
-
             var sessionRepository = dbFactory.GetRepository<SessionRepository>();
             var sessionQuery = sessionRepository?.GetQuery();
 
@@ -609,69 +604,22 @@ public class SessionsController : ControllerBase
 
             if (session != null)
             {
-                // Get participants of session
-                var participantRepository = dbFactory.GetRepository<ParticipantRepository>();
-                var participantQuery = participantRepository?.GetQuery();
+                var isSessionContentRemoved = await RemoveSessionContentAsync(dbFactory, session.Id).ConfigureAwait(false);
 
-                List<long> participants = [];
-
-                if (participantQuery != null)
-                {
-                    participants = await participantQuery.Where(p => p.SessionId == session.Id)
-                                                         .Select(p => p.Id)
-                                                         .ToListAsync()
-                                                         .ConfigureAwait(false);
-                }
-
-                if (participants.Count > 0)
-                {
-                    // Get laps of participants
-                    var lapRepository = dbFactory.GetRepository<LapRepository>();
-                    var lapQuery = lapRepository?.GetQuery();
-
-                    List<long> laps = [];
-
-                    if (lapQuery != null)
-                    {
-                        laps = await lapQuery.Where(l => participants.Contains(l.ParticipantId))
-                                             .Select(l => l.Id)
-                                             .ToListAsync()
-                                             .ConfigureAwait(false);
-                    }
-
-                    if (laps.Count > 0)
-                    {
-                        // Get telemetry data
-                        var telemetryRepository = dbFactory.GetRepository<CarTelemetryRepository>();
-
-                        isTelemetryRemoved = telemetryRepository != null
-                                             && await telemetryRepository.RemoveRangeAsync(t => laps.Contains(t.LapNumberId))
-                                                                         .ConfigureAwait(false);
-
-                        isLapsRemoved = lapRepository != null
-                                        && await lapRepository.RemoveRangeAsync(l => laps.Contains(l.Id))
-                                                              .ConfigureAwait(false);
-                    }
-
-                    isParticipantsRemoved = participantRepository != null
-                                            && await participantRepository.RemoveRangeAsync(p => participants.Contains(p.Id))
-                                                                          .ConfigureAwait(false);
-                }
-
-                isSessionRemoved = sessionRepository != null
-                                   && await sessionRepository.RemoveAsync(s => s.Id == session.Id)
-                                                             .ConfigureAwait(false);
+                var isSessionRemoved = sessionRepository != null
+                                       && await sessionRepository.RemoveAsync(s => s.Id == session.Id)
+                                                                 .ConfigureAwait(false);
 
                 // No data of a removed session may stay in the cache
                 FastestLapPerSessionCache.RemoveSession(session.Id);
-            }
 
-            isDeleted = isSessionRemoved && isParticipantsRemoved && isLapsRemoved && isTelemetryRemoved;
+                isDeleted = isSessionRemoved && isSessionContentRemoved;
+            }
 
             currentActivity?.SetStatus(ActivityStatusCode.Ok);
         }
 
-        _logger?.LogInformation("Session deleted: {Deleted}", isDeleted);
+        _logger?.SessionDeleted(isDeleted);
 
         return Ok(isDeleted);
     }
@@ -679,6 +627,134 @@ public class SessionsController : ControllerBase
     #endregion // Methods
 
     #region Private methods
+
+    /// <summary>
+    /// Removes the participants, laps and telemetry data belonging to the given session
+    /// </summary>
+    /// <param name="dbFactory">Database factory</param>
+    /// <param name="sessionId">Database id of the session</param>
+    /// <returns>Status whether all content of the session was removed</returns>
+    private static async Task<bool> RemoveSessionContentAsync(RepositoryFactory dbFactory, long sessionId)
+    {
+        // Get participants of session
+        var participantRepository = dbFactory.GetRepository<ParticipantRepository>();
+        var participantQuery = participantRepository?.GetQuery();
+
+        List<long> participants = [];
+
+        if (participantQuery != null)
+        {
+            participants = await participantQuery.Where(p => p.SessionId == sessionId)
+                                                 .Select(p => p.Id)
+                                                 .ToListAsync()
+                                                 .ConfigureAwait(false);
+        }
+
+        if (participants.Count == 0)
+        {
+            return true;
+        }
+
+        var isLapDataRemoved = await RemoveLapDataAsync(dbFactory, participants).ConfigureAwait(false);
+
+        var isParticipantsRemoved = participantRepository != null
+                                    && await participantRepository.RemoveRangeAsync(p => participants.Contains(p.Id))
+                                                                  .ConfigureAwait(false);
+
+        return isParticipantsRemoved && isLapDataRemoved;
+    }
+
+    /// <summary>
+    /// Removes the laps of the given participants including their telemetry data
+    /// </summary>
+    /// <param name="dbFactory">Database factory</param>
+    /// <param name="participants">Database ids of the participants</param>
+    /// <returns>Status whether all laps and their telemetry data were removed</returns>
+    private static async Task<bool> RemoveLapDataAsync(RepositoryFactory dbFactory, List<long> participants)
+    {
+        // Get laps of participants
+        var lapRepository = dbFactory.GetRepository<LapRepository>();
+        var lapQuery = lapRepository?.GetQuery();
+
+        List<long> laps = [];
+
+        if (lapQuery != null)
+        {
+            laps = await lapQuery.Where(l => participants.Contains(l.ParticipantId))
+                                 .Select(l => l.Id)
+                                 .ToListAsync()
+                                 .ConfigureAwait(false);
+        }
+
+        if (laps.Count == 0)
+        {
+            return true;
+        }
+
+        // Get telemetry data
+        var telemetryRepository = dbFactory.GetRepository<CarTelemetryRepository>();
+
+        var isTelemetryRemoved = telemetryRepository != null
+                                 && await telemetryRepository.RemoveRangeAsync(t => laps.Contains(t.LapNumberId))
+                                                             .ConfigureAwait(false);
+
+        var isLapsRemoved = lapRepository != null
+                            && await lapRepository.RemoveRangeAsync(l => laps.Contains(l.Id))
+                                                  .ConfigureAwait(false);
+
+        return isLapsRemoved && isTelemetryRemoved;
+    }
+
+    /// <summary>
+    /// Marks the race that precedes a second race at the same track as sprint race
+    /// </summary>
+    /// <param name="sessions">Sessions to be analyzed and adjusted</param>
+    private static void MarkSprintRacesBeforeSecondRaces(List<SessionViewData> sessions)
+    {
+        // All races with session type 'Race2'
+        var postSprintRaces = sessions.Where(s => s.SessionType == SessionType.Race2)
+                                      .ToList();
+
+        foreach (var postSprintRace in postSprintRaces)
+        {
+            var sprintRace = sessions.Where(s => s.SessionDbId < postSprintRace.SessionDbId
+                                                 && s.SessionType == SessionType.Race
+                                                 && s.TrackId == postSprintRace.TrackId
+                                                 && s.GameVersionId == postSprintRace.GameVersionId)
+                                     .OrderByDescending(s => s.SessionDbId)
+                                     .Take(1)
+                                     .ToList();
+
+            // Only one race found?
+            if (sprintRace.Count == 1)
+            {
+                sprintRace[0].SessionType = SessionType.Sprint;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Marks all races that are preceded by a sprint qualifying at the same track as sprint race
+    /// </summary>
+    /// <param name="sessions">Sessions to be analyzed and adjusted</param>
+    private static void MarkSprintRacesWithSprintQualifying(List<SessionViewData> sessions)
+    {
+        var races = sessions.Where(s => s.SessionType == SessionType.Race)
+                            .ToList();
+
+        foreach (var race in races)
+        {
+            var hasSprintQualifyings = sessions.Any(s => s.SessionDbId < race.SessionDbId
+                                                         && s.SessionType is >= SessionType.SprintShootout1 and <= SessionType.OneShotSprintShootout
+                                                         && s.GameVersionId == race.GameVersionId
+                                                         && s.TrackId == race.TrackId);
+
+            if (hasSprintQualifyings)
+            {
+                race.SessionType = SessionType.Sprint;
+            }
+        }
+    }
 
     /// <summary>
     /// Loads the final classifications of the given participants with a single query
@@ -723,48 +799,9 @@ public class SessionsController : ControllerBase
             return;
         }
 
-        var postSprintRaces = sessions.Where(s => s.SessionType == SessionType.Race2)
-                                      .ToList();
+        MarkSprintRacesBeforeSecondRaces(sessions);
 
-        // All race with session type 'Race2'
-        if (postSprintRaces.Count > 0)
-        {
-            foreach (var postSprintRace in postSprintRaces)
-            {
-                var sprintRace = sessions.Where(s => s.SessionDbId < postSprintRace.SessionDbId
-                                                     && s.SessionType == SessionType.Race
-                                                     && s.TrackId == postSprintRace.TrackId
-                                                     && s.GameVersionId == postSprintRace.GameVersionId)
-                                         .OrderByDescending(s => s.SessionDbId)
-                                         .Take(1)
-                                         .ToList();
-
-                // Only one race found?
-                if (sprintRace.Count == 1)
-                {
-                    sprintRace[0].SessionType = SessionType.Sprint;
-                }
-            }
-        }
-
-        var races = sessions.Where(s => s.SessionType == SessionType.Race)
-                            .ToList();
-
-        if (races.Count > 0)
-        {
-            foreach (var race in races)
-            {
-                var hasSprintQualifyings = sessions.Any(s => s.SessionDbId < race.SessionDbId
-                                                             && s.SessionType is >= SessionType.SprintShootout1 and <= SessionType.OneShotSprintShootout
-                                                             && s.GameVersionId == race.GameVersionId
-                                                             && s.TrackId == race.TrackId);
-
-                if (hasSprintQualifyings)
-                {
-                    race.SessionType = SessionType.Sprint;
-                }
-            }
-        }
+        MarkSprintRacesWithSprintQualifying(sessions);
     }
 
     /// <summary>
