@@ -231,7 +231,7 @@ internal class PacketToSessionData : PacketToXBase
     /// </summary>
     /// <param name="trackId">Id of track</param>
     /// <returns>Name of track</returns>
-    private string MatchTrackIdToName(ushort trackId)
+    private string MatchTrackIdToName(short trackId)
     {
         string trackName = trackId switch
                            {
@@ -322,7 +322,7 @@ internal class PacketToSessionData : PacketToXBase
 
             actOffset += ConstData.TypeUInt8;
 
-            sessionData.TrackId = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
+            sessionData.TrackId = (sbyte)Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
             sessionData.TrackName = MatchTrackIdToName(sessionData.TrackId);
 
