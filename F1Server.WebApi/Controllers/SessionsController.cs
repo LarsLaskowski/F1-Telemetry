@@ -7,6 +7,7 @@ using F1Server.Db.Entity;
 using F1Server.Db.Entity.Repositories;
 using F1Server.Db.Entity.Tables;
 using F1Server.WebApi.Cache;
+using F1Server.WebApi.Core;
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -559,7 +560,7 @@ public class SessionsController : ControllerBase
                                                                NumberOfPenalties = dbFinal.NumberOfPenalties,
                                                                PitStops = dbFinal.PitStops,
                                                                PenaltiesTime = dbFinal.PenaltiesTime,
-                                                               TotalRaceTime = TimeSpan.FromSeconds(dbFinal.TotalRaceTime).ToString(@"mm\:ss\.fff"),
+                                                               TotalRaceTime = RaceTimeFormatter.FormatTotalRaceTime(dbFinal.TotalRaceTime),
                                                                FastestLapTime = TimeSpan.FromMilliseconds(dbFinal.FastestLapTime).ToString(@"mm\:ss\.fff")
                                                            });
                         }
