@@ -51,8 +51,8 @@
         <ng-container matColumnDef="sprint">
           <th mat-header-cell *matHeaderCellDef> Sprint </th>
           <td mat-cell *matCellDef="let entry">
-            @if (entry.sprintQualifyingPosition > 0) {
-              {{ entry.sprintQualifyingPosition }}
+            @if (entry.sprintPosition > 0) {
+              {{ entry.sprintPosition }}
             }
           </td>
         </ng-container>
