@@ -275,7 +275,7 @@ internal static class Program
 
         if (eventString == "PENA"
             || eventString == "SPTP"
-            || eventString == "FLBK")
+            || eventString == EventCodes.Flashback)
         {
             progressBar.WriteLine($"Event string: {eventString} found in {fInfo.Name}");
         }

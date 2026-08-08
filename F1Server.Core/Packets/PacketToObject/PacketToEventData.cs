@@ -321,7 +321,7 @@ internal class PacketToEventData : PacketToXBase
                     }
                     break;
 
-                case "FLBK":
+                case EventCodes.Flashback:
                     {
                         eventDetails21Data.EventType = EventType.Flashback;
                         eventDetails21Data.FlashbackFrame = Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref dataPacket, actOffset));
@@ -399,7 +399,7 @@ internal class PacketToEventData : PacketToXBase
                     }
                     break;
 
-                case "FLBK":
+                case EventCodes.Flashback:
                     {
                         eventDetails22Data.EventType = EventType.Flashback;
                         eventDetails22Data.FlashbackFrame = Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref dataPacket, actOffset));
@@ -476,7 +476,7 @@ internal class PacketToEventData : PacketToXBase
                     }
                     break;
 
-                case "FLBK":
+                case EventCodes.Flashback:
                     {
                         eventDetails23Data.EventType = EventType.Flashback;
                         eventDetails23Data.FlashbackFrame = Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref dataPacket, actOffset));
@@ -571,7 +571,7 @@ internal class PacketToEventData : PacketToXBase
                     }
                     break;
 
-                case "FLBK":
+                case EventCodes.Flashback:
                     {
                         eventDetailsData.EventType = EventType.Flashback;
                         eventDetailsData.FlashbackFrame = Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref dataPacket, actOffset));
@@ -713,7 +713,7 @@ internal class PacketToEventData : PacketToXBase
                     }
                     break;
 
-                case "FLBK":
+                case EventCodes.Flashback:
                     {
                         eventDetailsData.EventType = EventType.Flashback;
                         eventDetailsData.FlashbackFrame = Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref dataPacket, actOffset));

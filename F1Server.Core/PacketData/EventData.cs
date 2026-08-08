@@ -1,4 +1,5 @@
-﻿using F1Server.Core.Packets.Data;
+﻿using F1Server.Core.Data;
+using F1Server.Core.Packets.Data;
 using F1Server.Core.Packets.Interfaces;
 
 namespace F1Server.Core.PacketData;
@@ -32,17 +33,17 @@ public class EventData : PacketDataBase<IEventDataBase>
     /// <summary>
     /// Is event start?
     /// </summary>
-    public bool IsSessionStart => PacketData is not null && string.IsNullOrWhiteSpace(PacketData.EventCode) == false && PacketData.EventCode.Equals("SSTA", StringComparison.OrdinalIgnoreCase);
+    public bool IsSessionStart => PacketData is not null && string.IsNullOrWhiteSpace(PacketData.EventCode) == false && PacketData.EventCode.Equals(EventCodes.SessionStart, StringComparison.OrdinalIgnoreCase);
 
     /// <summary>
     /// Is event end?
     /// </summary>
-    public bool IsSessionEnd => PacketData is not null && string.IsNullOrWhiteSpace(PacketData.EventCode) == false && PacketData.EventCode.Equals("SEND", StringComparison.OrdinalIgnoreCase);
+    public bool IsSessionEnd => PacketData is not null && string.IsNullOrWhiteSpace(PacketData.EventCode) == false && PacketData.EventCode.Equals(EventCodes.SessionEnd, StringComparison.OrdinalIgnoreCase);
 
     /// <summary>
     /// Is flashback event?
     /// </summary>
-    public bool IsFlashback => PacketData is not null && string.IsNullOrWhiteSpace(PacketData.EventCode) == false && PacketData.EventCode.Equals("FLBK", StringComparison.OrdinalIgnoreCase);
+    public bool IsFlashback => PacketData is not null && string.IsNullOrWhiteSpace(PacketData.EventCode) == false && PacketData.EventCode.Equals(EventCodes.Flashback, StringComparison.OrdinalIgnoreCase);
 
     #endregion // Properties
 }
