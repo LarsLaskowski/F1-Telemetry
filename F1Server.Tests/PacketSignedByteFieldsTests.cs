@@ -43,6 +43,11 @@ public class PacketSignedByteFieldsTests
     private const int AirTemperatureOffset = 2;
 
     /// <summary>
+    /// Relative offset of TrackId within the base session data
+    /// </summary>
+    private const int TrackIdOffset = 7;
+
+    /// <summary>
     /// Relative offset of the marshal zone count within the base session data
     /// </summary>
     private const int MarshalZonesCountOffset = 18;
@@ -181,6 +186,32 @@ public class PacketSignedByteFieldsTests
         {
             Assert.AreEqual(-1, sessionData2020.TrackTemperature, "TrackTemperature must decode negative int8 values!");
             Assert.AreEqual(-1, sessionData2020.AirTemperature, "AirTemperature must decode negative int8 values!");
+        }
+        else
+        {
+            Assert.Fail("Synthetic F1 2020 session packet did not produce an ISessionData2020 object!");
+        }
+    }
+
+    /// <summary>
+    /// TrackId must decode the documented -1 (unknown) instead of the raw byte value 255
+    /// </summary>
+    [TestMethod]
+    public void GetSessionDataTrackIdByteValue255ReturnsMinusOne()
+    {
+        var packetHeader = CreatePacketHeader(2020, ConstData.F12020HeaderSize);
+
+        var packetContent = new byte[ConstData.F12020HeaderSize + ConstData.F12020SessionSize];
+
+        packetContent[ConstData.F12020HeaderSize + TrackIdOffset] = 0xFF;
+
+        var packetAnalyzer = new PacketAnalyzer();
+
+        var sessionData = packetAnalyzer.GetSessionData(packetHeader, packetContent);
+
+        if (sessionData is SessionData { PacketData: ISessionData2020 sessionData2020 })
+        {
+            Assert.AreEqual(-1, sessionData2020.TrackId, "TrackId must decode the documented unknown value -1!");
         }
         else
         {

@@ -59,9 +59,9 @@ public class SessionData2021 : ISessionData2021
     public SessionType SessionType { get; set; }
 
     /// <summary>
-    /// Track id
+    /// Track id - -1 - unknown
     /// </summary>
-    public ushort TrackId { get; set; }
+    public short TrackId { get; set; }
 
     /// <summary>
     /// Name of the track

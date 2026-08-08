@@ -104,7 +104,7 @@ public class PacketSession2026Tests
 
         if (session is SessionData data && data.PacketData is ISessionData2026 sessionData)
         {
-            Assert.AreEqual((ushort)0, sessionData.TrackId, "Incorrect track id!");
+            Assert.AreEqual((short)0, sessionData.TrackId, "Incorrect track id!");
             Assert.AreEqual("Melbourne", sessionData.TrackName, "Incorrect track name!");
         }
         else
