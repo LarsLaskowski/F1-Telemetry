@@ -1,4 +1,5 @@
 using F1Server.Data.ViewData;
+using F1Server.Service.FinalClassifications;
 using F1Server.WebApi.Controllers;
 
 using Microsoft.AspNetCore.Mvc;
@@ -32,7 +33,7 @@ public class FinalClassificationControllerTests
     /// <returns>Controller</returns>
     private static FinalClassificationController CreateController()
     {
-        return new FinalClassificationController(NullLogger<FinalClassificationController>.Instance);
+        return new FinalClassificationController(NullLogger<FinalClassificationController>.Instance, new FinalClassificationService());
     }
 
     #endregion // Static methods

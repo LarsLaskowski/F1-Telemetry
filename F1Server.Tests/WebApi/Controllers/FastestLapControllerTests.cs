@@ -1,5 +1,6 @@
 using F1Server.Core.Enumerations;
 using F1Server.Data.ViewData;
+using F1Server.Service.FastestLaps;
 using F1Server.WebApi.Controllers;
 
 using Microsoft.AspNetCore.Mvc;
@@ -47,7 +48,7 @@ public class FastestLapControllerTests
     /// <returns>Controller</returns>
     private static FastestLapController CreateController()
     {
-        return new FastestLapController(NullLogger<FastestLapController>.Instance);
+        return new FastestLapController(NullLogger<FastestLapController>.Instance, new FastestLapService());
     }
 
     #endregion // Static methods

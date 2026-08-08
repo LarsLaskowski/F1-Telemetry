@@ -1,3 +1,4 @@
+using F1Server.Service.Games;
 using F1Server.WebApi.Controllers;
 
 using Microsoft.Extensions.Logging.Abstractions;
@@ -35,7 +36,7 @@ public class GamesControllerTests
     [TestMethod]
     public async Task GamesControllerGetReturnsGameVersionWithVersionCode()
     {
-        var controller = new GamesController(NullLogger<GamesController>.Instance);
+        var controller = new GamesController(NullLogger<GamesController>.Instance, new GameService());
 
         var games = await controller.Get().ConfigureAwait(false);
 
@@ -62,7 +63,7 @@ public class GamesControllerTests
         ControllerTestData.AddSession(Core.Enumerations.SessionType.Race, isFinished: true, gameVersionId);
         ControllerTestData.AddSession(Core.Enumerations.SessionType.Race, isFinished: false, gameVersionId);
 
-        var controller = new GamesController(NullLogger<GamesController>.Instance);
+        var controller = new GamesController(NullLogger<GamesController>.Instance, new GameService());
 
         var games = await controller.Get().ConfigureAwait(false);
 
@@ -84,7 +85,7 @@ public class GamesControllerTests
     {
         var gameVersionId = ControllerTestData.AddGameVersion(3792);
 
-        var controller = new GamesController(NullLogger<GamesController>.Instance);
+        var controller = new GamesController(NullLogger<GamesController>.Instance, new GameService());
 
         var games = await controller.Get().ConfigureAwait(false);
 

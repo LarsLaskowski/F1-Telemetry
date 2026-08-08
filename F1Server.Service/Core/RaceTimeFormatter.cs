@@ -1,4 +1,4 @@
-namespace F1Server.WebApi.Core;
+namespace F1Server.Service.Core;
 
 /// <summary>
 /// Formatter for total race times

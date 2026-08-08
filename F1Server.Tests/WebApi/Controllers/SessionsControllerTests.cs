@@ -2,6 +2,7 @@ using F1Server.Core.Enumerations;
 using F1Server.Data.ViewData;
 using F1Server.Db.Entity;
 using F1Server.Db.Entity.Repositories;
+using F1Server.Service.Sessions;
 using F1Server.WebApi.Controllers;
 
 using Microsoft.AspNetCore.Mvc;
@@ -49,7 +50,7 @@ public class SessionsControllerTests
     {
         cache = new MemoryCache(new MemoryCacheOptions());
 
-        return new SessionsController(NullLogger<SessionsController>.Instance, cache);
+        return new SessionsController(NullLogger<SessionsController>.Instance, cache, new SessionService());
     }
 
     #endregion // Static methods

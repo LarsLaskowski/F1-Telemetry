@@ -1,4 +1,5 @@
 using F1Server.Data.ViewData;
+using F1Server.Service.Tracks;
 using F1Server.WebApi.Controllers;
 
 using Microsoft.AspNetCore.Mvc;
@@ -32,7 +33,7 @@ public class TracksControllerTests
     /// <returns>Controller</returns>
     private static TracksController CreateController()
     {
-        return new TracksController(NullLogger<TracksController>.Instance);
+        return new TracksController(NullLogger<TracksController>.Instance, new TrackService());
     }
 
     #endregion // Static methods
