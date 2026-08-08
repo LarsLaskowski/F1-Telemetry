@@ -6,7 +6,7 @@ using F1Server.Data.ViewData;
 using F1Server.Db.Entity;
 using F1Server.Db.Entity.Repositories;
 using F1Server.Db.Entity.Tables;
-using F1Server.WebApi.Cache;
+using F1Server.Service.Cache;
 using F1Server.WebApi.Core;
 
 using Microsoft.AspNetCore.Mvc;

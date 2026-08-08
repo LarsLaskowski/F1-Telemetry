@@ -1,6 +1,6 @@
 ﻿using F1Server.Core.Enumerations;
 
-namespace F1Server.WebApi;
+namespace F1Server.Service.Championships;
 
 /// <summary>
 /// Represents the base data for a session, including identifiers and session-specific details

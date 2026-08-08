@@ -8,7 +8,7 @@ using F1Server.Db.Entity.Tables;
 
 using Microsoft.EntityFrameworkCore;
 
-namespace F1Server.WebApi.Cache;
+namespace F1Server.Service.Cache;
 
 /// <summary>
 /// Provides a caching mechanism for storing and retrieving the fastest lap data for racing sessions
