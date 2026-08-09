@@ -3,7 +3,9 @@ using F1Server.Core.Enumerations;
 namespace F1Server.Data;
 
 /// <summary>
-/// Metrics for received packets in a session
+/// Metrics for received packets in a session. Named *Metrics rather than *Data as an intentional,
+/// documented exception to the type suffix convention, since it carries behavior (CopyFrom, Reset,
+/// UpdatePacketStatistics) rather than being a plain data holder
 /// </summary>
 public class PacketsPerSessionMetrics
 {
@@ -12,7 +14,7 @@ public class PacketsPerSessionMetrics
     /// <summary>
     /// Total packets received
     /// </summary>
-    public ulong TotalPacketsReceived => Motion.Received + Session.Received + LapData.Received + Event.Received + Participants.Received + CarSetups.Received + CarTelemetry.Received + CarStatus.Received + FinalClassification.Received + LobbyInfo.Received + CarDamage.Received + SessionHistory.Received + TyreSets.Received + MotionEx.Received + TimeTrial.Received + CarTelemetry2.Received + LapPositions.Received;
+    public ulong TotalPacketsReceived => Motion.Received + Session.Received + LapData.Received + Event.Received + Participants.Received + CarSetups.Received + CarTelemetry.Received + CarStatus.Received + FinalClassification.Received + LobbyInfo.Received + CarDamage.Received + SessionHistory.Received + TyreSets.Received + MotionEx.Received + TimeTrial.Received + CarTelemetry2.Received + LapPositions.Received + Unknown.Received;
 
     /// <summary>
     /// Motion packets
@@ -100,6 +102,11 @@ public class PacketsPerSessionMetrics
     public PacketMetrics CarTelemetry2 { get; private set; } = new();
 
     /// <summary>
+    /// Packets of an unknown or not yet individually tracked <see cref="PacketTypes"/> value
+    /// </summary>
+    public PacketMetrics Unknown { get; private set; } = new();
+
+    /// <summary>
     /// Packets not processed successfully
     /// </summary>
     public long UnsuccessfullyProcessed { get; set; }
@@ -136,6 +143,7 @@ public class PacketsPerSessionMetrics
         TimeTrial = new PacketMetrics(sourceMetrics.TimeTrial);
         LapPositions = new PacketMetrics(sourceMetrics.LapPositions);
         CarTelemetry2 = new PacketMetrics(sourceMetrics.CarTelemetry2);
+        Unknown = new PacketMetrics(sourceMetrics.Unknown);
 
         UnsuccessfullyProcessed = sourceMetrics.UnsuccessfullyProcessed;
         Errors = sourceMetrics.Errors;
@@ -163,6 +171,7 @@ public class PacketsPerSessionMetrics
         TimeTrial.Reset();
         LapPositions.Reset();
         CarTelemetry2.Reset();
+        Unknown.Reset();
 
         UnsuccessfullyProcessed = 0;
         Errors = 0;
@@ -295,6 +304,14 @@ public class PacketsPerSessionMetrics
                     {
                         CarTelemetry2.Received++;
                         CarTelemetry2.TotalProcessingTime += elapsedMilliseconds;
+                    }
+                    break;
+
+                default:
+                    {
+                        // PacketTypes.Unknown or any future value not yet tracked by a dedicated property
+                        Unknown.Received++;
+                        Unknown.TotalProcessingTime += elapsedMilliseconds;
                     }
                     break;
             }

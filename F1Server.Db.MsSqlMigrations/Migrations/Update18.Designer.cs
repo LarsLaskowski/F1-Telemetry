@@ -3,24 +3,27 @@ using System;
 using F1Server.Db.Entity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace F1Server.Db.PostgreSqlMigrations.Migrations
+namespace F1Server.Db.MsSqlMigrations.Migrations
 {
     [DbContext(typeof(F1ServerDbContext))]
-    partial class F1ServerDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260809153027_Update18")]
+    partial class Update18
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("ProductVersion", "10.0.10")
-                .HasAnnotation("Relational:MaxIdentifierLength", 63);
+                .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
-            NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
             modelBuilder.Entity("F1Server.Db.Entity.Tables.CarTelemetryEntity", b =>
                 {
@@ -28,35 +31,35 @@ namespace F1Server.Db.PostgreSqlMigrations.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
                     b.Property<float>("Brake")
                         .HasColumnType("real");
 
                     b.Property<int>("BrakesTempFrontLeft")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.Property<int>("BrakesTempFrontRight")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.Property<int>("BrakesTempRearLeft")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.Property<int>("BrakesTempRearRight")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.Property<int>("Clutch")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.Property<int>("DbIsDRS")
-                        .HasColumnType("integer")
+                        .HasColumnType("int")
                         .HasColumnName("IsDRS");
 
                     b.Property<int>("EngineRPM")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.Property<int>("EngineTemperature")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.Property<short>("Gear")
                         .HasColumnType("smallint");
@@ -68,13 +71,13 @@ namespace F1Server.Db.PostgreSqlMigrations.Migrations
                         .HasColumnType("bigint");
 
                     b.Property<int>("PacketNumber")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.Property<int>("RevLightsIndicator")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.Property<int>("Speed")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.Property<float>("Steer")
                         .HasColumnType("real");
@@ -83,16 +86,16 @@ namespace F1Server.Db.PostgreSqlMigrations.Migrations
                         .HasColumnType("real");
 
                     b.Property<int>("TyresInnerTempFrontLeft")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.Property<int>("TyresInnerTempFrontRight")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.Property<int>("TyresInnerTempRearLeft")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.Property<int>("TyresInnerTempRearRight")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.Property<float>("TyresPressureFrontLeft")
                         .HasColumnType("real");
@@ -107,16 +110,16 @@ namespace F1Server.Db.PostgreSqlMigrations.Migrations
                         .HasColumnType("real");
 
                     b.Property<int>("TyresSurfaceTempFrontLeft")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.Property<int>("TyresSurfaceTempFrontRight")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.Property<int>("TyresSurfaceTempRearLeft")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.Property<int>("TyresSurfaceTempRearRight")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -136,20 +139,20 @@ namespace F1Server.Db.PostgreSqlMigrations.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
                     b.Property<int>("DbIsFinished")
-                        .HasColumnType("integer")
+                        .HasColumnType("int")
                         .HasColumnName("IsFinished");
 
                     b.Property<long>("GameVersionId")
                         .HasColumnType("bigint");
 
                     b.Property<int>("Mode")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.Property<int>("Number")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -175,10 +178,10 @@ namespace F1Server.Db.PostgreSqlMigrations.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
                     b.Property<int>("AdditionalPoints")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.Property<long>("ChampionshipId")
                         .HasColumnType("bigint");
@@ -187,10 +190,10 @@ namespace F1Server.Db.PostgreSqlMigrations.Migrations
                         .HasColumnType("bigint");
 
                     b.Property<int>("RacePoints")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.Property<int>("SprintRacePoints")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.Property<long>("TrackId")
                         .HasColumnType("bigint");
@@ -223,7 +226,7 @@ namespace F1Server.Db.PostgreSqlMigrations.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
                     b.Property<long>("ChampionshipId")
                         .HasColumnType("bigint");
@@ -271,19 +274,19 @@ namespace F1Server.Db.PostgreSqlMigrations.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
                     b.Property<int>("DbIsHumanDriver")
-                        .HasColumnType("integer")
+                        .HasColumnType("int")
                         .HasColumnName("IsHumanDriver");
 
                     b.Property<int>("DriverGameId")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
+                        .HasColumnType("nvarchar(100)");
 
                     b.HasKey("Id");
 
@@ -2732,19 +2735,19 @@ namespace F1Server.Db.PostgreSqlMigrations.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
                     b.Property<long>("FastestLapTime")
                         .HasColumnType("bigint");
 
                     b.Property<int>("FinishPosition")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.Property<int>("GridPosition")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.Property<int>("LapsDriven")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.Property<long>("NumberOfPenalties")
                         .HasColumnType("bigint");
@@ -2756,16 +2759,16 @@ namespace F1Server.Db.PostgreSqlMigrations.Migrations
                         .HasColumnType("bigint");
 
                     b.Property<int>("PitStops")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.Property<int>("ResultStatus")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.Property<long>("SessionId")
                         .HasColumnType("bigint");
 
                     b.Property<double>("TotalRaceTime")
-                        .HasColumnType("double precision");
+                        .HasColumnType("float");
 
                     b.HasKey("Id");
 
@@ -2787,24 +2790,24 @@ namespace F1Server.Db.PostgreSqlMigrations.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
                     b.Property<DateTime?>("LastUsed")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("MajorVersion")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.Property<int>("MinorVersion")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<int>("Version")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -2822,28 +2825,28 @@ namespace F1Server.Db.PostgreSqlMigrations.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
                     b.Property<int>("CarPosition")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.Property<int>("DbIsCompleted")
-                        .HasColumnType("integer")
+                        .HasColumnType("int")
                         .HasColumnName("IsCompleted");
 
                     b.Property<int>("DbIsInvalid")
-                        .HasColumnType("integer")
+                        .HasColumnType("int")
                         .HasColumnName("IsInvalid");
 
                     b.Property<int>("DbIsInvalidLapTime")
-                        .HasColumnType("integer")
+                        .HasColumnType("int")
                         .HasColumnName("IsInvalidLapTime");
 
                     b.Property<int>("DriverStatus")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.Property<int>("LapNumber")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.Property<long>("LapTime")
                         .HasColumnType("bigint");
@@ -2852,10 +2855,10 @@ namespace F1Server.Db.PostgreSqlMigrations.Migrations
                         .HasColumnType("bigint");
 
                     b.Property<int>("PitStatus")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.Property<int>("ResultStatus")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.Property<long>("Sector1Time")
                         .HasColumnType("bigint");
@@ -2870,7 +2873,7 @@ namespace F1Server.Db.PostgreSqlMigrations.Migrations
                         .HasColumnType("bigint");
 
                     b.Property<int>("TyreCompound")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -2903,15 +2906,15 @@ namespace F1Server.Db.PostgreSqlMigrations.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<int>("NationalityGameId")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -3477,20 +3480,20 @@ namespace F1Server.Db.PostgreSqlMigrations.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
                     b.Property<int>("ArrayIndex")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.Property<int>("CarRaceNumber")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.Property<int>("DbIsHumanControlled")
-                        .HasColumnType("integer")
+                        .HasColumnType("int")
                         .HasColumnName("IsHumanControlled");
 
                     b.Property<int?>("DbIsMyTeam")
-                        .HasColumnType("integer")
+                        .HasColumnType("int")
                         .HasColumnName("IsMyTeam");
 
                     b.Property<long>("DriverId")
@@ -3499,7 +3502,7 @@ namespace F1Server.Db.PostgreSqlMigrations.Migrations
                     b.Property<string>("DriverName")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<long>("NationalityId")
                         .HasColumnType("bigint");
@@ -3536,55 +3539,55 @@ namespace F1Server.Db.PostgreSqlMigrations.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
                     b.Property<int>("BrakingAssistFirst")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.Property<int>("BrakingAssistLast")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.Property<int>("DbBrakingAssistChanged")
-                        .HasColumnType("integer")
+                        .HasColumnType("int")
                         .HasColumnName("BrakingAssistChanged");
 
                     b.Property<int>("DbGearBoxAssistChanged")
-                        .HasColumnType("integer")
+                        .HasColumnType("int")
                         .HasColumnName("GearBoxAssistChanged");
 
                     b.Property<int>("DbIsExtendedSession")
-                        .HasColumnType("integer")
+                        .HasColumnType("int")
                         .HasColumnName("IsExtendedSession");
 
                     b.Property<int>("DbSteeringAssistChanged")
-                        .HasColumnType("integer")
+                        .HasColumnType("int")
                         .HasColumnName("SteeringAssistChanged");
 
                     b.Property<int>("DbSteeringAssistFirst")
-                        .HasColumnType("integer")
+                        .HasColumnType("int")
                         .HasColumnName("SteeringAssistFirst");
 
                     b.Property<int>("DbSteeringAssistLast")
-                        .HasColumnType("integer")
+                        .HasColumnType("int")
                         .HasColumnName("SteeringAssistLast");
 
                     b.Property<int>("FlashbacksUsed")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.Property<int>("GameMode")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.Property<int>("GearBoxAssistFirst")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.Property<int>("GearBoxAssistLast")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.Property<long>("RedFlags")
                         .HasColumnType("bigint");
 
                     b.Property<int>("RuleSet")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.Property<long>("SafetyCarStages")
                         .HasColumnType("bigint");
@@ -3596,10 +3599,10 @@ namespace F1Server.Db.PostgreSqlMigrations.Migrations
                         .HasColumnType("bigint");
 
                     b.Property<int>("WeatherEnd")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.Property<int>("WeatherStart")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -3617,39 +3620,39 @@ namespace F1Server.Db.PostgreSqlMigrations.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
                     b.Property<int>("ActiveCars")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.Property<int>("AiDifficulty")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("CreationTimestamp")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("DbIsFinished")
-                        .HasColumnType("integer")
+                        .HasColumnType("int")
                         .HasColumnName("IsFinished");
 
                     b.Property<int>("DbIsNetworkGame")
-                        .HasColumnType("integer")
+                        .HasColumnType("int")
                         .HasColumnName("IsNetworkGame");
 
                     b.Property<int>("FormulaType")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.Property<long>("GameVersionId")
                         .HasColumnType("bigint");
 
                     b.Property<decimal>("SessionId")
-                        .HasColumnType("numeric(20,0)");
+                        .HasColumnType("decimal(20,0)");
 
                     b.Property<int>("SessionLength")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.Property<int>("SessionType")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.Property<long>("TrackId")
                         .HasColumnType("bigint");
@@ -3676,15 +3679,15 @@ namespace F1Server.Db.PostgreSqlMigrations.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<int>("TeamGameId")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -6140,7 +6143,7 @@ namespace F1Server.Db.PostgreSqlMigrations.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
                     b.Property<long>("LapReferenceTime")
                         .HasColumnType("bigint");
@@ -6148,7 +6151,7 @@ namespace F1Server.Db.PostgreSqlMigrations.Migrations
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<long>("Sector1ReferenceTime")
                         .HasColumnType("bigint");
@@ -6160,7 +6163,7 @@ namespace F1Server.Db.PostgreSqlMigrations.Migrations
                         .HasColumnType("bigint");
 
                     b.Property<int>("TrackNumber")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 

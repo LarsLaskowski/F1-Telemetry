@@ -220,6 +220,53 @@ public class RepositoryBaseTests
     }
 
     /// <summary>
+    /// Verifies that RemoveRange removes all matching entities and leaves non-matching entities untouched
+    /// </summary>
+    [TestMethod]
+    public void RepositoryBaseRemoveRangeRemovesMatchingEntities()
+    {
+        using (var dbFactory = RepositoryFactory.CreateInstance())
+        {
+            var repository = dbFactory.GetRepository<NationalityRepository>();
+
+            Assert.IsNotNull(repository, "Repository should be resolvable!");
+
+            var entities = new[]
+                           {
+                               new NationalityEntity
+                               {
+                                   NationalityGameId = 9009,
+                                   Name = "RemoveRangeTestA"
+                               },
+                               new NationalityEntity
+                               {
+                                   NationalityGameId = 9010,
+                                   Name = "RemoveRangeTestB"
+                               }
+                           };
+
+            var isAdded = repository.AddRange(entities);
+
+            Assert.IsTrue(isAdded, "Adding the test entities should succeed!");
+
+            var isRemoved = repository.RemoveRange(n => n.NationalityGameId == 9009);
+
+            Assert.IsTrue(isRemoved, "RemoveRange should report success!");
+
+            var query = repository.GetQuery();
+
+            Assert.IsNotNull(query, "Query should be resolvable!");
+
+            var remainingNames = query.Where(n => n.NationalityGameId == 9009 || n.NationalityGameId == 9010)
+                                      .Select(n => n.Name)
+                                      .ToList();
+
+            Assert.DoesNotContain("RemoveRangeTestA", remainingNames, "The matching entity should be removed!");
+            Assert.Contains("RemoveRangeTestB", remainingNames, "The non-matching entity should still be present!");
+        }
+    }
+
+    /// <summary>
     /// Verifies that a query ignoring auto-included navigations still returns the stored entities
     /// </summary>
     [TestMethod]

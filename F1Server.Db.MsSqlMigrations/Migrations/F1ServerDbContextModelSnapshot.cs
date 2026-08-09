@@ -2800,7 +2800,8 @@ namespace F1Server.Db.MsSqlMigrations.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<int>("Version")
                         .HasColumnType("int");
@@ -3497,7 +3498,8 @@ namespace F1Server.Db.MsSqlMigrations.Migrations
 
                     b.Property<string>("DriverName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<long>("NationalityId")
                         .HasColumnType("bigint");

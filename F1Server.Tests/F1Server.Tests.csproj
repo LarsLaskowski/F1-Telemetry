@@ -419,6 +419,7 @@
     <ProjectReference Include="..\F1Server\F1Server.csproj" />
     <ProjectReference Include="..\F1Server.Core\F1Server.Core.csproj" />
     <ProjectReference Include="..\F1Server.Service\F1Server.Service.csproj" />
+    <ProjectReference Include="..\F1Server.Shared\F1Server.Shared.csproj" />
   </ItemGroup>
 
 </Project>
