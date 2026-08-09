@@ -30,6 +30,16 @@ public class AppMetrics : IAppMetrics
 
     #endregion // Constants
 
+    #region Fields
+
+    /// <summary>
+    /// Pre-built "PacketType" tag per <see cref="PacketTypes"/> value, cached to avoid boxing the enum
+    /// and allocating a new <see cref="KeyValuePair{TKey, TValue}"/> on every processed packet
+    /// </summary>
+    private static readonly KeyValuePair<string, object?>[] _packetTypeTags = BuildPacketTypeTags();
+
+    #endregion // Fields
+
     #region Constructor
 
     /// <summary>
@@ -94,6 +104,23 @@ public class AppMetrics : IAppMetrics
     #endregion // Properties
 
     #region Methods
+
+    /// <summary>
+    /// Builds the cached "PacketType" tag for every <see cref="PacketTypes"/> value, indexed by its underlying int value
+    /// </summary>
+    /// <returns>Array of pre-built tags, indexed by <see cref="PacketTypes"/> value</returns>
+    private static KeyValuePair<string, object?>[] BuildPacketTypeTags()
+    {
+        var values = Enum.GetValues<PacketTypes>();
+        var tags = new KeyValuePair<string, object?>[values.Length];
+
+        foreach (var value in values)
+        {
+            tags[(int)value] = new KeyValuePair<string, object?>("PacketType", value);
+        }
+
+        return tags;
+    }
 
     /// <summary>
     /// Initializes the meters to zero so they are exported before the first real measurement
@@ -255,9 +282,16 @@ public class AppMetrics : IAppMetrics
     {
         if (packetType != null)
         {
-            PacketsProcessed.Add(1, new KeyValuePair<string, object?>("PacketType", packetType));
-            PacketProcessingTime.Record(processingTimeMs, new KeyValuePair<string, object?>("PacketType", packetType));
+            var packetTypeTag = _packetTypeTags[(int)packetType.Value];
 
+            PacketsProcessed.Add(1, packetTypeTag);
+            PacketProcessingTime.Record(processingTimeMs, packetTypeTag);
+
+            // The per-type counters and gauges below are recorded deliberately in addition to the tagged
+            // PacketProcessingTime histogram above, so each packet type has its own directly queryable
+            // Prometheus series (cf. InitMeters). The gauges only ever hold the last recorded value;
+            // consumers that need the full distribution per packet type should query PacketProcessingTime
+            // filtered by its "PacketType" tag instead
             switch (packetType)
             {
                 case PacketTypes.Event:
