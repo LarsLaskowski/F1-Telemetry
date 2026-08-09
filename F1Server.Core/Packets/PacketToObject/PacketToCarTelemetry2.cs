@@ -2,6 +2,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 using F1Server.Core.Data;
+using F1Server.Core.Enumerations;
 using F1Server.Core.PacketData;
 using F1Server.Core.Packets.Data;
 using F1Server.Core.Packets.Interfaces;
@@ -72,7 +73,7 @@ internal class PacketToCarTelemetry2 : PacketToXBase
 
                 foreach (var carData in carTelemetry2Data.CarTelemetry2Data)
                 {
-                    carData.ActiveAeroMode = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
+                    carData.ActiveAeroMode = (ActiveAeroMode)Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
                     actOffset += ConstData.TypeUInt8;
 

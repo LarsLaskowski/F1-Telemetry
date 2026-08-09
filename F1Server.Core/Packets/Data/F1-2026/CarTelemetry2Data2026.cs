@@ -1,3 +1,4 @@
+using F1Server.Core.Enumerations;
 using F1Server.Core.Packets.Interfaces;
 
 namespace F1Server.Core.Packets.Data;
@@ -10,7 +11,7 @@ public class CarTelemetry2Data2026 : ICarTelemetry2Data2026
     #region ICarTelemetry2DataBase
 
     /// <inheritdoc/>
-    public ushort ActiveAeroMode { get; set; }
+    public ActiveAeroMode ActiveAeroMode { get; set; }
 
     /// <inheritdoc/>
     public bool ActiveAeroAvailable { get; set; }

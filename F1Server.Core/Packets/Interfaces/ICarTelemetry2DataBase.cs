@@ -1,3 +1,5 @@
+using F1Server.Core.Enumerations;
+
 namespace F1Server.Core.Packets.Interfaces;
 
 /// <summary>
@@ -8,9 +10,9 @@ public interface ICarTelemetry2DataBase
     #region Properties
 
     /// <summary>
-    /// Active aero mode - 0 = Corner mode, 1 = Straight mode
+    /// Active aero mode
     /// </summary>
-    ushort ActiveAeroMode { get; set; }
+    ActiveAeroMode ActiveAeroMode { get; set; }
 
     /// <summary>
     /// Active aero available - 0 = not available, 1 = available

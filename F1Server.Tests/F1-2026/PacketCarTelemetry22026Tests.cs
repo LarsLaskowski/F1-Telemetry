@@ -134,7 +134,7 @@ public class PacketCarTelemetry22026Tests
     {
         var carData = GetCarTelemetry2().CarTelemetry2Data[0];
 
-        Assert.AreEqual(0, carData.ActiveAeroMode, "Wrong active aero mode of the first car!");
+        Assert.AreEqual(ActiveAeroMode.Corner, carData.ActiveAeroMode, "Wrong active aero mode of the first car!");
         Assert.IsTrue(carData.ActiveAeroAvailable, "Active aero must be available for the first car!");
         Assert.AreEqual(0, carData.ActiveAeroActivationDistance, "Wrong active aero activation distance of the first car!");
         Assert.IsTrue(carData.OvertakeAvailable, "Overtake mode must be available for the first car!");
@@ -151,7 +151,7 @@ public class PacketCarTelemetry22026Tests
     {
         var carData = GetCarTelemetry2().CarTelemetry2Data[1];
 
-        Assert.AreEqual(1, carData.ActiveAeroMode, "Wrong active aero mode of the second car!");
+        Assert.AreEqual(ActiveAeroMode.Straight, carData.ActiveAeroMode, "Wrong active aero mode of the second car!");
         Assert.AreEqual(10, carData.ActiveAeroActivationDistance, "Wrong active aero activation distance of the second car!");
         Assert.AreEqual(25, carData.OvertakeActivationDistance, "Wrong overtake activation distance of the second car!");
     }
@@ -178,7 +178,7 @@ public class PacketCarTelemetry22026Tests
     {
         var carData = GetCarTelemetry2().CarTelemetry2Data[23];
 
-        Assert.AreEqual(1, carData.ActiveAeroMode, "Wrong active aero mode of the last car!");
+        Assert.AreEqual(ActiveAeroMode.Straight, carData.ActiveAeroMode, "Wrong active aero mode of the last car!");
         Assert.IsFalse(carData.ActiveAeroAvailable, "Active aero must not be available for the last car!");
         Assert.AreEqual(230, carData.ActiveAeroActivationDistance, "Wrong active aero activation distance of the last car!");
     }
