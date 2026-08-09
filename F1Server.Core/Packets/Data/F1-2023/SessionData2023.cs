@@ -145,7 +145,7 @@ public class SessionData2023 : ISessionData2023
 
     #endregion // ISessionData2020
 
-    #region ISessionData2023
+    #region ISessionData2021
 
     /// <summary>
     /// Forecast accuracy
@@ -232,6 +232,10 @@ public class SessionData2023 : ISessionData2023
     /// </summary>
     public DynamicRaceLineType DynamicRaceLineType { get; set; }
 
+    #endregion // ISessionData2021
+
+    #region ISessionData2022
+
     /// <summary>
     /// Game mode
     /// </summary>
@@ -251,6 +255,10 @@ public class SessionData2023 : ISessionData2023
     /// Length of session
     /// </summary>
     public SessionLength SessionLength { get; set; }
+
+    #endregion // ISessionData2022
+
+    #region ISessionData2023
 
     /// <summary>
     /// Players speed unit
