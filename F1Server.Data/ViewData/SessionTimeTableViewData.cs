@@ -50,12 +50,12 @@ public class SessionTimeTableViewData
     /// <summary>
     /// Participants in session
     /// </summary>
-    public List<DriverViewData> Drivers { get; } = new List<DriverViewData>();
+    public List<DriverViewData> Drivers { get; } = [];
 
     /// <summary>
     /// Time table
     /// </summary>
-    public List<FinalClassificationViewData> TimeTable { get; } = new List<FinalClassificationViewData>();
+    public List<FinalClassificationViewData> TimeTable { get; } = [];
 
     #endregion // Properties
 }

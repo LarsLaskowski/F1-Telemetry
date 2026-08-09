@@ -29,7 +29,7 @@
       </tr>
     </thead>
     <tbody>
-      @for (driver of getTimeTable(); track driver) {
+      @for (driver of timeTable; track driver.arrayIndex) {
         <tr>
           <td class='td-position'>{{ driver.position }}</td>
           <td>
@@ -42,10 +42,10 @@
               </tr>
             </table>
           </td>
-          <td [ngClass]="getTimeColor(driver, 1)">{{ driver.fastestSector1 }}</td>
-          <td [ngClass]="getTimeColor(driver, 2)">{{ driver.fastestSector2 }}</td>
-          <td [ngClass]="getTimeColor(driver, 3)">{{ driver.fastestSector3 }}</td>
-          <td [ngClass]="getTimeColor(driver, 4)">{{ driver.fastestLaptime }}</td>
+          <td [ngClass]="driver.sector1Class">{{ driver.fastestSector1 }}</td>
+          <td [ngClass]="driver.sector2Class">{{ driver.fastestSector2 }}</td>
+          <td [ngClass]="driver.sector3Class">{{ driver.fastestSector3 }}</td>
+          <td [ngClass]="driver.fastestLapClass">{{ driver.fastestLaptime }}</td>
           <td class='td-text'>{{ driver.currentLapTime }}</td>
           <td class='td-text'>{{ driver.lapsDriven }}</td>
           <td class='td-text'>{{ driver.currentDriverStatus }}</td>

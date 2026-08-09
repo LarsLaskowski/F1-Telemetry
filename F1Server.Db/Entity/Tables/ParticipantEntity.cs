@@ -133,7 +133,7 @@ public class ParticipantEntity
     /// <summary>
     /// Laps of the participant
     /// </summary>
-    public virtual ICollection<LapEntity> Laps { get; } = new List<LapEntity>();
+    public virtual ICollection<LapEntity> Laps { get; } = [];
 
     #endregion // Navigation properties
 }

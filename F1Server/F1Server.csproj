@@ -30,6 +30,7 @@
     <ProjectReference Include="..\F1Server.Observability\F1Server.Observability.csproj" />
     <ProjectReference Include="..\F1Server.Service\F1Server.Service.csproj" />
     <ProjectReference Include="..\F1Server.Telemetry\F1Server.Telemetry.csproj" />
+    <ProjectReference Include="..\F1Server.WebApi\F1Server.WebApi.csproj" />
   </ItemGroup>
 
 </Project>

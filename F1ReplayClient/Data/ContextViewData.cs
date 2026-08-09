@@ -37,7 +37,7 @@ internal class ContextViewData : NotifyPropertyBase, IDataErrorInfo
 
         PacketViewTypes = new();
 
-        EventCodes = new ObservableCollection<string>();
+        EventCodes = [];
     }
 
     #endregion // Constructors

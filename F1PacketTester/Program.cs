@@ -273,9 +273,9 @@ internal static class Program
 
         var eventString = Encoding.ASCII.GetString(eventCodeSpan).Trim('\0');
 
-        if (eventString == "PENA"
-            || eventString == "SPTP"
-            || eventString == "FLBK")
+        if (eventString == EventCodes.PenaltyIssued
+            || eventString == EventCodes.SpeedTrapTriggered
+            || eventString == EventCodes.Flashback)
         {
             progressBar.WriteLine($"Event string: {eventString} found in {fInfo.Name}");
         }

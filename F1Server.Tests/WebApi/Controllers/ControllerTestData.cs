@@ -321,6 +321,80 @@ internal static class ControllerTestData
     }
 
     /// <summary>
+    /// Adds a finished qualifying session together with a human controlled participant and its final classification
+    /// </summary>
+    /// <param name="finishPosition">Finish position of the human controlled participant</param>
+    /// <returns>Database id of the created session</returns>
+    public static long AddSessionWithFinalClassification(int finishPosition)
+    {
+        using (var dbFactory = RepositoryFactory.CreateInstance())
+        {
+            var sessionId = AddSession(dbFactory, SessionType.Qualifying3, isFinished: true, GameVersionId, TrackId, Formula.F1Modern, out _);
+
+            var participantId = AddParticipant(dbFactory, sessionId, HumanDriverName, isHumanControlled: true, out _);
+
+            AddFinalClassification(dbFactory, sessionId, participantId, finishPosition, FastestLapTime);
+
+            return sessionId;
+        }
+    }
+
+    /// <summary>
+    /// Adds a finished race session without participants, so a test can classify its own participants
+    /// </summary>
+    /// <returns>Database id of the created session</returns>
+    public static long AddRaceSession()
+    {
+        using (var dbFactory = RepositoryFactory.CreateInstance())
+        {
+            return AddSession(dbFactory, SessionType.Race, isFinished: true, GameVersionId, TrackId, Formula.F1Modern, out _);
+        }
+    }
+
+    /// <summary>
+    /// Adds a participant together with its final classification, so a test can control the race times, the driven
+    /// laps and the fastest lap time the classification is built from
+    /// </summary>
+    /// <param name="sessionId">Database id of the session of the participant</param>
+    /// <param name="driverName">Name of the driver of the participant</param>
+    /// <param name="finishPosition">Finish position of the participant</param>
+    /// <param name="lapsDriven">Number of laps driven by the participant</param>
+    /// <param name="totalRaceTime">Total race time of the participant in seconds</param>
+    /// <param name="fastestLapTime">Fastest lap time of the participant in milliseconds</param>
+    /// <returns>Database id of the created participant</returns>
+    public static long AddClassifiedParticipant(long sessionId,
+                                                string driverName,
+                                                int finishPosition,
+                                                int lapsDriven,
+                                                double totalRaceTime,
+                                                uint fastestLapTime)
+    {
+        using (var dbFactory = RepositoryFactory.CreateInstance())
+        {
+            var participantId = AddParticipant(dbFactory, sessionId, driverName, isHumanControlled: false, out _);
+
+            var finalClassificationEntity = new FinalClassificationEntity
+                                            {
+                                                SessionId = sessionId,
+                                                ParticipantId = participantId,
+                                                GridPosition = finishPosition,
+                                                FinishPosition = finishPosition,
+                                                LapsDriven = lapsDriven,
+                                                PitStops = 1,
+                                                ResultStatus = ResultStatus.Finished,
+                                                FastestLapTime = fastestLapTime,
+                                                TotalRaceTime = totalRaceTime,
+                                                PenaltiesTime = 0,
+                                                NumberOfPenalties = 0
+                                            };
+
+            Assert.IsTrue(dbFactory.GetRepository<FinalClassificationRepository>()?.Add(finalClassificationEntity), "Final classification entity could not be added to the database!");
+
+            return participantId;
+        }
+    }
+
+    /// <summary>
     /// Adds a track and returns its database id
     /// </summary>
     /// <returns>Database id of the created track</returns>

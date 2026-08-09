@@ -4,7 +4,7 @@ using F1Server.Core.Enumerations;
 using F1Server.Db.Entity;
 using F1Server.Db.Entity.Repositories;
 using F1Server.Db.Entity.Tables;
-using F1Server.WebApi.Cache;
+using F1Server.Service.Cache;
 
 namespace F1Server.Tests.Cache;
 

@@ -1,6 +1,7 @@
 ﻿using F1Server.Core.Interfaces;
 
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace F1Server.Data;
 
@@ -49,7 +50,7 @@ public sealed class F1ServerApplicationData
     /// <summary>
     /// Gets or sets the logger used to record diagnostic and operational messages
     /// </summary>
-    public ILogger Logger { get; set; }
+    public ILogger Logger { get; set; } = NullLogger.Instance;
 
     /// <summary>
     /// Is a live recording session running?
@@ -64,7 +65,7 @@ public sealed class F1ServerApplicationData
     /// <summary>
     /// Live session data
     /// </summary>
-    public ILiveSessionData LiveSessionData { get; set; }
+    public ILiveSessionData? LiveSessionData { get; set; }
 
     /// <summary>
     /// Receiving data?

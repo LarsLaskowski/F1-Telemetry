@@ -117,6 +117,18 @@ public class ReceivedPacketDataTests
     }
 
     /// <summary>
+    /// Test to verify that accessing the raw data before <see cref="ReceivedPacketData.SetRawData"/>
+    /// was ever called returns an empty span instead of throwing a <see cref="NullReferenceException"/>
+    /// </summary>
+    [TestMethod]
+    public void PacketRawDataBeforeSetRawDataReturnsEmptySpan()
+    {
+        var packetData = new ReceivedPacketData();
+
+        Assert.IsTrue(packetData.PacketRawData.IsEmpty, "Raw data should be empty before SetRawData was called!");
+    }
+
+    /// <summary>
     /// Builds a raw packet of the given length whose first two bytes encode the given game version,
     /// when the length is large enough to hold them
     /// </summary>

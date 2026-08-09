@@ -1,4 +1,5 @@
 using F1Server.Data.ViewData;
+using F1Server.Service.CarTelemetries;
 using F1Server.WebApi.Controllers;
 
 using Microsoft.AspNetCore.Mvc;
@@ -32,7 +33,7 @@ public class CarTelemetryControllerTests
     /// <returns>Controller</returns>
     private static CarTelemetryController CreateController()
     {
-        return new CarTelemetryController(NullLogger<CarTelemetryController>.Instance);
+        return new CarTelemetryController(NullLogger<CarTelemetryController>.Instance, new CarTelemetryService());
     }
 
     #endregion // Static methods

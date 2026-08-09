@@ -8,8 +8,8 @@ using F1Server.Data;
 using F1Server.Db.Entity;
 using F1Server.Db.Entity.Repositories;
 using F1Server.Db.Entity.Tables;
+using F1Server.Service.Cache;
 using F1Server.Service.Runtime;
-using F1Server.WebApi.Cache;
 
 using Microsoft.Extensions.Logging;
 

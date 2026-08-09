@@ -320,9 +320,14 @@ internal class PacketToParticipants : PacketToXBase
 
             var platform = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-            participantData2023.Platform = Enum.IsDefined(typeof(Platforms), (int)platform)
-                                               ? (Platforms)platform
-                                               : Platforms.Unknown;
+            try
+            {
+                participantData2023.Platform = (Platforms)platform;
+            }
+            catch
+            {
+                participantData2023.Platform = Platforms.Unknown;
+            }
 
             actOffset += ConstData.TypeUInt8;
 

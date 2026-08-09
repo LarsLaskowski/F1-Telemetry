@@ -175,7 +175,7 @@ public sealed class TelemetryWriter : ITelemetryWriter, IDisposable
                          {
                              $"carPosition={lapInfo.CarPosition.ToString(_cultureInfo)}",
                              $"currentLapNumber={lapInfo.CurrentLapNumber.ToString(_cultureInfo)}",
-                             $"driverStatus=\"{lapInfo.CurrentDriverStatus.ToString()}\"",
+                             $"driverStatus=\"{lapInfo.CurrentDriverStatus}\"",
                              $"gridPosition={lapInfo.GridPosition.ToString(_cultureInfo)}",
                              $"lapDistance={lapDistance.ToString("0.00", _cultureInfo)}",
                              $"lapTime={lapData.CurrentLapTime.ToString(_cultureInfo)}",
@@ -258,7 +258,7 @@ public sealed class TelemetryWriter : ITelemetryWriter, IDisposable
                              $"ersHarvestedMGUK={carStatusData.ERSHarvestedThisLapMGUK.ToString(DefaultFloatFormat, _cultureInfo)}",
                              $"fuelLevel={carStatusData.FuelInTank.ToString("0.00", _cultureInfo)}",
                              $"fuelRemainingLaps={carStatusData.FuelRemainingLaps.ToString("0.00", _cultureInfo)}",
-                             $"tyreCompound=\"{carStatusData.VisualTyreCompound.ToString()}\""
+                             $"tyreCompound=\"{carStatusData.VisualTyreCompound}\""
                          };
 
             writeData.Append(' ');
@@ -290,7 +290,7 @@ public sealed class TelemetryWriter : ITelemetryWriter, IDisposable
                 {
                     currentActivity?.SetTag("f1.telemetry_records", records.Count);
 
-                    await writeApi.WriteRecordsAsync(records, WritePrecision.Ms, Configuration.Bucket, Configuration.Organization, cancellationToken).ConfigureAwait(true);
+                    await writeApi.WriteRecordsAsync(records, WritePrecision.Ms, Configuration.Bucket, Configuration.Organization, cancellationToken).ConfigureAwait(false);
 
                     currentActivity?.SetStatus(ActivityStatusCode.Ok);
                 }
