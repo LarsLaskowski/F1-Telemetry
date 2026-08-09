@@ -6,7 +6,7 @@ namespace F1Server.Core.Packets.Data;
 /// <summary>
 /// Data class packet header
 /// </summary>
-public class PacketHeader : IHeader, IHeaderExtended, IHeaderExtended2
+public class PacketHeader : IHeader
 {
     #region Properties
 
@@ -24,6 +24,9 @@ public class PacketHeader : IHeader, IHeaderExtended, IHeaderExtended2
 
     /// <inheritdoc/>
     public ushort GameVersion { get; set; }
+
+    /// <inheritdoc/>
+    public ushort GameYear { get; set; }
 
     /// <inheritdoc/>
     public byte MajorGameVersion { get; set; }
@@ -47,24 +50,13 @@ public class PacketHeader : IHeader, IHeaderExtended, IHeaderExtended2
     public uint FrameIdentifier { get; set; }
 
     /// <inheritdoc/>
+    public uint OverallFrameIdentifier { get; set; }
+
+    /// <inheritdoc/>
     public ushort PlayerCarIndex { get; set; }
-
-    #endregion // IHeader
-
-    #region IHeaderExtended
 
     /// <inheritdoc/>
     public ushort PlayerCarIndexSecondary { get; set; }
 
-    #endregion // IHeaderExtended
-
-    #region IHeaderExtended2
-
-    /// <inheritdoc/>
-    public ushort GameYear { get; set; }
-
-    /// <inheritdoc/>
-    public uint OverallFrameIdentifier { get; set; }
-
-    #endregion // IHeaderExtended2
+    #endregion // IHeader
 }
