@@ -38,12 +38,16 @@ public interface ILapData2023 : ILapDataBase
     ushort Sector2TimeMinutes { get; }
 
     /// <summary>
-    /// Delta to car in front in milliseconds
+    /// Delta to car in front in milliseconds. For F1 2024 and later, this is only the
+    /// millisecond part of the delta - see <see cref="ILapData2024.DeltaToCarInFrontMinutes"/>
+    /// for the whole-minute part
     /// </summary>
     ushort DeltaToCarInFront { get; }
 
     /// <summary>
-    /// Delta to race leader in milliseconds
+    /// Delta to race leader in milliseconds. For F1 2024 and later, this is only the
+    /// millisecond part of the delta - see <see cref="ILapData2024.DeltaToRaceLeaderMinutes"/>
+    /// for the whole-minute part
     /// </summary>
     ushort DeltaToRaceLeader { get; }
 
