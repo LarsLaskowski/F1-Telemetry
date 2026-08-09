@@ -1,12 +1,4 @@
-import { BrowserModule } from '@angular/platform-browser';
-import { NgModule } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
-import { Routes, RouterModule } from '@angular/router';
-import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
-import { MaterialModule } from './material.module';
-
-import { SignalrService } from './services/signalr.service';
+import { Routes } from '@angular/router';
 
 export const routes: Routes = [
   { path: '', loadComponent: () => import('./home/home.component').then(m => m.HomeComponent) },
@@ -23,19 +15,3 @@ export const routes: Routes = [
   { path: 'championships', loadComponent: () => import('./championships/championships.component').then(m => m.ChampionshipsComponent) },
   { path: 'createchampionship', loadComponent: () => import('./championships/createchampionship.component').then(m => m.CreateChampionshipComponent) }
 ];
-
-@NgModule({
-  declarations: [],
-  imports: [
-    BrowserModule,
-    FormsModule,
-    RouterModule.forRoot(routes, { useHash: true }),
-    MaterialModule
-  ],
-  providers: [
-    SignalrService,
-    provideHttpClient(withInterceptorsFromDi()),
-    provideCharts(withDefaultRegisterables())
-  ]
-})
-export class AppModule {}
