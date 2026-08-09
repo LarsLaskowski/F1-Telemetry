@@ -70,27 +70,44 @@ public class SessionsControllerTests
     /// <returns>Session, or <see langword="null"/> when the session is not listed</returns>
     private static async Task<SessionViewData?> FindSessionAsync(SessionsController controller, long sessionId)
     {
-        var pageIndex = 0;
+        var firstPage = await GetPageAsync(controller, 0).ConfigureAwait(false);
 
-        while (true)
+        // The walk below is bounded by the total count of the first page, so a regression in the paging cannot turn
+        // this helper into an endless loop
+        var pageCount = (firstPage.TotalCount + MaxPageSize - 1) / MaxPageSize;
+
+        for (var pageIndex = 0; pageIndex < pageCount; pageIndex++)
         {
-            var result = await controller.GetSessions(pageIndex, MaxPageSize).ConfigureAwait(false);
+            var page = pageIndex == 0
+                           ? firstPage
+                           : await GetPageAsync(controller, pageIndex).ConfigureAwait(false);
 
-            if ((result.Result as OkObjectResult)?.Value is not PageResultData<SessionViewData> pageResult
-                || pageResult.Items.Count == 0)
-            {
-                return null;
-            }
-
-            var session = pageResult.Items.Find(s => s.SessionDbId == sessionId);
+            var session = page.Items.Find(s => s.SessionDbId == sessionId);
 
             if (session != null)
             {
                 return session;
             }
-
-            pageIndex++;
         }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Reads a page of the session list and asserts that it was returned as a page result
+    /// </summary>
+    /// <param name="controller">Controller the page is read from</param>
+    /// <param name="pageIndex">Index of the requested page</param>
+    /// <returns>Page result</returns>
+    private static async Task<PageResultData<SessionViewData>> GetPageAsync(SessionsController controller, int pageIndex)
+    {
+        var result = await controller.GetSessions(pageIndex, MaxPageSize).ConfigureAwait(false);
+
+        var pageResult = (result.Result as OkObjectResult)?.Value as PageResultData<SessionViewData>;
+
+        Assert.IsNotNull(pageResult, "The session list should return a page result!");
+
+        return pageResult;
     }
 
     #endregion // Static methods
