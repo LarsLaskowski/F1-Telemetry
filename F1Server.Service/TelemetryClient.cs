@@ -316,7 +316,9 @@ public sealed class TelemetryClient : ITelemetryClient, IDisposable
 
             packetData.SetRawData(recvData);
 
-            if (_packetProcessor.ProcessPacket(packetData) == false)
+            retValue = _packetProcessor.ProcessPacket(packetData);
+
+            if (retValue == false)
             {
                 ProcessingError?.Invoke(this, _packetProcessor.LastError);
             }
