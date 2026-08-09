@@ -255,7 +255,7 @@ internal class PacketToFinalClassification : PacketToXBase
     {
         var finalClassData = new FinalClassificationCarData2021();
 
-        if (packetLength >= offsetToStart + ConstData.F12020FinalClassificationCarSize)
+        if (packetLength >= offsetToStart + ConstData.F12021FinalClassificationCarSize)
         {
             var actOffset = offsetToStart;
 
