@@ -1,5 +1,4 @@
-﻿using F1Server.Core.Enumerations;
-using F1Server.Core.Packets.Interfaces;
+﻿using F1Server.Core.Packets.Interfaces;
 
 namespace F1Server.Core.Packets.Data;
 

@@ -5,7 +5,7 @@ namespace F1Server.Core.Packets.Data;
 /// <summary>
 /// Time trial data (F1 2024)
 /// </summary>
-public class TimeTrialDataSet2024 : ITimeTrialDataSetBase, ITimeTrialDataSet2024
+public class TimeTrialDataSet2024 : ITimeTrialDataSet2024
 {
     #region ITimeTrialDataSetBase
 
