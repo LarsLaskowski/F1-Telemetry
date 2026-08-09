@@ -29,7 +29,9 @@ public static class FileFunctions
             {
                 var bytesRead = fs.Read(buffer, 0, 30);
 
-                if (bytesRead > 0)
+                // Unsafe.ReadUnaligned<ushort> reads 2 bytes; a single byte read would
+                // otherwise let a stale pooled byte leak into the parsed game version
+                if (bytesRead >= 2)
                 {
                     ref var memRef = ref MemoryMarshal.GetReference(buffer.AsSpan());
 
