@@ -19,6 +19,15 @@ namespace F1Server.Tests.WebApi.Controllers;
 [TestClass]
 public class SessionsControllerTests
 {
+    #region Constants
+
+    /// <summary>
+    /// Largest page size accepted by the session list
+    /// </summary>
+    private const int MaxPageSize = 100;
+
+    #endregion // Constants
+
     #region Properties
 
     /// <summary>
@@ -53,6 +62,37 @@ public class SessionsControllerTests
         return new SessionsController(NullLogger<SessionsController>.Instance, cache, new SessionService());
     }
 
+    /// <summary>
+    /// Searches a session in the paged session list, so a test does not depend on the page the session ends up on
+    /// </summary>
+    /// <param name="controller">Controller the session list is read from</param>
+    /// <param name="sessionId">Database id of the searched session</param>
+    /// <returns>Session, or <see langword="null"/> when the session is not listed</returns>
+    private static async Task<SessionViewData?> FindSessionAsync(SessionsController controller, long sessionId)
+    {
+        var pageIndex = 0;
+
+        while (true)
+        {
+            var result = await controller.GetSessions(pageIndex, MaxPageSize).ConfigureAwait(false);
+
+            if ((result.Result as OkObjectResult)?.Value is not PageResultData<SessionViewData> pageResult
+                || pageResult.Items.Count == 0)
+            {
+                return null;
+            }
+
+            var session = pageResult.Items.Find(s => s.SessionDbId == sessionId);
+
+            if (session != null)
+            {
+                return session;
+            }
+
+            pageIndex++;
+        }
+    }
+
     #endregion // Static methods
 
     #region Methods
@@ -68,18 +108,16 @@ public class SessionsControllerTests
 
         using (cache)
         {
-            // The session list is ordered by the newest session, so the page has to be large enough to also contain
-            // the shared test session behind the sessions created by the other tests
-            var result = await controller.GetSessions(pageIndex: 0, pageSize: 100).ConfigureAwait(false);
+            var result = await controller.GetSessions().ConfigureAwait(false);
 
             var pageResult = (result.Result as OkObjectResult)?.Value as PageResultData<SessionViewData>;
 
             Assert.IsNotNull(pageResult, "The action should return a page result!");
             Assert.IsGreaterThan(0, pageResult.TotalCount, "The finished test session should be counted!");
 
-            var testSession = pageResult.Items.Find(s => s.SessionDbId == ControllerTestData.SessionId);
+            var testSession = await FindSessionAsync(controller, ControllerTestData.SessionId).ConfigureAwait(false);
 
-            Assert.IsNotNull(testSession, "The finished test session should be part of the first page!");
+            Assert.IsNotNull(testSession, "The finished test session should be part of the session list!");
             Assert.AreEqual(ControllerTestData.TrackName, testSession.Track, "The track name of the test session should be returned!");
             Assert.AreEqual(ControllerTestData.GameVersionName, testSession.GameVersion, "The game version name of the test session should be returned!");
             Assert.AreEqual(ControllerTestData.ParticipantCount, testSession.Cars, "The number of active cars of the test session should be returned!");
@@ -123,14 +161,8 @@ public class SessionsControllerTests
 
         using (cache)
         {
-            var result = await controller.GetSessions(pageIndex: 0, pageSize: 100).ConfigureAwait(false);
-
-            var pageResult = (result.Result as OkObjectResult)?.Value as PageResultData<SessionViewData>;
-
-            Assert.IsNotNull(pageResult, "The action should return a page result!");
-
-            var sprintSession = pageResult.Items.Find(s => s.SessionDbId == sprintSessionId);
-            var raceSession = pageResult.Items.Find(s => s.SessionDbId == raceSessionId);
+            var sprintSession = await FindSessionAsync(controller, sprintSessionId).ConfigureAwait(false);
+            var raceSession = await FindSessionAsync(controller, raceSessionId).ConfigureAwait(false);
 
             Assert.IsNotNull(sprintSession, "The race preceding the second race should be part of the session list!");
             Assert.IsNotNull(raceSession, "The second race should be part of the session list!");
@@ -156,13 +188,7 @@ public class SessionsControllerTests
 
         using (cache)
         {
-            var result = await controller.GetSessions(pageIndex: 0, pageSize: 100).ConfigureAwait(false);
-
-            var pageResult = (result.Result as OkObjectResult)?.Value as PageResultData<SessionViewData>;
-
-            Assert.IsNotNull(pageResult, "The action should return a page result!");
-
-            var raceSession = pageResult.Items.Find(s => s.SessionDbId == raceSessionId);
+            var raceSession = await FindSessionAsync(controller, raceSessionId).ConfigureAwait(false);
 
             Assert.IsNotNull(raceSession, "The race session should be part of the session list!");
             Assert.AreEqual(SessionType.Sprint, raceSession.SessionType, "A race preceded by a sprint shootout should be reported as sprint race!");
@@ -180,7 +206,7 @@ public class SessionsControllerTests
 
         using (cache)
         {
-            var result = await controller.GetSessions(pageIndex: 0, pageSize: 101).ConfigureAwait(false);
+            var result = await controller.GetSessions(pageIndex: 0, pageSize: MaxPageSize + 1).ConfigureAwait(false);
 
             Assert.IsInstanceOfType<BadRequestObjectResult>(result.Result, "A page size above the maximum should be rejected!");
         }

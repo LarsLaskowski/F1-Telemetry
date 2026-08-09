@@ -1,3 +1,4 @@
+using System.Collections.Frozen;
 using System.Diagnostics;
 using System.Linq.Expressions;
 
@@ -33,32 +34,35 @@ public class FastestLapService
     /// <summary>
     /// Session types of a practice
     /// </summary>
-    private static readonly List<SessionType> _practiceSessions = [
-                                                                      SessionType.Practice1,
-                                                                      SessionType.Practice2,
-                                                                      SessionType.Practice3,
-                                                                      SessionType.ShortPractice
-                                                                  ];
+    private static readonly FrozenSet<SessionType> _practiceSessions = FrozenSet.Create(SessionType.Practice1,
+                                                                                        SessionType.Practice2,
+                                                                                        SessionType.Practice3,
+                                                                                        SessionType.ShortPractice);
 
     /// <summary>
     /// Session types of a qualifying
     /// </summary>
-    private static readonly List<SessionType> _qualifyingSessions = [
-                                                                        SessionType.Qualifying1,
-                                                                        SessionType.Qualifying2,
-                                                                        SessionType.Qualifying3,
-                                                                        SessionType.ShortQualifying,
-                                                                        SessionType.OneShotQualifying
-                                                                    ];
+    private static readonly FrozenSet<SessionType> _qualifyingSessions = FrozenSet.Create(SessionType.Qualifying1,
+                                                                                          SessionType.Qualifying2,
+                                                                                          SessionType.Qualifying3,
+                                                                                          SessionType.ShortQualifying,
+                                                                                          SessionType.OneShotQualifying);
 
     /// <summary>
     /// Session types of a race
     /// </summary>
-    private static readonly List<SessionType> _raceSessions = [
-                                                                  SessionType.Race,
-                                                                  SessionType.Race2,
-                                                                  SessionType.Race3
-                                                              ];
+    private static readonly FrozenSet<SessionType> _raceSessions = FrozenSet.Create(SessionType.Race,
+                                                                                    SessionType.Race2,
+                                                                                    SessionType.Race3);
+
+    /// <summary>
+    /// Types of fastest laps determined for a track, in the order they are reported
+    /// </summary>
+    private static readonly FastestLapSessionType[] _lapSessionTypes = [
+                                                                           FastestLapSessionType.Practice,
+                                                                           FastestLapSessionType.Qualifying,
+                                                                           FastestLapSessionType.Race
+                                                                       ];
 
     #endregion // Fields
 
@@ -109,13 +113,14 @@ public class FastestLapService
     /// </summary>
     /// <param name="lapSessionType">Type of the fastest lap</param>
     /// <returns>Session types of the type of fastest lap</returns>
-    private static List<SessionType> GetSessionTypes(FastestLapSessionType lapSessionType)
+    private static FrozenSet<SessionType> GetSessionTypes(FastestLapSessionType lapSessionType)
     {
         return lapSessionType switch
                {
                    FastestLapSessionType.Practice => _practiceSessions,
                    FastestLapSessionType.Qualifying => _qualifyingSessions,
-                   _ => _raceSessions
+                   FastestLapSessionType.Race => _raceSessions,
+                   _ => throw new ArgumentOutOfRangeException(nameof(lapSessionType), lapSessionType, "Unknown type of fastest lap!")
                };
     }
 
@@ -212,8 +217,7 @@ public class FastestLapService
                             : await trackQuery.FirstOrDefaultAsync(t => t.Id == trackId)
                                               .ConfigureAwait(false);
 
-        // The fastest laps are reported in the declaration order of the lap session types
-        foreach (var lapSessionType in Enum.GetValues<FastestLapSessionType>())
+        foreach (var lapSessionType in _lapSessionTypes)
         {
             using (AppActivity.SrvSource.StartActivity($"{SessionTypeActivityPrefix}{lapSessionType}"))
             {
@@ -299,7 +303,7 @@ public class FastestLapService
     /// <param name="dbSessions">Practice sessions</param>
     /// <param name="sessionTypes">Type of sessions</param>
     /// <returns>Lap entity</returns>
-    private static async Task<LapEntity?> FastestLapInSessionsAsync(RepositoryFactory dbFactory, List<SessionEntity> dbSessions, List<SessionType> sessionTypes)
+    private static async Task<LapEntity?> FastestLapInSessionsAsync(RepositoryFactory dbFactory, List<SessionEntity> dbSessions, FrozenSet<SessionType> sessionTypes)
     {
         LapEntity? fastestLap = null;
 
