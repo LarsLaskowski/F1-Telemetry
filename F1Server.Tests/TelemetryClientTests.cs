@@ -107,6 +107,59 @@ public class TelemetryClientTests
     }
 
     /// <summary>
+    /// Test to verify that a successfully processed file packet reports success instead of the previously
+    /// hardcoded false, using a full-size sample packet known to be accepted by the packet processor
+    /// </summary>
+    [TestMethod]
+    public void TelemetryClientReceiveDataFromFileValidPacketReturnsTrue()
+    {
+        var services = new ServiceCollection();
+        var applicationData = new F1ServerApplicationData();
+
+        services.AddSingleton(applicationData);
+        services.AddSingleton(new PacketAnalyzer());
+        services.AddSingleton(new TelemetryConfiguration());
+
+        using (var serviceProvider = services.BuildServiceProvider())
+        {
+            using (var telemetryClient = new TelemetryClient(serviceProvider, false, false))
+            {
+                var packetContent = File.ReadAllBytes(Path.Combine("SampleData", "F1-2025-Session.packet"));
+
+                var isProcessed = telemetryClient.ReceiveDataFromFile(packetContent);
+
+                Assert.IsTrue(isProcessed, "A successfully processed file packet must report success!");
+            }
+        }
+    }
+
+    /// <summary>
+    /// Test to verify that a packet too short to contain a valid header reports failure
+    /// </summary>
+    [TestMethod]
+    public void TelemetryClientReceiveDataFromFileTruncatedPacketReturnsFalse()
+    {
+        var services = new ServiceCollection();
+        var applicationData = new F1ServerApplicationData();
+
+        services.AddSingleton(applicationData);
+        services.AddSingleton(new PacketAnalyzer());
+        services.AddSingleton(new TelemetryConfiguration());
+
+        using (var serviceProvider = services.BuildServiceProvider())
+        {
+            using (var telemetryClient = new TelemetryClient(serviceProvider, false, false))
+            {
+                var packetContent = File.ReadAllBytes(Path.Combine("SampleData", "F1-2025-Session.packet")).AsSpan(0, 4).ToArray();
+
+                var isProcessed = telemetryClient.ReceiveDataFromFile(packetContent);
+
+                Assert.IsFalse(isProcessed, "A truncated packet must not be reported as processed!");
+            }
+        }
+    }
+
+    /// <summary>
     /// Test to verify that the length prefix reader returns the packet length encoded on the shared connection
     /// </summary>
     /// <returns>A task representing the asynchronous operation</returns>
