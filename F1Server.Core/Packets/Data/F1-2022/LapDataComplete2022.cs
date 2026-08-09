@@ -29,7 +29,7 @@ public class LapDataComplete2022 : ILapDataComplete, ILapDataComplete2022
     /// <summary>
     /// Array with all lap data information of all cars
     /// </summary>
-    public ILapDataBase[] LapData { get; set; }
+    public ILapDataBase[] LapData { get; }
 
     #endregion // ILapDataComplete
 

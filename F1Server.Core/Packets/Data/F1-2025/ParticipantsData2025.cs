@@ -30,7 +30,7 @@ public class ParticipantsData2025 : IParticipantsBase
     public ushort ActiveCars { get; set; }
 
     /// <inheritdoc/>
-    public IParticipantDataBase[] Participants { get; set; }
+    public IParticipantDataBase[] Participants { get; }
 
     #endregion // IParticipantsBase
 }

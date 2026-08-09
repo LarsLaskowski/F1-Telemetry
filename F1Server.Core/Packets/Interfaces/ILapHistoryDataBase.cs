@@ -55,7 +55,7 @@ public interface ILapHistoryDataBase
     /// <summary>
     /// All sectors and lap time valid?
     /// </summary>
-    public bool IsLapTimeCompleteValid => IsValidSector1 && IsValidSector2 && IsValidSector3 && IsLapTimeValid;
+    bool IsLapTimeCompleteValid => IsValidSector1 && IsValidSector2 && IsValidSector3 && IsLapTimeValid;
 
     #endregion // Properties
 }
