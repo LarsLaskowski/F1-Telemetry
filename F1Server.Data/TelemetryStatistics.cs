@@ -3,7 +3,9 @@
 namespace F1Server.Data;
 
 /// <summary>
-/// Statistics of running telemetry client
+/// Statistics of running telemetry client. Named *Statistics rather than *Data as an intentional,
+/// documented exception to the type suffix convention, since it carries behavior (events, increment
+/// methods) rather than being a plain data holder
 /// </summary>
 public class TelemetryStatistics
 {

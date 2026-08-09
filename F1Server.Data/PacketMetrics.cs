@@ -1,7 +1,9 @@
 ﻿namespace F1Server.Data;
 
 /// <summary>
-/// Metric per packet type
+/// Metric per packet type. Named *Metrics rather than *Data as an intentional, documented exception
+/// to the type suffix convention, since it carries behavior (Reset, a copy constructor) rather than
+/// being a plain data holder
 /// </summary>
 public class PacketMetrics
 {
