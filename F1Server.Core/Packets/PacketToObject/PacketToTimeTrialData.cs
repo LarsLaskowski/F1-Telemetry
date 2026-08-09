@@ -175,17 +175,25 @@ internal class PacketToTimeTrialData : PacketToXBase
 
                 actOffset += ConstData.TypeUInt32;
 
-                var enumValue = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
+                var tractionControlValue = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
+                var gearboxAssistValue = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset + ConstData.TypeUInt8));
 
-                timeTrialData.TractionControl = (TractionControl)Enum.ToObject(typeof(TractionControl), enumValue);
+                if (timeTrialData is TimeTrialDataSet2024 timeTrialDataSet2024)
+                {
+                    // The F1 2024 TimeTrial spec carries a binary assist flag here, unlike the
+                    // multi-valued traction control/gearbox assist enums used on car status/setup data
+                    timeTrialDataSet2024.TractionControl = tractionControlValue != 0;
 
-                actOffset += ConstData.TypeUInt8;
+                    timeTrialDataSet2024.GearboxAssist = gearboxAssistValue != 0;
+                }
+                else if (timeTrialData is TimeTrialDataSet2025 timeTrialDataSet2025)
+                {
+                    timeTrialDataSet2025.TractionControl = (TractionControl)Enum.ToObject(typeof(TractionControl), tractionControlValue);
 
-                enumValue = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
+                    timeTrialDataSet2025.GearboxAssist = (GearboxAssist)Enum.ToObject(typeof(GearboxAssist), gearboxAssistValue);
+                }
 
-                timeTrialData.GearboxAssist = (GearboxAssist)Enum.ToObject(typeof(GearboxAssist), enumValue);
-
-                actOffset += ConstData.TypeUInt8;
+                actOffset += ConstData.TypeUInt8 * 2;
 
                 timeTrialData.AntiLockBrakes = Unsafe.ReadUnaligned<bool>(ref Unsafe.Add(ref dataPacket, actOffset));
 

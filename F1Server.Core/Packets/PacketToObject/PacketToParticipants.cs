@@ -210,16 +210,18 @@ internal class PacketToParticipants : PacketToXBase
         if (GameVersion >= 2025)
         {
             var sourceSpan = MemoryMarshal.CreateReadOnlySpan(ref Unsafe.Add(ref dataPacket, actOffset), ConstData.DriverNameLength2025);
+            var nullTerminatorIndex = sourceSpan.IndexOf((byte)0);
 
-            participantData.DriverName = Encoding.UTF8.GetString(sourceSpan).Trim('\0');
+            participantData.DriverName = Encoding.UTF8.GetString(nullTerminatorIndex >= 0 ? sourceSpan[..nullTerminatorIndex] : sourceSpan);
 
             actOffset += ConstData.DriverNameLength2025;
         }
         else
         {
             var sourceSpan = MemoryMarshal.CreateReadOnlySpan(ref Unsafe.Add(ref dataPacket, actOffset), ConstData.DriverNameLength);
+            var nullTerminatorIndex = sourceSpan.IndexOf((byte)0);
 
-            participantData.DriverName = Encoding.UTF8.GetString(sourceSpan).Trim('\0');
+            participantData.DriverName = Encoding.UTF8.GetString(nullTerminatorIndex >= 0 ? sourceSpan[..nullTerminatorIndex] : sourceSpan);
 
             actOffset += ConstData.DriverNameLength;
         }
@@ -318,14 +320,9 @@ internal class PacketToParticipants : PacketToXBase
 
             var platform = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-            try
-            {
-                participantData2023.Platform = (Platforms)Enum.ToObject(typeof(Platforms), platform);
-            }
-            catch
-            {
-                participantData2023.Platform = Platforms.Unknown;
-            }
+            participantData2023.Platform = Enum.IsDefined(typeof(Platforms), (int)platform)
+                                               ? (Platforms)platform
+                                               : Platforms.Unknown;
 
             actOffset += ConstData.TypeUInt8;
 

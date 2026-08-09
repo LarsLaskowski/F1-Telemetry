@@ -1,5 +1,4 @@
-﻿using F1Server.Core.Enumerations;
-using F1Server.Core.Packets.Interfaces;
+﻿using F1Server.Core.Packets.Interfaces;
 
 namespace F1Server.Core.Packets.Data;
 
@@ -8,17 +7,33 @@ namespace F1Server.Core.Packets.Data;
 /// </summary>
 public class TimeTrialDataSet2024 : ITimeTrialDataSetBase
 {
+    #region Properties
+
+    /// <summary>
+    /// Traction control assist (off = false, on = true). Unlike <see cref="Enumerations.TractionControl"/>
+    /// on car status/setup data, the time trial spec only carries a binary assist flag for this field
+    /// </summary>
+    public bool TractionControl { get; set; }
+
+    /// <summary>
+    /// Gearbox assist (off = false, on = true). Unlike <see cref="Enumerations.GearboxAssist"/>
+    /// on car status/setup data, the time trial spec only carries a binary assist flag for this field
+    /// </summary>
+    public bool GearboxAssist { get; set; }
+
+    #endregion // Properties
+
     #region ITimeTrialDataSetBase
 
     /// <summary>
     /// Index of the car this data relates to
     /// </summary>
-    public int CarIndex { get; set; }
+    public ushort CarIndex { get; set; }
 
     /// <summary>
     /// Id of the team
     /// </summary>
-    public int TeamId { get; set; }
+    public ushort TeamId { get; set; }
 
     /// <summary>
     /// Lap time in milliseconds
@@ -39,16 +54,6 @@ public class TimeTrialDataSet2024 : ITimeTrialDataSetBase
     /// Sector 3 time in milliseconds
     /// </summary>
     public uint Sector3Time { get; set; }
-
-    /// <summary>
-    /// Traction control
-    /// </summary>
-    public TractionControl TractionControl { get; set; }
-
-    /// <summary>
-    /// Assist settings of the gear box
-    /// </summary>
-    public GearboxAssist GearboxAssist { get; set; }
 
     /// <summary>
     /// Anti lock brakes (off = false, on = true)

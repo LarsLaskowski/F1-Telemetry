@@ -41,12 +41,14 @@ public class LapData2024 : ILapData2023, ILapData2024
     public ushort Sector2TimeMinutes { get; set; }
 
     /// <summary>
-    /// Delta to car in front in milliseconds
+    /// Milliseconds part of the delta to the car in front (max representable value 59999), the whole
+    /// minutes part is held separately in <see cref="DeltaToCarInFrontMinutes"/>
     /// </summary>
     public ushort DeltaToCarInFront { get; set; }
 
     /// <summary>
-    /// Delta to race leader in milliseconds
+    /// Milliseconds part of the delta to the race leader (max representable value 59999), the whole
+    /// minutes part is held separately in <see cref="DeltaToRaceLeaderMinutes"/>
     /// </summary>
     public ushort DeltaToRaceLeader { get; set; }
 

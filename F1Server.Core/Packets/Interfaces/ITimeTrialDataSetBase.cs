@@ -1,6 +1,4 @@
-﻿using F1Server.Core.Enumerations;
-
-namespace F1Server.Core.Packets.Interfaces;
+﻿namespace F1Server.Core.Packets.Interfaces;
 
 /// <summary>
 /// Time trial base data set (starting with F1 2024)
@@ -12,12 +10,12 @@ public interface ITimeTrialDataSetBase
     /// <summary>
     /// Index of the car this data relates to
     /// </summary>
-    int CarIndex { get; set; }
+    ushort CarIndex { get; set; }
 
     /// <summary>
     /// Id of the team
     /// </summary>
-    int TeamId { get; set; }
+    ushort TeamId { get; set; }
 
     /// <summary>
     /// Lap time in milliseconds
@@ -38,16 +36,6 @@ public interface ITimeTrialDataSetBase
     /// Sector 3 time in milliseconds
     /// </summary>
     uint Sector3Time { get; set; }
-
-    /// <summary>
-    /// Traction control
-    /// </summary>
-    TractionControl TractionControl { get; set; }
-
-    /// <summary>
-    /// Assist settings of the gear box
-    /// </summary>
-    GearboxAssist GearboxAssist { get; set; }
 
     /// <summary>
     /// Anti lock brakes (off = false, on = true)

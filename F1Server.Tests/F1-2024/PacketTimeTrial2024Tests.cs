@@ -4,6 +4,7 @@ using F1Server.Core;
 using F1Server.Core.Data;
 using F1Server.Core.Enumerations;
 using F1Server.Core.PacketData;
+using F1Server.Core.Packets.Data;
 using F1Server.Core.Packets.Interfaces;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -93,6 +94,34 @@ public class PacketTimeTrial2024Tests
             if (timeTrialData is TimeTrialData data && data.PacketData is ITimeTrialDataBase dataComplete)
             {
                 Assert.AreEqual(20991u, dataComplete.PlayerSessionBestDataSet.Sector3Time, "Sector3Time was not read as a full uint value!");
+            }
+            else
+            {
+                Assert.Fail("Invalid time trial format, expected F1 2024!");
+            }
+        }
+        else
+        {
+            Assert.IsNull(_packetData.PacketHeader, "Invalid F1 2024 packet header!");
+        }
+    }
+
+    /// <summary>
+    /// Check that the F1 2024 TimeTrial assist flags are read as binary values (spec
+    /// "0 = assist off, 1 = assist on"), not as the multi-valued CarStatus/CarSetup enums
+    /// </summary>
+    [TestMethod]
+    public void PacketTimeTrialPlayerSessionBestAssists2024ExpectedValues()
+    {
+        if (_packetData.PacketHeader != null)
+        {
+            var timeTrialData = _packetAnalyzer.GetTimeTrialData(_packetData.PacketHeader, File.ReadAllBytes(@"SampleData/F1-2024-TimeTrial.packet"));
+
+            if (timeTrialData is TimeTrialData data && data.PacketData is ITimeTrialDataBase dataComplete
+                && dataComplete.PlayerSessionBestDataSet is TimeTrialDataSet2024 dataSet2024)
+            {
+                Assert.IsTrue(dataSet2024.TractionControl, "Traction control assist must be active in the player session best data set!");
+                Assert.IsTrue(dataSet2024.GearboxAssist, "Gearbox assist must be active in the player session best data set!");
             }
             else
             {

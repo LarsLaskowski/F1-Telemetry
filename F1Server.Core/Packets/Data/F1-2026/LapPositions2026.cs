@@ -23,10 +23,10 @@ public class LapPositions2026 : ILapPositionsBase
     #region ILapPositionsBase
 
     /// <inheritdoc/>
-    public int NumberOfLaps { get; set; }
+    public ushort NumberOfLaps { get; set; }
 
     /// <inheritdoc/>
-    public int LapStartIndex { get; set; }
+    public ushort LapStartIndex { get; set; }
 
     /// <inheritdoc/>
     public int[,] CarPositionOnLaps { get; set; }

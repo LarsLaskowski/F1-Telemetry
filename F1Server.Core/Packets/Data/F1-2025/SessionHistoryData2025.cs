@@ -16,6 +16,16 @@ public class SessionHistoryData2025 : ISessionHistoryDataBase
     {
         LapHistory = new SessionHistoryLapData2025[100];
         TyreStintHistory = new SessionHistoryTyreStintData2025[8];
+
+        for (int lapHistory = 0; lapHistory < LapHistory.Length; ++lapHistory)
+        {
+            LapHistory[lapHistory] = new SessionHistoryLapData2025();
+        }
+
+        for (int tyreStintHistory = 0; tyreStintHistory < TyreStintHistory.Length; ++tyreStintHistory)
+        {
+            TyreStintHistory[tyreStintHistory] = new SessionHistoryTyreStintData2025();
+        }
     }
 
     #endregion // Constructors

@@ -115,7 +115,7 @@ internal class PacketToLapPositions : PacketToXBase
             actOffset += ConstData.TypeUInt8;
 
             // Clamp the packet-provided lap count to the fixed packet layout so manipulated values cannot cause reads past the packet
-            var lapCount = Math.Min(lapPositions2025.NumberOfLaps, ConstData.F12025MaxLapPositions);
+            var lapCount = Math.Min(lapPositions2025.NumberOfLaps, (ushort)ConstData.F12025MaxLapPositions);
 
             for (var lap = 0; lap < lapCount; lap++)
             {
@@ -161,7 +161,7 @@ internal class PacketToLapPositions : PacketToXBase
             actOffset += ConstData.TypeUInt8;
 
             // Clamp the packet-provided lap count to the fixed packet layout so manipulated values cannot cause reads past the packet
-            var lapCount = Math.Min(lapPositions2026.NumberOfLaps, ConstData.F12026MaxLapPositions);
+            var lapCount = Math.Min(lapPositions2026.NumberOfLaps, (ushort)ConstData.F12026MaxLapPositions);
 
             for (var lap = 0; lap < lapCount; lap++)
             {

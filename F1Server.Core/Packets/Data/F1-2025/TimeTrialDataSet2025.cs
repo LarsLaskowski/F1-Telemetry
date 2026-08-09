@@ -8,13 +8,27 @@ namespace F1Server.Core.Packets.Data;
 /// </summary>
 public class TimeTrialDataSet2025 : ITimeTrialDataSetBase
 {
+    #region Properties
+
+    /// <summary>
+    /// Traction control
+    /// </summary>
+    public TractionControl TractionControl { get; set; }
+
+    /// <summary>
+    /// Assist settings of the gear box
+    /// </summary>
+    public GearboxAssist GearboxAssist { get; set; }
+
+    #endregion // Properties
+
     #region ITimeTrialDataSetBase
 
     /// <inheritdoc/>
-    public int CarIndex { get; set; }
+    public ushort CarIndex { get; set; }
 
     /// <inheritdoc/>
-    public int TeamId { get; set; }
+    public ushort TeamId { get; set; }
 
     /// <inheritdoc/>
     public uint LapTime { get; set; }
@@ -27,12 +41,6 @@ public class TimeTrialDataSet2025 : ITimeTrialDataSetBase
 
     /// <inheritdoc/>
     public uint Sector3Time { get; set; }
-
-    /// <inheritdoc/>
-    public TractionControl TractionControl { get; set; }
-
-    /// <inheritdoc/>
-    public GearboxAssist GearboxAssist { get; set; }
 
     /// <inheritdoc/>
     public bool AntiLockBrakes { get; set; }
