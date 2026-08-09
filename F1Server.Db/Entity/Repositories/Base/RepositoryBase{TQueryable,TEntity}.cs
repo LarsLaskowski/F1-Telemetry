@@ -19,6 +19,12 @@ public abstract class RepositoryBase<TQueryable, TEntity> : RepositoryBase
     #region Fields
 
     /// <summary>
+    /// Compiled factory delegate constructing a <typeparamref name="TQueryable"/>, built once per closed
+    /// generic type instead of resolving the constructor via reflection on every <see cref="GetQuery"/> call
+    /// </summary>
+    private static readonly Func<IQueryable<TEntity>, TQueryable> _queryableFactory = CreateQueryableFactory();
+
+    /// <summary>
     /// Database context
     /// </summary>
     private readonly F1ServerDbContext _dbContext;
@@ -43,7 +49,7 @@ public abstract class RepositoryBase<TQueryable, TEntity> : RepositoryBase
     /// <summary>
     /// Gets the logger instance used for logging messages and events
     /// </summary>
-    public ILogger? Logger => _dbContext?.Logger;
+    public ILogger? Logger => _dbContext.Logger;
 
     /// <summary>
     /// Error message from the most recently executed operation, or <see langword="null"/>/empty when none occurred.
@@ -67,11 +73,6 @@ public abstract class RepositoryBase<TQueryable, TEntity> : RepositoryBase
     /// <returns>IQueryable object</returns>
     public TQueryable? GetQuery(bool ignoreAutoIncludes = false)
     {
-        if (_dbContext is null)
-        {
-            return null;
-        }
-
         var queryable = _dbContext.Set<TEntity>().AsNoTracking();
 
         if (ignoreAutoIncludes)
@@ -79,7 +80,7 @@ public abstract class RepositoryBase<TQueryable, TEntity> : RepositoryBase
             queryable = queryable.IgnoreAutoIncludes();
         }
 
-        return Activator.CreateInstance(typeof(TQueryable), queryable) as TQueryable;
+        return _queryableFactory(queryable);
     }
 
     /// <summary>
@@ -552,14 +553,24 @@ public abstract class RepositoryBase<TQueryable, TEntity> : RepositoryBase
 
         try
         {
-            var dbSet = _dbContext.Set<TEntity>();
+            // Auto-included navigations are not needed for deleting and would drop rows whose principals are missing
+            var query = _dbContext.Set<TEntity>()
+                                  .IgnoreAutoIncludes()
+                                  .Where(expression);
 
-            foreach (var entry in dbSet.Where(expression).ToList())
+            if (_dbContext.Database.IsRelational())
             {
-                dbSet.Remove(entry);
+                query.ExecuteDelete();
             }
+            else
+            {
+                // Set-based deletes are not supported by non-relational providers (e.g. InMemory), so fall back to load-and-remove
+                var dbSet = _dbContext.Set<TEntity>();
 
-            _dbContext.SaveChanges();
+                dbSet.RemoveRange(query.ToList());
+
+                _dbContext.SaveChanges();
+            }
 
             success = true;
         }
@@ -653,10 +664,13 @@ public abstract class RepositoryBase<TQueryable, TEntity> : RepositoryBase
     }
 
     /// <summary>
-    /// Execute a raw SQL statement against the database
+    /// Execute a raw SQL statement against the database. <paramref name="sqlStatement"/> must be a fixed
+    /// statement using positional placeholders (e.g. <c>@p0</c>); <paramref name="parameters"/> are passed
+    /// through parameterized to EF Core's <c>ExecuteSqlRaw</c>, so callers must never interpolate
+    /// untrusted values directly into <paramref name="sqlStatement"/>
     /// </summary>
-    /// <param name="sqlStatement">SQL statement</param>
-    /// <param name="parameters">Parameters</param>
+    /// <param name="sqlStatement">Fixed SQL statement with positional parameter placeholders</param>
+    /// <param name="parameters">Parameters substituted into the placeholders</param>
     /// <returns><see langword="true"/> if the statement executed successfully; <see langword="false"/> if an exception occurred (see <see cref="LastError"/>)</returns>
     public bool ExecuteRawSql(string sqlStatement, params object[] parameters)
     {
@@ -686,6 +700,21 @@ public abstract class RepositoryBase<TQueryable, TEntity> : RepositoryBase
     protected F1ServerDbContext GetDbContext()
     {
         return _dbContext;
+    }
+
+    /// <summary>
+    /// Builds and caches a compiled factory delegate for <typeparamref name="TQueryable"/>
+    /// </summary>
+    /// <returns>Delegate constructing a <typeparamref name="TQueryable"/> from an <see cref="IQueryable{TEntity}"/></returns>
+    private static Func<IQueryable<TEntity>, TQueryable> CreateQueryableFactory()
+    {
+        var constructor = typeof(TQueryable).GetConstructor([typeof(IQueryable<TEntity>)])
+                              ?? throw new InvalidOperationException($"{typeof(TQueryable)} has no public constructor accepting IQueryable<{typeof(TEntity)}>.");
+
+        var parameter = Expression.Parameter(typeof(IQueryable<TEntity>), "queryable");
+
+        return Expression.Lambda<Func<IQueryable<TEntity>, TQueryable>>(Expression.New(constructor, parameter), parameter)
+                         .Compile();
     }
 
     #endregion // Methods
