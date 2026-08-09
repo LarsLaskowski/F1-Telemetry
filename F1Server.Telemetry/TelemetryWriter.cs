@@ -69,32 +69,21 @@ public sealed class TelemetryWriter : ITelemetryWriter, IDisposable
                                                             SingleReader = true
                                                         });
 
-        using var currentActivity = AppActivity.SrvSource.StartActivity("TelemetryWriter");
-
         Configuration = serviceProvider.GetRequiredService<TelemetryConfiguration>();
 
         if (Configuration.IsConfigured)
         {
-            try
-            {
-                _influxDBClient = new InfluxDBClient(Configuration.InfluxDbHost, Configuration.Token);
-
-                var isReady = _influxDBClient.ReadyAsync().GetAwaiter().GetResult();
-
-                IsReady = isReady.Status == Ready.StatusEnum.Ready;
-
-                currentActivity?.SetStatus(IsReady ? ActivityStatusCode.Ok : ActivityStatusCode.Error);
-            }
-            catch (Exception ex)
-            {
-                currentActivity?.SetStatus(ActivityStatusCode.Error);
-                currentActivity?.AddException(ex);
-            }
+            _influxDBClient = new InfluxDBClient(Configuration.InfluxDbHost, Configuration.Token);
 
             _ctsWrite = new CancellationTokenSource();
 
             using (ExecutionContext.SuppressFlow())
             {
+                // The InfluxDB readiness check is awaited here instead of blocking the constructor with
+                // GetAwaiter().GetResult(); IsReady simply stays false until this completes, which the
+                // Write* methods already treat as "skip write", so no caller needs to change
+                Task.Run(InitializeReadinessAsync, _ctsWrite.Token);
+
                 Task.Run(() => WriteToInflux(_ctsWrite.Token), _ctsWrite.Token);
             }
         }
@@ -118,7 +107,7 @@ public sealed class TelemetryWriter : ITelemetryWriter, IDisposable
     /// <summary>
     /// Gets a value indicating whether the telemetry writer is ready to write data
     /// </summary>
-    public bool IsReady { get; }
+    public bool IsReady { get; private set; }
 
     #endregion // Properties
 
@@ -306,6 +295,34 @@ public sealed class TelemetryWriter : ITelemetryWriter, IDisposable
     #endregion // Methods
 
     #region Task methods
+
+    /// <summary>
+    /// Checks InfluxDB readiness asynchronously and updates <see cref="IsReady"/> once the check completes
+    /// </summary>
+    /// <returns>A task that represents the asynchronous operation</returns>
+    private async Task InitializeReadinessAsync()
+    {
+        using var currentActivity = AppActivity.SrvSource.StartActivity("TelemetryWriter");
+
+        try
+        {
+            var readyTask = _influxDBClient?.ReadyAsync();
+
+            if (readyTask != null)
+            {
+                var isReady = await readyTask.ConfigureAwait(false);
+
+                IsReady = isReady.Status == Ready.StatusEnum.Ready;
+
+                currentActivity?.SetStatus(IsReady ? ActivityStatusCode.Ok : ActivityStatusCode.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            currentActivity?.SetStatus(ActivityStatusCode.Error);
+            currentActivity?.AddException(ex);
+        }
+    }
 
     /// <summary>
     /// Writes data from the internal channel to InfluxDB asynchronously until the channel is completed or the token is cancelled
