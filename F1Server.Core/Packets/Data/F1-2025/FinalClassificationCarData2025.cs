@@ -58,10 +58,10 @@ public class FinalClassificationCarData2025 : IFinalClassificationCarBase, IFina
     public ushort NumTyreStints { get; set; }
 
     /// <inheritdoc/>
-    public ushort[] TyreStintsActual { get; set; }
+    public ushort[] TyreStintsActual { get; }
 
     /// <inheritdoc/>
-    public ushort[] TyreStintsVisual { get; set; }
+    public ushort[] TyreStintsVisual { get; }
 
     #endregion // IFinalClassificationCarBase
 

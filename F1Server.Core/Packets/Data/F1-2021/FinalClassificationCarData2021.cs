@@ -81,12 +81,12 @@ public class FinalClassificationCarData2021 : IFinalClassificationCarBase
     /// <summary>
     /// Actual tyres used  by this driver
     /// </summary>
-    public ushort[] TyreStintsActual { get; set; }
+    public ushort[] TyreStintsActual { get; }
 
     /// <summary>
     /// Visual tyre stints used by this driver
     /// </summary>
-    public ushort[] TyreStintsVisual { get; set; }
+    public ushort[] TyreStintsVisual { get; }
 
     #endregion // IFinalClassificationCarBase
 }

@@ -67,12 +67,12 @@ public interface IFinalClassificationCarBase
     /// <summary>
     /// Actual tyres used  by this driver
     /// </summary>
-    ushort[] TyreStintsActual { get; set; }
+    ushort[] TyreStintsActual { get; }
 
     /// <summary>
     /// Visual tyre stints used by this driver
     /// </summary>
-    ushort[] TyreStintsVisual { get; set; }
+    ushort[] TyreStintsVisual { get; }
 
     #endregion // Properties
 }
