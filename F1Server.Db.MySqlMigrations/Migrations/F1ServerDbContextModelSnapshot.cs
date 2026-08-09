@@ -2800,7 +2800,8 @@ namespace F1Server.Db.MySqlMigrations.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
 
                     b.Property<int>("Version")
                         .HasColumnType("int");
@@ -3497,7 +3498,8 @@ namespace F1Server.Db.MySqlMigrations.Migrations
 
                     b.Property<string>("DriverName")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
 
                     b.Property<long>("NationalityId")
                         .HasColumnType("bigint");
