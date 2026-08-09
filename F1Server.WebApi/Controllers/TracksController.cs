@@ -1,12 +1,10 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 
 using F1Server.Core.Observability;
 using F1Server.Data.ViewData;
-using F1Server.Db.Entity;
-using F1Server.Db.Entity.Repositories;
+using F1Server.Service.Tracks;
 
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace F1Server.WebApi.Controllers;
 
@@ -20,6 +18,7 @@ public class TracksController : ControllerBase
     #region Fields
 
     private readonly ILogger<TracksController> _logger;
+    private readonly TrackService _trackService;
 
     #endregion // Fields
 
@@ -29,14 +28,16 @@ public class TracksController : ControllerBase
     /// Constructor
     /// </summary>
     /// <param name="logger">Logging interface</param>
-    public TracksController(ILogger<TracksController> logger)
+    /// <param name="trackService">Track business logic</param>
+    public TracksController(ILogger<TracksController> logger, TrackService trackService)
     {
         _logger = logger;
+        _trackService = trackService;
     }
 
     #endregion // Constructors
 
-    #region Methods
+    #region Controller methods
 
     /// <summary>
     /// Get tracks
@@ -45,45 +46,15 @@ public class TracksController : ControllerBase
     [HttpGet]
     public async Task<IEnumerable<TrackViewData>?> Get()
     {
-        List<TrackViewData>? tracks = [];
-
         using var currentActivity = AppActivity.ApiSource.StartActivity(nameof(Get));
 
-        _logger?.LogInformation("Tracks loading...");
+        _logger?.LoadingTracks();
 
-        using (var dbFactory = RepositoryFactory.CreateInstance())
-        {
-            var sessionQuery = dbFactory.GetRepository<SessionRepository>()?.GetQuery();
+        var tracks = await _trackService.GetTracksAsync().ConfigureAwait(false);
 
-            var uniqueSessionTracks = sessionQuery == null
-                                          ? null
-                                          : await sessionQuery.Select(s => s.TrackId)
-                                                              .Distinct()
-                                                              .ToListAsync()
-                                                              .ConfigureAwait(false);
+        currentActivity?.SetStatus(ActivityStatusCode.Ok);
 
-            var trackQuery = dbFactory.GetRepository<TrackRepository>()?.GetQuery();
-
-            if (trackQuery != null)
-            {
-                tracks = await trackQuery.OrderBy(t => t.Id)
-                                         .Select(obj => new TrackViewData
-                                                        {
-                                                            TrackId = obj.Id,
-                                                            TrackNumber = obj.TrackNumber,
-                                                            TrackName = obj.Name,
-                                                            HasSession = uniqueSessionTracks != null && uniqueSessionTracks.Contains(obj.Id),
-                                                            Sessions = sessionQuery != null ? sessionQuery.Count(s => s.TrackId == obj.Id) : 0,
-                                                            ReferenceLapTime = TimeSpan.FromMilliseconds(obj.LapReferenceTime, 0).ToString(@"mm\:ss\.fff")
-                                                        })
-                                         .ToListAsync()
-                                         .ConfigureAwait(false);
-            }
-
-            currentActivity?.SetStatus(ActivityStatusCode.Ok);
-        }
-
-        _logger?.LogInformation("Tracks loaded ({TracksLoaded}).", tracks?.Count);
+        _logger?.TracksLoaded(tracks?.Count);
 
         return tracks;
     }
@@ -97,38 +68,18 @@ public class TracksController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetTrack(long trackId)
     {
-        TrackViewData? trackData = null;
-
         using var currentActivity = AppActivity.ApiSource.StartActivity(nameof(GetTrack));
 
-        _logger?.LogInformation("Track loading ({TrackId})...", trackId);
+        _logger?.LoadingTrack(trackId);
 
-        using (var dbFactory = RepositoryFactory.CreateInstance())
-        {
-            var trackQuery = dbFactory.GetRepository<TrackRepository>()?.GetQuery();
+        var trackData = await _trackService.GetTrackAsync(trackId).ConfigureAwait(false);
 
-            var track = trackQuery == null
-                            ? null
-                            : await trackQuery.FirstOrDefaultAsync(t => t.Id == trackId)
-                                              .ConfigureAwait(false);
+        currentActivity?.SetStatus(ActivityStatusCode.Ok);
 
-            if (track != null)
-            {
-                trackData = new TrackViewData
-                            {
-                                TrackId = track.Id,
-                                TrackName = track.Name,
-                                TrackNumber = track.TrackNumber
-                            };
-            }
-
-            currentActivity?.SetStatus(ActivityStatusCode.Ok);
-        }
-
-        _logger?.LogInformation("Track loaded ({TrackLoaded}).", trackData != null);
+        _logger?.TrackLoaded(trackData != null);
 
         return Ok(trackData);
     }
 
-    #endregion // Methods
+    #endregion // Controller methods
 }

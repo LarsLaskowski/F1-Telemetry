@@ -1,12 +1,8 @@
-using System.IO;
-
 using F1Server.Core;
 using F1Server.Core.Data;
 using F1Server.Core.Enumerations;
 using F1Server.Core.PacketData;
 using F1Server.Core.Packets.Interfaces;
-
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace F1Server.Tests;
 
@@ -104,7 +100,7 @@ public class PacketSession2026Tests
 
         if (session is SessionData data && data.PacketData is ISessionData2026 sessionData)
         {
-            Assert.AreEqual((ushort)0, sessionData.TrackId, "Incorrect track id!");
+            Assert.AreEqual((short)0, sessionData.TrackId, "Incorrect track id!");
             Assert.AreEqual("Melbourne", sessionData.TrackName, "Incorrect track name!");
         }
         else

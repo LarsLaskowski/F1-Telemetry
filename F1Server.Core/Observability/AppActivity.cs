@@ -12,12 +12,12 @@ public static class AppActivity
     #region Fields
 
     /// <summary>
-    /// Application source name WebAPI
+    /// Application source name WebAPI. Version is independent from product version, as it is used for telemetry and tracing only
     /// </summary>
     public static readonly ActivitySource ApiSource = new("F1-Telemetry-WebAPI", "1.0");
 
     /// <summary>
-    /// Application source name server
+    /// Application source name server. Version is independent from product version, as it is used for telemetry and tracing only
     /// </summary>
     public static readonly ActivitySource SrvSource = new("F1-Telemetry", "1.0");
 

@@ -596,25 +596,25 @@ internal class PacketToCarTelemetry : PacketToXBase
                 // Tyres surface type
                 var surfaceByte = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-                carTelemetryData.SurfaceType.RearLeft = (SurfaceType)Enum.ToObject(typeof(SurfaceType), surfaceByte);
+                carTelemetryData.SurfaceType.RearLeft = (SurfaceType)surfaceByte;
 
                 actOffset += ConstData.TypeUInt8;
 
                 surfaceByte = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-                carTelemetryData.SurfaceType.RearRight = (SurfaceType)Enum.ToObject(typeof(SurfaceType), surfaceByte);
+                carTelemetryData.SurfaceType.RearRight = (SurfaceType)surfaceByte;
 
                 actOffset += ConstData.TypeUInt8;
 
                 surfaceByte = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-                carTelemetryData.SurfaceType.FrontLeft = (SurfaceType)Enum.ToObject(typeof(SurfaceType), surfaceByte);
+                carTelemetryData.SurfaceType.FrontLeft = (SurfaceType)surfaceByte;
 
                 actOffset += ConstData.TypeUInt8;
 
                 surfaceByte = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-                carTelemetryData.SurfaceType.FrontRight = (SurfaceType)Enum.ToObject(typeof(SurfaceType), surfaceByte);
+                carTelemetryData.SurfaceType.FrontRight = (SurfaceType)surfaceByte;
 
                 actOffset += ConstData.TypeUInt8;
             }

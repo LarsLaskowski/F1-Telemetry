@@ -10,12 +10,12 @@ public interface ILapPositionsBase
     /// <summary>
     /// Number of laps
     /// </summary>
-    int NumberOfLaps { get; set; }
+    ushort NumberOfLaps { get; set; }
 
     /// <summary>
     /// Index of the lap where the data starts, 0 indexed
     /// </summary>
-    int LapStartIndex { get; set; }
+    ushort LapStartIndex { get; set; }
 
     /// <summary>
     /// Car positions on each lap. The first dimension is the lap and the second dimension is the

@@ -6,15 +6,15 @@ namespace F1Server.Core.Packets.Data;
 /// <summary>
 /// Time trial data (F1 2025)
 /// </summary>
-public class TimeTrialDataSet2025 : ITimeTrialDataSetBase, ITimeTrialDataSet2025
+public class TimeTrialDataSet2025 : ITimeTrialDataSet2025
 {
     #region ITimeTrialDataSetBase
 
     /// <inheritdoc/>
-    public int CarIndex { get; set; }
+    public ushort CarIndex { get; set; }
 
     /// <inheritdoc/>
-    public int TeamId { get; set; }
+    public ushort TeamId { get; set; }
 
     /// <inheritdoc/>
     public uint LapTime { get; set; }
@@ -29,10 +29,10 @@ public class TimeTrialDataSet2025 : ITimeTrialDataSetBase, ITimeTrialDataSet2025
     public uint Sector3Time { get; set; }
 
     /// <inheritdoc/>
-    public TractionControl TractionControl { get; set; }
+    public bool TractionControl { get; set; }
 
     /// <inheritdoc/>
-    public GearboxAssist GearboxAssist { get; set; }
+    public bool GearboxAssist { get; set; }
 
     /// <inheritdoc/>
     public bool AntiLockBrakes { get; set; }

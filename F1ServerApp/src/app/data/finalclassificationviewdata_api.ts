@@ -1,6 +1,6 @@
 export interface FinalClassificationViewApiData
 {
-  finalDbId: number;
+  dbId: number;
   participantDbId: number;
   arrayIndex: number;
   driverName: string;
@@ -17,5 +17,5 @@ export interface FinalClassificationViewApiData
   totalRaceTime: string;
   raceTimeDifference: string;
   penaltiesTime: number;
-  penalties: number;
+  numberOfPenalties: number;
 }

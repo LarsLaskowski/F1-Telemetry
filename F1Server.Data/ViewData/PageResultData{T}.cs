@@ -12,7 +12,7 @@ public class PageResultData<T>
     /// <summary>
     /// Gets or sets the collection of items
     /// </summary>
-    public List<T> Items { get; set; } = new List<T>();
+    public List<T> Items { get; set; } = [];
 
     /// <summary>
     /// Gets or sets the total count of items

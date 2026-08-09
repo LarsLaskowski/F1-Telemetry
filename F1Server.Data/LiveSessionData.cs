@@ -112,12 +112,22 @@ public class LiveSessionData : ILiveSessionData
     /// <summary>
     /// Participants in session
     /// </summary>
-    public List<ILiveDriverData> Drivers { get; } = new List<ILiveDriverData>();
+    public List<ILiveDriverData> Drivers { get; } = [];
 
     /// <summary>
     /// Current time table
     /// </summary>
-    public List<int> TimeTable { get; set; } = new List<int>();
+    public List<int> TimeTable { get; set; } = [];
+
+    /// <summary>
+    /// Participants in session, exposed read-only to callers holding the <see cref="ILiveSessionData"/> contract
+    /// </summary>
+    IReadOnlyList<ILiveDriverData> ILiveSessionData.Drivers => Drivers;
+
+    /// <summary>
+    /// Current time table, exposed read-only to callers holding the <see cref="ILiveSessionData"/> contract
+    /// </summary>
+    IReadOnlyList<int> ILiveSessionData.TimeTable => TimeTable;
 
     #endregion // ILiveSessionData
 }

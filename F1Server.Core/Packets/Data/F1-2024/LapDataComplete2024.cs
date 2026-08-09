@@ -15,6 +15,11 @@ public class LapDataComplete2024 : ILapDataComplete, ILapDataComplete2024
     public LapDataComplete2024()
     {
         LapData = new LapData2024[22];
+
+        for (int lapData = 0; lapData < LapData.Length; ++lapData)
+        {
+            LapData[lapData] = new LapData2024();
+        }
     }
 
     #endregion // Constructors

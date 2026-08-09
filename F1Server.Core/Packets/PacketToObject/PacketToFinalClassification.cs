@@ -255,7 +255,7 @@ internal class PacketToFinalClassification : PacketToXBase
     {
         var finalClassData = new FinalClassificationCarData2021();
 
-        if (packetLength >= offsetToStart + ConstData.F12020FinalClassificationCarSize)
+        if (packetLength >= offsetToStart + ConstData.F12021FinalClassificationCarSize)
         {
             var actOffset = offsetToStart;
 
@@ -624,7 +624,7 @@ internal class PacketToFinalClassification : PacketToXBase
 
             var resultReason = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-            finalClassData.ResultReason = (ResultReason)Enum.ToObject(typeof(ResultReason), resultReason + 1);
+            finalClassData.ResultReason = (ResultReason)resultReason + 1;
 
             actOffset += ConstData.TypeUInt8;
 
@@ -716,7 +716,7 @@ internal class PacketToFinalClassification : PacketToXBase
 
             var resultReason = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-            finalClassData.ResultReason = (ResultReason)Enum.ToObject(typeof(ResultReason), resultReason + 1);
+            finalClassData.ResultReason = (ResultReason)resultReason + 1;
 
             actOffset += ConstData.TypeUInt8;
 

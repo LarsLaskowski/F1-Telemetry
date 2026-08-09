@@ -87,7 +87,7 @@ public class CarStatusData2020 : ICarStatusData2020
     /// <summary>
     /// Pit limiter status - 0 - off - 1 - on
     /// </summary>
-    public uint PitLimiterStatus { get; set; }
+    public ushort PitLimiterStatus { get; set; }
 
     /// <summary>
     /// Current fuel mass

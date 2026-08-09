@@ -46,7 +46,9 @@ public abstract class RepositoryBase<TQueryable, TEntity> : RepositoryBase
     public ILogger? Logger => _dbContext?.Logger;
 
     /// <summary>
-    /// Last error
+    /// Error message from the most recently executed operation, or <see langword="null"/>/empty when none occurred.
+    /// The boolean/int result of the write and read methods below does not by itself distinguish a caught
+    /// exception from a successful no-op (e.g. no matching entity found); check this property to tell them apart.
     /// </summary>
     public string? LastError
     {
@@ -84,7 +86,7 @@ public abstract class RepositoryBase<TQueryable, TEntity> : RepositoryBase
     /// Add a new entity object
     /// </summary>
     /// <param name="entity">Entity object</param>
-    /// <returns>Status</returns>
+    /// <returns><see langword="true"/> if the entity was added; <see langword="false"/> if an exception occurred (see <see cref="LastError"/>)</returns>
     public bool Add(TEntity entity)
     {
         var success = false;
@@ -114,7 +116,7 @@ public abstract class RepositoryBase<TQueryable, TEntity> : RepositoryBase
     /// Add a new entity object without blocking the calling thread while the changes are saved
     /// </summary>
     /// <param name="entity">Entity object</param>
-    /// <returns>Status</returns>
+    /// <returns><see langword="true"/> if the entity was added; <see langword="false"/> if an exception occurred (see <see cref="LastError"/>)</returns>
     public async Task<bool> AddAsync(TEntity entity)
     {
         var success = false;
@@ -144,7 +146,7 @@ public abstract class RepositoryBase<TQueryable, TEntity> : RepositoryBase
     /// Add a range of entities
     /// </summary>
     /// <param name="entities">Entities</param>
-    /// <returns>Status</returns>
+    /// <returns><see langword="true"/> if the entities were added; <see langword="false"/> if an exception occurred (see <see cref="LastError"/>)</returns>
     public bool AddRange(IEnumerable<TEntity> entities)
     {
         var success = false;
@@ -174,7 +176,7 @@ public abstract class RepositoryBase<TQueryable, TEntity> : RepositoryBase
     /// Inserts a batch of new entities without automatic change detection, so large batches avoid the per-entity tracking overhead
     /// </summary>
     /// <param name="entities">Entities to insert</param>
-    /// <returns>Status</returns>
+    /// <returns><see langword="true"/> if the entities were inserted; <see langword="false"/> if an exception occurred (see <see cref="LastError"/>)</returns>
     public async Task<bool> InsertBatchAsync(IEnumerable<TEntity> entities)
     {
         var success = false;
@@ -214,7 +216,7 @@ public abstract class RepositoryBase<TQueryable, TEntity> : RepositoryBase
     /// <param name="expression">Expression</param>
     /// <param name="refreshAction">Action to refresh</param>
     /// <param name="after">Action after refresh</param>
-    /// <returns>Status</returns>
+    /// <returns><see langword="true"/> if the entity was added or refreshed; <see langword="false"/> if an exception occurred (see <see cref="LastError"/>)</returns>
     public bool AddOrRefresh(Expression<Func<TEntity, bool>> expression, Action<TEntity> refreshAction, Action<TEntity>? after = null)
     {
         var success = false;
@@ -261,7 +263,7 @@ public abstract class RepositoryBase<TQueryable, TEntity> : RepositoryBase
     /// Adds or refresh a range of entities
     /// </summary>
     /// <param name="entities">Entities</param>
-    /// <returns>Status</returns>
+    /// <returns><see langword="true"/> if the entities were updated; <see langword="false"/> if an exception occurred (see <see cref="LastError"/>)</returns>
     public bool UpdateRange(IEnumerable<TEntity> entities)
     {
         var success = false;
@@ -290,7 +292,7 @@ public abstract class RepositoryBase<TQueryable, TEntity> : RepositoryBase
     /// Adds or refresh a range of entities
     /// </summary>
     /// <param name="entities">Entities</param>
-    /// <returns>Status</returns>
+    /// <returns><see langword="true"/> if the entities were updated; <see langword="false"/> if an exception occurred (see <see cref="LastError"/>)</returns>
     public async Task<bool> UpdateRangeAsync(IEnumerable<TEntity> entities)
     {
         var success = false;
@@ -320,7 +322,7 @@ public abstract class RepositoryBase<TQueryable, TEntity> : RepositoryBase
     /// </summary>
     /// <param name="expression">Expression</param>
     /// <param name="refreshAction">Refresh action</param>
-    /// <returns>Status</returns>
+    /// <returns><see langword="true"/> if the operation completed without an exception, including when no matching entity was found (no-op); <see langword="false"/> if an exception occurred (see <see cref="LastError"/>)</returns>
     public bool Refresh(Expression<Func<TEntity, bool>> expression, Action<TEntity> refreshAction)
     {
         var success = false;
@@ -357,7 +359,7 @@ public abstract class RepositoryBase<TQueryable, TEntity> : RepositoryBase
     /// </summary>
     /// <param name="expression">Expression</param>
     /// <param name="refreshAction">Refresh action</param>
-    /// <returns>Status</returns>
+    /// <returns><see langword="true"/> if the operation completed without an exception, including when no matching entity was found (no-op); <see langword="false"/> if an exception occurred (see <see cref="LastError"/>)</returns>
     public async Task<bool> RefreshAsync(Expression<Func<TEntity, bool>> expression, Action<TEntity> refreshAction)
     {
         var success = false;
@@ -394,7 +396,7 @@ public abstract class RepositoryBase<TQueryable, TEntity> : RepositoryBase
     /// </summary>
     /// <param name="expression">Expression</param>
     /// <param name="refreshAction">Refresh action</param>
-    /// <returns>Status</returns>
+    /// <returns><see langword="true"/> if the operation completed without an exception, including when no matching entities were found (no-op); <see langword="false"/> if an exception occurred (see <see cref="LastError"/>)</returns>
     public bool RefreshRange(Expression<Func<TEntity, bool>> expression, Action<TEntity> refreshAction)
     {
         var success = false;
@@ -429,7 +431,7 @@ public abstract class RepositoryBase<TQueryable, TEntity> : RepositoryBase
     /// </summary>
     /// <param name="expression">expression</param>
     /// <param name="refreshAction">Refresh action</param>
-    /// <returns>Status</returns>
+    /// <returns><see langword="true"/> if the operation completed without an exception, including when no matching entities were found (no-op); <see langword="false"/> if an exception occurred (see <see cref="LastError"/>)</returns>
     public async Task<bool> RefreshRangeAsync(Expression<Func<TEntity, bool>> expression, Func<TEntity, Task> refreshAction)
     {
         var success = false;
@@ -440,12 +442,12 @@ public abstract class RepositoryBase<TQueryable, TEntity> : RepositoryBase
         {
             var dbSet = _dbContext.Set<TEntity>();
 
-            await foreach (var entry in dbSet.Where(expression).AsAsyncEnumerable().ConfigureAwait(true))
+            await foreach (var entry in dbSet.Where(expression).AsAsyncEnumerable().ConfigureAwait(false))
             {
-                await refreshAction(entry).ConfigureAwait(true);
+                await refreshAction(entry).ConfigureAwait(false);
             }
 
-            await _dbContext.SaveChangesAsync().ConfigureAwait(true);
+            await _dbContext.SaveChangesAsync().ConfigureAwait(false);
 
             success = true;
         }
@@ -464,7 +466,7 @@ public abstract class RepositoryBase<TQueryable, TEntity> : RepositoryBase
     /// </summary>
     /// <param name="expression">Expression</param>
     /// <param name="beforeRemove">Action before removing</param>
-    /// <returns>Status</returns>
+    /// <returns><see langword="true"/> if the operation completed without an exception, including when no matching entity was found (no-op); <see langword="false"/> if an exception occurred (see <see cref="LastError"/>)</returns>
     public bool Remove(Expression<Func<TEntity, bool>> expression, Action<TEntity>? beforeRemove = null)
     {
         var success = false;
@@ -503,7 +505,7 @@ public abstract class RepositoryBase<TQueryable, TEntity> : RepositoryBase
     /// </summary>
     /// <param name="expression">Expression</param>
     /// <param name="beforeRemove">Action before removing</param>
-    /// <returns>Status</returns>
+    /// <returns><see langword="true"/> if the operation completed without an exception, including when no matching entity was found (no-op); <see langword="false"/> if an exception occurred (see <see cref="LastError"/>)</returns>
     public async Task<bool> RemoveAsync(Expression<Func<TEntity, bool>> expression, Action<TEntity>? beforeRemove = null)
     {
         var success = false;
@@ -541,7 +543,7 @@ public abstract class RepositoryBase<TQueryable, TEntity> : RepositoryBase
     /// Remove a range of entity object
     /// </summary>
     /// <param name="expression">Expression</param>
-    /// <returns>Status</returns>
+    /// <returns><see langword="true"/> if the operation completed without an exception, including when no matching entities were found (no-op); <see langword="false"/> if an exception occurred (see <see cref="LastError"/>)</returns>
     public bool RemoveRange(Expression<Func<TEntity, bool>> expression)
     {
         var success = false;
@@ -575,7 +577,7 @@ public abstract class RepositoryBase<TQueryable, TEntity> : RepositoryBase
     /// Remove a range of entity object
     /// </summary>
     /// <param name="expression">Expression</param>
-    /// <returns>Status</returns>
+    /// <returns><see langword="true"/> if the operation completed without an exception, including when no matching entities were found (no-op); <see langword="false"/> if an exception occurred (see <see cref="LastError"/>)</returns>
     public async Task<bool> RemoveRangeAsync(Expression<Func<TEntity, bool>> expression)
     {
         var success = false;
@@ -609,7 +611,7 @@ public abstract class RepositoryBase<TQueryable, TEntity> : RepositoryBase
     /// Remove all entity objects matching the expression with a single set-based statement
     /// </summary>
     /// <param name="expression">Expression</param>
-    /// <returns>Number of removed entities, or -1 on error</returns>
+    /// <returns>Number of removed entities, or -1 if an exception occurred (see <see cref="LastError"/>)</returns>
     public int RemoveWhere(Expression<Func<TEntity, bool>> expression)
     {
         var removedCount = -1;
@@ -655,7 +657,7 @@ public abstract class RepositoryBase<TQueryable, TEntity> : RepositoryBase
     /// </summary>
     /// <param name="sqlStatement">SQL statement</param>
     /// <param name="parameters">Parameters</param>
-    /// <returns>Status</returns>
+    /// <returns><see langword="true"/> if the statement executed successfully; <see langword="false"/> if an exception occurred (see <see cref="LastError"/>)</returns>
     public bool ExecuteRawSql(string sqlStatement, params object[] parameters)
     {
         var success = false;

@@ -9,7 +9,6 @@
     <ProjectReference Include="..\F1Server.Data\F1Server.Data.csproj" />
     <ProjectReference Include="..\F1Server.Db\F1Server.Db.csproj" />
     <ProjectReference Include="..\F1Server.Telemetry\F1Server.Telemetry.csproj" />
-    <ProjectReference Include="..\F1Server.WebApi\F1Server.WebApi.csproj" />
   </ItemGroup>
 
   <ItemGroup>

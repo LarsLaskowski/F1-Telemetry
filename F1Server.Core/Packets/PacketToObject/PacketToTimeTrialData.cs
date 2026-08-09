@@ -175,15 +175,11 @@ internal class PacketToTimeTrialData : PacketToXBase
 
                 actOffset += ConstData.TypeUInt32;
 
-                var enumValue = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
-
-                timeTrialData.TractionControl = (TractionControl)Enum.ToObject(typeof(TractionControl), enumValue);
+                timeTrialData.TractionControl = Unsafe.ReadUnaligned<bool>(ref Unsafe.Add(ref dataPacket, actOffset));
 
                 actOffset += ConstData.TypeUInt8;
 
-                enumValue = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
-
-                timeTrialData.GearboxAssist = (GearboxAssist)Enum.ToObject(typeof(GearboxAssist), enumValue);
+                timeTrialData.GearboxAssist = Unsafe.ReadUnaligned<bool>(ref Unsafe.Add(ref dataPacket, actOffset));
 
                 actOffset += ConstData.TypeUInt8;
 

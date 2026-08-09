@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
 import *  as signalR from '@microsoft/signalr';
 
+import { SessionLiveViewApiData } from '../data/livesessiondata_api';
+
 @Injectable({ providedIn: 'root' })
 
 export class SignalrService
@@ -12,7 +14,7 @@ export class SignalrService
 
   public startConnection = (baseUrl: string) =>
   {
-    this.hubConnection = new signalR.HubConnectionBuilder().withUrl(baseUrl + 'live').build();
+    this.hubConnection = new signalR.HubConnectionBuilder().withUrl(baseUrl + 'live').withAutomaticReconnect().build();
     this.hubConnection.start().then(() => console.log('Connection started'))
     .catch(err => console.log('Error while start connection: ' + err))
   }
@@ -29,6 +31,16 @@ export class SignalrService
       this.isLiveSession = isLiveSession;
       this.liveSessionId = liveSessionId;
     })
+  }
+
+  public addLiveSessionDataListener = (callback: (liveSessionData: SessionLiveViewApiData) => void) =>
+  {
+    this.hubConnection.on('livesessiondataupdated', callback);
+  }
+
+  public removeLiveSessionDataListener = (callback: (liveSessionData: SessionLiveViewApiData) => void) =>
+  {
+    this.hubConnection.off('livesessiondataupdated', callback);
   }
 
   public isConnected(): boolean

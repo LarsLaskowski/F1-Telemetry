@@ -1,9 +1,18 @@
 using System.Runtime.CompilerServices;
 
+using F1Server.Core.Interfaces;
 using F1Server.Core.Observability;
 using F1Server.Data;
 using F1Server.Observability;
-using F1Server.WebApi.Cache;
+using F1Server.Service.Cache;
+using F1Server.Service.CarTelemetries;
+using F1Server.Service.Championships;
+using F1Server.Service.FastestLaps;
+using F1Server.Service.FinalClassifications;
+using F1Server.Service.Games;
+using F1Server.Service.SessionParticipants;
+using F1Server.Service.Sessions;
+using F1Server.Service.Tracks;
 using F1Server.WebApi.Core;
 using F1Server.WebApi.Hubs;
 
@@ -22,7 +31,7 @@ namespace F1Server.WebApi;
 /// <summary>
 /// Class providing web hosting with angular
 /// </summary>
-public class WebHosting : IDisposable
+public class WebHosting : IWebHosting
 {
     #region Fields
 
@@ -35,127 +44,6 @@ public class WebHosting : IDisposable
     private ILogger? _logger;
 
     #endregion // Fields
-
-    #region Properties
-
-    /// <summary>
-    /// Web hosting is running?
-    /// </summary>
-    public bool IsRunning { get; private set; }
-
-    #endregion // Properties
-
-    #region Methods
-
-    /// <summary>
-    /// Start web hosting
-    /// </summary>
-    /// <param name="serviceProvider">A <see cref="IServiceProvider"/> containing the configured services</param>
-    public void StartWebHosting(IServiceProvider serviceProvider)
-    {
-        if (IsRunning == false)
-        {
-            var builder = WebApplication.CreateBuilder();
-
-            var applicationData = serviceProvider.GetRequiredService<F1ServerApplicationData>();
-
-            builder.Services.AddSingleton<F1ServerApplicationData>(applicationData);
-            builder.Services.AddSingleton<TimerManager>();
-
-            SetObservability(serviceProvider, builder);
-
-            builder.Services.AddSwaggerGen();
-            builder.Services.AddSignalR();
-            builder.Services.AddHybridCache(options =>
-                                            {
-                                                options.DefaultEntryOptions = new HybridCacheEntryOptions
-                                                                              {
-                                                                                  Expiration = TimeSpan.FromMinutes(5),
-                                                                                  LocalCacheExpiration = TimeSpan.FromMinutes(5)
-                                                                              };
-                                            });
-
-            builder.Services.AddCors(options => options.AddPolicy("F1ServerAllowSpecification",
-                                                                  build => build.AllowAnyMethod()
-                                                                                .AllowAnyHeader()
-                                                                                .AllowAnyOrigin()));
-
-            builder.Services.AddControllersWithViews().AddApplicationPart(typeof(WebHosting).Assembly);
-            builder.Services.AddEndpointsApiExplorer();
-
-            _webApplication = builder.Build();
-
-            _logger = applicationData.Logger ?? _webApplication.Services.GetRequiredService<ILoggerFactory>().CreateLogger<WebHosting>();
-
-            if (_webApplication.Environment.IsDevelopment() == false)
-            {
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-                _webApplication.UseHsts();
-
-                _webApplication.UseHttpsRedirection();
-            }
-            else
-            {
-                _webApplication.UseSwagger();
-
-                _webApplication.UseSwaggerUI(options =>
-                                             {
-                                                 options.SwaggerEndpoint("/swagger/v1/swagger.json", "v1");
-                                                 options.RoutePrefix = "swagger";
-                                             });
-
-                _webApplication.UseDeveloperExceptionPage();
-
-                _webApplication.Urls.Add("http://+:4812");
-            }
-
-            _webApplication.UseStaticFiles();
-            _webApplication.UseDefaultFiles();
-            _webApplication.UseRouting();
-            _webApplication.UseStatusCodePages();
-
-            _webApplication.UseCors("F1ServerAllowSpecification");
-
-            _webApplication.UseResponseCaching();
-
-            _webApplication.MapControllerRoute("default", "{controller}/{action=Index}/{id?}");
-
-            _webApplication.MapHub<LiveSessionHub>("/live");
-
-            _webApplication.MapFallbackToFile("index.html");
-
-            _cts = new CancellationTokenSource();
-
-            ObserveStartupTask(_webApplication.StartAsync(_cts.Token), "Error starting the web application host!", () => IsRunning = false);
-
-            IsRunning = true;
-
-            ObserveStartupTask(StartupCache(_cts.Token), "Error initializing the fastest lap per session cache!");
-        }
-    }
-
-    /// <summary>
-    /// Stop web hosting
-    /// </summary>
-    /// <returns>Status</returns>
-    public bool StopWebHosting()
-    {
-        if (IsRunning)
-        {
-            _webApplication?.StopAsync().Wait();
-
-            _cts?.Cancel();
-            _cts?.Dispose();
-
-            _cts = null;
-
-            IsRunning = false;
-        }
-
-        return IsRunning;
-    }
-
-    #endregion // Methods
 
     #region Private methods
 
@@ -324,6 +212,133 @@ public class WebHosting : IDisposable
     }
 
     #endregion // Private methods
+
+    #region IWebHosting
+
+    #region Properties
+
+    /// <inheritdoc/>
+    public bool IsRunning { get; private set; }
+
+    #endregion // Properties
+
+    #region Methods
+
+    /// <inheritdoc/>
+    public void StartWebHosting(IServiceProvider serviceProvider)
+    {
+        if (IsRunning == false)
+        {
+            var builder = WebApplication.CreateBuilder();
+
+            var applicationData = serviceProvider.GetRequiredService<F1ServerApplicationData>();
+
+            builder.Services.AddSingleton<F1ServerApplicationData>(applicationData);
+            builder.Services.AddSingleton<TimerManager>();
+
+            // Business logic used by the controllers, so the controllers stay limited to the transport concerns
+            builder.Services.AddScoped<ChampionshipService>();
+            builder.Services.AddScoped<CarTelemetryService>();
+            builder.Services.AddScoped<FastestLapService>();
+            builder.Services.AddScoped<FinalClassificationService>();
+            builder.Services.AddScoped<GameService>();
+            builder.Services.AddScoped<ParticipantService>();
+            builder.Services.AddScoped<SessionService>();
+            builder.Services.AddScoped<TrackService>();
+
+            SetObservability(serviceProvider, builder);
+
+            builder.Services.AddSwaggerGen();
+            builder.Services.AddSignalR();
+            builder.Services.AddHybridCache(options =>
+                                            {
+                                                options.DefaultEntryOptions = new HybridCacheEntryOptions
+                                                                              {
+                                                                                  Expiration = TimeSpan.FromMinutes(5),
+                                                                                  LocalCacheExpiration = TimeSpan.FromMinutes(5)
+                                                                              };
+                                            });
+
+            builder.Services.AddCors(options => options.AddPolicy("F1ServerAllowSpecification",
+                                                                  build => build.AllowAnyMethod()
+                                                                                .AllowAnyHeader()
+                                                                                .AllowAnyOrigin()));
+
+            builder.Services.AddControllersWithViews().AddApplicationPart(typeof(WebHosting).Assembly);
+            builder.Services.AddEndpointsApiExplorer();
+
+            _webApplication = builder.Build();
+
+            _logger = applicationData.Logger ?? _webApplication.Services.GetRequiredService<ILoggerFactory>().CreateLogger<WebHosting>();
+
+            if (_webApplication.Environment.IsDevelopment() == false)
+            {
+                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+                _webApplication.UseHsts();
+
+                _webApplication.UseHttpsRedirection();
+            }
+            else
+            {
+                _webApplication.UseSwagger();
+
+                _webApplication.UseSwaggerUI(options =>
+                                             {
+                                                 options.SwaggerEndpoint("/swagger/v1/swagger.json", "v1");
+                                                 options.RoutePrefix = "swagger";
+                                             });
+
+                _webApplication.UseDeveloperExceptionPage();
+
+                _webApplication.Urls.Add("http://+:4812");
+            }
+
+            _webApplication.UseStaticFiles();
+            _webApplication.UseDefaultFiles();
+            _webApplication.UseRouting();
+            _webApplication.UseStatusCodePages();
+
+            _webApplication.UseCors("F1ServerAllowSpecification");
+
+            _webApplication.UseResponseCaching();
+
+            _webApplication.MapControllerRoute("default", "{controller}/{action=Index}/{id?}");
+
+            _webApplication.MapHub<LiveSessionHub>("/live");
+
+            _webApplication.MapFallbackToFile("index.html");
+
+            _cts = new CancellationTokenSource();
+
+            ObserveStartupTask(_webApplication.StartAsync(_cts.Token), "Error starting the web application host!", () => IsRunning = false);
+
+            IsRunning = true;
+
+            ObserveStartupTask(StartupCache(_cts.Token), "Error initializing the fastest lap per session cache!");
+        }
+    }
+
+    /// <inheritdoc/>
+    public bool StopWebHosting()
+    {
+        if (IsRunning)
+        {
+            _webApplication?.StopAsync().Wait();
+
+            _cts?.Cancel();
+            _cts?.Dispose();
+
+            _cts = null;
+
+            IsRunning = false;
+        }
+
+        return IsRunning;
+    }
+
+    #endregion // Methods
+
+    #endregion // IWebHosting
 
     #region IDisposable
 

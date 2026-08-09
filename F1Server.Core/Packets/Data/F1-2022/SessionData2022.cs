@@ -59,9 +59,9 @@ public class SessionData2022 : ISessionData2022
     public SessionType SessionType { get; set; }
 
     /// <summary>
-    /// Track id
+    /// Track id, -1 when unknown
     /// </summary>
-    public ushort TrackId { get; set; }
+    public short TrackId { get; set; }
 
     /// <summary>
     /// Name of the track
@@ -144,7 +144,7 @@ public class SessionData2022 : ISessionData2022
 
     #endregion // ISessionData2020
 
-    #region ISessionData2022
+    #region ISessionData2021
 
     /// <summary>
     /// Forecast accuracy
@@ -230,6 +230,10 @@ public class SessionData2022 : ISessionData2022
     /// Type of dynamic race line
     /// </summary>
     public DynamicRaceLineType DynamicRaceLineType { get; set; }
+
+    #endregion // ISessionData2021
+
+    #region ISessionData2022
 
     /// <summary>
     /// Game mode

@@ -9,11 +9,4 @@
     <Compile Include="..\SharedAssemblyInfo.cs" Link="SharedAssemblyInfo.cs" />
   </ItemGroup>
 
-   <ItemGroup>
-     <PackageReference Update="Microsoft.EntityFrameworkCore">
-       <PrivateAssets>all</PrivateAssets>
-       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
-     </PackageReference>
-   </ItemGroup>
-
 </Project>

@@ -2,6 +2,7 @@ using F1Server.Core.Enumerations;
 using F1Server.Data.ViewData;
 using F1Server.Db.Entity;
 using F1Server.Db.Entity.Repositories;
+using F1Server.Service.Sessions;
 using F1Server.WebApi.Controllers;
 
 using Microsoft.AspNetCore.Mvc;
@@ -18,6 +19,15 @@ namespace F1Server.Tests.WebApi.Controllers;
 [TestClass]
 public class SessionsControllerTests
 {
+    #region Constants
+
+    /// <summary>
+    /// Largest page size accepted by the session list
+    /// </summary>
+    private const int MaxPageSize = 100;
+
+    #endregion // Constants
+
     #region Properties
 
     /// <summary>
@@ -49,7 +59,55 @@ public class SessionsControllerTests
     {
         cache = new MemoryCache(new MemoryCacheOptions());
 
-        return new SessionsController(NullLogger<SessionsController>.Instance, cache);
+        return new SessionsController(NullLogger<SessionsController>.Instance, cache, new SessionService());
+    }
+
+    /// <summary>
+    /// Searches a session in the paged session list, so a test does not depend on the page the session ends up on
+    /// </summary>
+    /// <param name="controller">Controller the session list is read from</param>
+    /// <param name="sessionId">Database id of the searched session</param>
+    /// <returns>Session, or <see langword="null"/> when the session is not listed</returns>
+    private static async Task<SessionViewData?> FindSessionAsync(SessionsController controller, long sessionId)
+    {
+        var firstPage = await GetPageAsync(controller, 0).ConfigureAwait(false);
+
+        // The walk below is bounded by the total count of the first page, so a regression in the paging cannot turn
+        // this helper into an endless loop
+        var pageCount = (firstPage.TotalCount + MaxPageSize - 1) / MaxPageSize;
+
+        for (var pageIndex = 0; pageIndex < pageCount; pageIndex++)
+        {
+            var page = pageIndex == 0
+                           ? firstPage
+                           : await GetPageAsync(controller, pageIndex).ConfigureAwait(false);
+
+            var session = page.Items.Find(s => s.SessionDbId == sessionId);
+
+            if (session != null)
+            {
+                return session;
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Reads a page of the session list and asserts that it was returned as a page result
+    /// </summary>
+    /// <param name="controller">Controller the page is read from</param>
+    /// <param name="pageIndex">Index of the requested page</param>
+    /// <returns>Page result</returns>
+    private static async Task<PageResultData<SessionViewData>> GetPageAsync(SessionsController controller, int pageIndex)
+    {
+        var result = await controller.GetSessions(pageIndex, MaxPageSize).ConfigureAwait(false);
+
+        var pageResult = (result.Result as OkObjectResult)?.Value as PageResultData<SessionViewData>;
+
+        Assert.IsNotNull(pageResult, "The session list should return a page result!");
+
+        return pageResult;
     }
 
     #endregion // Static methods
@@ -74,9 +132,9 @@ public class SessionsControllerTests
             Assert.IsNotNull(pageResult, "The action should return a page result!");
             Assert.IsGreaterThan(0, pageResult.TotalCount, "The finished test session should be counted!");
 
-            var testSession = pageResult.Items.Find(s => s.SessionDbId == ControllerTestData.SessionId);
+            var testSession = await FindSessionAsync(controller, ControllerTestData.SessionId).ConfigureAwait(false);
 
-            Assert.IsNotNull(testSession, "The finished test session should be part of the first page!");
+            Assert.IsNotNull(testSession, "The finished test session should be part of the session list!");
             Assert.AreEqual(ControllerTestData.TrackName, testSession.Track, "The track name of the test session should be returned!");
             Assert.AreEqual(ControllerTestData.GameVersionName, testSession.GameVersion, "The game version name of the test session should be returned!");
             Assert.AreEqual(ControllerTestData.ParticipantCount, testSession.Cars, "The number of active cars of the test session should be returned!");
@@ -100,6 +158,95 @@ public class SessionsControllerTests
 
             Assert.IsNotNull(pageResult, "The action should return a page result!");
             Assert.HasCount(1, pageResult.Items, "A page size of one should return a single session!");
+        }
+    }
+
+    /// <summary>
+    /// Verifies that the race preceding a second race at the same track is reported as sprint race
+    /// </summary>
+    /// <returns>Task</returns>
+    [TestMethod]
+    public async Task SessionsControllerGetSessionsReportsRaceBeforeSecondRaceAsSprint()
+    {
+        // A dedicated game version keeps the sprint detection limited to the sessions of this test
+        var gameVersionId = ControllerTestData.AddGameVersion(3771003);
+
+        var sprintSessionId = ControllerTestData.AddSession(SessionType.Race, isFinished: true, gameVersionId);
+        var raceSessionId = ControllerTestData.AddSession(SessionType.Race2, isFinished: true, gameVersionId);
+
+        var controller = CreateController(out var cache);
+
+        using (cache)
+        {
+            var sprintSession = await FindSessionAsync(controller, sprintSessionId).ConfigureAwait(false);
+            var raceSession = await FindSessionAsync(controller, raceSessionId).ConfigureAwait(false);
+
+            Assert.IsNotNull(sprintSession, "The race preceding the second race should be part of the session list!");
+            Assert.IsNotNull(raceSession, "The second race should be part of the session list!");
+            Assert.AreEqual(SessionType.Sprint, sprintSession.SessionType, "The race preceding a second race should be reported as sprint race!");
+            Assert.AreEqual(SessionType.Race2, raceSession.SessionType, "The second race should keep its session type!");
+        }
+    }
+
+    /// <summary>
+    /// Verifies that a race preceded by a sprint shootout is reported as sprint race in the session list
+    /// </summary>
+    /// <returns>Task</returns>
+    [TestMethod]
+    public async Task SessionsControllerGetSessionsReportsRaceAfterSprintShootoutAsSprint()
+    {
+        var gameVersionId = ControllerTestData.AddGameVersion(3771004);
+
+        ControllerTestData.AddSession(SessionType.SprintShootout1, isFinished: true, gameVersionId);
+
+        var raceSessionId = ControllerTestData.AddSession(SessionType.Race, isFinished: true, gameVersionId);
+
+        var controller = CreateController(out var cache);
+
+        using (cache)
+        {
+            var raceSession = await FindSessionAsync(controller, raceSessionId).ConfigureAwait(false);
+
+            Assert.IsNotNull(raceSession, "The race session should be part of the session list!");
+            Assert.AreEqual(SessionType.Sprint, raceSession.SessionType, "A race preceded by a sprint shootout should be reported as sprint race!");
+        }
+    }
+
+    /// <summary>
+    /// Verifies that a page size above the allowed maximum is rejected
+    /// </summary>
+    /// <returns>Task</returns>
+    [TestMethod]
+    public async Task SessionsControllerGetSessionsWithTooLargePageSizeReturnsBadRequest()
+    {
+        var controller = CreateController(out var cache);
+
+        using (cache)
+        {
+            var result = await controller.GetSessions(pageIndex: 0, pageSize: MaxPageSize + 1).ConfigureAwait(false);
+
+            Assert.IsInstanceOfType<BadRequestObjectResult>(result.Result, "A page size above the maximum should be rejected!");
+        }
+    }
+
+    /// <summary>
+    /// Verifies that a page behind the last session is returned empty while the total count stays complete
+    /// </summary>
+    /// <returns>Task</returns>
+    [TestMethod]
+    public async Task SessionsControllerGetSessionsBehindLastPageReturnsEmptyPage()
+    {
+        var controller = CreateController(out var cache);
+
+        using (cache)
+        {
+            var result = await controller.GetSessions(pageIndex: 100000, pageSize: 15).ConfigureAwait(false);
+
+            var pageResult = (result.Result as OkObjectResult)?.Value as PageResultData<SessionViewData>;
+
+            Assert.IsNotNull(pageResult, "The action should return a page result!");
+            Assert.IsEmpty(pageResult.Items, "A page behind the last session must not contain sessions!");
+            Assert.IsGreaterThan(0, pageResult.TotalCount, "The total count should stay complete on a page behind the last session!");
         }
     }
 

@@ -15,6 +15,11 @@ public interface IHeader
     ushort GameVersion { get; }
 
     /// <summary>
+    /// Game year - last two digits
+    /// </summary>
+    ushort GameYear { get; }
+
+    /// <summary>
     /// Major version
     /// </summary>
     byte MajorGameVersion { get; }
@@ -50,9 +55,19 @@ public interface IHeader
     uint FrameIdentifier { get; }
 
     /// <summary>
+    /// Overall identifier for the frame the data was received (doesn't go back after flashbacks)
+    /// </summary>
+    uint OverallFrameIdentifier { get; }
+
+    /// <summary>
     /// Index of player's car
     /// </summary>
     ushort PlayerCarIndex { get; }
+
+    /// <summary>
+    /// Index of secondary player's car (splitscreen) - 255 if no second car
+    /// </summary>
+    ushort PlayerCarIndexSecondary { get; }
 
     #endregion // Properties
 }

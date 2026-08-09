@@ -38,7 +38,7 @@ public class ParticipantData2023 : IParticipantData2023
     /// <summary>
     /// Name of the driver
     /// </summary>
-    public string DriverName { get; set; }
+    public string DriverName { get; set; } = string.Empty;
 
     /// <summary>
     /// Is telemetry restricted or public?

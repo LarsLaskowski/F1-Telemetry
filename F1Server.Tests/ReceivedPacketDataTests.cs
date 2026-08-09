@@ -1,8 +1,6 @@
 using F1Server.Core.Data;
 using F1Server.Core.Enumerations;
 
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-
 namespace F1Server.Tests;
 
 /// <summary>
@@ -114,6 +112,18 @@ public class ReceivedPacketDataTests
         rawData[^1] = 42;
 
         Assert.AreEqual((byte)42, packetData.PacketRawData[^1], "Raw data is not backed by the array passed in!");
+    }
+
+    /// <summary>
+    /// Test to verify that accessing the raw data before <see cref="ReceivedPacketData.SetRawData"/>
+    /// was ever called returns an empty span instead of throwing a <see cref="NullReferenceException"/>
+    /// </summary>
+    [TestMethod]
+    public void PacketRawDataBeforeSetRawDataReturnsEmptySpan()
+    {
+        var packetData = new ReceivedPacketData();
+
+        Assert.IsTrue(packetData.PacketRawData.IsEmpty, "Raw data should be empty before SetRawData was called!");
     }
 
     /// <summary>

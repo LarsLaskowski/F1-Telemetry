@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 
 using F1Server.Core.Data;
+using F1Server.Core.Enumerations;
 using F1Server.Core.Packets.Data;
 
 namespace F1Server.Core.Packets.PacketToObject;
@@ -42,7 +43,7 @@ internal abstract class PacketToXBase
     /// Adjust the session type if neccessary
     /// </summary>
     /// <param name="sessionType">Session type value from game</param>
-    /// <returns>Adjusted session type</returns>
+    /// <returns>Adjusted session type, falls back to <see cref="SessionType.Unknown"/> for values outside the known 2024+ range</returns>
     public ushort AdjustSessionType(ushort sessionType)
     {
         // Race3 is new in 2021 with number 12, TimeTrial is now 13
@@ -65,7 +66,7 @@ internal abstract class PacketToXBase
                               16 => 11,
                               17 => 12,
                               18 => 13,
-                              _ => throw new InvalidDataException("Unknown session type!")
+                              _ => (ushort)SessionType.Unknown
                           };
         }
 

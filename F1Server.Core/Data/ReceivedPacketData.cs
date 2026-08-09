@@ -22,7 +22,7 @@ public sealed class ReceivedPacketData
     /// <summary>
     /// Array with received packet data, owned by this instance and never copied from the caller
     /// </summary>
-    private byte[] _rawData;
+    private byte[] _rawData = [];
 
     #endregion // Fields
 

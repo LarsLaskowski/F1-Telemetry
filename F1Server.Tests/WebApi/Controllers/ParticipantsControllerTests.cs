@@ -1,4 +1,5 @@
 using F1Server.Data.ViewData;
+using F1Server.Service.SessionParticipants;
 using F1Server.WebApi.Controllers;
 
 using Microsoft.AspNetCore.Mvc;
@@ -32,7 +33,7 @@ public class ParticipantsControllerTests
     /// <returns>Controller</returns>
     private static ParticipantsController CreateController()
     {
-        return new ParticipantsController(NullLogger<ParticipantsController>.Instance);
+        return new ParticipantsController(NullLogger<ParticipantsController>.Instance, new ParticipantService());
     }
 
     #endregion // Static methods
