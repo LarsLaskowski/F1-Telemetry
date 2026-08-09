@@ -1,8 +1,8 @@
 export interface PacketMetricsViewApiData
 {
-  received: 0;
-  totalProcessingTime: 0;
-  avgProcessingTime: 0;
+  received: number;
+  totalProcessingTime: number;
+  avgProcessingTime: number;
 }
 
 export interface SessionPacketMetricsViewApiData
@@ -24,6 +24,6 @@ export interface SessionPacketMetricsViewApiData
   timeTrial: PacketMetricsViewApiData;
   lapPositions: PacketMetricsViewApiData;
   carTelemetry2: PacketMetricsViewApiData;
-  unsuccessfullyProcessed: 0;
-  errors: 0;
+  unsuccessfullyProcessed: number;
+  errors: number;
 }
