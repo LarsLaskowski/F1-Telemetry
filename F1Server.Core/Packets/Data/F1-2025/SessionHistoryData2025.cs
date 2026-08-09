@@ -44,10 +44,10 @@ public class SessionHistoryData2025 : ISessionHistoryDataBase
     public ushort BestSector3LapNumber { get; set; }
 
     /// <inheritdoc/>
-    public ILapHistoryDataBase[] LapHistory { get; set; }
+    public ILapHistoryDataBase[] LapHistory { get; }
 
     /// <inheritdoc/>
-    public ITyreStintHistoryDataBase[] TyreStintHistory { get; set; }
+    public ITyreStintHistoryDataBase[] TyreStintHistory { get; }
 
     #endregion // ISessionHistoryDataBase
 }

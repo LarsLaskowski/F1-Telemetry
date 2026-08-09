@@ -22,7 +22,7 @@ public class LapDataComplete2025 : ILapDataComplete, ILapDataComplete2025
     #region ILapDataComplete
 
     /// <inheritdoc/>
-    public ILapDataBase[] LapData { get; set; }
+    public ILapDataBase[] LapData { get; }
 
     #endregion // ILapDataComplete
 

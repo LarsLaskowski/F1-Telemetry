@@ -60,12 +60,12 @@ public class SessionHistoryData2021 : ISessionHistoryDataBase
     /// <summary>
     /// Array (max 100) lap data
     /// </summary>
-    public ILapHistoryDataBase[] LapHistory { get; set; }
+    public ILapHistoryDataBase[] LapHistory { get; }
 
     /// <summary>
     /// History data of tyre stints
     /// </summary>
-    public ITyreStintHistoryDataBase[] TyreStintHistory { get; set; }
+    public ITyreStintHistoryDataBase[] TyreStintHistory { get; }
 
     #endregion // ISessionHistoryDataBase
 }

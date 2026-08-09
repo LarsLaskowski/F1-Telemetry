@@ -29,7 +29,7 @@ public class ParticipantsData2024 : IParticipantsBase
     /// <summary>
     /// Data about participants in current session
     /// </summary>
-    public IParticipantDataBase[] Participants { get; set; }
+    public IParticipantDataBase[] Participants { get; }
 
     #endregion // IParticipantsBase
 }

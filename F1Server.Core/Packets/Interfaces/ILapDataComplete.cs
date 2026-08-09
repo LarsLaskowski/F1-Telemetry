@@ -10,7 +10,7 @@ public interface ILapDataComplete
     /// <summary>
     /// Array of car lap data information
     /// </summary>
-    ILapDataBase[] LapData { get; set; }
+    ILapDataBase[] LapData { get; }
 
     #endregion // Properties
 }

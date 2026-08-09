@@ -33,7 +33,7 @@ public class CarTelemetry2022 : ICarTelemetry2022
 
     #endregion // Constructors
 
-    #region Properties
+    #region ICarTelemetry2022
 
     /// <summary>
     /// Index of MFD panel open - 255 = closed
@@ -50,7 +50,7 @@ public class CarTelemetry2022 : ICarTelemetry2022
     /// </summary>
     public ushort SuggestedGear { get; set; }
 
-    #endregion // Properties
+    #endregion // ICarTelemetry2022
 
     #region ICarTelemetryBase
 
