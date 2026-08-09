@@ -1,13 +1,10 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 
 using F1Server.Core.Observability;
 using F1Server.Data.ViewData;
-using F1Server.Db.Entity;
-using F1Server.Db.Entity.Repositories;
-using F1Server.WebApi.Core;
+using F1Server.Service.FinalClassifications;
 
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace F1Server.WebApi.Controllers;
 
@@ -21,6 +18,7 @@ public class FinalClassificationController : ControllerBase
     #region Fields
 
     private readonly ILogger<FinalClassificationController> _logger;
+    private readonly FinalClassificationService _finalClassificationService;
 
     #endregion // Fields
 
@@ -30,14 +28,16 @@ public class FinalClassificationController : ControllerBase
     /// Constructor
     /// </summary>
     /// <param name="logger">Logging interface</param>
-    public FinalClassificationController(ILogger<FinalClassificationController> logger)
+    /// <param name="finalClassificationService">Final classification business logic</param>
+    public FinalClassificationController(ILogger<FinalClassificationController> logger, FinalClassificationService finalClassificationService)
     {
         _logger = logger;
+        _finalClassificationService = finalClassificationService;
     }
 
     #endregion // Constructors
 
-    #region Methods
+    #region Controller methods
 
     /// <summary>
     /// Get final classification for session
@@ -56,59 +56,7 @@ public class FinalClassificationController : ControllerBase
 
         try
         {
-            using (var dbFactory = RepositoryFactory.CreateInstance())
-            {
-                var finalQuery = dbFactory.GetRepository<FinalClassificationRepository>()?.GetQuery();
-
-                var dbFinals = finalQuery == null
-                                   ? null
-                                   : await finalQuery.Include(f => f.Participant)
-                                                     .Where(f => f.SessionId == sessionId)
-                                                     .OrderBy(f => f.FinishPosition)
-                                                     .ToListAsync()
-                                                     .ConfigureAwait(false);
-
-                if (dbFinals?.Count > 0)
-                {
-                    var leaderTime = dbFinals.FirstOrDefault()?.TotalRaceTime;
-                    var leaderLaps = dbFinals.FirstOrDefault()?.LapsDriven;
-
-                    foreach (var finalClassification in dbFinals)
-                    {
-                        finalClassifications.Add(new FinalClassificationViewData
-                                                 {
-                                                     DbId = finalClassification.Id,
-                                                     ParticipantDbId = finalClassification.ParticipantId,
-                                                     ArrayIndex = finalClassification.Participant.ArrayIndex,
-                                                     DriverName = finalClassification.Participant.Driver.Name,
-                                                     CarNumber = finalClassification.Participant.CarRaceNumber,
-                                                     TeamName = finalClassification.Participant.Team.Name,
-                                                     Nationality = finalClassification.Participant.Nationality.Name,
-                                                     LapsDriven = finalClassification.LapsDriven,
-                                                     StartingPosition = finalClassification.GridPosition,
-                                                     FinishPosition = finalClassification.FinishPosition,
-                                                     NumberOfPenalties = finalClassification.NumberOfPenalties,
-                                                     PitStops = finalClassification.PitStops,
-                                                     PenaltiesTime = finalClassification.PenaltiesTime,
-                                                     TotalRaceTime = RaceTimeFormatter.FormatTotalRaceTime(finalClassification.TotalRaceTime),
-                                                     TotalRaceTimeRaw = finalClassification.TotalRaceTime,
-                                                     FastestLapTime = finalClassification.FastestLapTime > 0 ? TimeSpan.FromMilliseconds(finalClassification.FastestLapTime).ToString(@"mm\:ss\.fff") : "-",
-                                                     FastestLapTimeRaw = finalClassification.FastestLapTime,
-                                                     RaceTimeDifference = BuildTimeDifference(leaderTime, finalClassification.TotalRaceTime, leaderLaps, finalClassification.LapsDriven)
-                                                 });
-                    }
-
-                    var fastestSessionLapTime = finalClassifications.Where(f => f.FastestLapTimeRaw > 0)
-                                                                    .MinBy(f => f.FastestLapTimeRaw);
-
-                    if (fastestSessionLapTime != null)
-                    {
-                        fastestSessionLapTime.IsFastestSessionLapTime = true;
-
-                        BuildTimeDifferenceFastestLap(fastestSessionLapTime.FastestLapTimeRaw, finalClassifications);
-                    }
-                }
-            }
+            finalClassifications = await _finalClassificationService.GetFinalClassificationsOfSessionAsync(sessionId).ConfigureAwait(false);
 
             currentActivity?.SetStatus(ActivityStatusCode.Ok);
         }
@@ -125,70 +73,5 @@ public class FinalClassificationController : ControllerBase
         return Ok(finalClassifications);
     }
 
-    /// <summary>
-    /// Build time difference between fastest lap in session and personal best lap time
-    /// </summary>
-    /// <param name="fastestSessionLapTime">Fastest lap time</param>
-    /// <param name="finalClassifications">Time table</param>
-    private void BuildTimeDifferenceFastestLap(uint fastestSessionLapTime, List<FinalClassificationViewData> finalClassifications)
-    {
-        if (finalClassifications.Count > 0 && fastestSessionLapTime > 0)
-        {
-            foreach (var attendee in finalClassifications)
-            {
-                attendee.FastestLapTimeDifference = BuildTimeDifference(fastestSessionLapTime, attendee.FastestLapTimeRaw);
-            }
-        }
-    }
-
-    /// <summary>
-    /// Build time difference between leader and race time of current driver
-    /// </summary>
-    /// <param name="leaderTime">Fastest race time</param>
-    /// <param name="raceTime">Current race time</param>
-    /// <param name="leaderLaps">Driven laps of leader</param>
-    /// <param name="driverLaps">Driven laps of current driver</param>
-    /// <returns>Time difference as string</returns>
-    private string BuildTimeDifference(double? leaderTime, double raceTime, int? leaderLaps, int driverLaps)
-    {
-        var timeDiff = "0.000";
-
-        if (leaderLaps.HasValue && leaderTime.HasValue && leaderTime.Value < raceTime)
-        {
-            if (driverLaps < leaderLaps)
-            {
-                timeDiff = $"+ {leaderLaps.Value - driverLaps} lap(s)";
-            }
-            else
-            {
-                var diff = TimeSpan.FromSeconds(raceTime - leaderTime.Value);
-
-                timeDiff = diff.Minutes > 0 ? diff.ToString(@"\+m\:ss\.fff") : diff.ToString(@"\+s\.fff");
-            }
-        }
-
-        return timeDiff;
-    }
-
-    /// <summary>
-    /// Build time difference between leader and race time of current driver
-    /// </summary>
-    /// <param name="fastestLapTime">Fastest lap time</param>
-    /// <param name="currentLapTime">Personal best lap time</param>
-    /// <returns>Time difference as string</returns>
-    private string BuildTimeDifference(uint fastestLapTime, uint currentLapTime)
-    {
-        var timeDiff = string.Empty;
-
-        if (fastestLapTime < currentLapTime)
-        {
-            var diff = TimeSpan.FromMilliseconds(currentLapTime - fastestLapTime);
-
-            timeDiff = diff.Minutes > 0 ? diff.ToString(@"\+m\:ss\.fff") : diff.ToString(@"\+s\.fff");
-        }
-
-        return timeDiff;
-    }
-
-    #endregion // Methods
+    #endregion // Controller methods
 }

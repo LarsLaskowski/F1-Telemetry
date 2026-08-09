@@ -2,11 +2,9 @@ using System.Diagnostics;
 
 using F1Server.Core.Observability;
 using F1Server.Data.ViewData;
-using F1Server.Db.Entity;
-using F1Server.Db.Entity.Repositories;
+using F1Server.Service.Games;
 
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace F1Server.WebApi.Controllers;
 
@@ -20,6 +18,7 @@ public class GamesController : ControllerBase
     #region Fields
 
     private readonly ILogger<GamesController> _logger;
+    private readonly GameService _gameService;
 
     #endregion // Fields
 
@@ -29,14 +28,16 @@ public class GamesController : ControllerBase
     /// Constructor
     /// </summary>
     /// <param name="logger">Logging interface</param>
-    public GamesController(ILogger<GamesController> logger)
+    /// <param name="gameService">Game business logic</param>
+    public GamesController(ILogger<GamesController> logger, GameService gameService)
     {
         _logger = logger;
+        _gameService = gameService;
     }
 
     #endregion // Constructors
 
-    #region Methods
+    #region Controller methods
 
     /// <summary>
     /// Get games
@@ -45,82 +46,18 @@ public class GamesController : ControllerBase
     [HttpGet]
     public async Task<IEnumerable<GameViewData>?> Get()
     {
-        List<GameViewData>? games = null;
-
         using var currentActivity = AppActivity.ApiSource.StartActivity("GetGames");
 
         _logger?.LoadingGames();
 
-        using (var dbFactory = RepositoryFactory.CreateInstance())
-        {
-            var gameQuery = dbFactory.GetRepository<GameVersionRepository>()?.GetQuery();
+        var games = await _gameService.GetGamesAsync().ConfigureAwait(false);
 
-            if (gameQuery != null)
-            {
-                games = await gameQuery.OrderBy(g => g.Version)
-                                       .Select(obj => new GameViewData
-                                                      {
-                                                          Id = obj.Id,
-                                                          GameVersion = obj.Name,
-                                                          GameVersionCode = $"{obj.MajorVersion}.{obj.MinorVersion}",
-                                                          LastUsed = obj.LastUsed.HasValue
-                                                                         ? $"{obj.LastUsed.Value:d} {obj.LastUsed.Value:t}"
-                                                                         : "-"
-                                                      })
-                                       .ToListAsync()
-                                       .ConfigureAwait(false);
-            }
-
-            if (games?.Count > 0)
-            {
-                var sessionCounts = await LoadSessionCountsAsync(dbFactory).ConfigureAwait(false);
-
-                foreach (var game in games)
-                {
-                    game.Sessions = sessionCounts.TryGetValue(game.Id, out var sessions)
-                                        ? sessions
-                                        : 0;
-                }
-            }
-
-            currentActivity?.SetStatus(ActivityStatusCode.Ok);
-        }
+        currentActivity?.SetStatus(ActivityStatusCode.Ok);
 
         _logger?.GamesLoaded(games?.Count ?? 0);
 
         return games;
     }
 
-    #endregion // Methods
-
-    #region Private methods
-
-    /// <summary>
-    /// Counts the finished sessions of every game version with a single grouped query
-    /// </summary>
-    /// <param name="dbFactory">Database factory</param>
-    /// <returns>Number of finished sessions per database id of the game version</returns>
-    private async Task<Dictionary<long, int>> LoadSessionCountsAsync(RepositoryFactory dbFactory)
-    {
-        var sessionQuery = dbFactory.GetRepository<SessionRepository>()?.GetQuery();
-
-        if (sessionQuery == null)
-        {
-            return [];
-        }
-
-        var sessionCounts = await sessionQuery.Where(s => s.DbIsFinished == 1)
-                                              .GroupBy(s => s.GameVersionId)
-                                              .Select(group => new
-                                                               {
-                                                                   GameVersionId = group.Key,
-                                                                   Sessions = group.Count()
-                                                               })
-                                              .ToListAsync()
-                                              .ConfigureAwait(false);
-
-        return sessionCounts.ToDictionary(entry => entry.GameVersionId, entry => entry.Sessions);
-    }
-
-    #endregion // Private methods
+    #endregion // Controller methods
 }

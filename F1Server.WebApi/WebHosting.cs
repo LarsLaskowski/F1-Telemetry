@@ -5,7 +5,14 @@ using F1Server.Core.Observability;
 using F1Server.Data;
 using F1Server.Observability;
 using F1Server.Service.Cache;
+using F1Server.Service.CarTelemetries;
 using F1Server.Service.Championships;
+using F1Server.Service.FastestLaps;
+using F1Server.Service.FinalClassifications;
+using F1Server.Service.Games;
+using F1Server.Service.SessionParticipants;
+using F1Server.Service.Sessions;
+using F1Server.Service.Tracks;
 using F1Server.WebApi.Core;
 using F1Server.WebApi.Hubs;
 
@@ -231,6 +238,13 @@ public class WebHosting : IWebHosting
 
             // Business logic used by the controllers, so the controllers stay limited to the transport concerns
             builder.Services.AddScoped<ChampionshipService>();
+            builder.Services.AddScoped<CarTelemetryService>();
+            builder.Services.AddScoped<FastestLapService>();
+            builder.Services.AddScoped<FinalClassificationService>();
+            builder.Services.AddScoped<GameService>();
+            builder.Services.AddScoped<ParticipantService>();
+            builder.Services.AddScoped<SessionService>();
+            builder.Services.AddScoped<TrackService>();
 
             SetObservability(serviceProvider, builder);
 

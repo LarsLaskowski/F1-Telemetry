@@ -1,6 +1,6 @@
-using F1Server.WebApi.Core;
+using F1Server.Service.Core;
 
-namespace F1Server.Tests.WebApi;
+namespace F1Server.Tests.Service;
 
 /// <summary>
 /// Contains unit tests verifying that the <see cref="RaceTimeFormatter"/> keeps the hours of a race time and only
