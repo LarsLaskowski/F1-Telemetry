@@ -205,52 +205,7 @@ internal class PacketToSessionHistoryData : PacketToXBase
             {
                 actOffset = ExtractSessionHistoryDataBase(ref dataPacket, actOffset, sessionHistoryData);
 
-                for (int lap = 0; lap < sessionHistoryData.LapHistory.Length; lap++)
-                {
-                    if (lap < sessionHistoryData.NumberOfLaps)
-                    {
-                        var lapData = new SessionHistoryLapData2023
-                                      {
-                                          LapTime = Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref dataPacket, actOffset))
-                                      };
-
-                        actOffset += ConstData.TypeUInt32;
-
-                        lapData.Sector1Time = Unsafe.ReadUnaligned<ushort>(ref Unsafe.Add(ref dataPacket, actOffset));
-
-                        actOffset += ConstData.TypeUInt16;
-
-                        lapData.Sector1TimeMinutes = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
-
-                        actOffset += ConstData.TypeUInt8;
-
-                        lapData.Sector2Time = Unsafe.ReadUnaligned<ushort>(ref Unsafe.Add(ref dataPacket, actOffset));
-
-                        actOffset += ConstData.TypeUInt16;
-
-                        lapData.Sector2TimeMinutes = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
-
-                        actOffset += ConstData.TypeUInt8;
-
-                        lapData.Sector3Time = Unsafe.ReadUnaligned<ushort>(ref Unsafe.Add(ref dataPacket, actOffset));
-
-                        actOffset += ConstData.TypeUInt16;
-
-                        lapData.Sector3TimeMinutes = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
-
-                        actOffset += ConstData.TypeUInt8;
-
-                        lapData.LapValidFlag = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
-
-                        actOffset += ConstData.TypeUInt8;
-
-                        sessionHistoryData.LapHistory[lap] = lapData;
-                    }
-                    else
-                    {
-                        actOffset += ConstData.F12023SessionHistoryLapSize;
-                    }
-                }
+                actOffset = ExtractSessionHistoryLaps(ref dataPacket, actOffset, sessionHistoryData, ConstData.F12023SessionHistoryLapSize);
 
                 ExtractSessionHistoryTyreStints(ref dataPacket, actOffset, sessionHistoryData, ConstData.F12023SessionHistoryTyreStintSize);
 
@@ -284,52 +239,7 @@ internal class PacketToSessionHistoryData : PacketToXBase
             {
                 actOffset = ExtractSessionHistoryDataBase(ref dataPacket, actOffset, sessionHistoryData);
 
-                for (int lap = 0; lap < sessionHistoryData.LapHistory.Length; lap++)
-                {
-                    if (lap < sessionHistoryData.NumberOfLaps)
-                    {
-                        var lapData = new SessionHistoryLapData2024
-                                      {
-                                          LapTime = Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref dataPacket, actOffset))
-                                      };
-
-                        actOffset += ConstData.TypeUInt32;
-
-                        lapData.Sector1Time = Unsafe.ReadUnaligned<ushort>(ref Unsafe.Add(ref dataPacket, actOffset));
-
-                        actOffset += ConstData.TypeUInt16;
-
-                        lapData.Sector1TimeMinutes = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
-
-                        actOffset += ConstData.TypeUInt8;
-
-                        lapData.Sector2Time = Unsafe.ReadUnaligned<ushort>(ref Unsafe.Add(ref dataPacket, actOffset));
-
-                        actOffset += ConstData.TypeUInt16;
-
-                        lapData.Sector2TimeMinutes = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
-
-                        actOffset += ConstData.TypeUInt8;
-
-                        lapData.Sector3Time = Unsafe.ReadUnaligned<ushort>(ref Unsafe.Add(ref dataPacket, actOffset));
-
-                        actOffset += ConstData.TypeUInt16;
-
-                        lapData.Sector3TimeMinutes = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
-
-                        actOffset += ConstData.TypeUInt8;
-
-                        lapData.LapValidFlag = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
-
-                        actOffset += ConstData.TypeUInt8;
-
-                        sessionHistoryData.LapHistory[lap] = lapData;
-                    }
-                    else
-                    {
-                        actOffset += ConstData.F12024SessionHistoryLapSize;
-                    }
-                }
+                actOffset = ExtractSessionHistoryLaps(ref dataPacket, actOffset, sessionHistoryData, ConstData.F12024SessionHistoryLapSize);
 
                 ExtractSessionHistoryTyreStints(ref dataPacket, actOffset, sessionHistoryData, ConstData.F12024SessionHistoryTyreStintSize);
 
@@ -363,52 +273,7 @@ internal class PacketToSessionHistoryData : PacketToXBase
             {
                 actOffset = ExtractSessionHistoryDataBase(ref dataPacket, actOffset, sessionHistoryData);
 
-                for (int lap = 0; lap < sessionHistoryData.LapHistory.Length; lap++)
-                {
-                    if (lap < sessionHistoryData.NumberOfLaps)
-                    {
-                        var lapData = new SessionHistoryLapData2025
-                                      {
-                                          LapTime = Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref dataPacket, actOffset))
-                                      };
-
-                        actOffset += ConstData.TypeUInt32;
-
-                        lapData.Sector1Time = Unsafe.ReadUnaligned<ushort>(ref Unsafe.Add(ref dataPacket, actOffset));
-
-                        actOffset += ConstData.TypeUInt16;
-
-                        lapData.Sector1TimeMinutes = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
-
-                        actOffset += ConstData.TypeUInt8;
-
-                        lapData.Sector2Time = Unsafe.ReadUnaligned<ushort>(ref Unsafe.Add(ref dataPacket, actOffset));
-
-                        actOffset += ConstData.TypeUInt16;
-
-                        lapData.Sector2TimeMinutes = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
-
-                        actOffset += ConstData.TypeUInt8;
-
-                        lapData.Sector3Time = Unsafe.ReadUnaligned<ushort>(ref Unsafe.Add(ref dataPacket, actOffset));
-
-                        actOffset += ConstData.TypeUInt16;
-
-                        lapData.Sector3TimeMinutes = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
-
-                        actOffset += ConstData.TypeUInt8;
-
-                        lapData.LapValidFlag = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
-
-                        actOffset += ConstData.TypeUInt8;
-
-                        sessionHistoryData.LapHistory[lap] = lapData;
-                    }
-                    else
-                    {
-                        actOffset += ConstData.F12025SessionHistoryLapSize;
-                    }
-                }
+                actOffset = ExtractSessionHistoryLaps(ref dataPacket, actOffset, sessionHistoryData, ConstData.F12025SessionHistoryLapSize);
 
                 ExtractSessionHistoryTyreStints(ref dataPacket, actOffset, sessionHistoryData, ConstData.F12025SessionHistoryTyreStintSize);
 
@@ -442,52 +307,7 @@ internal class PacketToSessionHistoryData : PacketToXBase
             {
                 actOffset = ExtractSessionHistoryDataBase(ref dataPacket, actOffset, sessionHistoryData);
 
-                for (int lap = 0; lap < sessionHistoryData.LapHistory.Length; lap++)
-                {
-                    if (lap < sessionHistoryData.NumberOfLaps)
-                    {
-                        var lapData = new SessionHistoryLapData2026
-                                      {
-                                          LapTime = Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref dataPacket, actOffset))
-                                      };
-
-                        actOffset += ConstData.TypeUInt32;
-
-                        lapData.Sector1Time = Unsafe.ReadUnaligned<ushort>(ref Unsafe.Add(ref dataPacket, actOffset));
-
-                        actOffset += ConstData.TypeUInt16;
-
-                        lapData.Sector1TimeMinutes = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
-
-                        actOffset += ConstData.TypeUInt8;
-
-                        lapData.Sector2Time = Unsafe.ReadUnaligned<ushort>(ref Unsafe.Add(ref dataPacket, actOffset));
-
-                        actOffset += ConstData.TypeUInt16;
-
-                        lapData.Sector2TimeMinutes = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
-
-                        actOffset += ConstData.TypeUInt8;
-
-                        lapData.Sector3Time = Unsafe.ReadUnaligned<ushort>(ref Unsafe.Add(ref dataPacket, actOffset));
-
-                        actOffset += ConstData.TypeUInt16;
-
-                        lapData.Sector3TimeMinutes = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
-
-                        actOffset += ConstData.TypeUInt8;
-
-                        lapData.LapValidFlag = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
-
-                        actOffset += ConstData.TypeUInt8;
-
-                        sessionHistoryData.LapHistory[lap] = lapData;
-                    }
-                    else
-                    {
-                        actOffset += ConstData.F12026SessionHistoryLapSize;
-                    }
-                }
+                actOffset = ExtractSessionHistoryLaps(ref dataPacket, actOffset, sessionHistoryData, ConstData.F12026SessionHistoryLapSize);
 
                 ExtractSessionHistoryTyreStints(ref dataPacket, actOffset, sessionHistoryData, ConstData.F12026SessionHistoryTyreStintSize);
 
