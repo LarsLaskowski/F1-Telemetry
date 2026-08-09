@@ -160,9 +160,12 @@ public sealed class F1ServerDbContext : DbContext
         {
             return serviceProvider?.GetRequiredService<F1ServerApplicationData>();
         }
-        catch
+        catch (Exception ex)
         {
-            // Ignore exceptions in this step, as it may not be critical for the context initialization
+            // No logger is available yet at this point, so report the failure on the console instead;
+            // the context then keeps running, but without logging/metrics
+            Console.Error.WriteLine($"Failed to resolve {nameof(F1ServerApplicationData)}, continuing without logging/metrics: {ex.Message}");
+
             return null;
         }
     }
