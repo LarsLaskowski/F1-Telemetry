@@ -2,7 +2,7 @@ import { ChangeDetectorRef, Component, Inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 
 import { StatisticsViewApiData } from '../data/statisticsviewdata_api';
-import { interval, Subscription } from 'rxjs';
+import { Subscription, timer } from 'rxjs';
 
 @Component(
 {
@@ -28,13 +28,19 @@ export class StatisticsComponent {
    // Initialization
   ngOnInit()
   {
-    this.updateSubscription = interval(250).subscribe(() => { this.updateStatistics() });
+    this.scheduleNextUpdate();
   }
 
   // Deinitialization
   ngOnDestroy()
   {
     this.updateSubscription.unsubscribe();
+  }
+
+  // Schedule the next statistics update, started only once the current delay has elapsed
+  private scheduleNextUpdate()
+  {
+    this.updateSubscription = timer(250).subscribe(() => { this.updateStatistics() });
   }
 
   // Update live session data
@@ -46,8 +52,13 @@ export class StatisticsComponent {
       {
         this.stats = result;
         this.changeDetector.markForCheck();
+        this.scheduleNextUpdate();
       },
-      error: (err) => { console.error(err); }
+      error: (err) =>
+      {
+        console.error(err);
+        this.scheduleNextUpdate();
+      }
     });
   }
 }
