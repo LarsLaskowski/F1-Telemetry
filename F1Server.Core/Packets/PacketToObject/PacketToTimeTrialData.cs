@@ -175,22 +175,13 @@ internal class PacketToTimeTrialData : PacketToXBase
 
                 actOffset += ConstData.TypeUInt32;
 
-                var tractionControlValue = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
-                var gearboxAssistValue = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset + ConstData.TypeUInt8));
-
-                timeTrialData.TractionControl = (TractionControl)enumValue;
+                timeTrialData.TractionControl = Unsafe.ReadUnaligned<bool>(ref Unsafe.Add(ref dataPacket, actOffset));
 
                 actOffset += ConstData.TypeUInt8;
 
-                    timeTrialDataSet2024.GearboxAssist = gearboxAssistValue != 0;
-                }
-                else if (timeTrialData is TimeTrialDataSet2025 timeTrialDataSet2025)
-                {
-                    timeTrialDataSet2025.TractionControl = (TractionControl)Enum.ToObject(typeof(TractionControl), tractionControlValue);
+                timeTrialData.GearboxAssist = Unsafe.ReadUnaligned<bool>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-                timeTrialData.GearboxAssist = (GearboxAssist)enumValue;
-
-                actOffset += ConstData.TypeUInt8 * 2;
+                actOffset += ConstData.TypeUInt8;
 
                 timeTrialData.AntiLockBrakes = Unsafe.ReadUnaligned<bool>(ref Unsafe.Add(ref dataPacket, actOffset));
 

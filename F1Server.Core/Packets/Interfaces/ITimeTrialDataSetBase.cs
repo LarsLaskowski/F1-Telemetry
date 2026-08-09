@@ -1,4 +1,6 @@
-﻿namespace F1Server.Core.Packets.Interfaces;
+﻿using F1Server.Core.Enumerations;
+
+namespace F1Server.Core.Packets.Interfaces;
 
 /// <summary>
 /// Time trial base data set (starting with F1 2024)
@@ -36,6 +38,16 @@ public interface ITimeTrialDataSetBase
     /// Sector 3 time in milliseconds
     /// </summary>
     uint Sector3Time { get; set; }
+
+    /// <summary>
+    /// Traction control (false = assist off, true = assist on)
+    /// </summary>
+    bool TractionControl { get; set; }
+
+    /// <summary>
+    /// Assist settings of the gear box (false = assist off, true = assist on)
+    /// </summary>
+    bool GearboxAssist { get; set; }
 
     /// <summary>
     /// Anti lock brakes (off = false, on = true)

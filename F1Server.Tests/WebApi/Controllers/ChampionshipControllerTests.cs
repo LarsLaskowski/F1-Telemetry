@@ -1,6 +1,5 @@
 using F1Server.Core.Enumerations;
 using F1Server.Data;
-using F1Server.Data.ViewData;
 using F1Server.Db.Entity;
 using F1Server.Db.Entity.Repositories;
 using F1Server.Service.Championships;

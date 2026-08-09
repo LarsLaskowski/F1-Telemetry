@@ -1,8 +1,6 @@
 using F1Server.Core.Enumerations;
 using F1Server.Core.Utils;
 
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-
 namespace F1Server.Tests;
 
 /// <summary>

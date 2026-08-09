@@ -1,11 +1,7 @@
-﻿using System.IO;
-
-using F1Server.Core.Data;
+﻿using F1Server.Core.Data;
 using F1Server.Data;
 using F1Server.Service.Processors;
 using F1Server.Tests.Data;
-
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace F1Server.Tests;
 
