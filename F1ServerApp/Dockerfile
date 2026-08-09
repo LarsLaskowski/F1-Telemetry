@@ -14,7 +14,7 @@ RUN npm install -g npm@latest
 RUN echo "NODE Version: " && node --version
 RUN echo "NPM  Version: " && npm --version
 
-RUN npm ci --force
+RUN npm ci
 
 COPY . /app
 
