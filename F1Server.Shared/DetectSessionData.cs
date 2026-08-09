@@ -16,7 +16,7 @@ public class DetectSessionData
     #region Fields
 
     private readonly List<string> _files;
-    private readonly object _stateLock = new();
+    private readonly Lock _stateLock = new();
     private bool _hasSessionInfo;
 
     #endregion // Fields
