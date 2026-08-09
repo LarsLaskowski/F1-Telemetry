@@ -29,7 +29,7 @@ public class LapPositions2026 : ILapPositionsBase
     public ushort LapStartIndex { get; set; }
 
     /// <inheritdoc/>
-    public int[,] CarPositionOnLaps { get; set; }
+    public int[,] CarPositionOnLaps { get; }
 
     #endregion // ILapPositionsBase
 }

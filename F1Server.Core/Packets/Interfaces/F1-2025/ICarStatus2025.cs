@@ -3,4 +3,4 @@
 /// <summary>
 /// Car status data - F1 2025
 /// </summary>
-public interface ICarStatus2025 : ICarStatusBase;
+public interface ICarStatus2025 : ICarStatus2024;

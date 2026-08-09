@@ -87,7 +87,7 @@ public interface IEventDataDetails2025 : IEventDataDetailsBase
     /// <summary>
     /// Duration of the stop-and-go penalty in seconds
     /// </summary>
-    float StopAndGoPenaltyTime { get; set; }
+    float StopAndGoPenaltyTime { get; }
 
     /// <summary>
     /// Bit flags specifying which buttons are being pressed

@@ -23,7 +23,7 @@ public interface ILapPositionsBase
     /// dimension is bounded by the per-year maximum lap count and the car dimension by the
     /// per-year maximum car count
     /// </summary>
-    int[,] CarPositionOnLaps { get; set; }
+    int[,] CarPositionOnLaps { get; }
 
     #endregion // Properties
 }

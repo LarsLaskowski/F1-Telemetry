@@ -1,3 +1,4 @@
+using F1Server.Core.Data;
 using F1Server.Core.Packets.Interfaces;
 
 namespace F1Server.Core.Packets.Data;
@@ -14,7 +15,7 @@ public class SessionHistoryData2026 : ISessionHistoryDataBase
     /// </summary>
     public SessionHistoryData2026()
     {
-        LapHistory = new SessionHistoryLapData2026[100];
+        LapHistory = new SessionHistoryLapData2026[ConstData.F12026MaxLaps];
         TyreStintHistory = new SessionHistoryTyreStintData2026[8];
     }
 
