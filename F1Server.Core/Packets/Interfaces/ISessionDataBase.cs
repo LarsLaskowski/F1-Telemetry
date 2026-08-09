@@ -46,7 +46,7 @@ public interface ISessionDataBase
     SessionType SessionType { get; set; }
 
     /// <summary>
-    /// Track id - -1 - unknown
+    /// Track id, -1 when unknown
     /// </summary>
     short TrackId { get; set; }
 

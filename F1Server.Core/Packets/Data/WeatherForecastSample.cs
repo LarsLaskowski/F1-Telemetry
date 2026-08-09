@@ -17,7 +17,7 @@ public class WeatherForecastSample
     /// <summary>
     /// Time in minutes the forecast is for
     /// </summary>
-    public int TimeOffset { get; set; }
+    public ushort TimeOffset { get; set; }
 
     /// <summary>
     /// Weather conditions

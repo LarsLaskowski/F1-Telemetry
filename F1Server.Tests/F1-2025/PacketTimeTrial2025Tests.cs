@@ -171,8 +171,10 @@ public class PacketTimeTrial2025Tests
     {
         var dataSet = GetTimeTrialData().PlayerSessionBestDataSet;
 
-        Assert.AreEqual(TractionControl.Medium, dataSet.TractionControl, "Wrong traction control in the player session best data set!");
-        Assert.AreEqual(GearboxAssist.Manual, dataSet.GearboxAssist, "Wrong gearbox assist in the player session best data set!");
+        Assert.IsInstanceOfType<TimeTrialDataSet2025>(dataSet, "Data set is not a F1 2025 time trial data set!");
+
+        Assert.IsTrue(dataSet.TractionControl, "Wrong traction control in the player session best data set!");
+        Assert.IsTrue(dataSet.GearboxAssist, "Wrong gearbox assist in the player session best data set!");
         Assert.IsTrue(dataSet.AntiLockBrakes, "Anti lock brakes must be active in the player session best data set!");
         Assert.IsTrue(dataSet.IsRealisticCarPerformance, "Car performance must be realistic in the player session best data set!");
         Assert.IsTrue(dataSet.IsCustomSetup, "Custom setup must be active in the player session best data set!");

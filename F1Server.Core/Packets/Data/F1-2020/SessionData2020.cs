@@ -59,7 +59,7 @@ public class SessionData2020 : ISessionData2020
     public SessionType SessionType { get; set; }
 
     /// <summary>
-    /// Track id - -1 - unknown
+    /// Track id, -1 when unknown
     /// </summary>
     public short TrackId { get; set; }
 

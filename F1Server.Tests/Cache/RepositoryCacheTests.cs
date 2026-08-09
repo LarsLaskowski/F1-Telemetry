@@ -1,8 +1,6 @@
 using F1Server.Db.Entity.Tables;
 using F1Server.Service.Cache;
 
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-
 namespace F1Server.Tests.Cache;
 
 /// <summary>

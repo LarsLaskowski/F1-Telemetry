@@ -1,5 +1,4 @@
-﻿using F1Server.Core.Enumerations;
-using F1Server.Core.Packets.Interfaces;
+﻿using F1Server.Core.Packets.Interfaces;
 
 namespace F1Server.Core.Packets.Data;
 
@@ -10,64 +9,40 @@ public class TimeTrialDataSet2024 : ITimeTrialDataSetBase
 {
     #region ITimeTrialDataSetBase
 
-    /// <summary>
-    /// Index of the car this data relates to
-    /// </summary>
-    public int CarIndex { get; set; }
+    /// <inheritdoc/>
+    public ushort CarIndex { get; set; }
 
-    /// <summary>
-    /// Id of the team
-    /// </summary>
-    public int TeamId { get; set; }
+    /// <inheritdoc/>
+    public ushort TeamId { get; set; }
 
-    /// <summary>
-    /// Lap time in milliseconds
-    /// </summary>
+    /// <inheritdoc/>
     public uint LapTime { get; set; }
 
-    /// <summary>
-    /// Sector 1 time in milliseconds
-    /// </summary>
+    /// <inheritdoc/>
     public uint Sector1Time { get; set; }
 
-    /// <summary>
-    /// Sector 2 time in milliseconds
-    /// </summary>
+    /// <inheritdoc/>
     public uint Sector2Time { get; set; }
 
-    /// <summary>
-    /// Sector 3 time in milliseconds
-    /// </summary>
+    /// <inheritdoc/>
     public uint Sector3Time { get; set; }
 
-    /// <summary>
-    /// Traction control
-    /// </summary>
-    public TractionControl TractionControl { get; set; }
+    /// <inheritdoc/>
+    public bool TractionControl { get; set; }
 
-    /// <summary>
-    /// Assist settings of the gear box
-    /// </summary>
-    public GearboxAssist GearboxAssist { get; set; }
+    /// <inheritdoc/>
+    public bool GearboxAssist { get; set; }
 
-    /// <summary>
-    /// Anti lock brakes (off = false, on = true)
-    /// </summary>
+    /// <inheritdoc/>
     public bool AntiLockBrakes { get; set; }
 
-    /// <summary>
-    /// Realistic car performance, otherwise equal
-    /// </summary>
+    /// <inheritdoc/>
     public bool IsRealisticCarPerformance { get; set; }
 
-    /// <summary>
-    /// Custom setup
-    /// </summary>
+    /// <inheritdoc/>
     public bool IsCustomSetup { get; set; }
 
-    /// <summary>
-    /// Valid or invalid
-    /// </summary>
+    /// <inheritdoc/>
     public bool IsValid { get; set; }
 
     #endregion // ITimeTrialDataSetBase

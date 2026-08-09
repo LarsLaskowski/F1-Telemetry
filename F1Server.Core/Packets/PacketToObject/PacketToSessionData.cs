@@ -229,7 +229,7 @@ internal class PacketToSessionData : PacketToXBase
     /// <summary>
     /// Match track id to name
     /// </summary>
-    /// <param name="trackId">Id of track</param>
+    /// <param name="trackId">Id of track, -1 when unknown</param>
     /// <returns>Name of track</returns>
     private string MatchTrackIdToName(short trackId)
     {

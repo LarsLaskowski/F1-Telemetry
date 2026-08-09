@@ -38,7 +38,7 @@ public class ParticipantData2025 : IParticipantData2025
     public ushort Nationality { get; set; }
 
     /// <inheritdoc/>
-    public string DriverName { get; set; }
+    public string DriverName { get; set; } = string.Empty;
 
     /// <inheritdoc/>
     public bool IsPublicTelemetry { get; set; }

@@ -60,7 +60,7 @@ public class SessionData2023 : ISessionData2023
     public SessionType SessionType { get; set; }
 
     /// <summary>
-    /// Track id - -1 - unknown
+    /// Track id, -1 when unknown
     /// </summary>
     public short TrackId { get; set; }
 

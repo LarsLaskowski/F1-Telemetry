@@ -1,9 +1,5 @@
-﻿using System;
-
-using F1Server.Db.Entity;
+﻿using F1Server.Db.Entity;
 using F1Server.Tests.Data;
-
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace F1Server.Tests;
 

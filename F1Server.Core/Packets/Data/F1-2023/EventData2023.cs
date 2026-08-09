@@ -24,7 +24,7 @@ public class EventData2023 : IEventDataBase
     /// <summary>
     /// Event code
     /// </summary>
-    public string EventCode { get; set; }
+    public string EventCode { get; set; } = string.Empty;
 
     /// <summary>
     /// Event details

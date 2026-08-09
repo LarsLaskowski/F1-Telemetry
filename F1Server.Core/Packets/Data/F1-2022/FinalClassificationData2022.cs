@@ -15,6 +15,11 @@ public class FinalClassificationData2022 : IFinalClassificationData
     public FinalClassificationData2022()
     {
         FinalClassifications = new FinalClassificationCarData2022[22];
+
+        for (int finalClassification = 0; finalClassification < FinalClassifications.Length; ++finalClassification)
+        {
+            FinalClassifications[finalClassification] = new FinalClassificationCarData2022();
+        }
     }
 
     #endregion // Constructors

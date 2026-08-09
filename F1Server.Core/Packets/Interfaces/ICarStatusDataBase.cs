@@ -32,7 +32,7 @@ public interface ICarStatusDataBase
     /// <summary>
     /// Pit limiter status - 0 - off - 1 - on
     /// </summary>
-    uint PitLimiterStatus { get; set; }
+    ushort PitLimiterStatus { get; set; }
 
     /// <summary>
     /// Current fuel mass

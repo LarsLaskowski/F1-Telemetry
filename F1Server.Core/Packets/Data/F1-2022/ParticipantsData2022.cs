@@ -15,6 +15,11 @@ public class ParticipantsData2022 : IParticipantsBase
     public ParticipantsData2022()
     {
         Participants = new ParticipantData2022[22];
+
+        for (int participant = 0; participant < Participants.Length; ++participant)
+        {
+            Participants[participant] = new ParticipantData2022();
+        }
     }
 
     #endregion // Constructors
