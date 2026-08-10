@@ -177,7 +177,7 @@ internal static class TestData
 
         var sessionProcessor = processor.GetProcessor(packetData.PacketHeader);
 
-        Assert.IsInstanceOfType<SessionProcessor>(sessionProcessor);
+        Assert.IsInstanceOfType<SessionProcessor>(sessionProcessor, $"SessionProcessor is expected for the given packet header ({gameVersion})!");
 
         var sessionDataBase = sessionData as ISessionDataBase;
 
