@@ -11,6 +11,7 @@ import { MatCheckbox } from '@angular/material/checkbox';
 import { MatOption } from '@angular/material/core';
 import { MatFormField, MatLabel, MatSelect } from '@angular/material/select';
 import { MatButton } from '@angular/material/button';
+import { getTrackOrderForYear, parseGameVersionYear } from '../data/track-order';
 
 @Component(
   {
@@ -136,53 +137,16 @@ export class CreateChampionshipComponent
 
     if (this.selectedGame != undefined)
     {
-      if (this.selectedGame.gameVersion == "F1 2020")
-      {
-        let tracks = [ 0, 3, 21, 2, 22, 4, 5, 20, 6, 1, 17, 7, 9, 10, 11, 12, 18, 13, 15, 19, 16, 14 ];
+      const gameYear = parseGameVersionYear(this.selectedGame.gameVersion);
 
-        this.addTracksToGame(tracks);
-      }
-      else if (this.selectedGame.gameVersion == "F1 2021")
+      if (gameYear != undefined)
       {
-        // Turkey is between Sochi and Texas
-        let tracks = [ 3, 23, 24, 4, 5, 20, 1, 17, 29, 7, 9, 10, 22, 18, 15, 19, 16, 28, 25, 14 ];
-
-        this.addTracksToGame(tracks);
-      }
-      else if (this.selectedGame.gameVersion == "F1 2022")
-      {
-        let tracks = [ 3, 25, 0, 23, 26, 4, 5, 20, 6, 7, 17, 9, 10, 22, 11, 12, 13, 15, 19, 16, 14 ];
-
-        this.addTracksToGame(tracks);
-      }
-      else if (this.selectedGame.gameVersion == "F1 2023")
-      {
-        let tracks = [ 3, 25, 0, 20, 26, 23, 5, 4, 6, 17, 7, 9, 10, 22, 11, 12, 13, 28, 15, 19, 16, 27, 14 ];
-
-        this.addTracksToGame(tracks);
-      }
-      else if (this.selectedGame.gameVersion == "F1 2024")
-      {
-        let tracks = [ 3, 25, 0, 13, 2, 26, 23, 5, 6, 4, 17, 7, 9, 10, 22, 11, 20, 12, 15, 19, 16, 27, 28, 14 ];
-
-        this.addTracksToGame(tracks);
-      }
-      else if (this.selectedGame.gameVersion == "F1 2025")
-      {
-        let tracks = [ 0, 2, 13, 3, 25, 26, 23, 5, 4, 6, 17, 7, 10, 9, 22, 11, 20, 12, 15, 19, 16, 27, 28, 14 ];
-
-        this.addTracksToGame(tracks);
-      }
-      else if (this.selectedGame.gameVersion == "F1 2026")
-      {
-        let tracks = [ 0, 2, 13, 3, 25, 26, 6, 5, 4, 17, 7, 10, 9, 22, 11, 30, 20, 12, 15, 19, 16, 27, 28, 14 ];
-
-        this.addTracksToGame(tracks);
+        this.addTracksToGame(getTrackOrderForYear(gameYear));
       }
     }
   }
 
-  addTracksToGame(tracks: number[])
+  addTracksToGame(tracks: readonly number[])
   {
     tracks.forEach(trackId =>
     {
