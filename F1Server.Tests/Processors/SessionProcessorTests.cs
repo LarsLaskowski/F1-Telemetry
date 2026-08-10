@@ -337,7 +337,7 @@ public class SessionProcessorTests
 
         var sessionProcessor = TestData.Processor2024.GetProcessor(_packetData24.PacketHeader);
 
-        Assert.IsInstanceOfType<SessionProcessor>(sessionProcessor);
+        Assert.IsInstanceOfType<SessionProcessor>(sessionProcessor, "SessionProcessor is expected for the given packet header (2024)!");
     }
 
     /// <summary>
@@ -359,7 +359,7 @@ public class SessionProcessorTests
 
         var sessionProcessor = TestData.Processor2025.GetProcessor(_packetData25.PacketHeader);
 
-        Assert.IsInstanceOfType<SessionProcessor>(sessionProcessor);
+        Assert.IsInstanceOfType<SessionProcessor>(sessionProcessor, "SessionProcessor is expected for the given packet header (2025)!");
     }
 
     /// <summary>
@@ -381,7 +381,7 @@ public class SessionProcessorTests
 
         var sessionProcessor = TestData.Processor2026.GetProcessor(_packetData26.PacketHeader);
 
-        Assert.IsInstanceOfType<SessionProcessor>(sessionProcessor);
+        Assert.IsInstanceOfType<SessionProcessor>(sessionProcessor, "SessionProcessor is expected for the given packet header (2026)!");
     }
 
     /// <summary>
@@ -447,7 +447,7 @@ public class SessionProcessorTests
 
             var sessionProcessor = processor.GetProcessor(packetHeader);
 
-            Assert.IsInstanceOfType<SessionProcessor>(sessionProcessor);
+            Assert.IsInstanceOfType<SessionProcessor>(sessionProcessor, $"SessionProcessor is expected for the given packet header ({gameVersion})!");
 
             var isProcessed = sessionProcessor.Process(sessionData, processor.Session);
 
@@ -523,7 +523,7 @@ public class SessionProcessorTests
 
             var sessionProcessor = processor.GetProcessor(packetHeader);
 
-            Assert.IsInstanceOfType<SessionProcessor>(sessionProcessor);
+            Assert.IsInstanceOfType<SessionProcessor>(sessionProcessor, $"SessionProcessor is expected for the given packet header ({gameVersion})!");
 
             var isProcessed = sessionProcessor.Process(sessionData, processor.Session);
 
@@ -599,7 +599,7 @@ public class SessionProcessorTests
 
             var sessionProcessor = processor.GetProcessor(packetHeader);
 
-            Assert.IsInstanceOfType<SessionProcessor>(sessionProcessor);
+            Assert.IsInstanceOfType<SessionProcessor>(sessionProcessor, $"SessionProcessor is expected for the given packet header ({gameVersion})!");
 
             var isProcessed = sessionProcessor.Process(sessionData, processor.Session);
 
@@ -675,7 +675,7 @@ public class SessionProcessorTests
 
             var sessionProcessor = processor.GetProcessor(packetHeader);
 
-            Assert.IsInstanceOfType<SessionProcessor>(sessionProcessor);
+            Assert.IsInstanceOfType<SessionProcessor>(sessionProcessor, $"SessionProcessor is expected for the given packet header ({gameVersion})!");
 
             var isProcessed = sessionProcessor.Process(sessionData, processor.Session);
 
@@ -734,7 +734,7 @@ public class SessionProcessorTests
 
         var sessionProcessor = processor.GetProcessor(packetData.PacketHeader);
 
-        Assert.IsInstanceOfType<SessionProcessor>(sessionProcessor);
+        Assert.IsInstanceOfType<SessionProcessor>(sessionProcessor, "SessionProcessor is expected for the given packet header (2020)!");
 
         // The first pass warms the caches and applies pending runtime updates
         var isProcessed = sessionProcessor.Process(sessionData, processor.Session);
@@ -788,7 +788,7 @@ public class SessionProcessorTests
 
         var sessionProcessor = processor.GetProcessor(packetData.PacketHeader);
 
-        Assert.IsInstanceOfType<SessionProcessor>(sessionProcessor);
+        Assert.IsInstanceOfType<SessionProcessor>(sessionProcessor, "SessionProcessor is expected for the given packet header (2020)!");
 
         var isProcessed = sessionProcessor.Process(sessionData, processor.Session);
 
@@ -843,7 +843,7 @@ public class SessionProcessorTests
 
         var sessionProcessor = processor.GetProcessor(packetData.PacketHeader);
 
-        Assert.IsInstanceOfType<SessionProcessor>(sessionProcessor);
+        Assert.IsInstanceOfType<SessionProcessor>(sessionProcessor, "SessionProcessor is expected for the given packet header (2021)!");
 
         var isProcessed = sessionProcessor.Process(sessionData, processor.Session);
 
@@ -884,7 +884,7 @@ public class SessionProcessorTests
 
         var sessionProcessor = TestData.LiveSessionProcessor.GetProcessor(packetHeader);
 
-        Assert.IsInstanceOfType<SessionProcessor>(sessionProcessor);
+        Assert.IsInstanceOfType<SessionProcessor>(sessionProcessor, $"SessionProcessor is expected for the given packet header ({TestData.LiveSessionGameVersion})!");
 
         var isProcessed = sessionProcessor.Process(sessionData, TestData.LiveSessionProcessor.Session);
 

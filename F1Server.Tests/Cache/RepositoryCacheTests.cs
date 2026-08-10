@@ -28,8 +28,8 @@ public class RepositoryCacheTests
 
         DriverRepositoryCache.AddOrUpdate(driver);
 
-        Assert.AreEqual(driver, DriverRepositoryCache.GetById(1));
-        Assert.AreEqual(driver, DriverRepositoryCache.GetByGameId(99));
+        Assert.AreEqual(driver, DriverRepositoryCache.GetById(1), "The cached driver should be returned by id!");
+        Assert.AreEqual(driver, DriverRepositoryCache.GetByGameId(99), "The cached driver should be returned by game id!");
     }
 
     /// <summary>
@@ -48,8 +48,8 @@ public class RepositoryCacheTests
 
         ParticipantsRepositoryCache.AddOrUpdate(part);
 
-        Assert.AreEqual(part, ParticipantsRepositoryCache.GetById(5));
-        Assert.AreEqual(part, ParticipantsRepositoryCache.GetBySessionAndDriverId(100, 200));
+        Assert.AreEqual(part, ParticipantsRepositoryCache.GetById(5), "The cached participant should be returned by id!");
+        Assert.AreEqual(part, ParticipantsRepositoryCache.GetBySessionAndDriverId(100, 200), "The cached participant should be returned by session and driver id!");
     }
 
     /// <summary>
@@ -66,8 +66,8 @@ public class RepositoryCacheTests
 
         SessionRepositoryCache.AddOrUpdate(session);
 
-        Assert.AreEqual(session, SessionRepositoryCache.GetById(600));
-        Assert.AreEqual(session, SessionRepositoryCache.GetByUniqueSessionId(123456UL));
+        Assert.AreEqual(session, SessionRepositoryCache.GetById(600), "The cached session should be returned by id!");
+        Assert.AreEqual(session, SessionRepositoryCache.GetByUniqueSessionId(123456UL), "The cached session should be returned by unique session id!");
 
         var attr = new SessionAttributesEntity
                    {
@@ -77,7 +77,7 @@ public class RepositoryCacheTests
 
         SessionRepositoryCache.AddOrUpdateAttributes(attr);
 
-        Assert.AreEqual(attr, SessionRepositoryCache.GetAttributesBySessionId(600));
+        Assert.AreEqual(attr, SessionRepositoryCache.GetAttributesBySessionId(600), "The cached session attributes should be returned by session id!");
     }
 
     /// <summary>
