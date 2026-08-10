@@ -13,6 +13,7 @@ import { MatLabel } from '@angular/material/form-field';
 import { MatButton } from '@angular/material/button'
 import { ChampionshipTrackViewData } from '../data/championshiptrackviewdata'
 import { ActivatedRoute } from '@angular/router';
+import { getTrackOrderForYear } from '../data/track-order';
 
 @Component(
 {
@@ -141,37 +142,7 @@ export class ChampionshipsComponent
   {
     if (championship.tracks != undefined && championship.championshipData != undefined)
     {
-      let tracks: number[] = [];
-
-      if (championship.championshipData.gameVersionYear == 2020)
-      {
-        tracks = [ 0, 3, 21, 2, 22, 4, 5, 20, 6, 1, 17, 7, 9, 10, 11, 12, 18, 13, 15, 19, 16, 14];
-      }
-      else if (championship.championshipData.gameVersionYear == 2021)
-      {
-        // Turkey is between Sochi and Texas
-        tracks = [ 3, 23, 24, 4, 5, 20, 1, 17, 29, 7, 9, 10, 22, 18, 15, 19, 16, 28, 25, 14];
-      }
-      else if (championship.championshipData.gameVersionYear == 2022)
-      {
-        tracks = [ 3, 25, 0, 23, 26, 4, 5, 20, 6, 7, 17, 9, 10, 22, 11, 12, 13, 15, 19, 16, 14];
-      }
-      else if (championship.championshipData.gameVersionYear == 2023)
-      {
-        tracks = [ 3, 25, 0, 20, 26, 23, 5, 4, 6, 17, 7, 9, 10, 22, 11, 12, 13, 28, 15, 19, 16, 27, 14 ];
-      }
-      else if (championship.championshipData.gameVersionYear == 2024)
-      {
-        tracks = [ 3, 25, 0, 13, 2, 26, 23, 5, 6, 4, 17, 7, 9, 10, 22, 11, 20, 12, 15, 19, 16, 27, 28, 14 ];
-      }
-      else if (championship.championshipData.gameVersionYear == 2025)
-      {
-        tracks = [ 0, 2, 13, 3, 25, 26, 23, 5, 4, 6, 17, 7, 10, 9, 22, 11, 20, 12, 15, 19, 16, 27, 28, 14 ];
-      }
-      else if (championship.championshipData.gameVersionYear == 2026)
-      {
-        tracks = [ 0, 2, 13, 3, 25, 26, 6, 5, 4, 17, 7, 10, 9, 22, 11, 30, 20, 12, 15, 19, 16, 27, 28, 14 ];
-      }
+      const tracks = getTrackOrderForYear(championship.championshipData.gameVersionYear);
 
       let sortedTracks: ChampionshipTrackViewData[] = [];
 
