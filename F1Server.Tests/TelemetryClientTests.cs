@@ -33,6 +33,11 @@ public class TelemetryClientTests
     /// </summary>
     private const int ChannelTestPort = 47313;
 
+    /// <summary>
+    /// UDP port used by the packet logging queue test, the TCP replay port is the next port number
+    /// </summary>
+    private const int LoggingTestPort = 47315;
+
     #endregion // Constants
 
     #region Properties
@@ -409,6 +414,60 @@ public class TelemetryClientTests
 
                 Assert.AreEqual(1, applicationData.Statistics.TotalPacketsProcessed, "The enqueued packet must be processed by the channel consumer!");
                 Assert.IsLessThan(100L, stopwatch.ElapsedMilliseconds, "The packet must be processed without the former 100 ms polling delay!");
+            }
+            finally
+            {
+                telemetryClient.Dispose();
+            }
+        }
+    }
+
+    /// <summary>
+    /// Test to verify that an enqueued packet is drained from the logging channel by the packet logging queue consumer
+    /// </summary>
+    /// <returns>A task representing the asynchronous operation</returns>
+    [TestMethod]
+    public async Task TelemetryClientEnqueueReplayPacketWithLoggingEnabledDrainsLoggingQueue()
+    {
+        var services = new ServiceCollection();
+        var applicationData = new F1ServerApplicationData();
+
+        services.AddSingleton(applicationData);
+        services.AddSingleton(new PacketAnalyzer());
+        services.AddSingleton(new TelemetryConfiguration());
+
+        using (var serviceProvider = services.BuildServiceProvider())
+        {
+            var telemetryClient = new TelemetryClient(serviceProvider, false, false, LoggingTestPort)
+                                  {
+                                      UsePacketLogging = true,
+                                      PacketLoggingPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString())
+                                  };
+
+            try
+            {
+                Assert.IsTrue(telemetryClient.StartReceiving(), "The telemetry client must start receiving on the test port!");
+
+                var recvBuf = new byte[]
+                              {
+                                  1,
+                                  2,
+                                  3,
+                                  4
+                              };
+
+                var stopwatch = Stopwatch.StartNew();
+
+                telemetryClient.EnqueueReplayPacket(recvBuf, recvBuf.Length);
+
+                while (applicationData.Statistics.TotalPacketsLogged < 1 && stopwatch.ElapsedMilliseconds < 5000)
+                {
+                    await Task.Delay(1, TestContext.CancellationToken);
+                }
+
+                stopwatch.Stop();
+
+                Assert.AreEqual(1, applicationData.Statistics.TotalPacketsLogged, "The enqueued packet must be drained by the packet logging queue consumer!");
             }
             finally
             {
