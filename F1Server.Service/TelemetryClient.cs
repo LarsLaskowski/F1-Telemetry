@@ -715,13 +715,12 @@ public sealed class TelemetryClient : ITelemetryClient, IDisposable
     /// <summary>
     /// Process current log packets
     /// </summary>
-    /// <param name="packetAnalyzer">Packet analyzer</param>
     /// <param name="cancellationToken">Cancellation token</param>
-    private void ProcessCurrentLoggingPackets(PacketAnalyzer? packetAnalyzer, CancellationToken cancellationToken)
+    private void ProcessCurrentLoggingPackets(CancellationToken cancellationToken)
     {
         var runWatch = new Stopwatch();
 
-        while (packetAnalyzer != null && _logPacketChannel.Reader.TryRead(out var packetData))
+        while (_logPacketChannel.Reader.TryRead(out var packetData))
         {
             if (cancellationToken.IsCancellationRequested)
             {
@@ -1014,15 +1013,13 @@ public sealed class TelemetryClient : ITelemetryClient, IDisposable
     /// <returns>A task representing the asynchronous operation</returns>
     private async Task ProcessPacketLoggingQueue(CancellationToken cancellationToken)
     {
-        var packetAnalyzer = new PacketAnalyzer();
-
         try
         {
             while (await _logPacketChannel.Reader.WaitToReadAsync(cancellationToken).ConfigureAwait(false))
             {
                 try
                 {
-                    ProcessCurrentLoggingPackets(packetAnalyzer, cancellationToken);
+                    ProcessCurrentLoggingPackets(cancellationToken);
                 }
                 catch (Exception ex)
                 {

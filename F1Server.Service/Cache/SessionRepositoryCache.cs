@@ -73,8 +73,11 @@ public static class SessionRepositoryCache
     /// <param name="session">The SessionEntity to add or update</param>
     public static void AddOrUpdate(SessionEntity session)
     {
-        _bySessionId[session.SessionId] = session;
-        _byId[session.Id] = session;
+        lock (_lock)
+        {
+            _bySessionId[session.SessionId] = session;
+            _byId[session.Id] = session;
+        }
     }
 
     /// <summary>

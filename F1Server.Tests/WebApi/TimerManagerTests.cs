@@ -76,20 +76,23 @@ public class TimerManagerTests
     [TestMethod]
     public void TimerManagerPrepareTimerCalledTwiceKeepsFirstTimer()
     {
-        using (var timerManager = new TimerManager())
+        using (var firstActionCalled = new ManualResetEventSlim(false))
         {
-            var secondActionCallCount = 0;
+            using (var timerManager = new TimerManager())
+            {
+                var secondActionCallCount = 0;
 
-            timerManager.PrepareTimer(NoOperation);
+                timerManager.PrepareTimer(() => firstActionCalled.Set());
 
-            var firstStart = timerManager.TimerStarted;
+                var firstStart = timerManager.TimerStarted;
 
-            timerManager.PrepareTimer(() => Interlocked.Increment(ref secondActionCallCount));
+                timerManager.PrepareTimer(() => Interlocked.Increment(ref secondActionCallCount));
 
-            timerManager.Execute(null);
+                Assert.IsTrue(firstActionCalled.Wait(FirstTickTimeout), "The first registered action should have been invoked by the timer.");
 
-            Assert.AreEqual(firstStart, timerManager.TimerStarted, "The start timestamp should not be overwritten by a repeated call.");
-            Assert.AreEqual(0, Volatile.Read(ref secondActionCallCount), "The action of a repeated call should not be registered.");
+                Assert.AreEqual(firstStart, timerManager.TimerStarted, "The start timestamp should not be overwritten by a repeated call.");
+                Assert.AreEqual(0, Volatile.Read(ref secondActionCallCount), "The action of a repeated call should not be registered.");
+            }
         }
     }
 
@@ -130,20 +133,23 @@ public class TimerManagerTests
     [TestMethod]
     public void TimerManagerPrepareTimerCalledConcurrentlyStartsTimerOnce()
     {
-        using (var timerManager = new TimerManager())
+        using (var actionInvoked = new ManualResetEventSlim(false))
         {
-            var startedActionCount = 0;
+            using (var timerManager = new TimerManager())
+            {
+                var startedActionCount = 0;
 
-            Parallel.For(0,
-                         RepeatedPrepareCount,
-                         _ => timerManager.PrepareTimer(NoOperation));
+                Parallel.For(0,
+                             RepeatedPrepareCount,
+                             _ => timerManager.PrepareTimer(() => actionInvoked.Set()));
 
-            timerManager.PrepareTimer(() => Interlocked.Increment(ref startedActionCount));
+                timerManager.PrepareTimer(() => Interlocked.Increment(ref startedActionCount));
 
-            timerManager.Execute(null);
+                Assert.IsTrue(actionInvoked.Wait(FirstTickTimeout), "The timer should have ticked using the first registered action.");
 
-            Assert.IsTrue(timerManager.IsTimerStarted, "The timer should be marked as started after concurrent calls.");
-            Assert.AreEqual(0, Volatile.Read(ref startedActionCount), "A call after the timer has been started should not register another action.");
+                Assert.IsTrue(timerManager.IsTimerStarted, "The timer should be marked as started after concurrent calls.");
+                Assert.AreEqual(0, Volatile.Read(ref startedActionCount), "A call after the timer has been started should not register another action.");
+            }
         }
     }
 

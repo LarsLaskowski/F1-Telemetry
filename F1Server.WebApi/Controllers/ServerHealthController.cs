@@ -17,7 +17,7 @@ public class ServerHealthController : ControllerBase
     #region Fields
 
     private readonly F1ServerApplicationData _appData;
-    private readonly ILogger<HealthController> _logger;
+    private readonly ILogger<ServerHealthController> _logger;
 
     #endregion // Fields
 
@@ -28,7 +28,7 @@ public class ServerHealthController : ControllerBase
     /// </summary>
     /// <param name="appData">Application data</param>
     /// <param name="logger">Logging interface</param>
-    public ServerHealthController(F1ServerApplicationData appData, ILogger<HealthController> logger)
+    public ServerHealthController(F1ServerApplicationData appData, ILogger<ServerHealthController> logger)
     {
         _logger = logger;
         _appData = appData;

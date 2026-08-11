@@ -55,7 +55,7 @@ public class ParticipantsController : ControllerBase
 
         currentActivity?.SetStatus(ActivityStatusCode.Ok);
 
-        _logger?.ParticipantsLoaded(participants?.Count ?? 0, sessionId);
+        _logger?.ParticipantsLoaded(participants.Count, sessionId);
 
         return Ok(participants);
     }

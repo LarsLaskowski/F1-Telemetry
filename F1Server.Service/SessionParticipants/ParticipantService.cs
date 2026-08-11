@@ -19,10 +19,10 @@ public class ParticipantService
     /// Loads the participants of a session
     /// </summary>
     /// <param name="sessionId">Database id of the session</param>
-    /// <returns>Participants of the session, or <see langword="null"/> when the session carries no participants</returns>
-    public async Task<List<ParticipantViewData>?> GetParticipantsOfSessionAsync(long? sessionId)
+    /// <returns>Participants of the session, or an empty list when the session carries no participants</returns>
+    public async Task<List<ParticipantViewData>> GetParticipantsOfSessionAsync(long? sessionId)
     {
-        List<ParticipantViewData>? participants = null;
+        var participants = new List<ParticipantViewData>();
 
         using (var dbFactory = RepositoryFactory.CreateInstance())
         {
@@ -40,8 +40,6 @@ public class ParticipantService
 
             if (dbParticipants.Count > 0)
             {
-                participants = [];
-
                 using (AppActivity.SrvSource.StartActivity("Participants_Loop"))
                 {
                     foreach (var dbParticipant in dbParticipants)

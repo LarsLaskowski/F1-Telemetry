@@ -323,7 +323,7 @@ public class WebHosting : IWebHosting
     {
         if (IsRunning)
         {
-            _webApplication?.StopAsync().Wait();
+            _webApplication?.StopAsync().GetAwaiter().GetResult();
 
             _cts?.Cancel();
             _cts?.Dispose();
@@ -362,9 +362,7 @@ public class WebHosting : IWebHosting
         {
             _cts?.Dispose();
 
-            ValueTask? retVal = _webApplication?.DisposeAsync();
-
-            _ = retVal;
+            _webApplication?.DisposeAsync().AsTask().GetAwaiter().GetResult();
         }
     }
 
