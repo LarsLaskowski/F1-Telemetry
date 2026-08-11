@@ -32,11 +32,6 @@ public class TimerManager : IDisposable
     private Timer? _timer;
 
     /// <summary>
-    /// Reset event handed over to the timer callback as state object
-    /// </summary>
-    private AutoResetEvent? _autoResetEvent;
-
-    /// <summary>
     /// Action executed on every timer tick
     /// </summary>
     private Action? _action;
@@ -80,8 +75,7 @@ public class TimerManager : IDisposable
             }
 
             _action = action;
-            _autoResetEvent = new AutoResetEvent(false);
-            _timer = new Timer(Execute, _autoResetEvent, TimerDueTime, TimerPeriod);
+            _timer = new Timer(Execute, null, TimerDueTime, TimerPeriod);
 
             TimerStarted = DateTime.Now;
 
@@ -93,7 +87,7 @@ public class TimerManager : IDisposable
     /// Timer action execution
     /// </summary>
     /// <param name="stateInfo">State info</param>
-    public void Execute(object? stateInfo)
+    private void Execute(object? stateInfo)
     {
         _action?.Invoke();
     }
@@ -129,9 +123,6 @@ public class TimerManager : IDisposable
 
                 _timer?.Dispose();
                 _timer = null;
-
-                _autoResetEvent?.Dispose();
-                _autoResetEvent = null;
 
                 _action = null;
 

@@ -48,7 +48,7 @@ public class ParticipantsController : ControllerBase
     [HttpGet]
     public IActionResult GetParticipantsOfSession(long? sessionId)
     {
-        List<ParticipantViewData>? participants = null;
+        var participants = new List<ParticipantViewData>();
 
         using var currentActivity = AppActivity.ApiSource.StartActivity(nameof(GetParticipantsOfSession));
 
@@ -64,8 +64,6 @@ public class ParticipantsController : ControllerBase
 
             if (dbParticipants.Count > 0)
             {
-                participants = new List<ParticipantViewData>();
-
                 var driverQuery = dbFactory.GetRepository<DriverRepository>()?.GetQuery();
                 var natQuery = dbFactory.GetRepository<NationalityRepository>()?.GetQuery();
                 var teamQuery = dbFactory.GetRepository<TeamRepository>()?.GetQuery();
@@ -97,7 +95,7 @@ public class ParticipantsController : ControllerBase
             currentActivity?.SetStatus(ActivityStatusCode.Ok);
         }
 
-        _logger?.LogInformation("Loaded {Participants} participants for session {SessionId}.", participants?.Count ?? 0, sessionId);
+        _logger?.LogInformation("Loaded {Participants} participants for session {SessionId}.", participants.Count, sessionId);
 
         return Ok(participants);
     }

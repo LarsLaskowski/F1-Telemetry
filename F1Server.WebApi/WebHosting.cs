@@ -142,7 +142,7 @@ public class WebHosting : IDisposable
     {
         if (IsRunning)
         {
-            _webApplication?.StopAsync().Wait();
+            _webApplication?.StopAsync().GetAwaiter().GetResult();
 
             _cts?.Cancel();
             _cts?.Dispose();
@@ -347,9 +347,7 @@ public class WebHosting : IDisposable
         {
             _cts?.Dispose();
 
-            ValueTask? retVal = _webApplication?.DisposeAsync();
-
-            _ = retVal;
+            _webApplication?.DisposeAsync().AsTask().GetAwaiter().GetResult();
         }
     }
 

@@ -6,7 +6,7 @@ import { GameViewChartData } from '../data/gameviewchartdata';
 import { GameViewApiData } from '../data/gameviewdata_api';
 import { Chart, ChartData, ChartOptions, ChartType } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
-import { lastValueFrom, Observable, Subscription, timer } from 'rxjs';
+import { lastValueFrom, Observable, Subscription, throwError, timer } from 'rxjs';
 import { Router } from '@angular/router';
 
 @Component(
@@ -188,9 +188,18 @@ export class HomeComponent
   {
     const response$ = this.getHealthStateData();
 
-    let healthResponse = await lastValueFrom(response$);
+    try
+    {
+      let healthResponse = await lastValueFrom(response$);
 
-    return healthResponse.status == 200;
+      return healthResponse.status == 200;
+    }
+    catch (err)
+    {
+      console.error(err);
+
+      return false;
+    }
   }
 
   // Get health state data
@@ -201,7 +210,7 @@ export class HomeComponent
       return this.httpClient.get(this.apiUrl + 'api/health', { observe: 'response' });
     }
 
-    return new Observable<HttpResponse<Object>>();
+    return throwError(() => new Error('httpClient is not available'));
   }
 
   // Chart is clicked

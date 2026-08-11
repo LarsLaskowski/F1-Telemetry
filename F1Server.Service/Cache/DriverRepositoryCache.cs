@@ -69,8 +69,11 @@ internal static class DriverRepositoryCache
     {
         EnsureInitialized();
 
-        _byGameId[driver.DriverGameId] = driver;
-        _byId[driver.Id] = driver;
+        lock (_lock)
+        {
+            _byGameId[driver.DriverGameId] = driver;
+            _byId[driver.Id] = driver;
+        }
     }
 
     /// <summary>

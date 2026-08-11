@@ -120,15 +120,9 @@ export class ShowSessionComponent implements OnInit
 
     if (this.session?.timeTable != null)
     {
-      for (let i = 1; i <= this.session.timeTable.size; i++)
-      {
-        let finalData = this.session.timeTable.get(i);
-
-        if (finalData != null)
-        {
-          this.finalClassifications.push(finalData);
-        }
-      }
+      this.finalClassifications = Array.from(this.session.timeTable.keys())
+        .sort((a, b) => a - b)
+        .map((position) => this.session.timeTable.get(position)!);
 
       this.dataSource.data = this.finalClassifications;
 
