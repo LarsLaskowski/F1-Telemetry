@@ -66,17 +66,20 @@ public class ParticipantsControllerTests
     }
 
     /// <summary>
-    /// Verifies that a session without participants is answered without a participant list
+    /// Verifies that a session without participants is answered with an empty participant list
     /// </summary>
     /// <returns>Task</returns>
     [TestMethod]
-    public async Task ParticipantsControllerGetParticipantsOfUnknownSessionReturnsNull()
+    public async Task ParticipantsControllerGetParticipantsOfUnknownSessionReturnsEmptyList()
     {
         var controller = CreateController();
 
         var result = await controller.GetParticipantsOfSession(771999999L).ConfigureAwait(false);
 
-        Assert.IsNull((result as OkObjectResult)?.Value, "An unknown session must not return participants!");
+        var participants = (result as OkObjectResult)?.Value as List<ParticipantViewData>;
+
+        Assert.IsNotNull(participants, "An unknown session should still return a participant list!");
+        Assert.IsEmpty(participants, "An unknown session must not return any participants!");
     }
 
     #endregion // Methods
