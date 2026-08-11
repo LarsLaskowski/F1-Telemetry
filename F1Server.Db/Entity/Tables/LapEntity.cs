@@ -161,7 +161,7 @@ public class LapEntity
     /// <summary>
     /// Telemetry data of this lap
     /// </summary>
-    public virtual ICollection<CarTelemetryEntity> Telemetries { get; } = new List<CarTelemetryEntity>();
+    public virtual ICollection<CarTelemetryEntity> Telemetries { get; } = [];
 
     #endregion // Navigation properties
 }

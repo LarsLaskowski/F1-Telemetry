@@ -4,10 +4,12 @@ using System.Runtime.CompilerServices;
 
 using F1Server.Core;
 using F1Server.Core.EventArgs;
+using F1Server.Core.Interfaces;
 using F1Server.Data;
 using F1Server.Observability;
 using F1Server.Service;
 using F1Server.Telemetry;
+using F1Server.WebApi;
 
 using Microsoft.Extensions.DependencyInjection;
 
@@ -16,7 +18,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace F1Server;
 
 /// <summary>
-/// Klasse für den Start des Projektes
+/// Class for starting the project
 /// </summary>
 public static class Program
 {
@@ -31,9 +33,9 @@ public static class Program
     #region Methods
 
     /// <summary>
-    /// Haupteintrittspunkt
+    /// Main entry point
     /// </summary>
-    /// <param name="args">Argumente</param>
+    /// <param name="args">Command line arguments</param>
     public static void Main(string[] args)
     {
         var runInDocker = Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") == "true";
@@ -164,7 +166,13 @@ public static class Program
         services.AddSingleton(new F1ServerApplicationData());
         services.AddSingleton(new ObservabilityConfiguration());
         services.AddSingleton(new TelemetryConfiguration());
-        services.AddSingleton(new PacketAnalyzer());
+
+        // A packet analyzer reuses its transformations and is therefore stateful, every consumer gets its own instance
+        services.AddTransient<PacketAnalyzer>();
+
+        // The startup project wires the transport layer, so the service layer only depends on the abstraction
+        services.AddSingleton<IWebHosting, WebHosting>();
+
         services.AddOpenTelemetry();
 
         return services.BuildServiceProvider();
@@ -381,10 +389,7 @@ public static class Program
 
             if (subDirectories.Count == 0)
             {
-                subDirectories = new List<string>
-                                 {
-                                     sourceDirectory
-                                 };
+                subDirectories = [sourceDirectory];
             }
 
             foreach (var subDirectory in subDirectories)

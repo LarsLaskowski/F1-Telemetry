@@ -1,13 +1,8 @@
-﻿using System.IO;
-using System.Linq;
-
-using F1Server.Core;
+﻿using F1Server.Core;
 using F1Server.Core.Data;
 using F1Server.Core.Enumerations;
 using F1Server.Core.PacketData;
 using F1Server.Core.Packets.Interfaces;
-
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace F1Server.Tests;
 
@@ -120,6 +115,83 @@ public class PacketLapData2023Tests
                 var cars = data.LapData.Count(l => l.IsEmpty == false);
 
                 Assert.AreEqual(15, cars, "Number of cars is wrong!");
+            }
+            else
+            {
+                Assert.Fail("Invalid lap format, expected F1 2023!");
+            }
+        }
+        else
+        {
+            Assert.IsNull(_packetData.PacketHeader, "Invalid F1 2023 packet header!");
+        }
+    }
+
+    /// <summary>
+    /// Check sector 1 and 2 whole minute parts (2023)
+    /// </summary>
+    [TestMethod]
+    public void PacketLapDataSectorTimeMinutes2023ExpectedZero()
+    {
+        if (_packetData.PacketHeader != null)
+        {
+            var lapData = _packetAnalyzer.GetLapData(_packetData.PacketHeader, File.ReadAllBytes(@"SampleData/F1-2023-LapData.packet"));
+
+            if (lapData is LapData lapInfo && lapInfo.PacketData is ILapDataComplete data && data.LapData is ILapData2023[] cars)
+            {
+                Assert.AreEqual((ushort)0, cars[0].Sector1TimeMinutes, "Incorrect sector 1 whole minutes part!");
+                Assert.AreEqual((ushort)0, cars[0].Sector2TimeMinutes, "Incorrect sector 2 whole minutes part!");
+            }
+            else
+            {
+                Assert.Fail("Invalid lap format, expected F1 2023!");
+            }
+        }
+        else
+        {
+            Assert.IsNull(_packetData.PacketHeader, "Invalid F1 2023 packet header!");
+        }
+    }
+
+    /// <summary>
+    /// Check delta to car in front and race leader (2023)
+    /// </summary>
+    [TestMethod]
+    public void PacketLapDataDeltas2023ExpectedZero()
+    {
+        if (_packetData.PacketHeader != null)
+        {
+            var lapData = _packetAnalyzer.GetLapData(_packetData.PacketHeader, File.ReadAllBytes(@"SampleData/F1-2023-LapData.packet"));
+
+            if (lapData is LapData lapInfo && lapInfo.PacketData is ILapDataComplete data && data.LapData is ILapData2023[] cars)
+            {
+                Assert.AreEqual((ushort)0, cars[0].DeltaToCarInFront, "Incorrect delta to car in front!");
+                Assert.AreEqual((ushort)0, cars[0].DeltaToRaceLeader, "Incorrect delta to race leader!");
+            }
+            else
+            {
+                Assert.Fail("Invalid lap format, expected F1 2023!");
+            }
+        }
+        else
+        {
+            Assert.IsNull(_packetData.PacketHeader, "Invalid F1 2023 packet header!");
+        }
+    }
+
+    /// <summary>
+    /// Check accumulated corner cutting warnings (2023)
+    /// </summary>
+    [TestMethod]
+    public void PacketLapDataCornerCuttingWarnings2023ExpectedZero()
+    {
+        if (_packetData.PacketHeader != null)
+        {
+            var lapData = _packetAnalyzer.GetLapData(_packetData.PacketHeader, File.ReadAllBytes(@"SampleData/F1-2023-LapData.packet"));
+
+            if (lapData is LapData lapInfo && lapInfo.PacketData is ILapDataComplete data && data.LapData is ILapData2023[] cars)
+            {
+                Assert.AreEqual((ushort)0, cars[0].CornerCuttingWarnings, "Incorrect accumulated corner cutting warnings!");
             }
             else
             {

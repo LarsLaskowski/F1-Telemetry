@@ -15,6 +15,11 @@ public class LapDataComplete2022 : ILapDataComplete, ILapDataComplete2022
     public LapDataComplete2022()
     {
         LapData = new LapData2022[22];
+
+        for (int lapData = 0; lapData < LapData.Length; ++lapData)
+        {
+            LapData[lapData] = new LapData2022();
+        }
     }
 
     #endregion // Constructors
@@ -24,7 +29,7 @@ public class LapDataComplete2022 : ILapDataComplete, ILapDataComplete2022
     /// <summary>
     /// Array with all lap data information of all cars
     /// </summary>
-    public ILapDataBase[] LapData { get; set; }
+    public ILapDataBase[] LapData { get; }
 
     #endregion // ILapDataComplete
 

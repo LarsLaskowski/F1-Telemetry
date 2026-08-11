@@ -13,21 +13,21 @@ namespace F1Server.Core.Packets.PacketToObject;
 /// <summary>
 /// Class to create a participants data object from received packet data
 /// </summary>
-/// <param name="packetHeader">Header of packet</param>
-internal class PacketToParticipants(PacketHeader packetHeader) : PacketToXBase(packetHeader)
+internal class PacketToParticipants : PacketToXBase
 {
     #region Methods
 
     /// <summary>
     /// Extract data from received participants packet
     /// </summary>
+    /// <param name="packetHeader">Header of packet</param>
     /// <param name="dataPacket">Received data</param>
     /// <returns>Participants data object</returns>
-    public object? ExtractParticipantsDataPacket(ReadOnlySpan<byte> dataPacket)
+    public object? ExtractParticipantsDataPacket(PacketHeader packetHeader, ReadOnlySpan<byte> dataPacket)
     {
         object? participantsData = null;
 
-        LastError = string.Empty;
+        Reset(packetHeader);
 
         if (dataPacket.Length > 0)
         {
@@ -210,16 +210,18 @@ internal class PacketToParticipants(PacketHeader packetHeader) : PacketToXBase(p
         if (GameVersion >= 2025)
         {
             var sourceSpan = MemoryMarshal.CreateReadOnlySpan(ref Unsafe.Add(ref dataPacket, actOffset), ConstData.DriverNameLength2025);
+            var nullTerminatorIndex = sourceSpan.IndexOf((byte)0);
 
-            participantData.DriverName = Encoding.UTF8.GetString(sourceSpan).Trim('\0');
+            participantData.DriverName = Encoding.UTF8.GetString(nullTerminatorIndex >= 0 ? sourceSpan[..nullTerminatorIndex] : sourceSpan);
 
             actOffset += ConstData.DriverNameLength2025;
         }
         else
         {
             var sourceSpan = MemoryMarshal.CreateReadOnlySpan(ref Unsafe.Add(ref dataPacket, actOffset), ConstData.DriverNameLength);
+            var nullTerminatorIndex = sourceSpan.IndexOf((byte)0);
 
-            participantData.DriverName = Encoding.UTF8.GetString(sourceSpan).Trim('\0');
+            participantData.DriverName = Encoding.UTF8.GetString(nullTerminatorIndex >= 0 ? sourceSpan[..nullTerminatorIndex] : sourceSpan);
 
             actOffset += ConstData.DriverNameLength;
         }
@@ -320,7 +322,7 @@ internal class PacketToParticipants(PacketHeader packetHeader) : PacketToXBase(p
 
             try
             {
-                participantData2023.Platform = (Platforms)Enum.ToObject(typeof(Platforms), platform);
+                participantData2023.Platform = (Platforms)platform;
             }
             catch
             {

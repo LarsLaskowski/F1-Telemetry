@@ -10,6 +10,7 @@
     <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.10" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.10" />
     <!-- Database Providers - constrain to version 10.x.x -->
+    <!-- Microting is a fork of Pomelo, which has no EF Core 10 release - see docs/dependency-decisions.md -->
     <PackageVersion Include="Microting.EntityFrameworkCore.MySql" Version="10.0.10" />
     <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.3" />
     <!-- Microsoft Extensions -->
@@ -22,7 +23,7 @@
     <PackageVersion Include="MSTest.TestAdapter" Version="4.3.3" />
     <PackageVersion Include="MSTest.TestFramework" Version="4.3.3" />
     <PackageVersion Include="coverlet.collector" Version="10.0.1" />
-    <!-- Code Analysis -->
+    <!-- Code Analysis - build-time only, beta6 is the latest release - see docs/dependency-decisions.md -->
     <PackageVersion Include="Reihitsu.Analyzer" Version="1.0.0-beta6" />
     <!-- API Documentation & Swagger -->
     <PackageVersion Include="Swashbuckle.AspNetCore.Swagger" Version="10.2.3" />
@@ -32,14 +33,16 @@
     <PackageVersion Include="System.Diagnostics.DiagnosticSource" Version="10.0.5" />
     <!-- Telemetry / InfluxDB -->
     <PackageVersion Include="InfluxDB.Client" Version="5.1.0" />
-    <!-- OpenTelemetry -->
+    <!-- OpenTelemetry - the EntityFrameworkCore, EventCounters and Process instrumentation packages
+         have no stable release upstream and are kept in step with the stable SDK version above,
+         see docs/dependency-decisions.md -->
     <PackageVersion Include="OpenTelemetry" Version="1.17.0" />
     <PackageVersion Include="OpenTelemetry.Exporter.Console" Version="1.17.0" />
     <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.17.0" />
-    <PackageVersion Include="OpenTelemetry.Instrumentation.EntityFrameworkCore" Version="1.15.0-beta.1" />
+    <PackageVersion Include="OpenTelemetry.Instrumentation.EntityFrameworkCore" Version="1.17.0-beta.1" />
     <PackageVersion Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.17.0" />
-    <PackageVersion Include="OpenTelemetry.Instrumentation.EventCounters" Version="1.15.0-alpha.1" />
-    <PackageVersion Include="OpenTelemetry.Instrumentation.Process" Version="1.15.0-beta.1" />
+    <PackageVersion Include="OpenTelemetry.Instrumentation.EventCounters" Version="1.17.0-alpha.1" />
+    <PackageVersion Include="OpenTelemetry.Instrumentation.Process" Version="1.17.0-rc.1" />
     <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="1.17.0" />
     <PackageVersion Include="OpenTelemetry.Instrumentation.Runtime" Version="1.17.0" />
     <PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="1.17.0" />

@@ -16,12 +16,12 @@ public enum SessionType
     Practice1,
 
     /// <summary>
-    /// Practise session 2
+    /// Practice session 2
     /// </summary>
     Practice2,
 
     /// <summary>
-    /// Practise session 3
+    /// Practice session 3
     /// </summary>
     Practice3,
 

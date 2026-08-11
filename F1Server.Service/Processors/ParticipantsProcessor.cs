@@ -65,7 +65,10 @@ internal class ParticipantsProcessor : BaseProcessor
                     // Teams with ID 41 will be ignored - is an online game
                     if (participant != null && participant.TeamId != 41)
                     {
-                        retValue = CreateOrUpdateParticipant(sessionRuntimeData, dbFactory, (ushort)car, participant);
+                        // Accumulate instead of overwriting: not every car resolves to a
+                        // known/creatable driver, so the outcome must reflect whether at
+                        // least one participant was handled, not just the last iteration
+                        retValue |= CreateOrUpdateParticipant(sessionRuntimeData, dbFactory, (ushort)car, participant);
                     }
                     else
                     {
@@ -123,7 +126,7 @@ internal class ParticipantsProcessor : BaseProcessor
     private bool CreateOrUpdateParticipant(SessionRuntimeData sessionRuntimeData, RepositoryFactory dbFactory, ushort playerIndex, IParticipantDataBase participant)
     {
         bool retValue = false;
-        var driverDbId = MatchGameDriverToDbDriverId(participant.DriverId, participant.DriverName, sessionRuntimeData.GameVersion, out var driverFullName, out var isHumanDriver);
+        var driverDbId = MatchGameDriverToDbDriverId(dbFactory, participant.DriverId, participant.DriverName, sessionRuntimeData.GameVersion, out var driverFullName, out var isHumanDriver);
 
         if (driverDbId > 0 && sessionRuntimeData.CurrentSession != null)
         {
@@ -392,13 +395,14 @@ internal class ParticipantsProcessor : BaseProcessor
     /// <summary>
     /// Get the correct driver id
     /// </summary>
+    /// <param name="dbFactory">Database factory object, reused from the caller instead of opening a new one per vehicle</param>
     /// <param name="gameDriverId">Driver id from the game</param>
     /// <param name="gameDriverName">Name of the driver</param>
     /// <param name="gameVersion">Version of the game</param>
     /// <param name="driverFullName">Full name of driver</param>
     /// <param name="isHumanDriver">Human driver?</param>
     /// <returns>Id of the driver</returns>
-    private long MatchGameDriverToDbDriverId(int gameDriverId, string gameDriverName, int gameVersion, out string driverFullName, out bool isHumanDriver)
+    private long MatchGameDriverToDbDriverId(RepositoryFactory dbFactory, int gameDriverId, string gameDriverName, int gameVersion, out string driverFullName, out bool isHumanDriver)
     {
         long driverId = 0;
 
@@ -406,57 +410,54 @@ internal class ParticipantsProcessor : BaseProcessor
 
         isHumanDriver = false;
 
-        using (var dbFactory = RepositoryFactory.CreateInstance())
+        // Human drivers send id 255 up to F1 2025; since F1 2026 the id is a uint16 and humans send 65535
+        if ((gameVersion <= 2020 && gameDriverId >= 100)
+            || (gameVersion < 2026 && gameDriverId == 255)
+            || (gameVersion >= 2026 && gameDriverId == 65535))
         {
-            // Human drivers send id 255 up to F1 2025; since F1 2026 the id is a uint16 and humans send 65535
-            if ((gameVersion <= 2020 && gameDriverId >= 100)
-                || (gameVersion < 2026 && gameDriverId == 255)
-                || (gameVersion >= 2026 && gameDriverId == 65535))
+            isHumanDriver = true;
+        }
+
+        if (isHumanDriver)
+        {
+            _ = int.TryParse($"{gameVersion}{gameDriverId}", out var dbDriverId);
+
+            var driverData = DriverRepositoryCache.GetByGameId(dbDriverId);
+
+            if (driverData != null)
             {
-                isHumanDriver = true;
-            }
+                driverId = driverData.Id;
 
-            if (isHumanDriver)
-            {
-                _ = int.TryParse($"{gameVersion}{gameDriverId}", out var dbDriverId);
-
-                var driverData = DriverRepositoryCache.GetByGameId(dbDriverId);
-
-                if (driverData != null)
-                {
-                    driverId = driverData.Id;
-
-                    driverFullName = driverData.Name;
-                }
-                else
-                {
-                    driverData = new DriverEntity
-                                 {
-                                     DriverGameId = dbDriverId,
-                                     IsHumanDriver = true,
-                                     Name = gameDriverName
-                                 };
-
-                    if (dbFactory.GetRepository<DriverRepository>()?.Add(driverData) == true)
-                    {
-                        driverId = driverData.Id;
-
-                        DriverRepositoryCache.AddOrUpdate(driverData);
-                    }
-                }
+                driverFullName = driverData.Name;
             }
             else
             {
-                gameDriverId = FixDriverId(gameDriverId, gameVersion);
+                driverData = new DriverEntity
+                             {
+                                 DriverGameId = dbDriverId,
+                                 IsHumanDriver = true,
+                                 Name = gameDriverName
+                             };
 
-                var driverData = DriverRepositoryCache.GetByGameId(gameDriverId);
-
-                if (driverData != null)
+                if (dbFactory.GetRepository<DriverRepository>()?.Add(driverData) == true)
                 {
                     driverId = driverData.Id;
 
-                    driverFullName = driverData.Name;
+                    DriverRepositoryCache.AddOrUpdate(driverData);
                 }
+            }
+        }
+        else
+        {
+            gameDriverId = FixDriverId(gameDriverId, gameVersion);
+
+            var driverData = DriverRepositoryCache.GetByGameId(gameDriverId);
+
+            if (driverData != null)
+            {
+                driverId = driverData.Id;
+
+                driverFullName = driverData.Name;
             }
         }
 

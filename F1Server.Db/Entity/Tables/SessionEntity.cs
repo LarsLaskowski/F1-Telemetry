@@ -120,12 +120,12 @@ public class SessionEntity
     /// <summary>
     /// Participants of current session
     /// </summary>
-    public virtual ICollection<ParticipantEntity> Participants { get; } = new List<ParticipantEntity>();
+    public virtual ICollection<ParticipantEntity> Participants { get; } = [];
 
     /// <summary>
     /// Final classifications of current session
     /// </summary>
-    public virtual ICollection<FinalClassificationEntity> FinalClassifications { get; } = new List<FinalClassificationEntity>();
+    public virtual ICollection<FinalClassificationEntity> FinalClassifications { get; } = [];
 
     #endregion // Navigation properties
 }

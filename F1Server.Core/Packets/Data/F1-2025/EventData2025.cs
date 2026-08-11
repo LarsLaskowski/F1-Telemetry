@@ -22,7 +22,7 @@ public class EventData2025 : IEventDataBase
     #region IEventDataBase
 
     /// <inheritdoc/>
-    public string EventCode { get; set; }
+    public string EventCode { get; set; } = string.Empty;
 
     /// <inheritdoc/>
     public IEventDataDetailsBase EventDetails { get; }

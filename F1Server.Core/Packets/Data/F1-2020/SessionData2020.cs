@@ -15,7 +15,7 @@ public class SessionData2020 : ISessionData2020
     /// </summary>
     public SessionData2020()
     {
-        MarshalZone = new MarshalZone[21];
+        MarshalZones = new MarshalZone[21];
         WeatherForecastSamples = new WeatherForecastSample[20];
     }
 
@@ -59,9 +59,9 @@ public class SessionData2020 : ISessionData2020
     public SessionType SessionType { get; set; }
 
     /// <summary>
-    /// Track id
+    /// Track id, -1 when unknown
     /// </summary>
-    public ushort TrackId { get; set; }
+    public short TrackId { get; set; }
 
     /// <summary>
     /// Name of the track
@@ -111,12 +111,12 @@ public class SessionData2020 : ISessionData2020
     /// <summary>
     /// Number of marshal zones
     /// </summary>
-    public ushort MarshalZones { get; set; }
+    public ushort NumberOfMarshalZones { get; set; }
 
     /// <summary>
     /// Marshal zone data
     /// </summary>
-    public MarshalZone[] MarshalZone { get; set; }
+    public MarshalZone[] MarshalZones { get; set; }
 
     /// <summary>
     /// Safety car status

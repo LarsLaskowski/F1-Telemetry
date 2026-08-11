@@ -2,6 +2,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 using F1Server.Core.Data;
+using F1Server.Core.Enumerations;
 using F1Server.Core.PacketData;
 using F1Server.Core.Packets.Data;
 using F1Server.Core.Packets.Interfaces;
@@ -11,21 +12,21 @@ namespace F1Server.Core.Packets.PacketToObject;
 /// <summary>
 /// Class to extract the additional car telemetry (CarTelemetry2) object from a received packet (F1 2026 and newer)
 /// </summary>
-/// <param name="packetHeader">Header of packet</param>
-internal class PacketToCarTelemetry2(PacketHeader packetHeader) : PacketToXBase(packetHeader)
+internal class PacketToCarTelemetry2 : PacketToXBase
 {
     #region Methods
 
     /// <summary>
     /// Get additional car telemetry data from received data packet
     /// </summary>
+    /// <param name="packetHeader">Header of packet</param>
     /// <param name="dataPacket">Received data</param>
     /// <returns>Object</returns>
-    public object? ExtractCarTelemetry2Data(ReadOnlySpan<byte> dataPacket)
+    public object? ExtractCarTelemetry2Data(PacketHeader packetHeader, ReadOnlySpan<byte> dataPacket)
     {
         object? carTelemetry2Object = null;
 
-        LastError = string.Empty;
+        Reset(packetHeader);
 
         if (dataPacket.Length > 0)
         {
@@ -72,7 +73,7 @@ internal class PacketToCarTelemetry2(PacketHeader packetHeader) : PacketToXBase(
 
                 foreach (var carData in carTelemetry2Data.CarTelemetry2Data)
                 {
-                    carData.ActiveAeroMode = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
+                    carData.ActiveAeroMode = (ActiveAeroMode)Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
                     actOffset += ConstData.TypeUInt8;
 

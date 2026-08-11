@@ -1,11 +1,7 @@
-﻿using System.IO;
-
-using F1Server.Core;
+﻿using F1Server.Core;
 using F1Server.Core.Data;
 using F1Server.Core.Enumerations;
 using F1Server.Core.PacketData;
-
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace F1Server.Tests;
 
@@ -59,10 +55,10 @@ public class PacketFinalClassification2025Tests
     #region Methods F1 2025
 
     /// <summary>
-    /// Check whether the given file has a correct participants data content
+    /// Check whether the given file is a final classification packet
     /// </summary>
     [TestMethod]
-    public void PacketSessionCheckFinalClassification2025IsCorrectPacketType()
+    public void PacketFinalClassificationCheck2025IsCorrectPacketType()
     {
         var isCorrect = _packetData.PacketHeader?.PacketType == PacketTypes.FinalClassification;
 
@@ -73,7 +69,7 @@ public class PacketFinalClassification2025Tests
     /// Check whether the analyzer construct the correct class object
     /// </summary>
     [TestMethod]
-    public void PacketSessionCheckFinalClassification2025IsFinalClassificationObject()
+    public void PacketFinalClassificationCheck2025IsFinalClassificationObject()
     {
         if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12025FinalClassificationSize + ConstData.F12025HeaderSize)
         {

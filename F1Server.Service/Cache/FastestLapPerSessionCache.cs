@@ -8,7 +8,7 @@ using F1Server.Db.Entity.Tables;
 
 using Microsoft.EntityFrameworkCore;
 
-namespace F1Server.WebApi.Cache;
+namespace F1Server.Service.Cache;
 
 /// <summary>
 /// Provides a caching mechanism for storing and retrieving the fastest lap data for racing sessions
@@ -18,6 +18,8 @@ public static class FastestLapPerSessionCache
     #region Constants
 
     private const string TimeLiteral = @"ss\.fff";
+
+    private const string LapTimeLiteral = @"mm\:ss\.fff";
 
     #endregion // Constants
 
@@ -157,7 +159,7 @@ public static class FastestLapPerSessionCache
                 var fastestLapData = await CalculateFastestLapDataAsync(sessionId, dbFactory, cancellationToken).ConfigureAwait(false);
 
                 // An invalidation during the calculation makes the result outdated before it is stored
-                if (fastestLapData != null && GetSessionVersion(sessionId) == versionBeforeCalculation)
+                if (GetSessionVersion(sessionId) == versionBeforeCalculation)
                 {
                     _fastestLapCache[sessionId] = fastestLapData;
                 }
@@ -178,8 +180,8 @@ public static class FastestLapPerSessionCache
     /// <param name="dbFactory">The repository factory used to access session and lap data from the database</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>
-    /// A <see cref="FastestLapSessionViewData"/> object containing the fastest lap details for the session,  or <see
-    /// langword="null"/> if the session is invalid or contains no valid laps
+    /// A <see cref="FastestLapSessionViewData"/> object containing the fastest lap details for the session. If the
+    /// session is invalid or contains no valid laps, the object carries only the session id and otherwise stays empty
     /// </returns>
     private static async Task<FastestLapSessionViewData> CalculateFastestLapDataAsync(long sessionId, RepositoryFactory dbFactory, CancellationToken cancellationToken = default)
     {
@@ -197,74 +199,107 @@ public static class FastestLapPerSessionCache
                                               .FirstOrDefaultAsync(s => s.Id == sessionId, cancellationToken)
                                               .ConfigureAwait(false);
 
-        if (session != null)
+        if (session == null)
         {
-            // Get laps of session
-            var lapQuery = dbFactory.GetRepository<LapRepository>()?.GetQuery();
-
-            List<LapEntity> laps = [];
-
-            if (lapQuery != null)
-            {
-                laps = await lapQuery.Where(l => l.SessionId == session.Id
-                                                 && l.LapTime > 0
-                                                 && l.Sector1Time > 0
-                                                 && l.Sector2Time > 0
-                                                 && l.Sector3Time > 0
-                                                 && l.DbIsCompleted == 1
-                                                 && l.DbIsInvalidLapTime == 0)
-                                     .Include(l => l.Participant)
-                                     .ThenInclude(p => p.Driver)
-                                     .ToListAsync(cancellationToken)
-                                     .ConfigureAwait(false);
-            }
-
-            if (laps.Count > 0)
-            {
-                var lapData = laps.MinBy(l => l.LapTime);
-
-                if (lapData != null)
-                {
-                    fastestLapData.FastestLapDriver = lapData.Participant.Driver.Name;
-                    fastestLapData.FastestLapDriverId = lapData.Participant.DriverId;
-                    fastestLapData.FastestLap = TimeSpan.FromMilliseconds(lapData.LapTime).ToString(@"mm\:ss\.fff");
-                    fastestLapData.IsFastestLapDriverHuman = lapData.Participant.IsHumanControlled;
-                    fastestLapData.FastestLapSector1 = TimeSpan.FromMilliseconds(lapData.Sector1Time).ToString(TimeLiteral);
-                    fastestLapData.FastestLapSector2 = TimeSpan.FromMilliseconds(lapData.Sector2Time).ToString(TimeLiteral);
-                    fastestLapData.FastestLapSector3 = TimeSpan.FromMilliseconds(lapData.Sector3Time).ToString(TimeLiteral);
-
-                    fastestLapData.IsFastestLapSector1 = laps.Min(l => l.Sector1Time) == lapData.Sector1Time;
-                    fastestLapData.IsFastestLapSector2 = laps.Min(l => l.Sector2Time) == lapData.Sector2Time;
-                    fastestLapData.IsFastestLapSector3 = laps.Min(l => l.Sector3Time) == lapData.Sector3Time;
-                }
-
-                GetFastestSectors(fastestLapData, laps);
-
-                var humanLaps = laps.Where(l => l.Participant.IsHumanControlled).ToList();
-
-                if (humanLaps.Count > 0)
-                {
-                    var fastestLapByHuman = humanLaps.MinBy(l => l.LapTime);
-
-                    if (fastestLapByHuman != null)
-                    {
-                        fastestLapData.HumanPlayersFastestLap = TimeSpan.FromMilliseconds(fastestLapByHuman.LapTime).ToString(@"mm\:ss\.fff");
-                        fastestLapData.ReferenceDifferenceHumanLapTime = TimeSpan.FromMilliseconds(session.Track.LapReferenceTime - fastestLapByHuman.LapTime).ToString(TimeLiteral);
-
-                        fastestLapData.ReferenceDifferenceHumanSector1Time = TimeSpan.FromMilliseconds(session.Track.Sector1ReferenceTime - fastestLapByHuman.Sector1Time).ToString(TimeLiteral);
-                        fastestLapData.ReferenceDifferenceHumanSector2Time = TimeSpan.FromMilliseconds(session.Track.Sector2ReferenceTime - fastestLapByHuman.Sector2Time).ToString(TimeLiteral);
-                        fastestLapData.ReferenceDifferenceHumanSector3Time = TimeSpan.FromMilliseconds(session.Track.Sector3ReferenceTime - fastestLapByHuman.Sector3Time).ToString(TimeLiteral);
-                    }
-                }
-            }
-
-            fastestLapData.ReferenceLapTime = TimeSpan.FromMilliseconds(session.Track.LapReferenceTime).ToString(@"mm\:ss\.fff");
-            fastestLapData.ReferenceSector1Time = TimeSpan.FromMilliseconds(session.Track.Sector1ReferenceTime).ToString(TimeLiteral);
-            fastestLapData.ReferenceSector2Time = TimeSpan.FromMilliseconds(session.Track.Sector2ReferenceTime).ToString(TimeLiteral);
-            fastestLapData.ReferenceSector3Time = TimeSpan.FromMilliseconds(session.Track.Sector3ReferenceTime).ToString(TimeLiteral);
+            return fastestLapData;
         }
 
+        var laps = await LoadValidLapsAsync(session.Id, dbFactory, cancellationToken).ConfigureAwait(false);
+
+        if (laps.Count > 0)
+        {
+            SetFastestLap(fastestLapData, laps);
+
+            GetFastestSectors(fastestLapData, laps);
+
+            SetHumanFastestLap(fastestLapData, session, laps);
+        }
+
+        fastestLapData.ReferenceLapTime = TimeSpan.FromMilliseconds(session.Track.LapReferenceTime).ToString(LapTimeLiteral);
+        fastestLapData.ReferenceSector1Time = TimeSpan.FromMilliseconds(session.Track.Sector1ReferenceTime).ToString(TimeLiteral);
+        fastestLapData.ReferenceSector2Time = TimeSpan.FromMilliseconds(session.Track.Sector2ReferenceTime).ToString(TimeLiteral);
+        fastestLapData.ReferenceSector3Time = TimeSpan.FromMilliseconds(session.Track.Sector3ReferenceTime).ToString(TimeLiteral);
+
         return fastestLapData;
+    }
+
+    /// <summary>
+    /// Loads the completed and valid laps of a session together with their participant and driver
+    /// </summary>
+    /// <param name="sessionId">The unique identifier of the session whose laps are loaded</param>
+    /// <param name="dbFactory">The repository factory used to access the lap data from the database</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>The laps of the session, or an empty list if the laps cannot be read</returns>
+    private static async Task<List<LapEntity>> LoadValidLapsAsync(long sessionId, RepositoryFactory dbFactory, CancellationToken cancellationToken)
+    {
+        var lapQuery = dbFactory.GetRepository<LapRepository>()?.GetQuery();
+
+        var laps = lapQuery == null
+                       ? null
+                       : await lapQuery.Where(l => l.SessionId == sessionId
+                                                   && l.LapTime > 0
+                                                   && l.Sector1Time > 0
+                                                   && l.Sector2Time > 0
+                                                   && l.Sector3Time > 0
+                                                   && l.DbIsCompleted == 1
+                                                   && l.DbIsInvalidLapTime == 0)
+                                       .Include(l => l.Participant)
+                                       .ThenInclude(p => p.Driver)
+                                       .ToListAsync(cancellationToken)
+                                       .ConfigureAwait(false);
+
+        return laps ?? [];
+    }
+
+    /// <summary>
+    /// Sets the fastest lap of the session and marks the sectors of that lap that are the fastest ones of the session
+    /// </summary>
+    /// <param name="fastestLapData">Data structure the fastest lap is stored into</param>
+    /// <param name="laps">List of all laps from session</param>
+    private static void SetFastestLap(FastestLapSessionViewData fastestLapData, List<LapEntity> laps)
+    {
+        var lapData = laps.MinBy(l => l.LapTime);
+
+        if (lapData == null)
+        {
+            return;
+        }
+
+        fastestLapData.FastestLapDriver = lapData.Participant.Driver.Name;
+        fastestLapData.FastestLapDriverId = lapData.Participant.DriverId;
+        fastestLapData.FastestLap = TimeSpan.FromMilliseconds(lapData.LapTime).ToString(LapTimeLiteral);
+        fastestLapData.IsFastestLapDriverHuman = lapData.Participant.IsHumanControlled;
+        fastestLapData.FastestLapSector1 = TimeSpan.FromMilliseconds(lapData.Sector1Time).ToString(TimeLiteral);
+        fastestLapData.FastestLapSector2 = TimeSpan.FromMilliseconds(lapData.Sector2Time).ToString(TimeLiteral);
+        fastestLapData.FastestLapSector3 = TimeSpan.FromMilliseconds(lapData.Sector3Time).ToString(TimeLiteral);
+
+        fastestLapData.IsFastestLapSector1 = laps.Min(l => l.Sector1Time) == lapData.Sector1Time;
+        fastestLapData.IsFastestLapSector2 = laps.Min(l => l.Sector2Time) == lapData.Sector2Time;
+        fastestLapData.IsFastestLapSector3 = laps.Min(l => l.Sector3Time) == lapData.Sector3Time;
+    }
+
+    /// <summary>
+    /// Sets the fastest lap of the human controlled participants and its difference to the reference times of the track
+    /// </summary>
+    /// <param name="fastestLapData">Data structure the fastest human lap is stored into</param>
+    /// <param name="session">Session the laps belong to, carrying the reference times of its track</param>
+    /// <param name="laps">List of all laps from session</param>
+    private static void SetHumanFastestLap(FastestLapSessionViewData fastestLapData, SessionEntity session, List<LapEntity> laps)
+    {
+        var fastestLapByHuman = laps.Where(l => l.Participant.IsHumanControlled)
+                                    .MinBy(l => l.LapTime);
+
+        if (fastestLapByHuman == null)
+        {
+            return;
+        }
+
+        fastestLapData.HumanPlayersFastestLap = TimeSpan.FromMilliseconds(fastestLapByHuman.LapTime).ToString(LapTimeLiteral);
+        fastestLapData.ReferenceDifferenceHumanLapTime = TimeSpan.FromMilliseconds(session.Track.LapReferenceTime - fastestLapByHuman.LapTime).ToString(TimeLiteral);
+
+        fastestLapData.ReferenceDifferenceHumanSector1Time = TimeSpan.FromMilliseconds(session.Track.Sector1ReferenceTime - fastestLapByHuman.Sector1Time).ToString(TimeLiteral);
+        fastestLapData.ReferenceDifferenceHumanSector2Time = TimeSpan.FromMilliseconds(session.Track.Sector2ReferenceTime - fastestLapByHuman.Sector2Time).ToString(TimeLiteral);
+        fastestLapData.ReferenceDifferenceHumanSector3Time = TimeSpan.FromMilliseconds(session.Track.Sector3ReferenceTime - fastestLapByHuman.Sector3Time).ToString(TimeLiteral);
     }
 
     /// <summary>
@@ -316,7 +351,7 @@ public static class FastestLapPerSessionCache
 
                     var fastestLapData = await CalculateFastestLapDataAsync(sessionId, dbFactory, cancellationToken).ConfigureAwait(false);
 
-                    if (fastestLapData != null && GetSessionVersion(sessionId) == versionBeforeCalculation)
+                    if (GetSessionVersion(sessionId) == versionBeforeCalculation)
                     {
                         // Update or add the fastest lap data for the session
                         _fastestLapCache[sessionId] = fastestLapData;
@@ -353,7 +388,7 @@ public static class FastestLapPerSessionCache
         // Fastest sector 3
         GetFastestSector3(fastestLapData, laps, ref theoreticalLapTime);
 
-        fastestLapData.TheoreticalFastestLap = TimeSpan.FromMilliseconds(theoreticalLapTime).ToString(@"mm\:ss\.fff");
+        fastestLapData.TheoreticalFastestLap = TimeSpan.FromMilliseconds(theoreticalLapTime).ToString(LapTimeLiteral);
     }
 
     /// <summary>

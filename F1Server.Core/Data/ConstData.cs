@@ -55,7 +55,7 @@ public static class ConstData
     /// <summary>
     /// Size of one lap data x 20 cars
     /// </summary>
-    public const int F12019TotalLapSize = 840;
+    public const int F12019TotalLapSize = 820;
 
     /// <summary>
     /// Size of one car telemetry packet
@@ -102,7 +102,7 @@ public static class ConstData
     public const int F12020LapSize = 53;
 
     /// <summary>
-    /// Size of one lap data x 20 cars
+    /// Size of one lap data x 22 cars
     /// </summary>
     public const int F12020TotalLapSize = 1166;
 
@@ -225,7 +225,7 @@ public static class ConstData
     public const int F12022LapSize = 43;
 
     /// <summary>
-    /// Size of one lap data x 22 cars
+    /// Size of one lap data x 22 cars plus the 2 trailing time trial car index bytes
     /// </summary>
     public const int F12022TotalLapSize = 948;
 
@@ -299,7 +299,7 @@ public static class ConstData
     public const int F12023LapSize = 50;
 
     /// <summary>
-    /// Size of one lap data x 22 cars
+    /// Size of one lap data x 22 cars plus the 2 trailing time trial car index bytes
     /// </summary>
     public const int F12023TotalLapSize = 1102;
 
@@ -373,7 +373,7 @@ public static class ConstData
     public const int F12024LapSize = 57;
 
     /// <summary>
-    /// Size of one lap data x 22 cars
+    /// Size of one lap data x 22 cars plus the 2 trailing time trial car index bytes
     /// </summary>
     public const int F12024TotalLapSize = 1256;
 
@@ -467,7 +467,7 @@ public static class ConstData
     public const int F12025LapSize = 57;
 
     /// <summary>
-    /// Size of one lap data x 22 cars
+    /// Size of one lap data x 22 cars plus the 2 trailing time trial car index bytes
     /// </summary>
     public const int F12025TotalLapSize = 1256;
 
@@ -566,7 +566,7 @@ public static class ConstData
     public const int F12026LapSize = 57;
 
     /// <summary>
-    /// Size of one lap data x 24 cars
+    /// Size of one lap data x 24 cars, without the trailing time trial car index bytes
     /// </summary>
     public const int F12026TotalLapSize = 1368;
 
@@ -626,9 +626,9 @@ public static class ConstData
     public const int F12026CarTelemetry2Size = 240;
 
     /// <summary>
-    /// Size of one time trial packet (three data sets)
+    /// Size of one time trial packet (three data sets of 25 bytes, the team id is a uint16 since F1 2026)
     /// </summary>
-    public const int F12026TimeTrialSize = 72;
+    public const int F12026TimeTrialSize = 75;
 
     #endregion // Consts F1 2026
 

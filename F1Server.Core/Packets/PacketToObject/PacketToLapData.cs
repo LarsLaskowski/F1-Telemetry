@@ -13,21 +13,21 @@ namespace F1Server.Core.Packets.PacketToObject;
 /// <summary>
 /// Class to extract a lap data object from received packet
 /// </summary>
-/// <param name="packetHeader">Header of packet</param>
-internal class PacketToLapData(PacketHeader packetHeader) : PacketToXBase(packetHeader)
+internal class PacketToLapData : PacketToXBase
 {
     #region Methods
 
     /// <summary>
     /// Extract lap data depending on actual game version of packet
     /// </summary>
+    /// <param name="packetHeader">Header of packet</param>
     /// <param name="dataPacket">Received packet data</param>
     /// <returns>Lap information</returns>
-    public object? ExtractLapData(ReadOnlySpan<byte> dataPacket)
+    public object? ExtractLapData(PacketHeader packetHeader, ReadOnlySpan<byte> dataPacket)
     {
         object? lapDataObject = null;
 
-        LastError = string.Empty;
+        Reset(packetHeader);
 
         if (dataPacket.Length > 0)
         {
@@ -251,13 +251,13 @@ internal class PacketToLapData(PacketHeader packetHeader) : PacketToXBase(packet
 
             var pitStatus = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-            lapData.CurrentPitStatus = (PitStatus)Enum.ToObject(typeof(PitStatus), pitStatus + 1);
+            lapData.CurrentPitStatus = (PitStatus)pitStatus + 1;
 
             actOffset += ConstData.TypeUInt8;
 
             var actSector = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-            lapData.CurrentSector = (Sector)Enum.ToObject(typeof(Sector), actSector + 1);
+            lapData.CurrentSector = (Sector)actSector + 1;
 
             actOffset += ConstData.TypeUInt8;
 
@@ -275,7 +275,7 @@ internal class PacketToLapData(PacketHeader packetHeader) : PacketToXBase(packet
 
             var driverStatus = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-            lapData.CurrentDriverStatus = (DriverStatus)Enum.ToObject(typeof(DriverStatus), driverStatus + 1);
+            lapData.CurrentDriverStatus = (DriverStatus)driverStatus + 1;
 
             actOffset += ConstData.TypeUInt8;
 
@@ -384,13 +384,13 @@ internal class PacketToLapData(PacketHeader packetHeader) : PacketToXBase(packet
 
             var pitStatus = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-            lapData.CurrentPitStatus = (PitStatus)Enum.ToObject(typeof(PitStatus), pitStatus + 1);
+            lapData.CurrentPitStatus = (PitStatus)pitStatus + 1;
 
             actOffset += ConstData.TypeUInt8;
 
             var actSector = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-            lapData.CurrentSector = (Sector)Enum.ToObject(typeof(Sector), actSector + 1);
+            lapData.CurrentSector = (Sector)actSector + 1;
 
             actOffset += ConstData.TypeUInt8;
 
@@ -408,7 +408,7 @@ internal class PacketToLapData(PacketHeader packetHeader) : PacketToXBase(packet
 
             var driverStatus = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-            lapData.CurrentDriverStatus = (DriverStatus)Enum.ToObject(typeof(DriverStatus), driverStatus + 1);
+            lapData.CurrentDriverStatus = (DriverStatus)driverStatus + 1;
 
             actOffset += ConstData.TypeUInt8;
 
@@ -473,7 +473,7 @@ internal class PacketToLapData(PacketHeader packetHeader) : PacketToXBase(packet
 
             var pitStatus = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-            lapData.CurrentPitStatus = (PitStatus)Enum.ToObject(typeof(PitStatus), pitStatus + 1);
+            lapData.CurrentPitStatus = (PitStatus)pitStatus + 1;
 
             actOffset += ConstData.TypeUInt8;
 
@@ -483,7 +483,7 @@ internal class PacketToLapData(PacketHeader packetHeader) : PacketToXBase(packet
 
             var actSector = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-            lapData.CurrentSector = (Sector)Enum.ToObject(typeof(Sector), actSector + 1);
+            lapData.CurrentSector = (Sector)actSector + 1;
 
             actOffset += ConstData.TypeUInt8;
 
@@ -513,7 +513,7 @@ internal class PacketToLapData(PacketHeader packetHeader) : PacketToXBase(packet
 
             var driverStatus = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-            lapData.CurrentDriverStatus = (DriverStatus)Enum.ToObject(typeof(DriverStatus), driverStatus + 1);
+            lapData.CurrentDriverStatus = (DriverStatus)driverStatus + 1;
 
             actOffset += ConstData.TypeUInt8;
 
@@ -594,7 +594,7 @@ internal class PacketToLapData(PacketHeader packetHeader) : PacketToXBase(packet
 
             var pitStatus = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-            lapData.CurrentPitStatus = (PitStatus)Enum.ToObject(typeof(PitStatus), pitStatus + 1);
+            lapData.CurrentPitStatus = (PitStatus)pitStatus + 1;
 
             actOffset += ConstData.TypeUInt8;
 
@@ -604,7 +604,7 @@ internal class PacketToLapData(PacketHeader packetHeader) : PacketToXBase(packet
 
             var actSector = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-            lapData.CurrentSector = (Sector)Enum.ToObject(typeof(Sector), actSector + 1);
+            lapData.CurrentSector = (Sector)actSector + 1;
 
             actOffset += ConstData.TypeUInt8;
 
@@ -634,7 +634,7 @@ internal class PacketToLapData(PacketHeader packetHeader) : PacketToXBase(packet
 
             var driverStatus = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-            lapData.CurrentDriverStatus = (DriverStatus)Enum.ToObject(typeof(DriverStatus), driverStatus + 1);
+            lapData.CurrentDriverStatus = (DriverStatus)driverStatus + 1;
 
             actOffset += ConstData.TypeUInt8;
 
@@ -731,7 +731,7 @@ internal class PacketToLapData(PacketHeader packetHeader) : PacketToXBase(packet
 
             var pitStatus = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-            lapData.CurrentPitStatus = (PitStatus)Enum.ToObject(typeof(PitStatus), pitStatus + 1);
+            lapData.CurrentPitStatus = (PitStatus)pitStatus + 1;
 
             actOffset += ConstData.TypeUInt8;
 
@@ -741,7 +741,7 @@ internal class PacketToLapData(PacketHeader packetHeader) : PacketToXBase(packet
 
             var actSector = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-            lapData.CurrentSector = (Sector)Enum.ToObject(typeof(Sector), actSector + 1);
+            lapData.CurrentSector = (Sector)actSector + 1;
 
             actOffset += ConstData.TypeUInt8;
 
@@ -775,7 +775,7 @@ internal class PacketToLapData(PacketHeader packetHeader) : PacketToXBase(packet
 
             var driverStatus = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-            lapData.CurrentDriverStatus = (DriverStatus)Enum.ToObject(typeof(DriverStatus), driverStatus + 1);
+            lapData.CurrentDriverStatus = (DriverStatus)driverStatus + 1;
 
             actOffset += ConstData.TypeUInt8;
 
@@ -880,7 +880,7 @@ internal class PacketToLapData(PacketHeader packetHeader) : PacketToXBase(packet
 
             var pitStatus = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-            lapData.CurrentPitStatus = (PitStatus)Enum.ToObject(typeof(PitStatus), pitStatus + 1);
+            lapData.CurrentPitStatus = (PitStatus)pitStatus + 1;
 
             actOffset += ConstData.TypeUInt8;
 
@@ -890,7 +890,7 @@ internal class PacketToLapData(PacketHeader packetHeader) : PacketToXBase(packet
 
             var actSector = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-            lapData.CurrentSector = (Sector)Enum.ToObject(typeof(Sector), actSector + 1);
+            lapData.CurrentSector = (Sector)actSector + 1;
 
             actOffset += ConstData.TypeUInt8;
 
@@ -924,7 +924,7 @@ internal class PacketToLapData(PacketHeader packetHeader) : PacketToXBase(packet
 
             var driverStatus = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-            lapData.CurrentDriverStatus = (DriverStatus)Enum.ToObject(typeof(DriverStatus), driverStatus + 1);
+            lapData.CurrentDriverStatus = (DriverStatus)driverStatus + 1;
 
             actOffset += ConstData.TypeUInt8;
 
@@ -1037,7 +1037,7 @@ internal class PacketToLapData(PacketHeader packetHeader) : PacketToXBase(packet
 
             var pitStatus = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-            lapData.CurrentPitStatus = (PitStatus)Enum.ToObject(typeof(PitStatus), pitStatus + 1);
+            lapData.CurrentPitStatus = (PitStatus)pitStatus + 1;
 
             actOffset += ConstData.TypeUInt8;
 
@@ -1047,7 +1047,7 @@ internal class PacketToLapData(PacketHeader packetHeader) : PacketToXBase(packet
 
             var actSector = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-            lapData.CurrentSector = (Sector)Enum.ToObject(typeof(Sector), actSector + 1);
+            lapData.CurrentSector = (Sector)actSector + 1;
 
             actOffset += ConstData.TypeUInt8;
 
@@ -1081,7 +1081,7 @@ internal class PacketToLapData(PacketHeader packetHeader) : PacketToXBase(packet
 
             var driverStatus = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-            lapData.CurrentDriverStatus = (DriverStatus)Enum.ToObject(typeof(DriverStatus), driverStatus + 1);
+            lapData.CurrentDriverStatus = (DriverStatus)driverStatus + 1;
 
             actOffset += ConstData.TypeUInt8;
 
@@ -1194,7 +1194,7 @@ internal class PacketToLapData(PacketHeader packetHeader) : PacketToXBase(packet
 
             var pitStatus = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-            lapData.CurrentPitStatus = (PitStatus)Enum.ToObject(typeof(PitStatus), pitStatus + 1);
+            lapData.CurrentPitStatus = (PitStatus)pitStatus + 1;
 
             actOffset += ConstData.TypeUInt8;
 
@@ -1204,7 +1204,7 @@ internal class PacketToLapData(PacketHeader packetHeader) : PacketToXBase(packet
 
             var actSector = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-            lapData.CurrentSector = (Sector)Enum.ToObject(typeof(Sector), actSector + 1);
+            lapData.CurrentSector = (Sector)actSector + 1;
 
             actOffset += ConstData.TypeUInt8;
 
@@ -1238,7 +1238,7 @@ internal class PacketToLapData(PacketHeader packetHeader) : PacketToXBase(packet
 
             var driverStatus = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-            lapData.CurrentDriverStatus = (DriverStatus)Enum.ToObject(typeof(DriverStatus), driverStatus + 1);
+            lapData.CurrentDriverStatus = (DriverStatus)driverStatus + 1;
 
             actOffset += ConstData.TypeUInt8;
 

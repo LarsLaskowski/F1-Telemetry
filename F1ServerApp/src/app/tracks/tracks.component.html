@@ -31,7 +31,7 @@
           @if (!trackIsLoadingLaps(track)) {
             <div>
               @for (fastestLap of track.fastestLaps; track fastestLap) {
-                <div class="top">
+                <div>
                   <div class="fastestLap">
                     <div class="fastestLapTitle">Game: {{ fastestLap.gameVersionName }} - {{ fastestLap.formulaType }} - {{ fastestLap.sessionLapType }}:</div>
                     <div class="fastestLapName">{{ fastestLap.driverName }}</div>

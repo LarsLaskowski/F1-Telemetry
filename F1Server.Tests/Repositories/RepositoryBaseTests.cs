@@ -2,6 +2,8 @@ using F1Server.Db.Entity;
 using F1Server.Db.Entity.Repositories;
 using F1Server.Db.Entity.Tables;
 
+using Microsoft.EntityFrameworkCore;
+
 namespace F1Server.Tests.Repositories;
 
 /// <summary>
@@ -10,6 +12,15 @@ namespace F1Server.Tests.Repositories;
 [TestClass]
 public class RepositoryBaseTests
 {
+    #region Properties
+
+    /// <summary>
+    /// Gets or sets the test context that provides the cancellation token for the running test
+    /// </summary>
+    public TestContext TestContext { get; set; }
+
+    #endregion // Properties
+
     #region Methods
 
     /// <summary>
@@ -209,6 +220,53 @@ public class RepositoryBaseTests
     }
 
     /// <summary>
+    /// Verifies that RemoveRange removes all matching entities and leaves non-matching entities untouched
+    /// </summary>
+    [TestMethod]
+    public void RepositoryBaseRemoveRangeRemovesMatchingEntities()
+    {
+        using (var dbFactory = RepositoryFactory.CreateInstance())
+        {
+            var repository = dbFactory.GetRepository<NationalityRepository>();
+
+            Assert.IsNotNull(repository, "Repository should be resolvable!");
+
+            var entities = new[]
+                           {
+                               new NationalityEntity
+                               {
+                                   NationalityGameId = 9009,
+                                   Name = "RemoveRangeTestA"
+                               },
+                               new NationalityEntity
+                               {
+                                   NationalityGameId = 9010,
+                                   Name = "RemoveRangeTestB"
+                               }
+                           };
+
+            var isAdded = repository.AddRange(entities);
+
+            Assert.IsTrue(isAdded, "Adding the test entities should succeed!");
+
+            var isRemoved = repository.RemoveRange(n => n.NationalityGameId == 9009);
+
+            Assert.IsTrue(isRemoved, "RemoveRange should report success!");
+
+            var query = repository.GetQuery();
+
+            Assert.IsNotNull(query, "Query should be resolvable!");
+
+            var remainingNames = query.Where(n => n.NationalityGameId == 9009 || n.NationalityGameId == 9010)
+                                      .Select(n => n.Name)
+                                      .ToList();
+
+            Assert.DoesNotContain("RemoveRangeTestA", remainingNames, "The matching entity should be removed!");
+            Assert.Contains("RemoveRangeTestB", remainingNames, "The non-matching entity should still be present!");
+        }
+    }
+
+    /// <summary>
     /// Verifies that a query ignoring auto-included navigations still returns the stored entities
     /// </summary>
     [TestMethod]
@@ -234,6 +292,277 @@ public class RepositoryBaseTests
 
             Assert.IsNotNull(storedLap, "The lap should be found by a query ignoring auto-included navigations!");
             Assert.AreEqual(lapEntity.Id, storedLap.Id, "The queried lap should be the previously added lap!");
+        }
+    }
+
+    /// <summary>
+    /// Verifies that AddAsync persists the entity
+    /// </summary>
+    /// <returns>Task</returns>
+    [TestMethod]
+    public async Task RepositoryBaseAddAsyncPersistsEntity()
+    {
+        using (var dbFactory = RepositoryFactory.CreateInstance())
+        {
+            var repository = dbFactory.GetRepository<NationalityRepository>();
+
+            Assert.IsNotNull(repository, "Repository should be resolvable!");
+
+            var isAdded = await repository.AddAsync(new NationalityEntity
+                                                    {
+                                                        NationalityGameId = 9009,
+                                                        Name = "AddAsyncTest"
+                                                    })
+                                          .ConfigureAwait(false);
+
+            Assert.IsTrue(isAdded, "AddAsync should return true after a successful SaveChangesAsync!");
+
+            var query = repository.GetQuery();
+
+            Assert.IsNotNull(query, "Query should be resolvable!");
+
+            var storedEntity = await query.FirstOrDefaultAsync(n => n.NationalityGameId == 9009, TestContext.CancellationToken)
+                                          .ConfigureAwait(false);
+
+            Assert.IsNotNull(storedEntity, "The added entity should be found!");
+            Assert.AreEqual("AddAsyncTest", storedEntity.Name, "The name of the added entity should be persisted!");
+        }
+    }
+
+    /// <summary>
+    /// Verifies that RefreshAsync applies the refresh action to the matching entity
+    /// </summary>
+    /// <returns>Task</returns>
+    [TestMethod]
+    public async Task RepositoryBaseRefreshAsyncUpdatesEntity()
+    {
+        using (var dbFactory = RepositoryFactory.CreateInstance())
+        {
+            var repository = dbFactory.GetRepository<NationalityRepository>();
+
+            Assert.IsNotNull(repository, "Repository should be resolvable!");
+
+            var isAdded = repository.Add(new NationalityEntity
+                                         {
+                                             NationalityGameId = 9010,
+                                             Name = "RefreshAsyncTest"
+                                         });
+
+            Assert.IsTrue(isAdded, "Adding the test entity should succeed!");
+
+            var isRefreshed = await repository.RefreshAsync(n => n.NationalityGameId == 9010,
+                                                            entity => entity.Name = "RefreshAsyncTest-Updated")
+                                              .ConfigureAwait(false);
+
+            Assert.IsTrue(isRefreshed, "RefreshAsync should return true after a successful SaveChangesAsync!");
+
+            var query = repository.GetQuery();
+
+            Assert.IsNotNull(query, "Query should be resolvable!");
+
+            var refreshedEntity = await query.FirstOrDefaultAsync(n => n.NationalityGameId == 9010, TestContext.CancellationToken)
+                                             .ConfigureAwait(false);
+
+            Assert.IsNotNull(refreshedEntity, "The refreshed entity should be found!");
+            Assert.AreEqual("RefreshAsyncTest-Updated", refreshedEntity.Name, "The refreshed name should be persisted!");
+        }
+    }
+
+    /// <summary>
+    /// Verifies that RemoveAsync removes only the matching entity
+    /// </summary>
+    /// <returns>Task</returns>
+    [TestMethod]
+    public async Task RepositoryBaseRemoveAsyncRemovesMatchingEntity()
+    {
+        using (var dbFactory = RepositoryFactory.CreateInstance())
+        {
+            var repository = dbFactory.GetRepository<NationalityRepository>();
+
+            Assert.IsNotNull(repository, "Repository should be resolvable!");
+
+            var entities = new[]
+                           {
+                               new NationalityEntity
+                               {
+                                   NationalityGameId = 9011,
+                                   Name = "RemoveAsyncTestA"
+                               },
+                               new NationalityEntity
+                               {
+                                   NationalityGameId = 9012,
+                                   Name = "RemoveAsyncTestB"
+                               }
+                           };
+
+            var isAdded = repository.AddRange(entities);
+
+            Assert.IsTrue(isAdded, "Adding the test entities should succeed!");
+
+            var isRemoved = await repository.RemoveAsync(n => n.NationalityGameId == 9011)
+                                            .ConfigureAwait(false);
+
+            Assert.IsTrue(isRemoved, "RemoveAsync should return true after a successful SaveChangesAsync!");
+
+            var query = repository.GetQuery();
+
+            Assert.IsNotNull(query, "Query should be resolvable!");
+
+            var remainingNames = await query.Where(n => n.NationalityGameId == 9011 || n.NationalityGameId == 9012)
+                                            .Select(n => n.Name)
+                                            .ToListAsync(TestContext.CancellationToken)
+                                            .ConfigureAwait(false);
+
+            Assert.DoesNotContain("RemoveAsyncTestA", remainingNames, "The matching entity should be removed!");
+            Assert.Contains("RemoveAsyncTestB", remainingNames, "The non-matching entity should still be present!");
+        }
+    }
+
+    /// <summary>
+    /// Verifies that the asynchronous query operators can be used on the queryable returned by GetQuery, so the
+    /// controllers can read data without blocking a thread on database I/O
+    /// </summary>
+    /// <returns>Task</returns>
+    [TestMethod]
+    public async Task RepositoryBaseGetQuerySupportsAsyncQueryOperators()
+    {
+        using (var dbFactory = RepositoryFactory.CreateInstance())
+        {
+            var repository = dbFactory.GetRepository<NationalityRepository>();
+
+            Assert.IsNotNull(repository, "Repository should be resolvable!");
+
+            var isAdded = repository.Add(new NationalityEntity
+                                         {
+                                             NationalityGameId = 9013,
+                                             Name = "AsyncQueryOperatorsTest"
+                                         });
+
+            Assert.IsTrue(isAdded, "Adding the test entity should succeed!");
+
+            var query = repository.GetQuery();
+
+            Assert.IsNotNull(query, "Query should be resolvable!");
+
+            var hasEntity = await query.AnyAsync(n => n.NationalityGameId == 9013, TestContext.CancellationToken)
+                                       .ConfigureAwait(false);
+
+            Assert.IsTrue(hasEntity, "AnyAsync should find the added entity!");
+
+            var entityCount = await query.CountAsync(n => n.NationalityGameId == 9013, TestContext.CancellationToken)
+                                         .ConfigureAwait(false);
+
+            Assert.AreEqual(1, entityCount, "CountAsync should count exactly the added entity!");
+
+            var names = await query.Where(n => n.NationalityGameId == 9013)
+                                   .Select(n => n.Name)
+                                   .ToListAsync(TestContext.CancellationToken)
+                                   .ConfigureAwait(false);
+
+            Assert.Contains("AsyncQueryOperatorsTest", names, "ToListAsync should return the added entity!");
+        }
+    }
+
+    /// <summary>
+    /// Verifies that a failing save is reported as failure by AddAsync instead of throwing
+    /// </summary>
+    /// <returns>Task</returns>
+    [TestMethod]
+    public async Task RepositoryBaseAddAsyncWithDuplicateKeyReturnsFalse()
+    {
+        using (var dbFactory = RepositoryFactory.CreateInstance())
+        {
+            var repository = dbFactory.GetRepository<NationalityRepository>();
+
+            Assert.IsNotNull(repository, "Repository should be resolvable!");
+
+            var entity = new NationalityEntity
+                         {
+                             NationalityGameId = 9014,
+                             Name = "AddAsyncDuplicateTest"
+                         };
+
+            Assert.IsTrue(repository.Add(entity), "Adding the test entity should succeed!");
+
+            // Reusing the already stored key makes the save fail
+            var isAdded = await repository.AddAsync(new NationalityEntity
+                                                    {
+                                                        Id = entity.Id,
+                                                        NationalityGameId = 9015,
+                                                        Name = "AddAsyncDuplicateTestSecond"
+                                                    })
+                                          .ConfigureAwait(false);
+
+            Assert.IsFalse(isAdded, "AddAsync should report a failing save instead of throwing!");
+            Assert.IsNotEmpty(repository.LastError ?? string.Empty, "A failing save should be reported through the last error!");
+        }
+    }
+
+    /// <summary>
+    /// Verifies that a throwing refresh action is reported as failure by RefreshAsync instead of throwing
+    /// </summary>
+    /// <returns>Task</returns>
+    [TestMethod]
+    public async Task RepositoryBaseRefreshAsyncWithFailingActionReturnsFalse()
+    {
+        using (var dbFactory = RepositoryFactory.CreateInstance())
+        {
+            var repository = dbFactory.GetRepository<NationalityRepository>();
+
+            Assert.IsNotNull(repository, "Repository should be resolvable!");
+
+            var isAdded = repository.Add(new NationalityEntity
+                                         {
+                                             NationalityGameId = 9016,
+                                             Name = "RefreshAsyncFailingActionTest"
+                                         });
+
+            Assert.IsTrue(isAdded, "Adding the test entity should succeed!");
+
+            var isRefreshed = await repository.RefreshAsync(n => n.NationalityGameId == 9016,
+                                                            _ => throw new InvalidOperationException("Refresh action failed!"))
+                                              .ConfigureAwait(false);
+
+            Assert.IsFalse(isRefreshed, "RefreshAsync should report a failing refresh action instead of throwing!");
+            Assert.IsNotEmpty(repository.LastError ?? string.Empty, "A failing refresh action should be reported through the last error!");
+        }
+    }
+
+    /// <summary>
+    /// Verifies that a throwing action before removing is reported as failure by RemoveAsync instead of throwing
+    /// </summary>
+    /// <returns>Task</returns>
+    [TestMethod]
+    public async Task RepositoryBaseRemoveAsyncWithFailingActionReturnsFalse()
+    {
+        using (var dbFactory = RepositoryFactory.CreateInstance())
+        {
+            var repository = dbFactory.GetRepository<NationalityRepository>();
+
+            Assert.IsNotNull(repository, "Repository should be resolvable!");
+
+            var isAdded = repository.Add(new NationalityEntity
+                                         {
+                                             NationalityGameId = 9017,
+                                             Name = "RemoveAsyncFailingActionTest"
+                                         });
+
+            Assert.IsTrue(isAdded, "Adding the test entity should succeed!");
+
+            var isRemoved = await repository.RemoveAsync(n => n.NationalityGameId == 9017,
+                                                         _ => throw new InvalidOperationException("Action before removing failed!"))
+                                            .ConfigureAwait(false);
+
+            Assert.IsFalse(isRemoved, "RemoveAsync should report a failing action instead of throwing!");
+            Assert.IsNotEmpty(repository.LastError ?? string.Empty, "A failing action should be reported through the last error!");
+
+            var query = repository.GetQuery();
+
+            Assert.IsNotNull(query, "Query should be resolvable!");
+
+            var isPresent = await query.AnyAsync(n => n.NationalityGameId == 9017, TestContext.CancellationToken).ConfigureAwait(false);
+
+            Assert.IsTrue(isPresent, "An aborted removal must keep the entity!");
         }
     }
 

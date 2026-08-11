@@ -57,7 +57,7 @@ public class SessionRuntimeData : ISessionRuntimeData
     }
 
     /// <summary>
-    /// Sollen die Daten für diese Session aufgezeichnet werden?
+    /// Flag whether the data of this session should be recorded
     /// </summary>
     public bool IsRecordable { get; set; }
 
@@ -145,6 +145,11 @@ public class SessionRuntimeData : ISessionRuntimeData
     /// </summary>
     public uint CurrentTrackReferenceSector3Time { get; set; }
 
+    /// <summary>
+    /// Last error encountered while finishing the session
+    /// </summary>
+    public string LastError { get; private set; } = string.Empty;
+
     #endregion // Properties
 
     #region Methods
@@ -166,9 +171,11 @@ public class SessionRuntimeData : ISessionRuntimeData
                     }
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                // Ignore exceptions in this step
+                // Finishing a session is best-effort; record the error instead of
+                // throwing, but keep it visible instead of swallowing it
+                LastError = ex.ToString();
             }
         }
     }

@@ -20,9 +20,9 @@ public sealed class ReceivedPacketData
     private static ulong _packetCounter;
 
     /// <summary>
-    /// Array with received packet data
+    /// Array with received packet data, owned by this instance and never copied from the caller
     /// </summary>
-    private byte[] _rawData;
+    private byte[] _rawData = [];
 
     #endregion // Fields
 
@@ -86,9 +86,10 @@ public sealed class ReceivedPacketData
     #region Methods
 
     /// <summary>
-    /// Set incoming packet raw data
+    /// Set incoming packet raw data, taking ownership of the passed array instead of copying it, so the
+    /// caller must neither modify nor reuse the array as long as this instance is in use
     /// </summary>
-    /// <param name="rawData">Received bytes from game</param>
+    /// <param name="rawData">Received bytes from game, owned by this instance after the call</param>
     public void SetRawData(byte[] rawData)
     {
         PacketHeader = null;
@@ -96,9 +97,7 @@ public sealed class ReceivedPacketData
         HeaderParseException = null;
         ReportedGameVersion = 0;
 
-        _rawData = new byte[rawData.Length];
-
-        rawData.CopyTo(_rawData, 0);
+        _rawData = rawData;
 
         PacketLength = rawData.Length;
 
@@ -125,7 +124,7 @@ public sealed class ReceivedPacketData
     /// Parses the packet header fields, containing any parsing exception so a malformed packet cannot crash the receiver
     /// </summary>
     /// <param name="dataPacket">Complete received packet content, at least <see cref="ConstData.F12019HeaderSize"/> bytes long</param>
-    [ExcludeFromCodeCoverage(Justification = "The try/catch wrapper itself cannot be exercised: every offset ParseHeaderFields reads is validated against the packet length by the guards in AnalyzePacketHeader before this method is called, and neither Enum.ToObject nor the object initializer can throw, so no packet observed in practice reaches this catch. Unsafe.ReadUnaligned itself performs no bounds checking; safety here comes entirely from those length guards, not from the read call")]
+    [ExcludeFromCodeCoverage(Justification = "The try/catch wrapper itself cannot be exercised: every offset ParseHeaderFields reads is validated against the packet length by the guards in AnalyzePacketHeader before this method is called, and neither the packet type cast nor the object initializer can throw, so no packet observed in practice reaches this catch. Unsafe.ReadUnaligned itself performs no bounds checking; safety here comes entirely from those length guards, not from the read call")]
     private void ParseHeader(ReadOnlySpan<byte> dataPacket)
     {
         try
@@ -197,7 +196,7 @@ public sealed class ReceivedPacketData
         // Packet type (id) - uint8
         var packetType = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref memRef, contentOffset));
 
-        PacketHeader.PacketType = (PacketTypes)Enum.ToObject(typeof(PacketTypes), packetType + 1);
+        PacketHeader.PacketType = (PacketTypes)(packetType + 1);
 
         contentOffset += ConstData.TypeUInt8;
 

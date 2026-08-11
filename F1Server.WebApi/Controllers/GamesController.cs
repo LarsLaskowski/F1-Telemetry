@@ -2,8 +2,7 @@ using System.Diagnostics;
 
 using F1Server.Core.Observability;
 using F1Server.Data.ViewData;
-using F1Server.Db.Entity;
-using F1Server.Db.Entity.Repositories;
+using F1Server.Service.Games;
 
 using Microsoft.AspNetCore.Mvc;
 
@@ -19,6 +18,7 @@ public class GamesController : ControllerBase
     #region Fields
 
     private readonly ILogger<GamesController> _logger;
+    private readonly GameService _gameService;
 
     #endregion // Fields
 
@@ -28,63 +28,36 @@ public class GamesController : ControllerBase
     /// Constructor
     /// </summary>
     /// <param name="logger">Logging interface</param>
-    public GamesController(ILogger<GamesController> logger)
+    /// <param name="gameService">Game business logic</param>
+    public GamesController(ILogger<GamesController> logger, GameService gameService)
     {
         _logger = logger;
+        _gameService = gameService;
     }
 
     #endregion // Constructors
 
-    #region Methods
+    #region Controller methods
 
     /// <summary>
     /// Get games
     /// </summary>
     /// <returns>Games</returns>
     [HttpGet]
-    public IEnumerable<GameViewData>? Get()
+    public async Task<IEnumerable<GameViewData>?> Get()
     {
-        List<GameViewData>? games = null;
-
         using var currentActivity = AppActivity.ApiSource.StartActivity("GetGames");
 
-        _logger?.LogInformation("Games loading...");
+        _logger?.LoadingGames();
 
-        using (var dbFactory = RepositoryFactory.CreateInstance())
-        {
-            games = dbFactory.GetRepository<GameVersionRepository>()
-                             ?.GetQuery()
-                             ?.OrderBy(g => g.Version)
-                             ?.Select(obj => new GameViewData
-                                             {
-                                                 Id = obj.Id,
-                                                 GameVersion = obj.Name,
-                                                 GameVersionCode = $"{obj.MajorVersion}.{obj.MinorVersion}",
-                                                 LastUsed = obj.LastUsed.HasValue
-                                                                ? $"{obj.LastUsed.Value.ToShortDateString()} {obj.LastUsed.Value.ToShortTimeString()}"
-                                                                : "-"
-                                             })
-                             .ToList();
+        var games = await _gameService.GetGamesAsync().ConfigureAwait(false);
 
-            if (games?.Count > 0)
-            {
-                foreach (var game in games)
-                {
-                    var sessions = dbFactory.GetRepository<SessionRepository>()
-                                            ?.GetQuery()
-                                            ?.Count(s => s.DbIsFinished == 1 && s.GameVersionId == game.Id);
+        currentActivity?.SetStatus(ActivityStatusCode.Ok);
 
-                    game.Sessions = sessions != null ? sessions.Value : 0;
-                }
-            }
-
-            currentActivity?.SetStatus(ActivityStatusCode.Ok);
-        }
-
-        _logger?.LogInformation("Games loaded ({LoadedGames}).", games?.Count ?? 0);
+        _logger?.GamesLoaded(games?.Count ?? 0);
 
         return games;
     }
 
-    #endregion // Methods
+    #endregion // Controller methods
 }

@@ -13,12 +13,6 @@ namespace F1ReplayClient.Data;
 /// </summary>
 internal class ContextViewData : NotifyPropertyBase, IDataErrorInfo
 {
-    #region Fields
-
-    private bool _isStartable;
-
-    #endregion // Fields
-
     #region Constructors
 
     /// <summary>
@@ -43,7 +37,7 @@ internal class ContextViewData : NotifyPropertyBase, IDataErrorInfo
 
         PacketViewTypes = new();
 
-        EventCodes = new ObservableCollection<string>();
+        EventCodes = [];
     }
 
     #endregion // Constructors
@@ -256,10 +250,10 @@ internal class ContextViewData : NotifyPropertyBase, IDataErrorInfo
     /// </summary>
     public bool IsStartable
     {
-        get => _isStartable && IsRunning == false;
+        get => field && IsRunning == false;
         set
         {
-            _isStartable = value;
+            field = value;
 
             RaisePropertyChange(nameof(IsStartable));
         }
@@ -270,7 +264,7 @@ internal class ContextViewData : NotifyPropertyBase, IDataErrorInfo
     /// </summary>
     public bool IsSortable
     {
-        get => _isStartable && IsRunning == false && field;
+        get => IsStartable && field;
         set
         {
             field = value;
@@ -582,7 +576,9 @@ internal class ContextViewData : NotifyPropertyBase, IDataErrorInfo
     #region IDataErrorInfo
 
     /// <summary>
-    /// Returns error text
+    /// Returns the error text for the object as a whole. This type validates per property only,
+    /// so the value is never assigned and stays null. WPF binding ignores an object level error
+    /// and evaluates the indexer instead, which is the supported usage of IDataErrorInfo here
     /// </summary>
     public string Error { get; }
 

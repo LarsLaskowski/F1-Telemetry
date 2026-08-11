@@ -3,4 +3,4 @@
 /// <summary>
 /// Time trial data set
 /// </summary>
-public interface ITimeTrialDataSet2025 : ITimeTrialData2024;
+public interface ITimeTrialDataSet2025 : ITimeTrialDataSet2024;

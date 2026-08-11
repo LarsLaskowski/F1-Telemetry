@@ -1,12 +1,8 @@
-﻿using System.IO;
-
-using F1Server.Core;
+﻿using F1Server.Core;
 using F1Server.Core.Data;
 using F1Server.Core.Enumerations;
 using F1Server.Core.PacketData;
 using F1Server.Core.Packets.Interfaces;
-
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace F1Server.Tests;
 
@@ -160,7 +156,7 @@ public class PacketParticipants2022Tests
     }
 
     /// <summary>
-    /// Check active cars (2022)
+    /// Check driver name (2022)
     /// </summary>
     [TestMethod]
     public void PacketParticipantsDriverName2022ExpectedValue()

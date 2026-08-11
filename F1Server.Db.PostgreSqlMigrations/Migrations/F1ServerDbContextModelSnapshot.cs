@@ -17,7 +17,7 @@ namespace F1Server.Db.PostgreSqlMigrations.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.9")
+                .HasAnnotation("ProductVersion", "10.0.10")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -818,7 +818,7 @@ namespace F1Server.Db.PostgreSqlMigrations.Migrations
                             Id = 75L,
                             DbIsHumanDriver = 0,
                             DriverGameId = 80,
-                            Name = "Guanya Zhou"
+                            Name = "Guanyu Zhou"
                         },
                         new
                         {
@@ -1707,7 +1707,7 @@ namespace F1Server.Db.PostgreSqlMigrations.Migrations
                             Id = 202L,
                             DbIsHumanDriver = 0,
                             DriverGameId = 202580,
-                            Name = "Guanya Zhou"
+                            Name = "Guanyu Zhou"
                         },
                         new
                         {
@@ -2316,7 +2316,7 @@ namespace F1Server.Db.PostgreSqlMigrations.Migrations
                             Id = 289L,
                             DbIsHumanDriver = 0,
                             DriverGameId = 202680,
-                            Name = "Guanya Zhou"
+                            Name = "Guanyu Zhou"
                         },
                         new
                         {
@@ -2800,7 +2800,8 @@ namespace F1Server.Db.PostgreSqlMigrations.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.Property<int>("Version")
                         .HasColumnType("integer");
@@ -3497,7 +3498,8 @@ namespace F1Server.Db.PostgreSqlMigrations.Migrations
 
                     b.Property<string>("DriverName")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.Property<long>("NationalityId")
                         .HasColumnType("bigint");

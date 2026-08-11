@@ -17,7 +17,6 @@ using F1Server.Db.Entity;
 using F1Server.Service.Cache;
 using F1Server.Service.Runtime;
 using F1Server.Telemetry;
-using F1Server.WebApi;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -40,7 +39,7 @@ public sealed class TelemetryClient : ITelemetryClient, IDisposable
     private readonly System.Timers.Timer _statisticsTimer;
     private readonly F1ServerApplicationData _applicationData;
     private readonly PacketProcessor _packetProcessor;
-    private readonly WebHosting _webHosting;
+    private readonly IWebHosting? _webHosting;
     private UdpClient? _udpClient;
     private TcpListener? _tcpServer;
     private IPEndPoint? _ipEndpoint;
@@ -62,7 +61,7 @@ public sealed class TelemetryClient : ITelemetryClient, IDisposable
     /// <param name="serviceProvider">A <see cref="IServiceProvider"/> containing the configured services</param>
     /// <param name="useDatabase">Database information seems to exists</param>
     /// <param name="useWebHosting">Activating web interface</param>
-    /// <param name="port">Optionaler Port</param>
+    /// <param name="port">Optional port, 0 keeps the configured default port</param>
     public TelemetryClient(IServiceProvider serviceProvider, bool useDatabase, bool useWebHosting, int port = 0)
     {
         using var currentActity = AppActivity.SrvSource.StartActivity("TelemetryClient-Create");
@@ -111,7 +110,14 @@ public sealed class TelemetryClient : ITelemetryClient, IDisposable
 
         if (useWebHosting)
         {
-            _webHosting = new WebHosting();
+            // The hosting implementation is registered by the startup project, so the service layer stays independent
+            // of the transport layer
+            _webHosting = serviceProvider.GetService<IWebHosting>();
+
+            if (_webHosting is null)
+            {
+                Logger?.LogWarning("Web hosting was requested, but no implementation of {Interface} is registered!", nameof(IWebHosting));
+            }
         }
 
         currentActity?.SetStatus(ActivityStatusCode.Ok, "TelemetryClient created");
@@ -252,7 +258,7 @@ public sealed class TelemetryClient : ITelemetryClient, IDisposable
 
             StartPacketProcessingWorker();
 
-            if (_webHosting?.IsRunning == false)
+            if (_webHosting is not null && _webHosting.IsRunning == false)
             {
                 _webHosting.StartWebHosting(_serviceProvider);
             }
@@ -310,7 +316,9 @@ public sealed class TelemetryClient : ITelemetryClient, IDisposable
 
             packetData.SetRawData(recvData);
 
-            if (_packetProcessor.ProcessPacket(packetData) == false)
+            retValue = _packetProcessor.ProcessPacket(packetData);
+
+            if (retValue == false)
             {
                 ProcessingError?.Invoke(this, _packetProcessor.LastError);
             }
@@ -579,11 +587,11 @@ public sealed class TelemetryClient : ITelemetryClient, IDisposable
     {
         if (sessionChangedEventArgs.LastSessionId > 0)
         {
-            Task.Run(() => WriteLastSessionStatistics(sessionChangedEventArgs.LastSessionId, sessionChangedEventArgs.LastSessionGameVersion, sessionChangedEventArgs.LastSessionMetrics));
+            Task.Run(() => WriteLastSessionStatistics(sessionChangedEventArgs.LastSessionId, sessionChangedEventArgs.LastSessionGameVersion, sessionChangedEventArgs.LastSessionMetrics), CancellationToken.None);
         }
         else
         {
-            Task.Run(() => WriteNewSessionStarts(sessionChangedEventArgs.CurrentSessionId, sessionChangedEventArgs.CurrentSessionGameVersion));
+            Task.Run(() => WriteNewSessionStarts(sessionChangedEventArgs.CurrentSessionId, sessionChangedEventArgs.CurrentSessionGameVersion), CancellationToken.None);
         }
     }
 

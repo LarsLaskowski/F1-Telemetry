@@ -151,7 +151,7 @@ csharp_preserve_single_line_statements=false
 dotnet_diagnostic.CS8618.severity = none
 
 csharp_using_directive_placement = outside_namespace:silent
-csharp_style_namespace_declarations = block_scoped:silent
+csharp_style_namespace_declarations = file_scoped:silent
 csharp_style_prefer_method_group_conversion = true:silent
 csharp_style_prefer_top_level_statements = true:silent
 csharp_style_prefer_null_check_over_type_check = true:suggestion
@@ -160,6 +160,14 @@ csharp_prefer_static_local_function = true:suggestion
 
 # IDE0290: Use primary constructor
 dotnet_diagnostic.IDE0290.severity = none
+
+# IDE0076: Invalid or missing target for 'SuppressMessageAttribute'
+# GlobalSuppressions.cs is Compile-linked into every project, so a namespace-scoped suppression
+# resolves only in the assembly that actually contains that namespace and is inert everywhere
+# else. That is the intended design of the shared file, not a mistake in the individual entries,
+# so the rule would fire once per project for every entry that does not belong to it.
+# IDE0077 (legacy target format) stays active - targets must use the ~N:/~M: documentation ID form.
+dotnet_diagnostic.IDE0076.severity = none
 
 [*.{cs,vb}]
 dotnet_diagnostic.CA1822.severity=silent
@@ -231,6 +239,8 @@ indent_size = 4
 end_of_line = crlf
 dotnet_style_predefined_type_for_locals_parameters_members = true:error
 dotnet_diagnostic.CA2254.severity = silent
+
+dotnet_diagnostic.CA1873.severity = warning
 
 # Reihitsu analyzer rule suppressions (replaces the legacy .ruleset files)
 dotnet_diagnostic.RH0396.severity = none

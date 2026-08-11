@@ -10,9 +10,14 @@ public interface IHeader
     #region Properties
 
     /// <summary>
-    /// Packet format (2020, 2021)
+    /// Packet format (2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026)
     /// </summary>
     ushort GameVersion { get; }
+
+    /// <summary>
+    /// Game year - last two digits
+    /// </summary>
+    ushort GameYear { get; }
 
     /// <summary>
     /// Major version
@@ -50,9 +55,19 @@ public interface IHeader
     uint FrameIdentifier { get; }
 
     /// <summary>
+    /// Overall identifier for the frame the data was received (doesn't go back after flashbacks)
+    /// </summary>
+    uint OverallFrameIdentifier { get; }
+
+    /// <summary>
     /// Index of player's car
     /// </summary>
     ushort PlayerCarIndex { get; }
+
+    /// <summary>
+    /// Index of secondary player's car (splitscreen) - 255 if no second car
+    /// </summary>
+    ushort PlayerCarIndexSecondary { get; }
 
     #endregion // Properties
 }

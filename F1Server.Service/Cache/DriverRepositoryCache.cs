@@ -16,7 +16,7 @@ internal static class DriverRepositoryCache
     private static readonly ConcurrentDictionary<int, DriverEntity> _byGameId = new();
     private static readonly ConcurrentDictionary<long, DriverEntity> _byId = new();
     private static readonly Lock _lock = new();
-    private static bool _initialized = false;
+    private static volatile bool _initialized = false;
 
     #endregion // Fields
 

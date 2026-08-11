@@ -45,7 +45,7 @@ public sealed class RepositoryFactory : IDisposable
     {
         _dbContext = _contextPool.Value.CreateDbContext();
         _dbContext.LastError = null;
-        _repositories = new Dictionary<Type, RepositoryBase>();
+        _repositories = [];
     }
 
     #endregion // Constructors
@@ -152,8 +152,6 @@ public sealed class RepositoryFactory : IDisposable
 
                     // Execute migration
                     _dbContext.Database.Migrate();
-
-                    _dbContext.Database.GenerateCreateScript();
                 }
 
                 IsInitialized = true;

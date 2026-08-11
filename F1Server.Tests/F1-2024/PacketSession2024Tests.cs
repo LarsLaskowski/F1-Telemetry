@@ -1,12 +1,8 @@
-﻿using System.IO;
-
-using F1Server.Core;
+﻿using F1Server.Core;
 using F1Server.Core.Data;
 using F1Server.Core.Enumerations;
 using F1Server.Core.PacketData;
 using F1Server.Core.Packets.Interfaces;
-
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace F1Server.Tests;
 
@@ -60,10 +56,10 @@ public class PacketSession2024Tests
     #region Methods F1 2024
 
     /// <summary>
-    /// Check whether the given file has a correct participants data content
+    /// Check whether the given file is a session packet
     /// </summary>
     [TestMethod]
-    public void PacketSessionCheckSession2024IsCorrectPacketType()
+    public void PacketSessionCheck2024IsCorrectPacketType()
     {
         var isCorrect = _packetData.PacketHeader?.PacketType == PacketTypes.Session;
 
@@ -74,7 +70,7 @@ public class PacketSession2024Tests
     /// Check whether the given file is a F1 2024 packet
     /// </summary>
     [TestMethod]
-    public void PacketSessionCheckSession2024IsCorrectGameVersion()
+    public void PacketSessionCheck2024IsCorrectGameVersion()
     {
         var isCorrect = _packetData.PacketHeader?.GameVersion == 2024;
 
@@ -85,7 +81,7 @@ public class PacketSession2024Tests
     /// Check whether the analyzer construct the correct class object
     /// </summary>
     [TestMethod]
-    public void PacketSessionCheckSession2024IsSessionObject()
+    public void PacketSessionCheck2024IsSessionObject()
     {
         if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12024SessionSize + ConstData.F12024HeaderSize)
         {
@@ -201,6 +197,133 @@ public class PacketSession2024Tests
                 var isCorrect = sessionData.PacketData?.FormulaType == Formula.F2;
 
                 Assert.IsTrue(isCorrect, "Invalid formula type!");
+            }
+            else
+            {
+                Assert.Fail("Invalid session packet, expected F1 2024!");
+            }
+        }
+        else
+        {
+            Assert.IsNull(_packetData.PacketHeader, "Invalid F1 2024 packet header or content!");
+        }
+    }
+
+    /// <summary>
+    /// Check equal car performance flag (2024)
+    /// </summary>
+    [TestMethod]
+    public void PacketSessionEqualCarPerformance2024ExpectedFalse()
+    {
+        if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12024SessionSize + ConstData.F12024HeaderSize)
+        {
+            var session = _packetAnalyzer.GetSessionData(_packetData.PacketHeader, _packetContent);
+
+            if (session is SessionData sessionData && sessionData.PacketData is ISessionData2024 sessionData2024)
+            {
+                Assert.IsFalse(sessionData2024.EqualCarPerformance, "Incorrect equal car performance flag!");
+            }
+            else
+            {
+                Assert.Fail("Invalid session packet, expected F1 2024!");
+            }
+        }
+        else
+        {
+            Assert.IsNull(_packetData.PacketHeader, "Invalid F1 2024 packet header or content!");
+        }
+    }
+
+    /// <summary>
+    /// Check number of sessions in weekend (2024)
+    /// </summary>
+    [TestMethod]
+    public void PacketSessionSessionsInWeekend2024ExpectedThree()
+    {
+        if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12024SessionSize + ConstData.F12024HeaderSize)
+        {
+            var session = _packetAnalyzer.GetSessionData(_packetData.PacketHeader, _packetContent);
+
+            if (session is SessionData sessionData && sessionData.PacketData is ISessionData2024 sessionData2024)
+            {
+                Assert.AreEqual((short)3, sessionData2024.SessionsInWeekend, "Incorrect number of sessions in weekend!");
+            }
+            else
+            {
+                Assert.Fail("Invalid session packet, expected F1 2024!");
+            }
+        }
+        else
+        {
+            Assert.IsNull(_packetData.PacketHeader, "Invalid F1 2024 packet header or content!");
+        }
+    }
+
+    /// <summary>
+    /// Check weekend structure (2024)
+    /// </summary>
+    [TestMethod]
+    public void PacketSessionWeekendStructure2024ExpectedValue()
+    {
+        if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12024SessionSize + ConstData.F12024HeaderSize)
+        {
+            var session = _packetAnalyzer.GetSessionData(_packetData.PacketHeader, _packetContent);
+
+            if (session is SessionData sessionData && sessionData.PacketData is ISessionData2024 sessionData2024)
+            {
+                Assert.AreEqual(SessionType.ShortPractice, sessionData2024.WeekendStructure[0], "Incorrect first weekend structure entry!");
+                Assert.AreEqual(SessionType.OneShotQualifying, sessionData2024.WeekendStructure[1], "Incorrect second weekend structure entry!");
+                Assert.AreEqual(SessionType.Race2, sessionData2024.WeekendStructure[2], "Incorrect third weekend structure entry!");
+            }
+            else
+            {
+                Assert.Fail("Invalid session packet, expected F1 2024!");
+            }
+        }
+        else
+        {
+            Assert.IsNull(_packetData.PacketHeader, "Invalid F1 2024 packet header or content!");
+        }
+    }
+
+    /// <summary>
+    /// Check sector 2 lap distance start (2024)
+    /// </summary>
+    [TestMethod]
+    public void PacketSessionSector2LapDistanceStart2024ExpectedValue()
+    {
+        if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12024SessionSize + ConstData.F12024HeaderSize)
+        {
+            var session = _packetAnalyzer.GetSessionData(_packetData.PacketHeader, _packetContent);
+
+            if (session is SessionData sessionData && sessionData.PacketData is ISessionData2024 sessionData2024)
+            {
+                Assert.AreEqual(1804.6149f, sessionData2024.Sector2LapDistanceStart, 0.001f, "Incorrect sector 2 lap distance start!");
+            }
+            else
+            {
+                Assert.Fail("Invalid session packet, expected F1 2024!");
+            }
+        }
+        else
+        {
+            Assert.IsNull(_packetData.PacketHeader, "Invalid F1 2024 packet header or content!");
+        }
+    }
+
+    /// <summary>
+    /// Check sector 3 lap distance start (2024)
+    /// </summary>
+    [TestMethod]
+    public void PacketSessionSector3LapDistanceStart2024ExpectedValue()
+    {
+        if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12024SessionSize + ConstData.F12024HeaderSize)
+        {
+            var session = _packetAnalyzer.GetSessionData(_packetData.PacketHeader, _packetContent);
+
+            if (session is SessionData sessionData && sessionData.PacketData is ISessionData2024 sessionData2024)
+            {
+                Assert.AreEqual(4006.0474f, sessionData2024.Sector3LapDistanceStart, 0.001f, "Incorrect sector 3 lap distance start!");
             }
             else
             {

@@ -19,6 +19,15 @@ public class EventData2020 : IEventDataBase
 
     #endregion // Constructors
 
+    #region Properties
+
+    /// <summary>
+    /// Event details
+    /// </summary>
+    public IEventDataDetails2020 EventDetails { get; }
+
+    #endregion // Properties
+
     #region IEventDataBase
 
     /// <summary>
@@ -29,7 +38,7 @@ public class EventData2020 : IEventDataBase
     /// <summary>
     /// Event details
     /// </summary>
-    public IEventDataDetailsBase EventDetails { get; }
+    IEventDataDetailsBase IEventDataBase.EventDetails => EventDetails;
 
     #endregion // IEventDataBase
 }

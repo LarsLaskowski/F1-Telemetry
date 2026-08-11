@@ -1,13 +1,8 @@
-﻿using System.IO;
-using System.Linq;
-
-using F1Server.Core;
+﻿using F1Server.Core;
 using F1Server.Core.Data;
 using F1Server.Core.Enumerations;
 using F1Server.Core.PacketData;
 using F1Server.Core.Packets.Interfaces;
-
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace F1Server.Tests;
 
@@ -120,6 +115,84 @@ public class PacketLapData2024Tests
                 var cars = data.LapData.Count(l => l.IsEmpty == false);
 
                 Assert.AreEqual(15, cars, "Number of cars is wrong!");
+            }
+            else
+            {
+                Assert.Fail("Invalid lap format, expected F1 2024!");
+            }
+        }
+        else
+        {
+            Assert.IsNull(_packetData.PacketHeader, "Invalid F1 2024 packet header!");
+        }
+    }
+
+    /// <summary>
+    /// Check delta to car in front and race leader whole minute parts (2024)
+    /// </summary>
+    [TestMethod]
+    public void PacketLapDataDeltaMinutes2024ExpectedZero()
+    {
+        if (_packetData.PacketHeader != null)
+        {
+            var lapData = _packetAnalyzer.GetLapData(_packetData.PacketHeader, File.ReadAllBytes(@"SampleData/F1-2024-LapData.packet"));
+
+            if (lapData is LapData lapInfo && lapInfo.PacketData is ILapDataComplete data && data.LapData is ILapData2024[] cars)
+            {
+                Assert.AreEqual((ushort)0, cars[0].DeltaToCarInFrontMinutes, "Incorrect delta to car in front whole minute part!");
+                Assert.AreEqual((ushort)0, cars[0].DeltaToRaceLeaderMinutes, "Incorrect delta to race leader whole minute part!");
+            }
+            else
+            {
+                Assert.Fail("Invalid lap format, expected F1 2024!");
+            }
+        }
+        else
+        {
+            Assert.IsNull(_packetData.PacketHeader, "Invalid F1 2024 packet header!");
+        }
+    }
+
+    /// <summary>
+    /// Check speed trap fastest speed and lap (2024)
+    /// </summary>
+    [TestMethod]
+    public void PacketLapDataSpeedTrapFastest2024ExpectedValue()
+    {
+        if (_packetData.PacketHeader != null)
+        {
+            var lapData = _packetAnalyzer.GetLapData(_packetData.PacketHeader, File.ReadAllBytes(@"SampleData/F1-2024-LapData.packet"));
+
+            if (lapData is LapData lapInfo && lapInfo.PacketData is ILapDataComplete data && data.LapData is ILapData2024[] cars)
+            {
+                Assert.AreEqual(316.6052f, cars[0].SpeedTrapFastestSpeed, 0.001f, "Incorrect speed trap fastest speed!");
+                Assert.AreEqual((ushort)1, cars[0].SpeedTrapFastestLap, "Incorrect speed trap fastest lap!");
+            }
+            else
+            {
+                Assert.Fail("Invalid lap format, expected F1 2024!");
+            }
+        }
+        else
+        {
+            Assert.IsNull(_packetData.PacketHeader, "Invalid F1 2024 packet header!");
+        }
+    }
+
+    /// <summary>
+    /// Check speed trap fastest lap value for a car that never triggered the speed trap (2024)
+    /// </summary>
+    [TestMethod]
+    public void PacketLapDataSpeedTrapFastestLapNotSet2024ExpectedValue()
+    {
+        if (_packetData.PacketHeader != null)
+        {
+            var lapData = _packetAnalyzer.GetLapData(_packetData.PacketHeader, File.ReadAllBytes(@"SampleData/F1-2024-LapData.packet"));
+
+            if (lapData is LapData lapInfo && lapInfo.PacketData is ILapDataComplete data && data.LapData is ILapData2024[] cars)
+            {
+                Assert.AreEqual(0f, cars[1].SpeedTrapFastestSpeed, 0.001f, "Incorrect speed trap fastest speed!");
+                Assert.AreEqual((ushort)255, cars[1].SpeedTrapFastestLap, "Speed trap fastest lap must decode the documented not-set value 255!");
             }
             else
             {

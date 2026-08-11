@@ -185,13 +185,17 @@ processors → Web API/live → frontend → tests.
 Add a `#region Consts F1 2026` mirroring the 2025 region, with **recomputed sizes for 24 cars**:
 - `F12026MaxCars = 24`, `F12026MaxLapPositions = 50`, `F12026MaxLaps = 100`,
   `F12026HeaderSize = 29`.
-- `F12026SessionSize = 926`, `F12026LapSize = 57` / `F12026TotalLapSize = 57 * 24 = 1368`,
+- `F12026SessionSize = 897` (payload without the header), `F12026LapSize = 57` /
+  `F12026TotalLapSize = 57 * 24 = 1368`,
   `F12026EventSize` (= 2025 value, event unchanged), `F12026CarTelemetrySize` (per-car size with
   uint8 engine temp; recompute) and totals, `F12026ParticipantsSize` (uint16 ids → per-car larger),
   `F12026CarStatusSize` (per-car + `ersHarvestLimitPerLap`), `F12026SessionHistorySize` (unchanged
   layout, still 1460/“1431”-style — verify), `F12026FinalClassificationCarSize` /
   `F12026FinalClassificationSize`, `F12026LapPositionSize`, plus new
-  `F12026CarTelemetry2Size = 269` and per-car `F12026CarTelemetry2CarSize = 11`.
+  `F12026CarTelemetry2Size = 240` and per-car `F12026CarTelemetry2CarSize = 10`.
+
+> The `*Size` constants hold the **payload** size, without the 29-byte header. The totals quoted in
+> §1.4 include the header, so `Session` is 897 + 29 = 926 and `CarTelemetry2` is 240 + 29 = 269.
 - New shared sizes: `ActiveAeroZoneSize = 8`, `DrsZoneSize = 8`, and a 2026 driver-name length
   (still 32, reuse `DriverNameLength2025` or add `DriverNameLength2026 = 32`).
 
@@ -222,16 +226,20 @@ class implementing it. Required:
 - `ITimeTrialData2026 / TimeTrialData2026`, `ITimeTrialDataSet2026 / TimeTrialDataSet2026` — `TeamId`
   is already `ushort`; change is parser-side (uint16).
 - `ILapData2026 / LapData2026 / LapDataComplete2026`, `IFinalClassification2026 / *2026`,
-  `ISessionHistory*2026`, `ILapPositions2026 / LapPositions2026`, `IEventDataDetails2026 /
-  EventData2026 / EventDataDetails2026` — create even where the layout is unchanged, to keep the
-  per-year switch pattern consistent (these can be thin `: I…2025` subtypes).
+  `IEventDataDetails2026 / EventData2026 / EventDataDetails2026` — create even where the layout is
+  unchanged, to keep the per-year switch pattern consistent (these can be thin `: I…2025` subtypes).
+- **Not created:** the thin year interfaces `ILapPositions2026` and `ISessionHistory*2026` were
+  planned here but are not part of the implementation. `LapPositions2026` implements
+  `ILapPositionsBase` and `SessionHistoryData2026` implements `ISessionHistoryDataBase` directly,
+  because neither type changes its layout in 2026 and a year-specific interface would add nothing
+  to dispatch on. This matches how 2025 handles the same two packets and is not a defect.
 - **New:** `ICarTelemetry2Data2026 / CarTelemetry2Data2026` and a packet wrapper
   `CarTelemetry2_2026` (+ `ICarTelemetry2Base`, `ICarTelemetry2DataBase` base interfaces) holding
   `CarTelemetry2Data2026[24]`.
 
 > Follow the existing inheritance chain (`I…Base` → `I…2019` → … → `I…2025`). Each new member needs
 > XML docs (including private fields), Allman braces, `#region`s, and `== false`/`is null` idioms
-> per `.claude/CLAUDE.md`.
+> per `CLAUDE.md`.
 
 ### 3.4 Parsers — `F1Server.Core/Packets/PacketToObject/*`
 For each processed packet, add a `2026 => new X(PacketHeader, new XData2026())` arm to the
@@ -285,7 +293,7 @@ For each processed packet, add a `2026 => new X(PacketHeader, new XData2026())` 
 - Update seed methods `SeedTracks` (Madrid id 42), `SeedTeams`, `SeedDrivers` with the 2026 blocks
   (§2). Keep entity `Id`s sequential after current maxima; keep `*GameId = 2026<gameId>`.
 
-**Migrations** — one `UpdateN` per provider, generated and renamed per `.claude/CLAUDE.md`:
+**Migrations** — one `UpdateN` per provider, generated and renamed per `CLAUDE.md`:
 ```
 dotnet ef migrations add UpdateN --project F1Server.Db.MsSqlMigrations     --startup-project F1Server
 dotnet ef migrations add UpdateN --project F1Server.Db.MySqlMigrations     --startup-project F1Server
@@ -396,16 +404,32 @@ exactly these:
 > Note: car slots 22–23 in the per-car arrays are duplicates of the last source car (filler). Tests
 > should assert on the player car (index 19) or known earlier slots, not on 22–23.
 
-### 4.5 Deferred — no sample available yet
-Create these test classes as **scaffolding only**, skipped via the `File.Exists` early-return guard
-(or `[Ignore("TODO(sample): no F1 26 capture yet")]`), because there is no source packet to convert:
+### 4.5 Packets without a game capture — spec-derived fixtures
+These packets have no capture from the game, and for `CarTelemetry2` there is no earlier year to
+convert from either. They are covered by **fixtures built from the byte layouts in
+`docs/F1 2026 Telemetry.md`** instead of by a recorded packet:
 
-- `PacketCarTelemetry2_2026Tests` — brand-new packet; needs a real F1 26 capture (or a hand-built
-  fixture once the entity/parser values are pinned down).
-- `PacketFinalClassification2026Tests`, `PacketSessionHistory2026Tests`,
-  `PacketLapPositions2026Tests`, `PacketTimeTrial2026Tests` — no 2025 sample existed to convert.
+| Fixture | Test class | Built from |
+|---|---|---|
+| `F1-2026-CarTelemetry2.packet` | `PacketCarTelemetry22026Tests` | §Car Telemetry 2 Packet, 24 × 10 bytes |
+| `F1-2026-LapPositions.packet` | `PacketLapPositions2026Tests` | §Lap Positions Packet, `[50][24]` |
+| `F1-2026-TimeTrial.packet` | `PacketTimeTrial2026Tests` | §Time Trial Packet, `uint16` team id |
+| `F1-2025-TimeTrial.packet` | `PacketTimeTrial2025Tests` | F1 25 layout, `uint8` team id |
 
-When real captures arrive, drop them into `SampleData/` and remove the skip guards.
+Each fixture reuses the 29-byte header of a real capture of the same year and only patches the
+packet id, so the header stays exactly as the game emits it. Only the payload is synthetic, and it
+carries a distinctive value per field so an assertion pins down the offset it belongs to. This
+tests the parser against the **published spec**, not against itself.
+
+The fixtures are generated by `docs/concepts/generate_2026_fixtures.py`, run from the repository
+root. Regenerate them there rather than editing the binaries, and update the expected values in the
+matching test class in the same change.
+
+`PacketFinalClassification2026Tests` and `PacketSessionHistory2026Tests` already exist and run
+against converted 2025 captures.
+
+When real F1 26 captures arrive, drop them into `SampleData/` under the same names and the existing
+assertions become assertions against real data; adjust only the expected values.
 
 ---
 

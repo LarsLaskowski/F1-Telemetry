@@ -20,7 +20,7 @@
     </thead>
     <tbody>
       @for (session of sessions; track session) {
-        <tr (click)="expandSession(session)" onkeydown="expandSession(session)" tabindex="0">
+        <tr (click)="expandSession(session)" (keydown.enter)="expandSession(session)" tabindex="0">
           <td>{{ session.gameVersion }}</td>
           <td>{{ session.track }}</td>
           <td>{{ session.formulaType }}</td>

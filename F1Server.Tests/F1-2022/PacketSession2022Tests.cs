@@ -1,12 +1,8 @@
-﻿using System.IO;
-
-using F1Server.Core;
+﻿using F1Server.Core;
 using F1Server.Core.Data;
 using F1Server.Core.Enumerations;
 using F1Server.Core.PacketData;
 using F1Server.Core.Packets.Interfaces;
-
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace F1Server.Tests;
 
@@ -60,10 +56,10 @@ public class PacketSession2022Tests
     #region Methods F1 2022
 
     /// <summary>
-    /// Check whether the given file has a correct participants data content
+    /// Check whether the given file is a session packet
     /// </summary>
     [TestMethod]
-    public void PacketSessionCheckSession2022IsCorrectPacketType()
+    public void PacketSessionCheck2022IsCorrectPacketType()
     {
         var isCorrect = _packetData.PacketHeader?.PacketType == PacketTypes.Session;
 
@@ -71,10 +67,10 @@ public class PacketSession2022Tests
     }
 
     /// <summary>
-    /// Check whether the given file is a F1 2020 packet
+    /// Check whether the given file is a F1 2022 packet
     /// </summary>
     [TestMethod]
-    public void PacketSessionCheckSession2022IsCorrectGameVersion()
+    public void PacketSessionCheck2022IsCorrectGameVersion()
     {
         var isCorrect = _packetData.PacketHeader?.GameVersion == 2022;
 
@@ -85,7 +81,7 @@ public class PacketSession2022Tests
     /// Check whether the analyzer construct the correct class object
     /// </summary>
     [TestMethod]
-    public void PacketSessionCheckSession2022IsSessionObject()
+    public void PacketSessionCheck2022IsSessionObject()
     {
         if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12022SessionSize + ConstData.F12020HeaderSize)
         {

@@ -1,13 +1,9 @@
-﻿using System.IO;
-
-using F1Server.Core;
+﻿using F1Server.Core;
 using F1Server.Core.Data;
 using F1Server.Core.Enumerations;
 using F1Server.Core.PacketData;
 using F1Server.Core.Packets.Data;
 using F1Server.Core.Utils;
-
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace F1Server.Tests;
 
@@ -61,10 +57,10 @@ public class PacketSessionHistory2021Tests
     #region Methods F1 2021
 
     /// <summary>
-    /// Check whether the given file has a correct participants data content
+    /// Check whether the given file is a session history packet
     /// </summary>
     [TestMethod]
-    public void PacketSessionCheckSessionHistory2021IsCorrectPacketType()
+    public void PacketSessionHistoryCheck2021IsCorrectPacketType()
     {
         var isCorrect = _packetData.PacketHeader?.PacketType == PacketTypes.SessionHistory;
 
@@ -75,7 +71,7 @@ public class PacketSessionHistory2021Tests
     /// Check whether the analyzer construct the correct class object
     /// </summary>
     [TestMethod]
-    public void PacketSessionCheckSessionHistory2021IsSessionHistoryObject()
+    public void PacketSessionHistoryCheck2021IsSessionHistoryObject()
     {
         if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12021SessionHistorySize + ConstData.F12020HeaderSize)
         {
@@ -99,7 +95,7 @@ public class PacketSessionHistory2021Tests
     /// Check best lap number in session history packet
     /// </summary>
     [TestMethod]
-    public void PacketSessionCheckSessionHistory2021BestLap()
+    public void PacketSessionHistoryCheck2021BestLap()
     {
         if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12021SessionHistorySize + ConstData.F12020HeaderSize)
         {
@@ -123,7 +119,7 @@ public class PacketSessionHistory2021Tests
     /// Check car index in session history packet
     /// </summary>
     [TestMethod]
-    public void PacketSessionCheckSessionHistory2021BestLapCarIndex()
+    public void PacketSessionHistoryCheck2021BestLapCarIndex()
     {
         if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12021SessionHistorySize + ConstData.F12020HeaderSize)
         {
@@ -147,7 +143,7 @@ public class PacketSessionHistory2021Tests
     /// Check number of laps in session history packet
     /// </summary>
     [TestMethod]
-    public void PacketSessionCheckSessionHistory2021NumberOfLaps()
+    public void PacketSessionHistoryCheck2021NumberOfLaps()
     {
         if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12021SessionHistorySize + ConstData.F12020HeaderSize)
         {
@@ -171,7 +167,7 @@ public class PacketSessionHistory2021Tests
     /// Check lap time time from lap 1 in lap history data
     /// </summary>
     [TestMethod]
-    public void PacketSessionCheckSessionHistory2021LapTime()
+    public void PacketSessionHistoryCheck2021LapTime()
     {
         if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12021SessionHistorySize + ConstData.F12020HeaderSize)
         {
@@ -195,7 +191,7 @@ public class PacketSessionHistory2021Tests
     /// Check sector 1 time from lap 3 in lap history data
     /// </summary>
     [TestMethod]
-    public void PacketSessionCheckSessionHistory2021Sector1Time()
+    public void PacketSessionHistoryCheck2021Sector1Time()
     {
         if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12021SessionHistorySize + ConstData.F12020HeaderSize)
         {
@@ -219,7 +215,7 @@ public class PacketSessionHistory2021Tests
     /// Check sector 3 time from lap 4 in lap history data
     /// </summary>
     [TestMethod]
-    public void PacketSessionCheckSessionHistory2021Sector3Time()
+    public void PacketSessionHistoryCheck2021Sector3Time()
     {
         if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12021SessionHistorySize + ConstData.F12020HeaderSize)
         {
@@ -243,7 +239,7 @@ public class PacketSessionHistory2021Tests
     /// Check number of tyre stints in session history packet
     /// </summary>
     [TestMethod]
-    public void PacketSessionCheckSessionHistory2021TyreStints()
+    public void PacketSessionHistoryCheck2021TyreStints()
     {
         if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12021SessionHistorySize + ConstData.F12020HeaderSize)
         {
@@ -267,7 +263,7 @@ public class PacketSessionHistory2021Tests
     /// Check first tyre stint actual compound
     /// </summary>
     [TestMethod]
-    public void PacketSessionCheckSessionHistory2021FirstTyreStintActual()
+    public void PacketSessionHistoryCheck2021FirstTyreStintActual()
     {
         if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12021SessionHistorySize + ConstData.F12020HeaderSize)
         {
@@ -291,7 +287,7 @@ public class PacketSessionHistory2021Tests
     /// Check first tyre stint visual compound
     /// </summary>
     [TestMethod]
-    public void PacketSessionCheckSessionHistory2021FirstTyreStintVisual()
+    public void PacketSessionHistoryCheck2021FirstTyreStintVisual()
     {
         if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12021SessionHistorySize + ConstData.F12020HeaderSize)
         {
@@ -315,7 +311,7 @@ public class PacketSessionHistory2021Tests
     /// Check first tyre stint visual compound mapping
     /// </summary>
     [TestMethod]
-    public void PacketSessionCheckSessionHistory2021VisualCompoundMapper()
+    public void PacketSessionHistoryCheck2021VisualCompoundMapper()
     {
         if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12021SessionHistorySize + ConstData.F12020HeaderSize)
         {

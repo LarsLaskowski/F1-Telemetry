@@ -26,7 +26,7 @@ public enum Platforms
     XBox = 4,
 
     /// <summary>
-    /// Origin (PC?)
+    /// Origin (EA PC platform)
     /// </summary>
     Origin = 6
 }

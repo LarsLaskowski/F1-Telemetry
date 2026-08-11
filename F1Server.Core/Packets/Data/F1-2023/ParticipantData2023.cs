@@ -4,7 +4,7 @@ using F1Server.Core.Packets.Interfaces;
 namespace F1Server.Core.Packets.Data;
 
 /// <summary>
-/// Implementation of participant data interface 2023
+/// Implementation of the participant data 2023
 /// </summary>
 public class ParticipantData2023 : IParticipantData2023
 {
@@ -38,7 +38,7 @@ public class ParticipantData2023 : IParticipantData2023
     /// <summary>
     /// Name of the driver
     /// </summary>
-    public string DriverName { get; set; }
+    public string DriverName { get; set; } = string.Empty;
 
     /// <summary>
     /// Is telemetry restricted or public?

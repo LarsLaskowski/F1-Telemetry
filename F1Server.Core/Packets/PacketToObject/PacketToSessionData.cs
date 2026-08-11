@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -12,21 +13,21 @@ namespace F1Server.Core.Packets.PacketToObject;
 /// <summary>
 /// Class to extract a session data object from received packet
 /// </summary>
-/// <param name="packetHeader">Header of packet</param>
-internal class PacketToSessionData(PacketHeader packetHeader) : PacketToXBase(packetHeader)
+internal class PacketToSessionData : PacketToXBase
 {
     #region Methods
 
     /// <summary>
     /// Get session data from received data packet
     /// </summary>
+    /// <param name="packetHeader">Header of packet</param>
     /// <param name="dataPacket">Received data</param>
     /// <returns>Session data object</returns>
-    public object? ExtractSessionDataPacket(ReadOnlySpan<byte> dataPacket)
+    public object? ExtractSessionDataPacket(PacketHeader packetHeader, ReadOnlySpan<byte> dataPacket)
     {
         object? sessionObject = null;
 
-        LastError = string.Empty;
+        Reset(packetHeader);
 
         if (dataPacket.Length > 0 && HasValidPacketLength(dataPacket.Length, GetExpectedPayloadSize()))
         {
@@ -228,9 +229,9 @@ internal class PacketToSessionData(PacketHeader packetHeader) : PacketToXBase(pa
     /// <summary>
     /// Match track id to name
     /// </summary>
-    /// <param name="trackId">Id of track</param>
+    /// <param name="trackId">Id of track, -1 when unknown</param>
     /// <returns>Name of track</returns>
-    private string MatchTrackIdToName(ushort trackId)
+    private string MatchTrackIdToName(short trackId)
     {
         string trackName = trackId switch
                            {
@@ -293,7 +294,7 @@ internal class PacketToSessionData(PacketHeader packetHeader) : PacketToXBase(pa
         {
             var weather = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-            sessionData.Weather = (WeatherCondition)Enum.ToObject(typeof(WeatherCondition), weather);
+            sessionData.Weather = (WeatherCondition)weather;
 
             actOffset += ConstData.TypeUInt8;
 
@@ -317,11 +318,11 @@ internal class PacketToSessionData(PacketHeader packetHeader) : PacketToXBase(pa
 
             sessionType = AdjustSessionType(sessionType);
 
-            sessionData.SessionType = (SessionType)Enum.ToObject(typeof(SessionType), sessionType);
+            sessionData.SessionType = (SessionType)sessionType;
 
             actOffset += ConstData.TypeUInt8;
 
-            sessionData.TrackId = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
+            sessionData.TrackId = (sbyte)Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
             sessionData.TrackName = MatchTrackIdToName(sessionData.TrackId);
 
@@ -329,7 +330,7 @@ internal class PacketToSessionData(PacketHeader packetHeader) : PacketToXBase(pa
 
             var formula = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-            sessionData.FormulaType = (Formula)Enum.ToObject(typeof(Formula), formula);
+            sessionData.FormulaType = (Formula)formula;
 
             actOffset += ConstData.TypeUInt8;
 
@@ -361,14 +362,14 @@ internal class PacketToSessionData(PacketHeader packetHeader) : PacketToXBase(pa
 
             actOffset += ConstData.TypeUInt8;
 
-            sessionData.MarshalZones = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
+            sessionData.NumberOfMarshalZones = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
             actOffset += ConstData.TypeUInt8;
 
             var zoneOffset = actOffset;
 
             // Clamp the packet-provided zone count to the fixed packet layout so manipulated values cannot cause reads past the packet
-            var marshalZoneCount = Math.Min(sessionData.MarshalZones, sessionData.MarshalZone.Length);
+            var marshalZoneCount = Math.Min(sessionData.NumberOfMarshalZones, sessionData.MarshalZones.Length);
 
             for (int marshalZoneIndex = 0; marshalZoneIndex < marshalZoneCount; ++marshalZoneIndex)
             {
@@ -381,18 +382,18 @@ internal class PacketToSessionData(PacketHeader packetHeader) : PacketToXBase(pa
 
                 var zoneFlag = (sbyte)Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, zoneOffset));
 
-                marshalZone.ZoneFlag = (ZoneFlagColor)Enum.ToObject(typeof(ZoneFlagColor), zoneFlag);
+                marshalZone.ZoneFlag = (ZoneFlagColor)zoneFlag;
 
                 zoneOffset += ConstData.TypeInt8;
 
-                sessionData.MarshalZone[marshalZoneIndex] = marshalZone;
+                sessionData.MarshalZones[marshalZoneIndex] = marshalZone;
             }
 
             actOffset += ConstData.TotalMarshalZoneSize;
 
             var safetyCarStatus = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-            sessionData.SafetyCar = (SafetyCarStatus)Enum.ToObject(typeof(SafetyCarStatus), safetyCarStatus);
+            sessionData.SafetyCar = (SafetyCarStatus)safetyCarStatus;
 
             actOffset += ConstData.TypeUInt8;
 
@@ -449,6 +450,7 @@ internal class PacketToSessionData(PacketHeader packetHeader) : PacketToXBase(pa
     /// <param name="offsetToStart">Data offset</param>
     /// <param name="sessionDataBase">Base session data object</param>
     /// <returns>Status</returns>
+    [ExcludeFromCodeCoverage(Justification = "The try/catch wrapper itself cannot be exercised: ExtractSessionDataPacket validates the packet length before the extraction starts, Unsafe.ReadUnaligned performs no bounds check and therefore does not throw, and AdjustSessionType only throws for game versions from 2024 on, so no F1 2019 packet reaches this catch. The reachable extraction stays visible to coverage in ExtractBaseSessionData")]
     private bool ExtractSessionData2019(ref byte dataPacket, int packetLength, int offsetToStart, ISessionDataBase? sessionDataBase)
     {
         var retValue = false;
@@ -461,9 +463,9 @@ internal class PacketToSessionData(PacketHeader packetHeader) : PacketToXBase(pa
 
                 retValue = true;
             }
-            catch
+            catch (Exception ex)
             {
-                // Ignore exceptions in this step
+                LastError = ex.ToString();
             }
         }
 
@@ -478,6 +480,7 @@ internal class PacketToSessionData(PacketHeader packetHeader) : PacketToXBase(pa
     /// <param name="offsetToStart">Data offset</param>
     /// <param name="sessionDataBase">Base session data object</param>
     /// <returns>Status</returns>
+    [ExcludeFromCodeCoverage(Justification = "The try/catch wrapper itself cannot be exercised: ExtractSessionDataPacket validates the packet length before the extraction starts, Unsafe.ReadUnaligned performs no bounds check and therefore does not throw, and AdjustSessionType only throws for game versions from 2024 on, so no F1 2020 packet reaches this catch. The reachable extraction stays visible to coverage in ExtractSessionData2020Core")]
     private bool ExtractSessionData2020(ref byte dataPacket, int packetLength, int offsetToStart, ISessionDataBase? sessionDataBase)
     {
         var retValue = false;
@@ -490,22 +493,33 @@ internal class PacketToSessionData(PacketHeader packetHeader) : PacketToXBase(pa
 
                 if (actOffset > offsetToStart)
                 {
-                    sessionData.NumberWeatherForecastSamples = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
-
-                    actOffset += ConstData.TypeUInt8;
-
-                    ExtractWeatherForecast2020(ref dataPacket, actOffset, sessionData);
+                    ExtractSessionData2020Core(ref dataPacket, actOffset, sessionData);
 
                     retValue = true;
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                // Ignore exceptions in this step
+                LastError = ex.ToString();
             }
         }
 
         return retValue;
+    }
+
+    /// <summary>
+    /// Assign the F1 2020 specific fields of a session packet
+    /// </summary>
+    /// <param name="dataPacket">Received data</param>
+    /// <param name="actOffset">Current offset</param>
+    /// <param name="sessionData">Session data object</param>
+    private void ExtractSessionData2020Core(ref byte dataPacket, int actOffset, SessionData2020 sessionData)
+    {
+        sessionData.NumberWeatherForecastSamples = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
+
+        actOffset += ConstData.TypeUInt8;
+
+        ExtractWeatherForecast2020(ref dataPacket, actOffset, sessionData);
     }
 
     /// <summary>
@@ -516,6 +530,7 @@ internal class PacketToSessionData(PacketHeader packetHeader) : PacketToXBase(pa
     /// <param name="offsetToStart">Data offset</param>
     /// <param name="sessionDataBase">Base session data object</param>
     /// <returns>Status</returns>
+    [ExcludeFromCodeCoverage(Justification = "The try/catch wrapper itself cannot be exercised: ExtractSessionDataPacket validates the packet length before the extraction starts, Unsafe.ReadUnaligned performs no bounds check and therefore does not throw, and AdjustSessionType only throws for game versions from 2024 on, so no F1 2021 packet reaches this catch. The reachable extraction stays visible to coverage in ExtractSessionData2021Core")]
     private bool ExtractSessionData2021(ref byte dataPacket, int packetLength, int offsetToStart, ISessionDataBase? sessionDataBase)
     {
         var retValue = false;
@@ -528,98 +543,109 @@ internal class PacketToSessionData(PacketHeader packetHeader) : PacketToXBase(pa
 
                 if (actOffset > offsetToStart && sessionDataBase is SessionData2021 sessionData)
                 {
-                    sessionData.NumberWeatherForecastSamples = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
-
-                    actOffset += ConstData.TypeUInt8;
-
-                    actOffset = ExtractWeatherForecast2021(ref dataPacket, actOffset, sessionDataBase);
-
-                    var accuracy = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
-
-                    sessionData.ForecastAccuracy = (ForecastAccuracy)Enum.ToObject(typeof(ForecastAccuracy), accuracy);
-
-                    actOffset += ConstData.TypeUInt8;
-
-                    sessionData.AiDifficulty = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
-
-                    actOffset += ConstData.TypeUInt8;
-
-                    sessionData.SeasonLinkIdentifier = Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref dataPacket, actOffset));
-
-                    actOffset += ConstData.TypeUInt32;
-
-                    sessionData.WeekendLinkIdentifier = Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref dataPacket, actOffset));
-
-                    actOffset += ConstData.TypeUInt32;
-
-                    sessionData.SessionLinkIdentifier = Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref dataPacket, actOffset));
-
-                    actOffset += ConstData.TypeUInt32;
-
-                    sessionData.PitStopWindowIdealLap = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
-
-                    actOffset += ConstData.TypeUInt8;
-
-                    sessionData.PitStopWindowLatestLap = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
-
-                    actOffset += ConstData.TypeUInt8;
-
-                    sessionData.PitStopRejoinPosition = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
-
-                    actOffset += ConstData.TypeUInt8;
-
-                    sessionData.IsSteeringAssist = Unsafe.ReadUnaligned<bool>(ref Unsafe.Add(ref dataPacket, actOffset));
-
-                    actOffset += ConstData.TypeUInt8;
-
-                    var brakingAssist = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
-
-                    sessionData.BrakingAssist = (BrakingAssist)Enum.ToObject(typeof(BrakingAssist), brakingAssist);
-
-                    actOffset += ConstData.TypeUInt8;
-
-                    var gearboxAssist = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
-
-                    sessionData.GearboxAssist = (GearboxAssist)Enum.ToObject(typeof(GearboxAssist), gearboxAssist);
-
-                    actOffset += ConstData.TypeUInt8;
-
-                    sessionData.IsPitAssist = Unsafe.ReadUnaligned<bool>(ref Unsafe.Add(ref dataPacket, actOffset));
-
-                    actOffset += ConstData.TypeUInt8;
-
-                    sessionData.IsPitReleaseAssist = Unsafe.ReadUnaligned<bool>(ref Unsafe.Add(ref dataPacket, actOffset));
-
-                    actOffset += ConstData.TypeUInt8;
-
-                    sessionData.IsERSAssist = Unsafe.ReadUnaligned<bool>(ref Unsafe.Add(ref dataPacket, actOffset));
-
-                    actOffset += ConstData.TypeUInt8;
-
-                    sessionData.IsDRSAssist = Unsafe.ReadUnaligned<bool>(ref Unsafe.Add(ref dataPacket, actOffset));
-
-                    actOffset += ConstData.TypeUInt8;
-
-                    var raceLine = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
-
-                    sessionData.DynamicRaceLine = (DynamicRaceLine)Enum.ToObject(typeof(DynamicRaceLine), raceLine);
-
-                    actOffset += ConstData.TypeUInt8;
-
-                    var raceLineType = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
-
-                    sessionData.DynamicRaceLineType = (DynamicRaceLineType)Enum.ToObject(typeof(DynamicRaceLineType), raceLineType);
+                    ExtractSessionData2021Core(ref dataPacket, actOffset, sessionData);
 
                     retValue = true;
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                // Ignore exceptions in this step
+                LastError = ex.ToString();
             }
         }
 
         return retValue;
+    }
+
+    /// <summary>
+    /// Assign the F1 2021 specific fields of a session packet
+    /// </summary>
+    /// <param name="dataPacket">Received data</param>
+    /// <param name="actOffset">Current offset</param>
+    /// <param name="sessionData">Session data object</param>
+    private void ExtractSessionData2021Core(ref byte dataPacket, int actOffset, SessionData2021 sessionData)
+    {
+        sessionData.NumberWeatherForecastSamples = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
+
+        actOffset += ConstData.TypeUInt8;
+
+        actOffset = ExtractWeatherForecast2021(ref dataPacket, actOffset, sessionData);
+
+        var accuracy = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
+
+        sessionData.ForecastAccuracy = (ForecastAccuracy)accuracy;
+
+        actOffset += ConstData.TypeUInt8;
+
+        sessionData.AiDifficulty = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
+
+        actOffset += ConstData.TypeUInt8;
+
+        sessionData.SeasonLinkIdentifier = Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref dataPacket, actOffset));
+
+        actOffset += ConstData.TypeUInt32;
+
+        sessionData.WeekendLinkIdentifier = Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref dataPacket, actOffset));
+
+        actOffset += ConstData.TypeUInt32;
+
+        sessionData.SessionLinkIdentifier = Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref dataPacket, actOffset));
+
+        actOffset += ConstData.TypeUInt32;
+
+        sessionData.PitStopWindowIdealLap = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
+
+        actOffset += ConstData.TypeUInt8;
+
+        sessionData.PitStopWindowLatestLap = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
+
+        actOffset += ConstData.TypeUInt8;
+
+        sessionData.PitStopRejoinPosition = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
+
+        actOffset += ConstData.TypeUInt8;
+
+        sessionData.IsSteeringAssist = Unsafe.ReadUnaligned<bool>(ref Unsafe.Add(ref dataPacket, actOffset));
+
+        actOffset += ConstData.TypeUInt8;
+
+        var brakingAssist = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
+
+        sessionData.BrakingAssist = (BrakingAssist)brakingAssist;
+
+        actOffset += ConstData.TypeUInt8;
+
+        var gearboxAssist = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
+
+        sessionData.GearboxAssist = (GearboxAssist)gearboxAssist;
+
+        actOffset += ConstData.TypeUInt8;
+
+        sessionData.IsPitAssist = Unsafe.ReadUnaligned<bool>(ref Unsafe.Add(ref dataPacket, actOffset));
+
+        actOffset += ConstData.TypeUInt8;
+
+        sessionData.IsPitReleaseAssist = Unsafe.ReadUnaligned<bool>(ref Unsafe.Add(ref dataPacket, actOffset));
+
+        actOffset += ConstData.TypeUInt8;
+
+        sessionData.IsERSAssist = Unsafe.ReadUnaligned<bool>(ref Unsafe.Add(ref dataPacket, actOffset));
+
+        actOffset += ConstData.TypeUInt8;
+
+        sessionData.IsDRSAssist = Unsafe.ReadUnaligned<bool>(ref Unsafe.Add(ref dataPacket, actOffset));
+
+        actOffset += ConstData.TypeUInt8;
+
+        var raceLine = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
+
+        sessionData.DynamicRaceLine = (DynamicRaceLine)raceLine;
+
+        actOffset += ConstData.TypeUInt8;
+
+        var raceLineType = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
+
+        sessionData.DynamicRaceLineType = (DynamicRaceLineType)raceLineType;
     }
 
     /// <summary>
@@ -650,7 +676,7 @@ internal class PacketToSessionData(PacketHeader packetHeader) : PacketToXBase(pa
 
                     var accuracy = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-                    sessionData.ForecastAccuracy = (ForecastAccuracy)Enum.ToObject(typeof(ForecastAccuracy), accuracy);
+                    sessionData.ForecastAccuracy = (ForecastAccuracy)accuracy;
 
                     actOffset += ConstData.TypeUInt8;
 
@@ -688,13 +714,13 @@ internal class PacketToSessionData(PacketHeader packetHeader) : PacketToXBase(pa
 
                     var brakingAssist = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-                    sessionData.BrakingAssist = (BrakingAssist)Enum.ToObject(typeof(BrakingAssist), brakingAssist);
+                    sessionData.BrakingAssist = (BrakingAssist)brakingAssist;
 
                     actOffset += ConstData.TypeUInt8;
 
                     var gearboxAssist = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-                    sessionData.GearboxAssist = (GearboxAssist)Enum.ToObject(typeof(GearboxAssist), gearboxAssist);
+                    sessionData.GearboxAssist = (GearboxAssist)gearboxAssist;
 
                     actOffset += ConstData.TypeUInt8;
 
@@ -716,27 +742,27 @@ internal class PacketToSessionData(PacketHeader packetHeader) : PacketToXBase(pa
 
                     var raceLine = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-                    sessionData.DynamicRaceLine = (DynamicRaceLine)Enum.ToObject(typeof(DynamicRaceLine), raceLine);
+                    sessionData.DynamicRaceLine = (DynamicRaceLine)raceLine;
 
                     actOffset += ConstData.TypeUInt8;
 
                     var raceLineType = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-                    sessionData.DynamicRaceLineType = (DynamicRaceLineType)Enum.ToObject(typeof(DynamicRaceLineType), raceLineType);
+                    sessionData.DynamicRaceLineType = (DynamicRaceLineType)raceLineType;
 
                     actOffset += ConstData.TypeUInt8;
 
                     // Game mode - uint8
                     var gameMode = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-                    sessionData.GameMode = (GameMode)Enum.ToObject(typeof(GameMode), gameMode);
+                    sessionData.GameMode = (GameMode)gameMode;
 
                     actOffset += ConstData.TypeUInt8;
 
                     // Rule set - uint8
                     var ruleSet = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-                    sessionData.RuleSet = (RuleSet)Enum.ToObject(typeof(RuleSet), ruleSet);
+                    sessionData.RuleSet = (RuleSet)ruleSet;
 
                     actOffset += ConstData.TypeUInt8;
 
@@ -748,7 +774,7 @@ internal class PacketToSessionData(PacketHeader packetHeader) : PacketToXBase(pa
                     // Session length - uint8
                     var sessionLength = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-                    sessionData.SessionLength = (SessionLength)Enum.ToObject(typeof(SessionLength), sessionLength);
+                    sessionData.SessionLength = (SessionLength)sessionLength;
 
                     retValue = true;
                 }
@@ -828,13 +854,13 @@ internal class PacketToSessionData(PacketHeader packetHeader) : PacketToXBase(pa
 
                         var recoveryMode = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-                        sessionData.RecoveryMode = (RecoveryMode)Enum.ToObject(typeof(RecoveryMode), recoveryMode);
+                        sessionData.RecoveryMode = (RecoveryMode)recoveryMode;
 
                         actOffset += ConstData.TypeUInt8;
 
                         var flashbackLimit = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-                        sessionData.FlashbackLimit = (FlashbackLimit)Enum.ToObject(typeof(FlashbackLimit), flashbackLimit);
+                        sessionData.FlashbackLimit = (FlashbackLimit)flashbackLimit;
 
                         actOffset += ConstData.TypeUInt8;
 
@@ -860,19 +886,19 @@ internal class PacketToSessionData(PacketHeader packetHeader) : PacketToXBase(pa
 
                         var carDamage = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-                        sessionData.CarDamage = (CarDamage)Enum.ToObject(typeof(CarDamage), carDamage);
+                        sessionData.CarDamage = (CarDamage)carDamage;
 
                         actOffset += ConstData.TypeUInt8;
 
                         var carDamageRate = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-                        sessionData.CarDamageRate = (CarDamageRate)Enum.ToObject(typeof(CarDamageRate), carDamageRate);
+                        sessionData.CarDamageRate = (CarDamageRate)carDamageRate;
 
                         actOffset += ConstData.TypeUInt8;
 
                         var collisions = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-                        sessionData.Collisions = (Collisions)Enum.ToObject(typeof(Collisions), collisions);
+                        sessionData.Collisions = (Collisions)collisions;
 
                         actOffset += ConstData.TypeUInt8;
 
@@ -898,13 +924,13 @@ internal class PacketToSessionData(PacketHeader packetHeader) : PacketToXBase(pa
 
                         var pitStopExperience = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-                        sessionData.PitStopExperience = (PitStopExperience)Enum.ToObject(typeof(PitStopExperience), pitStopExperience);
+                        sessionData.PitStopExperience = (PitStopExperience)pitStopExperience;
 
                         actOffset += ConstData.TypeUInt8;
 
                         var safetyCar = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-                        sessionData.SafetyCarAppearance = (SafetyCarAppearance)Enum.ToObject(typeof(SafetyCarAppearance), safetyCar);
+                        sessionData.SafetyCarAppearance = (SafetyCarAppearance)safetyCar;
 
                         actOffset += ConstData.TypeUInt8;
 
@@ -922,7 +948,7 @@ internal class PacketToSessionData(PacketHeader packetHeader) : PacketToXBase(pa
 
                         var redFlags = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-                        sessionData.RedFlagAppearance = (RedFlagAppearance)Enum.ToObject(typeof(RedFlagAppearance), redFlags);
+                        sessionData.RedFlagAppearance = (RedFlagAppearance)redFlags;
 
                         actOffset += ConstData.TypeUInt8;
 
@@ -1120,7 +1146,7 @@ internal class PacketToSessionData(PacketHeader packetHeader) : PacketToXBase(pa
 
             var accuracy = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-            sessionData.ForecastAccuracy = (ForecastAccuracy)Enum.ToObject(typeof(ForecastAccuracy), accuracy);
+            sessionData.ForecastAccuracy = (ForecastAccuracy)accuracy;
 
             actOffset += ConstData.TypeUInt8;
 
@@ -1158,13 +1184,13 @@ internal class PacketToSessionData(PacketHeader packetHeader) : PacketToXBase(pa
 
             var brakingAssist = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-            sessionData.BrakingAssist = (BrakingAssist)Enum.ToObject(typeof(BrakingAssist), brakingAssist);
+            sessionData.BrakingAssist = (BrakingAssist)brakingAssist;
 
             actOffset += ConstData.TypeUInt8;
 
             var gearboxAssist = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-            sessionData.GearboxAssist = (GearboxAssist)Enum.ToObject(typeof(GearboxAssist), gearboxAssist);
+            sessionData.GearboxAssist = (GearboxAssist)gearboxAssist;
 
             actOffset += ConstData.TypeUInt8;
 
@@ -1186,27 +1212,27 @@ internal class PacketToSessionData(PacketHeader packetHeader) : PacketToXBase(pa
 
             var raceLine = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-            sessionData.DynamicRaceLine = (DynamicRaceLine)Enum.ToObject(typeof(DynamicRaceLine), raceLine);
+            sessionData.DynamicRaceLine = (DynamicRaceLine)raceLine;
 
             actOffset += ConstData.TypeUInt8;
 
             var raceLineType = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-            sessionData.DynamicRaceLineType = (DynamicRaceLineType)Enum.ToObject(typeof(DynamicRaceLineType), raceLineType);
+            sessionData.DynamicRaceLineType = (DynamicRaceLineType)raceLineType;
 
             actOffset += ConstData.TypeUInt8;
 
             // Game mode - uint8
             var gameMode = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-            sessionData.GameMode = (GameMode)Enum.ToObject(typeof(GameMode), gameMode);
+            sessionData.GameMode = (GameMode)gameMode;
 
             actOffset += ConstData.TypeUInt8;
 
             // Rule set - uint8
             var ruleSet = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-            sessionData.RuleSet = (RuleSet)Enum.ToObject(typeof(RuleSet), ruleSet);
+            sessionData.RuleSet = (RuleSet)ruleSet;
 
             actOffset += ConstData.TypeUInt8;
 
@@ -1218,35 +1244,35 @@ internal class PacketToSessionData(PacketHeader packetHeader) : PacketToXBase(pa
             // Session length - uint8
             var sessionLength = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-            sessionData.SessionLength = (SessionLength)Enum.ToObject(typeof(SessionLength), sessionLength);
+            sessionData.SessionLength = (SessionLength)sessionLength;
 
             actOffset += ConstData.TypeUInt8;
 
             // Speed unit lead player - uint8
             var unit = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-            sessionData.SpeedUnit = (SpeedUnits)Enum.ToObject(typeof(SpeedUnits), unit);
+            sessionData.SpeedUnit = (SpeedUnits)unit;
 
             actOffset += ConstData.TypeUInt8;
 
             // Temperature unit lead player - uint8
             unit = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-            sessionData.TemperatureUnit = (TemperatureUnits)Enum.ToObject(typeof(TemperatureUnits), unit);
+            sessionData.TemperatureUnit = (TemperatureUnits)unit;
 
             actOffset += ConstData.TypeUInt8;
 
             // Speed unit secondary player - uint8
             unit = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-            sessionData.SpeedUnitSecondaryPlayer = (SpeedUnits)Enum.ToObject(typeof(SpeedUnits), unit);
+            sessionData.SpeedUnitSecondaryPlayer = (SpeedUnits)unit;
 
             actOffset += ConstData.TypeUInt8;
 
             // Temperature unit secondary player - uint8
             unit = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-            sessionData.TemperatureUnitSecondaryPlayer = (TemperatureUnits)Enum.ToObject(typeof(TemperatureUnits), unit);
+            sessionData.TemperatureUnitSecondaryPlayer = (TemperatureUnits)unit;
 
             actOffset += ConstData.TypeUInt8;
 
@@ -1293,7 +1319,7 @@ internal class PacketToSessionData(PacketHeader packetHeader) : PacketToXBase(pa
                         ++sessionType;
                     }
 
-                    sessionData20.WeatherForecastSamples[weatherSample].SessionType = (SessionType)Enum.ToObject(typeof(SessionType), sessionType);
+                    sessionData20.WeatherForecastSamples[weatherSample].SessionType = (SessionType)sessionType;
 
                     actOffset += ConstData.TypeUInt8;
 
@@ -1303,7 +1329,7 @@ internal class PacketToSessionData(PacketHeader packetHeader) : PacketToXBase(pa
 
                     var weather = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-                    sessionData20.WeatherForecastSamples[weatherSample].Weather = (WeatherCondition)Enum.ToObject(typeof(WeatherCondition), weather);
+                    sessionData20.WeatherForecastSamples[weatherSample].Weather = (WeatherCondition)weather;
 
                     actOffset += ConstData.TypeUInt8;
 
@@ -1342,7 +1368,7 @@ internal class PacketToSessionData(PacketHeader packetHeader) : PacketToXBase(pa
 
                     var sessionType = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-                    sessionData21.WeatherForecastSamples[weatherSampleIndex].SessionType = (SessionType)Enum.ToObject(typeof(SessionType), sessionType);
+                    sessionData21.WeatherForecastSamples[weatherSampleIndex].SessionType = (SessionType)sessionType;
 
                     actOffset += ConstData.TypeUInt8;
 
@@ -1352,7 +1378,7 @@ internal class PacketToSessionData(PacketHeader packetHeader) : PacketToXBase(pa
 
                     var weather = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-                    sessionData21.WeatherForecastSamples[weatherSampleIndex].Weather = (WeatherCondition)Enum.ToObject(typeof(WeatherCondition), weather);
+                    sessionData21.WeatherForecastSamples[weatherSampleIndex].Weather = (WeatherCondition)weather;
 
                     actOffset += ConstData.TypeUInt8;
 
@@ -1362,7 +1388,7 @@ internal class PacketToSessionData(PacketHeader packetHeader) : PacketToXBase(pa
 
                     var tempChange = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-                    sessionData21.WeatherForecastSamples[weatherSampleIndex].TrackTemperatureChange = (TemperatureChange)Enum.ToObject(typeof(TemperatureChange), tempChange);
+                    sessionData21.WeatherForecastSamples[weatherSampleIndex].TrackTemperatureChange = (TemperatureChange)tempChange;
 
                     actOffset += ConstData.TypeInt8;
 
@@ -1372,7 +1398,7 @@ internal class PacketToSessionData(PacketHeader packetHeader) : PacketToXBase(pa
 
                     tempChange = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-                    sessionData21.WeatherForecastSamples[weatherSampleIndex].AirTemperatureChange = (TemperatureChange)Enum.ToObject(typeof(TemperatureChange), tempChange);
+                    sessionData21.WeatherForecastSamples[weatherSampleIndex].AirTemperatureChange = (TemperatureChange)tempChange;
 
                     actOffset += ConstData.TypeInt8;
 
@@ -1409,7 +1435,7 @@ internal class PacketToSessionData(PacketHeader packetHeader) : PacketToXBase(pa
 
                     var sessionType = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-                    sessionData22.WeatherForecastSamples[forecastSample].SessionType = (SessionType)Enum.ToObject(typeof(SessionType), sessionType);
+                    sessionData22.WeatherForecastSamples[forecastSample].SessionType = (SessionType)sessionType;
 
                     actOffset += ConstData.TypeUInt8;
 
@@ -1419,7 +1445,7 @@ internal class PacketToSessionData(PacketHeader packetHeader) : PacketToXBase(pa
 
                     var weather = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-                    sessionData22.WeatherForecastSamples[forecastSample].Weather = (WeatherCondition)Enum.ToObject(typeof(WeatherCondition), weather);
+                    sessionData22.WeatherForecastSamples[forecastSample].Weather = (WeatherCondition)weather;
 
                     actOffset += ConstData.TypeUInt8;
 
@@ -1429,7 +1455,7 @@ internal class PacketToSessionData(PacketHeader packetHeader) : PacketToXBase(pa
 
                     var tempChange = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-                    sessionData22.WeatherForecastSamples[forecastSample].TrackTemperatureChange = (TemperatureChange)Enum.ToObject(typeof(TemperatureChange), tempChange);
+                    sessionData22.WeatherForecastSamples[forecastSample].TrackTemperatureChange = (TemperatureChange)tempChange;
 
                     actOffset += ConstData.TypeInt8;
 
@@ -1439,7 +1465,7 @@ internal class PacketToSessionData(PacketHeader packetHeader) : PacketToXBase(pa
 
                     tempChange = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-                    sessionData22.WeatherForecastSamples[forecastSample].AirTemperatureChange = (TemperatureChange)Enum.ToObject(typeof(TemperatureChange), tempChange);
+                    sessionData22.WeatherForecastSamples[forecastSample].AirTemperatureChange = (TemperatureChange)tempChange;
 
                     actOffset += ConstData.TypeInt8;
 
@@ -1476,7 +1502,7 @@ internal class PacketToSessionData(PacketHeader packetHeader) : PacketToXBase(pa
 
                     var sessionType = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-                    sessionData23.WeatherForecastSamples[forecastSample].SessionType = (SessionType)Enum.ToObject(typeof(SessionType), sessionType);
+                    sessionData23.WeatherForecastSamples[forecastSample].SessionType = (SessionType)sessionType;
 
                     actOffset += ConstData.TypeUInt8;
 
@@ -1486,7 +1512,7 @@ internal class PacketToSessionData(PacketHeader packetHeader) : PacketToXBase(pa
 
                     var weather = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-                    sessionData23.WeatherForecastSamples[forecastSample].Weather = (WeatherCondition)Enum.ToObject(typeof(WeatherCondition), weather);
+                    sessionData23.WeatherForecastSamples[forecastSample].Weather = (WeatherCondition)weather;
 
                     actOffset += ConstData.TypeUInt8;
 
@@ -1496,7 +1522,7 @@ internal class PacketToSessionData(PacketHeader packetHeader) : PacketToXBase(pa
 
                     var tempChange = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-                    sessionData23.WeatherForecastSamples[forecastSample].TrackTemperatureChange = (TemperatureChange)Enum.ToObject(typeof(TemperatureChange), tempChange);
+                    sessionData23.WeatherForecastSamples[forecastSample].TrackTemperatureChange = (TemperatureChange)tempChange;
 
                     actOffset += ConstData.TypeInt8;
 
@@ -1506,7 +1532,7 @@ internal class PacketToSessionData(PacketHeader packetHeader) : PacketToXBase(pa
 
                     tempChange = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-                    sessionData23.WeatherForecastSamples[forecastSample].AirTemperatureChange = (TemperatureChange)Enum.ToObject(typeof(TemperatureChange), tempChange);
+                    sessionData23.WeatherForecastSamples[forecastSample].AirTemperatureChange = (TemperatureChange)tempChange;
 
                     actOffset += ConstData.TypeInt8;
 
@@ -1543,7 +1569,7 @@ internal class PacketToSessionData(PacketHeader packetHeader) : PacketToXBase(pa
 
                     sessionType = AdjustSessionType(sessionType);
 
-                    sessionData.WeekendStructure[weekendStructureIndex] = (SessionType)Enum.ToObject(typeof(SessionType), sessionType);
+                    sessionData.WeekendStructure[weekendStructureIndex] = (SessionType)sessionType;
                 }
 
                 actOffset += ConstData.TypeUInt8;

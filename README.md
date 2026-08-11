@@ -23,11 +23,18 @@ required.
 | Port | Protocol | Container | Description |
 | --- | --- | --- | --- |
 | `20777` | UDP | service | Telemetry port the F1 game sends packets to |
+| `20778` | TCP | service | Replay port the `F1ReplayClient` sends recorded packets to |
 | `80` | TCP | service | REST API and SignalR hub |
 | `80` | TCP | web app | Web interface (served by nginx) |
 
 Configure the F1 game to send UDP telemetry to the host running the service on
 port `20777`.
+
+The service always listens for replay packets on the telemetry port plus one, so
+changing the telemetry port moves the replay port with it. The port has to be
+published (and allowed by the firewall of the host) whenever the
+`F1ReplayClient` runs on another machine than the service, otherwise the client
+cannot deliver a single packet.
 
 ### docker-compose example
 
@@ -38,6 +45,7 @@ services:
     restart: unless-stopped
     ports:
       - "20777:20777/udp"   # telemetry from the game
+      - "20778:20778"       # packets from the replay client
       - "4820:80"           # REST API / SignalR
     environment:
       F1SERVER_DATABASE_TYPE: 3            # 1 = MariaDB, 2 = MSSQL, 3 = PostgreSQL
@@ -118,6 +126,12 @@ support is provided by provider-specific EF Core migration projects
 `F1Server.Db.PostgreSqlMigrations`). The `F1Server.WebApi` project exposes the
 REST controllers and SignalR hubs that feed the Angular frontend.
 
+NuGet versions are managed centrally in `Directory.Packages.props`. A few
+references deviate from the "latest stable, upstream" rule — the pre-release
+OpenTelemetry instrumentation packages, the MySQL provider fork and the analyzer
+beta. Those decisions are documented in
+[`docs/dependency-decisions.md`](docs/dependency-decisions.md).
+
 ### OpenTelemetry integration
 
 Observability is implemented in `F1Server.Observability` around
@@ -135,7 +149,7 @@ is then enabled independently, depending on whether its endpoint variable is set
 
 | Variable | Description |
 | --- | --- |
-| `F1SERVER_OTLP_TARGET` | Export target: `0` (NotSet), `1` (Console), `2` (Zipkin, obsolete), `3` (OpenTelemetry). |
+| `F1SERVER_OTLP_TARGET` | Export target: `0` (NotSet), `1` (Console), `3` (OpenTelemetry). The Docker image defaults to `3`. Value `2` was Zipkin and no longer exists; any value other than `3` falls back to the console exporter. |
 | `F1SERVER_OTLP_TRACES_URL` | OTLP endpoint for traces. |
 | `F1SERVER_OTLP_METRICS_URL` | OTLP endpoint for metrics. |
 | `F1SERVER_OTLP_LOGGING_URL` | OTLP endpoint for logs. |

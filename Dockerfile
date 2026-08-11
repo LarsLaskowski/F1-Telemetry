@@ -42,9 +42,10 @@ LABEL org.opencontainers.image.base.name="${BASE_RUNTIME}"
 LABEL org.opencontainers.image.base.digest="${BASE_RUNTIME_DIGEST}"
 
 EXPOSE 20777/udp
+EXPOSE 20778/tcp
 EXPOSE 80
 
-RUN apk add curl
+RUN apk add --no-cache curl
 HEALTHCHECK --interval=5m --timeout=3s --retries=5 CMD curl --fail http://localhost/api/serverhealth || exit 1
 
 WORKDIR /app
@@ -56,7 +57,7 @@ ENV ASPNETCORE_HTTP_PORTS=80
 ENV F1SERVER_RUN_TELEMETRY_LOGGING=false
 ENV F1SERVER_DATABASE_TYPE=1
 ENV F1SERVER_WEB=true
-ENV F1SERVER_OTLP_TARGET=2
+ENV F1SERVER_OTLP_TARGET=3
 ENV TZ=
 
 VOLUME ["/var/f1-telemetry"]

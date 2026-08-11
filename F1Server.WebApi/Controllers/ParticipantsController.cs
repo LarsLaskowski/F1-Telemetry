@@ -1,11 +1,7 @@
 using System.Diagnostics;
 
 using F1Server.Core.Observability;
-using F1Server.Data.ViewData;
-using F1Server.Db.Entity;
-using F1Server.Db.Entity.Queryable;
-using F1Server.Db.Entity.Repositories;
-using F1Server.Db.Entity.Tables;
+using F1Server.Service.SessionParticipants;
 
 using Microsoft.AspNetCore.Mvc;
 
@@ -21,6 +17,7 @@ public class ParticipantsController : ControllerBase
     #region Fields
 
     private readonly ILogger<ParticipantsController> _logger;
+    private readonly ParticipantService _participantService;
 
     #endregion // Fields
 
@@ -30,14 +27,16 @@ public class ParticipantsController : ControllerBase
     /// Constructor
     /// </summary>
     /// <param name="logger">Logging interface</param>
-    public ParticipantsController(ILogger<ParticipantsController> logger)
+    /// <param name="participantService">Participant business logic</param>
+    public ParticipantsController(ILogger<ParticipantsController> logger, ParticipantService participantService)
     {
         _logger = logger;
+        _participantService = participantService;
     }
 
     #endregion // Constructors
 
-    #region Methods
+    #region Controller methods
 
     /// <summary>
     /// Get participants of specific session
@@ -46,143 +45,20 @@ public class ParticipantsController : ControllerBase
     /// <returns>List of participants</returns>
     [Route("ParticipantsOfSession/{sessionId?}")]
     [HttpGet]
-    public IActionResult GetParticipantsOfSession(long? sessionId)
+    public async Task<IActionResult> GetParticipantsOfSession(long? sessionId)
     {
-        var participants = new List<ParticipantViewData>();
-
         using var currentActivity = AppActivity.ApiSource.StartActivity(nameof(GetParticipantsOfSession));
 
-        _logger?.LogInformation("Load participants for session {SessionId}...", sessionId);
+        _logger?.LoadingParticipants(sessionId);
 
-        using (var dbFactory = RepositoryFactory.CreateInstance())
-        {
-            var dbParticipants = dbFactory.GetRepository<ParticipantRepository>()
-                                          ?.GetQuery()
-                                          ?.Where(s => s.SessionId == sessionId)
-                                          .OrderByDescending(s => s.DriverId)
-                                          .ToList() ?? [];
+        var participants = await _participantService.GetParticipantsOfSessionAsync(sessionId).ConfigureAwait(false);
 
-            if (dbParticipants.Count > 0)
-            {
-                var driverQuery = dbFactory.GetRepository<DriverRepository>()?.GetQuery();
-                var natQuery = dbFactory.GetRepository<NationalityRepository>()?.GetQuery();
-                var teamQuery = dbFactory.GetRepository<TeamRepository>()?.GetQuery();
+        currentActivity?.SetStatus(ActivityStatusCode.Ok);
 
-                using (var participantsLoop = AppActivity.ApiSource.StartActivity("Participants_Loop"))
-                {
-                    foreach (var dbParticipant in dbParticipants)
-                    {
-                        var driverName = GetDriverName(driverQuery, dbParticipant, dbParticipant.DriverName);
-                        var driverNat = GetNationality(natQuery, dbParticipant);
-                        var teamName = GetTeam(teamQuery, dbParticipant);
-
-                        var participant = new ParticipantViewData
-                                          {
-                                              ParticipantDbId = dbParticipant.Id,
-                                              DriverName = driverName,
-                                              DriverNationality = driverNat,
-                                              IsHumanControlled = dbParticipant.IsHumanControlled,
-                                              IsMyTeam = dbParticipant.IsMyTeam != null && dbParticipant.IsMyTeam.Value,
-                                              CarRaceNumber = dbParticipant.CarRaceNumber,
-                                              TeamName = teamName
-                                          };
-
-                        participants.Add(participant);
-                    }
-                }
-            }
-
-            currentActivity?.SetStatus(ActivityStatusCode.Ok);
-        }
-
-        _logger?.LogInformation("Loaded {Participants} participants for session {SessionId}.", participants.Count, sessionId);
+        _logger?.ParticipantsLoaded(participants.Count, sessionId);
 
         return Ok(participants);
     }
 
-    #endregion // Methods
-
-    #region Private methods
-
-    /// <summary>
-    /// Reading the team name
-    /// </summary>
-    /// <param name="teamQuery">Team query</param>
-    /// <param name="dbParticipant">Participant</param>
-    /// <returns>Team name</returns>
-    private string GetTeam(TeamQueryable? teamQuery, ParticipantEntity dbParticipant)
-    {
-        var teamName = string.Empty;
-
-        using var currentActivity = AppActivity.ApiSource.StartActivity(nameof(GetTeam));
-
-        if (teamQuery != null)
-        {
-            var team = teamQuery.FirstOrDefault(t => t.Id == dbParticipant.TeamId);
-
-            if (team != null)
-            {
-                teamName = team.Name;
-            }
-
-            currentActivity?.SetStatus(ActivityStatusCode.Ok);
-        }
-
-        return teamName;
-    }
-
-    /// <summary>
-    /// Reading drivers nationality
-    /// </summary>
-    /// <param name="natQuery">Nationality query</param>
-    /// <param name="dbParticipant">Participant</param>
-    /// <returns>Nationality</returns>
-    private string GetNationality(NationalityQueryable? natQuery, ParticipantEntity dbParticipant)
-    {
-        var driverNat = string.Empty;
-
-        using var currentActivity = AppActivity.ApiSource.StartActivity(nameof(GetNationality));
-
-        if (natQuery != null)
-        {
-            var nat = natQuery.FirstOrDefault(n => n.Id == dbParticipant.NationalityId);
-
-            if (nat != null)
-            {
-                driverNat = nat.Name;
-            }
-
-            currentActivity?.SetStatus(ActivityStatusCode.Ok);
-        }
-
-        return driverNat;
-    }
-
-    /// <summary>
-    /// Reading driver name
-    /// </summary>
-    /// <param name="driverQuery">Driver query</param>
-    /// <param name="dbParticipant">Participant</param>
-    /// <param name="driverName">Driver name</param>
-    /// <returns>Driver name</returns>
-    private string GetDriverName(DriverQueryable? driverQuery, ParticipantEntity dbParticipant, string driverName)
-    {
-        using var currentActivity = AppActivity.ApiSource.StartActivity(nameof(GetDriverName));
-
-        if (driverQuery != null)
-        {
-            var driver = driverQuery.FirstOrDefault(d => d.Id == dbParticipant.DriverId);
-
-            if (driver != null)
-            {
-                driverName = driver.Name;
-            }
-
-            currentActivity?.SetStatus(ActivityStatusCode.Ok);
-        }
-
-        return driverName;
-    }
-
-    #endregion // Private methods
+    #endregion // Controller methods
 }

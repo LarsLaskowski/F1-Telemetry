@@ -1,8 +1,6 @@
 using F1Server.Core.Data;
 using F1Server.Core.Enumerations;
 
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-
 namespace F1Server.Tests;
 
 /// <summary>
@@ -74,6 +72,58 @@ public class ReceivedPacketDataTests
         Assert.AreEqual((ushort)2023, packetData.PacketHeader.GameVersion, "Wrong game version!");
         Assert.IsNull(packetData.HeaderParseException, "No exception should be recorded for a successfully parsed packet!");
         Assert.AreEqual(HeaderRejectionCode.None, packetData.HeaderRejectionCode, "No rejection code should be recorded for a successfully parsed packet!");
+    }
+
+    /// <summary>
+    /// Test to verify that the raw data of a known sample packet is returned unchanged and that its
+    /// header is parsed with the expected values
+    /// </summary>
+    [TestMethod]
+    public void SetRawDataSamplePacketReturnsUnchangedRawDataAndParsedHeader()
+    {
+        var rawData = File.ReadAllBytes(Path.Combine("SampleData", "F1-2025-HeaderCheck.packet"));
+
+        var packetData = new ReceivedPacketData();
+
+        packetData.SetRawData(rawData);
+
+        Assert.AreEqual(rawData.Length, packetData.PacketLength, "Wrong packet length!");
+        Assert.AreSequenceEqual(rawData, packetData.PacketRawData.ToArray(), "Raw data does not match the bytes passed in!");
+
+        Assert.IsNotNull(packetData.PacketHeader, "Packet header is null!");
+        Assert.AreEqual((ushort)2025, packetData.PacketHeader.GameVersion, "Wrong game version!");
+        Assert.AreEqual(PacketTypes.Event, packetData.PacketHeader.PacketType, "Wrong packet type!");
+        Assert.AreEqual(5796033095584019398UL, packetData.PacketHeader.UniqueSessionId, "Wrong unique session id!");
+        Assert.AreEqual(HeaderRejectionCode.None, packetData.HeaderRejectionCode, "No rejection code should be recorded for a successfully parsed packet!");
+    }
+
+    /// <summary>
+    /// Test to verify that the passed array is taken over instead of being copied defensively
+    /// </summary>
+    [TestMethod]
+    public void SetRawDataTakesOwnershipOfPassedArray()
+    {
+        var rawData = BuildRawPacket(2023, ConstData.F12023HeaderSize);
+
+        var packetData = new ReceivedPacketData();
+
+        packetData.SetRawData(rawData);
+
+        rawData[^1] = 42;
+
+        Assert.AreEqual((byte)42, packetData.PacketRawData[^1], "Raw data is not backed by the array passed in!");
+    }
+
+    /// <summary>
+    /// Test to verify that accessing the raw data before <see cref="ReceivedPacketData.SetRawData"/>
+    /// was ever called returns an empty span instead of throwing a <see cref="NullReferenceException"/>
+    /// </summary>
+    [TestMethod]
+    public void PacketRawDataBeforeSetRawDataReturnsEmptySpan()
+    {
+        var packetData = new ReceivedPacketData();
+
+        Assert.IsTrue(packetData.PacketRawData.IsEmpty, "Raw data should be empty before SetRawData was called!");
     }
 
     /// <summary>

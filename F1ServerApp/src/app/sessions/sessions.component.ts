@@ -149,7 +149,6 @@ export class SessionsComponent implements AfterViewInit
         next: (result) =>
         {
           this.sessionsCount = result.totalCount;
-          this.sessions.length = 0;
 
           this.sessions = result.items.map(item =>
           {

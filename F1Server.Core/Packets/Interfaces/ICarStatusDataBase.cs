@@ -10,7 +10,7 @@ public interface ICarStatusDataBase
     #region Properties
 
     /// <summary>
-    /// Traction control 0 - off - 2 - high
+    /// Traction control - 0 - off - 1 - medium - 2 - high
     /// </summary>
     ushort TractionControl { get; set; }
 
@@ -32,7 +32,7 @@ public interface ICarStatusDataBase
     /// <summary>
     /// Pit limiter status - 0 - off - 1 - on
     /// </summary>
-    uint PitLimiterStatus { get; set; }
+    ushort PitLimiterStatus { get; set; }
 
     /// <summary>
     /// Current fuel mass
@@ -90,7 +90,11 @@ public interface ICarStatusDataBase
     float ERSStoreEnergy { get; set; }
 
     /// <summary>
-    /// ERS deployment mode - 0 - none - 1 - medium - 2 - hotlap - 3 - overtake
+    /// ERS deployment mode as the raw value sent by the game. The meaning is year dependent:
+    /// F1 2021 and later use 0 - none - 1 - medium - 2 - hotlap - 3 - overtake, F1 2020 uses
+    /// 0 - none - 1 - medium - 2 - overtake - 3 - hotlap and F1 2019 uses 0 - none - 1 - low -
+    /// 2 - medium - 3 - high - 4 - overtake - 5 - hotlap. See the year specific implementation
+    /// for the values that apply
     /// </summary>
     ushort ERSDeployMode { get; set; }
 

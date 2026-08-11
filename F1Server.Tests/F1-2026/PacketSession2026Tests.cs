@@ -1,12 +1,9 @@
-using System.IO;
-
 using F1Server.Core;
 using F1Server.Core.Data;
 using F1Server.Core.Enumerations;
 using F1Server.Core.PacketData;
+using F1Server.Core.Packets.Data;
 using F1Server.Core.Packets.Interfaces;
-
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace F1Server.Tests;
 
@@ -16,6 +13,35 @@ namespace F1Server.Tests;
 [TestClass]
 public class PacketSession2026Tests
 {
+    #region Constants
+
+    /// <summary>
+    /// Absolute offset of the F1 2026 session core block (fields introduced with F1 2026) within the packet content
+    /// </summary>
+    private const int SessionCore2026Offset = ConstData.F12026HeaderSize + ConstData.F12025SessionSize;
+
+    /// <summary>
+    /// Relative offset of ActiveAeroTrackStatus within the F1 2026 session core block
+    /// </summary>
+    private const int ActiveAeroTrackStatusOffset = 0;
+
+    /// <summary>
+    /// Relative offset of StartReactionTime within the F1 2026 session core block
+    /// </summary>
+    private const int StartReactionTimeOffset = 164;
+
+    /// <summary>
+    /// Relative offset of DynamicRacingLineColourBlind within the F1 2026 session core block
+    /// </summary>
+    private const int DynamicRacingLineColourBlindOffset = 171;
+
+    /// <summary>
+    /// Relative offset of RecurringRewindPrompt within the F1 2026 session core block
+    /// </summary>
+    private const int RecurringRewindPromptOffset = 172;
+
+    #endregion // Constants
+
     #region Fields
 
     private static PacketAnalyzer _packetAnalyzer;
@@ -57,13 +83,46 @@ public class PacketSession2026Tests
 
     #endregion // Initializer/Cleanup
 
+    #region Static methods
+
+    /// <summary>
+    /// Creates a synthetic F1 2026 session packet with distinguishable, non-default values for the new
+    /// F1 2026 fields, so their parser offsets can be verified without relying on the up-converted 2025 sample
+    /// </summary>
+    /// <returns>Packet header and content of the synthetic packet</returns>
+    private static (PacketHeader Header, byte[] Content) CreateSyntheticSession2026Packet()
+    {
+        var content = new byte[ConstData.F12026HeaderSize + ConstData.F12026SessionSize];
+
+        content[0] = (byte)(2026 & 0xFF);
+        content[1] = (byte)((2026 >> 8) & 0xFF);
+
+        content[SessionCore2026Offset + ActiveAeroTrackStatusOffset] = 1;
+
+        BitConverter.GetBytes(0.5234f).CopyTo(content, SessionCore2026Offset + StartReactionTimeOffset);
+
+        content[SessionCore2026Offset + DynamicRacingLineColourBlindOffset] = 2;
+
+        content[SessionCore2026Offset + RecurringRewindPromptOffset] = 1;
+
+        var receivedData = new ReceivedPacketData();
+
+        receivedData.SetRawData(content);
+
+        Assert.IsNotNull(receivedData.PacketHeader, "Synthetic F1 2026 session header could not be created!");
+
+        return (receivedData.PacketHeader, content);
+    }
+
+    #endregion // Static methods
+
     #region Methods F1 2026
 
     /// <summary>
     /// Check whether the given file has a correct session data content
     /// </summary>
     [TestMethod]
-    public void PacketSessionCheckSession2026IsCorrectPacketType()
+    public void PacketSessionCheck2026IsCorrectPacketType()
     {
         var isCorrect = _packetData.PacketHeader?.PacketType == PacketTypes.Session;
 
@@ -74,7 +133,7 @@ public class PacketSession2026Tests
     /// Check whether the given file is a F1 2026 packet
     /// </summary>
     [TestMethod]
-    public void PacketSessionCheckSession2026IsCorrectGameVersion()
+    public void PacketSessionCheck2026IsCorrectGameVersion()
     {
         var isCorrect = _packetData.PacketHeader?.GameVersion == 2026;
 
@@ -85,7 +144,7 @@ public class PacketSession2026Tests
     /// Check whether the analyzer constructs a F1 2026 session data object
     /// </summary>
     [TestMethod]
-    public void PacketSessionCheckSession2026IsSessionDataObject()
+    public void PacketSessionCheck2026IsSessionDataObject()
     {
         var session = _packetAnalyzer.GetSessionData(_packetData.PacketHeader!, _packetContent);
 
@@ -104,7 +163,7 @@ public class PacketSession2026Tests
 
         if (session is SessionData data && data.PacketData is ISessionData2026 sessionData)
         {
-            Assert.AreEqual((ushort)0, sessionData.TrackId, "Incorrect track id!");
+            Assert.AreEqual((short)0, sessionData.TrackId, "Incorrect track id!");
             Assert.AreEqual("Melbourne", sessionData.TrackName, "Incorrect track name!");
         }
         else
@@ -227,6 +286,90 @@ public class PacketSession2026Tests
         else
         {
             Assert.IsNull(_packetData.PacketHeader, "Invalid F1 2026 packet header or content!");
+        }
+    }
+
+    /// <summary>
+    /// A non-default active aero track status must round-trip through the parser at its documented offset,
+    /// so a wrong offset does not stay hidden behind the placeholder value 0 in the up-converted 2025 sample
+    /// </summary>
+    [TestMethod]
+    public void PacketSessionActiveAeroTrackStatus2026SyntheticValueRoundTrips()
+    {
+        var (header, content) = CreateSyntheticSession2026Packet();
+
+        var session = _packetAnalyzer.GetSessionData(header, content);
+
+        if (session is SessionData data && data.PacketData is ISessionData2026 sessionData)
+        {
+            Assert.AreEqual((ushort)1, sessionData.ActiveAeroTrackStatus, "ActiveAeroTrackStatus must decode the synthetic partial-status value!");
+        }
+        else
+        {
+            Assert.Fail("Synthetic F1 2026 session packet did not produce an ISessionData2026 object!");
+        }
+    }
+
+    /// <summary>
+    /// A non-default start reaction time must round-trip through the parser at its documented offset,
+    /// so a wrong offset does not stay hidden behind the placeholder value 0 in the up-converted 2025 sample
+    /// </summary>
+    [TestMethod]
+    public void PacketSessionStartReactionTime2026SyntheticValueRoundTrips()
+    {
+        var (header, content) = CreateSyntheticSession2026Packet();
+
+        var session = _packetAnalyzer.GetSessionData(header, content);
+
+        if (session is SessionData data && data.PacketData is ISessionData2026 sessionData)
+        {
+            Assert.AreEqual(0.5234f, sessionData.StartReactionTime, 0.0001f, "StartReactionTime must decode the synthetic reaction time value!");
+        }
+        else
+        {
+            Assert.Fail("Synthetic F1 2026 session packet did not produce an ISessionData2026 object!");
+        }
+    }
+
+    /// <summary>
+    /// A non-default dynamic racing line colour blind mode must round-trip through the parser at its documented
+    /// offset, so a wrong offset does not stay hidden behind the placeholder value 0 in the up-converted 2025 sample
+    /// </summary>
+    [TestMethod]
+    public void PacketSessionDynamicRacingLineColourBlind2026SyntheticValueRoundTrips()
+    {
+        var (header, content) = CreateSyntheticSession2026Packet();
+
+        var session = _packetAnalyzer.GetSessionData(header, content);
+
+        if (session is SessionData data && data.PacketData is ISessionData2026 sessionData)
+        {
+            Assert.AreEqual((ushort)2, sessionData.DynamicRacingLineColourBlind, "DynamicRacingLineColourBlind must decode the synthetic Deuteranopia value!");
+        }
+        else
+        {
+            Assert.Fail("Synthetic F1 2026 session packet did not produce an ISessionData2026 object!");
+        }
+    }
+
+    /// <summary>
+    /// A non-default recurring rewind prompt flag must round-trip through the parser at its documented offset,
+    /// so a wrong offset does not stay hidden behind the placeholder value false in the up-converted 2025 sample
+    /// </summary>
+    [TestMethod]
+    public void PacketSessionRecurringRewindPrompt2026SyntheticValueRoundTrips()
+    {
+        var (header, content) = CreateSyntheticSession2026Packet();
+
+        var session = _packetAnalyzer.GetSessionData(header, content);
+
+        if (session is SessionData data && data.PacketData is ISessionData2026 sessionData)
+        {
+            Assert.IsTrue(sessionData.RecurringRewindPrompt, "RecurringRewindPrompt must decode the synthetic true value!");
+        }
+        else
+        {
+            Assert.Fail("Synthetic F1 2026 session packet did not produce an ISessionData2026 object!");
         }
     }
 

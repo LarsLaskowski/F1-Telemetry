@@ -12,12 +12,12 @@ public interface ITimeTrialDataSetBase
     /// <summary>
     /// Index of the car this data relates to
     /// </summary>
-    int CarIndex { get; set; }
+    ushort CarIndex { get; set; }
 
     /// <summary>
     /// Id of the team
     /// </summary>
-    int TeamId { get; set; }
+    ushort TeamId { get; set; }
 
     /// <summary>
     /// Lap time in milliseconds
@@ -40,14 +40,14 @@ public interface ITimeTrialDataSetBase
     uint Sector3Time { get; set; }
 
     /// <summary>
-    /// Traction control
+    /// Traction control (false = assist off, true = assist on)
     /// </summary>
-    TractionControl TractionControl { get; set; }
+    bool TractionControl { get; set; }
 
     /// <summary>
-    /// Assist settings of the gear box
+    /// Assist settings of the gear box (false = assist off, true = assist on)
     /// </summary>
-    GearboxAssist GearboxAssist { get; set; }
+    bool GearboxAssist { get; set; }
 
     /// <summary>
     /// Anti lock brakes (off = false, on = true)

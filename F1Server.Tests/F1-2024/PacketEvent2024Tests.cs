@@ -1,5 +1,4 @@
-﻿using System.IO;
-using System.Text;
+﻿using System.Text;
 
 using F1Server.Core;
 using F1Server.Core.Data;
@@ -7,8 +6,6 @@ using F1Server.Core.Enumerations;
 using F1Server.Core.PacketData;
 using F1Server.Core.Packets.Data;
 using F1Server.Core.Packets.Interfaces;
-
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace F1Server.Tests;
 
@@ -113,7 +110,7 @@ public class PacketEvent2024Tests
     }
 
     /// <summary>
-    /// Check whether the given file is a F1 2020 packet
+    /// Check whether the given file is a F1 2024 packet
     /// </summary>
     [TestMethod]
     public void PacketEvent2024IsCorrectGameVersion()
@@ -201,7 +198,7 @@ public class PacketEvent2024Tests
     /// Check top speed from packet
     /// </summary>
     [TestMethod]
-    public void PacketEvent2024IsTopSpeedVehicleExpectedZero()
+    public void PacketEvent2024IsTopSpeedVehicleExpectedOne()
     {
         if (_packetDataTopSpeed.PacketHeader != null)
         {
@@ -326,7 +323,7 @@ public class PacketEvent2024Tests
     /// Check penalty infringement type from packet
     /// </summary>
     [TestMethod]
-    public void PacketEvent2024IsPenaltyInfringementTypeExpectedLapInvalidRunningWide()
+    public void PacketEvent2024IsPenaltyInfringementTypeExpectedRetiredMechanicalFailure()
     {
         if (_packetDataPenalty.PacketHeader != null)
         {
@@ -351,7 +348,7 @@ public class PacketEvent2024Tests
     /// Check penalty vehicle from packet
     /// </summary>
     [TestMethod]
-    public void PacketEvent2024IsPenaltyVehicleExpectedZero()
+    public void PacketEvent2024IsPenaltyVehicleExpectedThirteen()
     {
         if (_packetDataPenalty.PacketHeader != null)
         {
@@ -376,7 +373,7 @@ public class PacketEvent2024Tests
     /// Check penalty lap number from packet
     /// </summary>
     [TestMethod]
-    public void PacketEvent2024IsPenaltyLapNumberExpectedThree()
+    public void PacketEvent2024IsPenaltyLapNumberExpectedTwentySix()
     {
         if (_packetDataPenalty.PacketHeader != null)
         {

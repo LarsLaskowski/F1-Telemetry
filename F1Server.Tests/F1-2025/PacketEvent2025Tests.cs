@@ -1,5 +1,4 @@
-﻿using System.IO;
-using System.Text;
+﻿using System.Text;
 
 using F1Server.Core;
 using F1Server.Core.Data;
@@ -7,8 +6,6 @@ using F1Server.Core.Enumerations;
 using F1Server.Core.PacketData;
 using F1Server.Core.Packets.Data;
 using F1Server.Core.Packets.Interfaces;
-
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace F1Server.Tests;
 
@@ -113,7 +110,7 @@ public class PacketEvent2025Tests
     }
 
     /// <summary>
-    /// Check whether the given file is a F1 2020 packet
+    /// Check whether the given file is a F1 2025 packet
     /// </summary>
     [TestMethod]
     public void PacketEvent2025IsCorrectGameVersion()
@@ -201,7 +198,7 @@ public class PacketEvent2025Tests
     /// Check top speed from packet
     /// </summary>
     [TestMethod]
-    public void PacketEvent2025IsTopSpeedVehicleExpectedZero()
+    public void PacketEvent2025IsTopSpeedVehicleExpectedTwenty()
     {
         if (_packetDataTopSpeed.PacketHeader != null)
         {
@@ -351,7 +348,7 @@ public class PacketEvent2025Tests
     /// Check penalty vehicle from packet
     /// </summary>
     [TestMethod]
-    public void PacketEvent2025IsPenaltyVehicleExpectedZero()
+    public void PacketEvent2025IsPenaltyVehicleExpectedTwentyOne()
     {
         if (_packetDataPenalty.PacketHeader != null)
         {
@@ -376,7 +373,7 @@ public class PacketEvent2025Tests
     /// Check penalty lap number from packet
     /// </summary>
     [TestMethod]
-    public void PacketEvent2025IsPenaltyLapNumberExpectedThree()
+    public void PacketEvent2025IsPenaltyLapNumberExpectedSixteen()
     {
         if (_packetDataPenalty.PacketHeader != null)
         {

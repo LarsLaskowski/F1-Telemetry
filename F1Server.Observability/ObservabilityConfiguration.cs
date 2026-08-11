@@ -122,7 +122,8 @@ public sealed class ObservabilityConfiguration : IDisposable
     }
 
     /// <summary>
-    /// Activates and configures metrics for the F1-Telemetry server, enabling Prometheus-based monitoring
+    /// Activates and configures metrics for the F1-Telemetry server and registers the OTLP exporter
+    /// so the meters are pushed over gRPC to the configured OpenTelemetry endpoint
     /// </summary>
     /// <param name="serviceProvider">A <see cref="IServiceProvider"/> containing the configured services</param>
     /// <returns>Status</returns>

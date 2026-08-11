@@ -33,6 +33,15 @@ public class TimerManagerTests
 
     #endregion // Constants
 
+    #region Properties
+
+    /// <summary>
+    /// Gets or sets the test context which provides information about and functionality for the current test run
+    /// </summary>
+    public TestContext TestContext { get; set; }
+
+    #endregion // Properties
+
     #region Static methods
 
     /// <summary>
@@ -109,7 +118,7 @@ public class TimerManagerTests
                                               });
                 }
 
-                Assert.IsTrue(firstTick.Wait(FirstTickTimeout), "The timer should have ticked at least once.");
+                Assert.IsTrue(firstTick.Wait(FirstTickTimeout, TestContext.CancellationToken), "The timer should have ticked at least once.");
 
                 Thread.Sleep(TickObservationTime);
 

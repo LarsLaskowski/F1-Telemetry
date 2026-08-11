@@ -13,21 +13,21 @@ namespace F1Server.Core.Packets.PacketToObject;
 /// <summary>
 /// Class to extract a final classification object from received packet
 /// </summary>
-/// <param name="packetHeader">Header of packet</param>
-internal class PacketToFinalClassification(PacketHeader packetHeader) : PacketToXBase(packetHeader)
+internal class PacketToFinalClassification : PacketToXBase
 {
     #region Methods
 
     /// <summary>
     /// Extract final classification data  on actual game version of packet
     /// </summary>
+    /// <param name="packetHeader">Header of packet</param>
     /// <param name="dataPacket">Received packet</param>
     /// <returns>Final classification</returns>
-    public object? ExtractFinalClassificationData(ReadOnlySpan<byte> dataPacket)
+    public object? ExtractFinalClassificationData(PacketHeader packetHeader, ReadOnlySpan<byte> dataPacket)
     {
         object? finalClassObject = null;
 
-        LastError = string.Empty;
+        Reset(packetHeader);
 
         if (dataPacket.Length > 0)
         {
@@ -255,7 +255,7 @@ internal class PacketToFinalClassification(PacketHeader packetHeader) : PacketTo
     {
         var finalClassData = new FinalClassificationCarData2021();
 
-        if (packetLength >= offsetToStart + ConstData.F12020FinalClassificationCarSize)
+        if (packetLength >= offsetToStart + ConstData.F12021FinalClassificationCarSize)
         {
             var actOffset = offsetToStart;
 
@@ -624,7 +624,7 @@ internal class PacketToFinalClassification(PacketHeader packetHeader) : PacketTo
 
             var resultReason = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-            finalClassData.ResultReason = (ResultReason)Enum.ToObject(typeof(ResultReason), resultReason + 1);
+            finalClassData.ResultReason = (ResultReason)resultReason + 1;
 
             actOffset += ConstData.TypeUInt8;
 
@@ -716,7 +716,7 @@ internal class PacketToFinalClassification(PacketHeader packetHeader) : PacketTo
 
             var resultReason = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-            finalClassData.ResultReason = (ResultReason)Enum.ToObject(typeof(ResultReason), resultReason + 1);
+            finalClassData.ResultReason = (ResultReason)resultReason + 1;
 
             actOffset += ConstData.TypeUInt8;
 

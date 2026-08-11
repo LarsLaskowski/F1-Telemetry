@@ -15,6 +15,11 @@ public class ParticipantsData2023 : IParticipantsBase
     public ParticipantsData2023()
     {
         Participants = new ParticipantData2023[22];
+
+        for (int participant = 0; participant < Participants.Length; ++participant)
+        {
+            Participants[participant] = new ParticipantData2023();
+        }
     }
 
     #endregion // Constructors
@@ -29,7 +34,7 @@ public class ParticipantsData2023 : IParticipantsBase
     /// <summary>
     /// Data about participants in current session
     /// </summary>
-    public IParticipantDataBase[] Participants { get; set; }
+    public IParticipantDataBase[] Participants { get; }
 
     #endregion // IParticipantsBase
 }

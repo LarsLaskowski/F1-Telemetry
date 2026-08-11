@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 using Microsoft.EntityFrameworkCore;
 
@@ -28,6 +29,7 @@ public class GameVersionEntity
     /// <summary>
     /// Name of game
     /// </summary>
+    [MaxLength(100)]
     public string Name { get; set; }
 
     /// <summary>

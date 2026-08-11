@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 using Microsoft.EntityFrameworkCore;
 
@@ -95,6 +96,7 @@ public class ParticipantEntity
     /// <summary>
     /// Drivers name
     /// </summary>
+    [MaxLength(100)]
     public string DriverName { get; set; }
 
     /// <summary>
@@ -133,7 +135,7 @@ public class ParticipantEntity
     /// <summary>
     /// Laps of the participant
     /// </summary>
-    public virtual ICollection<LapEntity> Laps { get; } = new List<LapEntity>();
+    public virtual ICollection<LapEntity> Laps { get; } = [];
 
     #endregion // Navigation properties
 }

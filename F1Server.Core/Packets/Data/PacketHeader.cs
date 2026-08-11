@@ -6,82 +6,57 @@ namespace F1Server.Core.Packets.Data;
 /// <summary>
 /// Data class packet header
 /// </summary>
-public class PacketHeader : IHeader, IHeaderExtended, IHeaderExtended2
+public class PacketHeader : IHeader
 {
-    #region IHeader
+    #region Properties
 
     /// <summary>
-    /// Packet format (2019, 2020, 2021, 2022, 2023, ...)
-    /// </summary>
-    public ushort GameVersion { get; set; }
-
-    /// <summary>
-    /// Major version
-    /// </summary>
-    public byte MajorGameVersion { get; set; }
-
-    /// <summary>
-    /// Minor version
-    /// </summary>
-    public byte MinorGameVersion { get; set; }
-
-    /// <summary>
-    /// Packet version
-    /// </summary>
-    public byte PacketVersion { get; set; }
-
-    /// <summary>
-    /// Packet type
-    /// </summary>
-    public PacketTypes PacketType { get; set; }
-
-    /// <summary>
-    /// Unique id of session
-    /// </summary>
-    public ulong UniqueSessionId { get; set; }
-
-    /// <summary>
-    /// Timestamp of session
-    /// </summary>
-    public float SessionTime { get; set; }
-
-    /// <summary>
-    /// Numeric session timestamp
+    /// Raw bit pattern of <see cref="SessionTime"/>, read as an unsigned integer from the same
+    /// packet offset. Used as an ordering and comparison key when packets of the same session
+    /// are sequenced, because the raw value is directly comparable without floating point
+    /// tolerance. Not part of any header interface - an implementation-only addition.
     /// </summary>
     public uint SessionTimeNum { get; set; }
 
-    /// <summary>
-    /// ID for the frame the data is retrieved on
-    /// </summary>
-    public uint FrameIdentifier { get; set; }
+    #endregion // Properties
 
-    /// <summary>
-    /// Index of player's car
-    /// </summary>
-    public ushort PlayerCarIndex { get; set; }
+    #region IHeader
 
-    #endregion // IHeader
+    /// <inheritdoc/>
+    public ushort GameVersion { get; set; }
 
-    #region IHeaderExtended
-
-    /// <summary>
-    /// Index of secondary player's car (splitscreen) - 255 if no second car
-    /// </summary>
-    public ushort PlayerCarIndexSecondary { get; set; }
-
-    #endregion // IHeaderExtended
-
-    #region IHeaderExtended2
-
-    /// <summary>
-    /// Game year - last two digits
-    /// </summary>
+    /// <inheritdoc/>
     public ushort GameYear { get; set; }
 
-    /// <summary>
-    /// Overall identifier for the frame the data was received (doesn't go back after flashbacks)
-    /// </summary>
+    /// <inheritdoc/>
+    public byte MajorGameVersion { get; set; }
+
+    /// <inheritdoc/>
+    public byte MinorGameVersion { get; set; }
+
+    /// <inheritdoc/>
+    public byte PacketVersion { get; set; }
+
+    /// <inheritdoc/>
+    public PacketTypes PacketType { get; set; }
+
+    /// <inheritdoc/>
+    public ulong UniqueSessionId { get; set; }
+
+    /// <inheritdoc/>
+    public float SessionTime { get; set; }
+
+    /// <inheritdoc/>
+    public uint FrameIdentifier { get; set; }
+
+    /// <inheritdoc/>
     public uint OverallFrameIdentifier { get; set; }
 
-    #endregion // IHeaderExtended2
+    /// <inheritdoc/>
+    public ushort PlayerCarIndex { get; set; }
+
+    /// <inheritdoc/>
+    public ushort PlayerCarIndexSecondary { get; set; }
+
+    #endregion // IHeader
 }

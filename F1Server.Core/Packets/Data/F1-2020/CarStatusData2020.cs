@@ -87,7 +87,7 @@ public class CarStatusData2020 : ICarStatusData2020
     /// <summary>
     /// Pit limiter status - 0 - off - 1 - on
     /// </summary>
-    public uint PitLimiterStatus { get; set; }
+    public ushort PitLimiterStatus { get; set; }
 
     /// <summary>
     /// Current fuel mass
@@ -145,7 +145,7 @@ public class CarStatusData2020 : ICarStatusData2020
     public float ERSStoreEnergy { get; set; }
 
     /// <summary>
-    /// ERS deployment mode - 0 - none - 1 - medium - 2 - hotlap - 3 - overtake
+    /// ERS deployment mode - 0 - none - 1 - medium - 2 - overtake - 3 - hotlap
     /// </summary>
     public ushort ERSDeployMode { get; set; }
 

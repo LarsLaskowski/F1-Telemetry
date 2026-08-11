@@ -46,7 +46,7 @@ public enum ResultStatus
     Retired,
 
     /// <summary>
-    /// Did not finished
+    /// Did not finish
     /// </summary>
-    DidNotFinished
+    DidNotFinish
 }

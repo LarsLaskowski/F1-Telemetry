@@ -46,9 +46,9 @@ public interface ISessionDataBase
     SessionType SessionType { get; set; }
 
     /// <summary>
-    /// Track id
+    /// Track id, -1 when unknown
     /// </summary>
-    ushort TrackId { get; set; }
+    short TrackId { get; set; }
 
     /// <summary>
     /// Name of the track
@@ -98,12 +98,12 @@ public interface ISessionDataBase
     /// <summary>
     /// Number of marshal zones
     /// </summary>
-    ushort MarshalZones { get; set; }
+    ushort NumberOfMarshalZones { get; set; }
 
     /// <summary>
     /// Marshal zone data
     /// </summary>
-    MarshalZone[] MarshalZone { get; }
+    MarshalZone[] MarshalZones { get; }
 
     /// <summary>
     /// Safety car status

@@ -3,7 +3,7 @@
 namespace F1Server.Core.Packets.Data;
 
 /// <summary>
-/// Pressure of all tyres
+/// Livery color of a car
 /// </summary>
 public class LiveryColor : ILiveryColor
 {

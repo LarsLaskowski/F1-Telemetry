@@ -12,21 +12,21 @@ namespace F1Server.Core.Packets.PacketToObject;
 /// <summary>
 /// Class to extract a time trial object from received packet
 /// </summary>
-/// <param name="packetHeader">Packet header</param>
-internal class PacketToTimeTrialData(PacketHeader packetHeader) : PacketToXBase(packetHeader)
+internal class PacketToTimeTrialData : PacketToXBase
 {
     #region Methods
 
     /// <summary>
     /// Get time trial data from received packet
     /// </summary>
+    /// <param name="packetHeader">Header of packet</param>
     /// <param name="dataPacket">Received data packet</param>
     /// <returns>Time trial data object</returns>
-    public object? ExtractTimeTrialDataPacket(ReadOnlySpan<byte> dataPacket)
+    public object? ExtractTimeTrialDataPacket(PacketHeader packetHeader, ReadOnlySpan<byte> dataPacket)
     {
         object? timeTrial = null;
 
-        LastError = string.Empty;
+        Reset(packetHeader);
 
         if (dataPacket.Length > 0)
         {
@@ -145,9 +145,19 @@ internal class PacketToTimeTrialData(PacketHeader packetHeader) : PacketToXBase(
 
                 actOffset += ConstData.TypeUInt8;
 
-                timeTrialData.TeamId = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
+                // F1 2026 widened the team id from uint8 to uint16, every earlier year still sends one byte
+                if (timeTrialData is TimeTrialDataSet2026)
+                {
+                    timeTrialData.TeamId = Unsafe.ReadUnaligned<ushort>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-                actOffset += ConstData.TypeUInt8;
+                    actOffset += ConstData.TypeUInt16;
+                }
+                else
+                {
+                    timeTrialData.TeamId = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
+
+                    actOffset += ConstData.TypeUInt8;
+                }
 
                 timeTrialData.LapTime = Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref dataPacket, actOffset));
 
@@ -165,15 +175,11 @@ internal class PacketToTimeTrialData(PacketHeader packetHeader) : PacketToXBase(
 
                 actOffset += ConstData.TypeUInt32;
 
-                var enumValue = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
-
-                timeTrialData.TractionControl = (TractionControl)Enum.ToObject(typeof(TractionControl), enumValue);
+                timeTrialData.TractionControl = Unsafe.ReadUnaligned<bool>(ref Unsafe.Add(ref dataPacket, actOffset));
 
                 actOffset += ConstData.TypeUInt8;
 
-                enumValue = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
-
-                timeTrialData.GearboxAssist = (GearboxAssist)Enum.ToObject(typeof(GearboxAssist), enumValue);
+                timeTrialData.GearboxAssist = Unsafe.ReadUnaligned<bool>(ref Unsafe.Add(ref dataPacket, actOffset));
 
                 actOffset += ConstData.TypeUInt8;
 

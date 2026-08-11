@@ -16,7 +16,7 @@ public class SessionData2023 : ISessionData2023
     /// <param name="forecastSamples">Forecast samples</param>
     public SessionData2023(int forecastSamples = 56)
     {
-        MarshalZone = new MarshalZone[21];
+        MarshalZones = new MarshalZone[21];
         WeatherForecastSamples = new WeatherForecastSample[forecastSamples];
     }
 
@@ -60,9 +60,9 @@ public class SessionData2023 : ISessionData2023
     public SessionType SessionType { get; set; }
 
     /// <summary>
-    /// Track id
+    /// Track id, -1 when unknown
     /// </summary>
-    public ushort TrackId { get; set; }
+    public short TrackId { get; set; }
 
     /// <summary>
     /// Name of the track
@@ -112,12 +112,12 @@ public class SessionData2023 : ISessionData2023
     /// <summary>
     /// Number of marshal zones
     /// </summary>
-    public ushort MarshalZones { get; set; }
+    public ushort NumberOfMarshalZones { get; set; }
 
     /// <summary>
     /// Marshal zone data
     /// </summary>
-    public MarshalZone[] MarshalZone { get; }
+    public MarshalZone[] MarshalZones { get; }
 
     /// <summary>
     /// Safety car status
@@ -145,7 +145,7 @@ public class SessionData2023 : ISessionData2023
 
     #endregion // ISessionData2020
 
-    #region ISessionData2023
+    #region ISessionData2021
 
     /// <summary>
     /// Forecast accuracy
@@ -232,6 +232,10 @@ public class SessionData2023 : ISessionData2023
     /// </summary>
     public DynamicRaceLineType DynamicRaceLineType { get; set; }
 
+    #endregion // ISessionData2021
+
+    #region ISessionData2022
+
     /// <summary>
     /// Game mode
     /// </summary>
@@ -251,6 +255,10 @@ public class SessionData2023 : ISessionData2023
     /// Length of session
     /// </summary>
     public SessionLength SessionLength { get; set; }
+
+    #endregion // ISessionData2022
+
+    #region ISessionData2023
 
     /// <summary>
     /// Players speed unit

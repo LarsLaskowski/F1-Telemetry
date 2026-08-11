@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -12,21 +13,21 @@ namespace F1Server.Core.Packets.PacketToObject;
 /// <summary>
 /// Class to extract a car telemetry object from received packet
 /// </summary>
-/// <param name="packetHeader">Header of packet</param>
-internal class PacketToCarTelemetry(PacketHeader packetHeader) : PacketToXBase(packetHeader)
+internal class PacketToCarTelemetry : PacketToXBase
 {
     #region Methods
 
     /// <summary>
     /// Get car telemetry data from received data packet
     /// </summary>
+    /// <param name="packetHeader">Header of packet</param>
     /// <param name="dataPacket">Received data</param>
     /// <returns>Object</returns>
-    public object? ExtractCarTelemetryData(ReadOnlySpan<byte> dataPacket)
+    public object? ExtractCarTelemetryData(PacketHeader packetHeader, ReadOnlySpan<byte> dataPacket)
     {
         object? carTelemetryObject = null;
 
-        LastError = string.Empty;
+        Reset(packetHeader);
 
         if (dataPacket.Length > 0)
         {
@@ -88,6 +89,7 @@ internal class PacketToCarTelemetry(PacketHeader packetHeader) : PacketToXBase(p
     /// <param name="packetLength">Size of received packet</param>
     /// <param name="carTelemetryData">Object for car telemetry</param>
     /// <returns>Car telemetry data object</returns>
+    [ExcludeFromCodeCoverage(Justification = "The try/catch wrapper itself cannot be exercised: the packet length is validated by HasValidPacketLength before the extraction starts, Unsafe.ReadUnaligned performs no bounds check and therefore does not throw, and the game version switch in ExtractCarTelemetryData only creates matching data objects, so ThrowInvalidGameVersion stays unreachable. The reachable extraction stays visible to coverage in ExtractCarTelemetryByGameVersion")]
     private bool ExtractCarTelemetry(ref byte dataPacket, int offsetToStart, int packetLength, ICarTelemetryBase? carTelemetryData)
     {
         var retValue = false;
@@ -96,65 +98,83 @@ internal class PacketToCarTelemetry(PacketHeader packetHeader) : PacketToXBase(p
         {
             try
             {
-                int actOffset;
-
-                if (carTelemetryData is CarTelemetry2019 carTelemetry2019)
-                {
-                    actOffset = ExtractSingleCarTelemetry(ref dataPacket, offsetToStart, carTelemetry2019.CarTelemetryData);
-
-                    retValue = ExtractCarTelemetryParameters2019(ref dataPacket, actOffset, packetLength, carTelemetry2019);
-                }
-                else if (carTelemetryData is CarTelemetry2020 carTelemetry2020)
-                {
-                    actOffset = ExtractSingleCarTelemetry(ref dataPacket, offsetToStart, carTelemetry2020.CarTelemetryData);
-
-                    retValue = ExtractCarTelemetryParameters2020(ref dataPacket, actOffset, packetLength, carTelemetry2020);
-                }
-                else if (carTelemetryData is CarTelemetry2021 carTelemetry2021)
-                {
-                    actOffset = ExtractSingleCarTelemetry(ref dataPacket, offsetToStart, carTelemetry2021.CarTelemetryData);
-
-                    retValue = ExtractCarTelemetryParameters2021(ref dataPacket, actOffset, packetLength, carTelemetry2021);
-                }
-                else if (carTelemetryData is CarTelemetry2022 carTelemetry2022)
-                {
-                    actOffset = ExtractSingleCarTelemetry(ref dataPacket, offsetToStart, carTelemetry2022.CarTelemetryData);
-
-                    retValue = ExtractCarTelemetryParameters2022(ref dataPacket, actOffset, packetLength, carTelemetry2022);
-                }
-                else if (carTelemetryData is CarTelemetry2023 carTelemetry2023)
-                {
-                    actOffset = ExtractSingleCarTelemetry(ref dataPacket, offsetToStart, carTelemetry2023.CarTelemetryData);
-
-                    retValue = ExtractCarTelemetryParameters2023(ref dataPacket, actOffset, packetLength, carTelemetry2023);
-                }
-                else if (carTelemetryData is CarTelemetry2024 carTelemetry2024)
-                {
-                    actOffset = ExtractSingleCarTelemetry(ref dataPacket, offsetToStart, carTelemetry2024.CarTelemetryData);
-
-                    retValue = ExtractCarTelemetryParameters2024(ref dataPacket, actOffset, packetLength, carTelemetry2024);
-                }
-                else if (carTelemetryData is CarTelemetry2025 carTelemetry2025)
-                {
-                    actOffset = ExtractSingleCarTelemetry(ref dataPacket, offsetToStart, carTelemetry2025.CarTelemetryData);
-
-                    retValue = ExtractCarTelemetryParameters2025(ref dataPacket, actOffset, packetLength, carTelemetry2025);
-                }
-                else if (carTelemetryData is CarTelemetry2026 carTelemetry2026)
-                {
-                    actOffset = ExtractSingleCarTelemetry(ref dataPacket, offsetToStart, carTelemetry2026.CarTelemetryData);
-
-                    retValue = ExtractCarTelemetryParameters2026(ref dataPacket, actOffset, packetLength, carTelemetry2026);
-                }
-                else
-                {
-                    ThrowInvalidGameVersion();
-                }
+                retValue = ExtractCarTelemetryByGameVersion(ref dataPacket, offsetToStart, packetLength, carTelemetryData);
             }
-            catch
+            catch (Exception ex)
             {
-                // Ignore exceptions in this step
+                LastError = ex.ToString();
             }
+        }
+
+        return retValue;
+    }
+
+    /// <summary>
+    /// Converts received data to a car telemetry object of the current game version
+    /// </summary>
+    /// <param name="dataPacket">Received data</param>
+    /// <param name="offsetToStart">Offset to start</param>
+    /// <param name="packetLength">Size of received packet</param>
+    /// <param name="carTelemetryData">Object for car telemetry</param>
+    /// <returns>Car telemetry data object</returns>
+    /// <exception cref="InvalidOperationException">Thrown when the current game version is not supported</exception>
+    private bool ExtractCarTelemetryByGameVersion(ref byte dataPacket, int offsetToStart, int packetLength, ICarTelemetryBase? carTelemetryData)
+    {
+        var retValue = false;
+
+        int actOffset;
+
+        if (carTelemetryData is CarTelemetry2019 carTelemetry2019)
+        {
+            actOffset = ExtractSingleCarTelemetry(ref dataPacket, offsetToStart, carTelemetry2019.CarTelemetryData);
+
+            retValue = ExtractCarTelemetryParameters2019(ref dataPacket, actOffset, packetLength, carTelemetry2019);
+        }
+        else if (carTelemetryData is CarTelemetry2020 carTelemetry2020)
+        {
+            actOffset = ExtractSingleCarTelemetry(ref dataPacket, offsetToStart, carTelemetry2020.CarTelemetryData);
+
+            retValue = ExtractCarTelemetryParameters2020(ref dataPacket, actOffset, packetLength, carTelemetry2020);
+        }
+        else if (carTelemetryData is CarTelemetry2021 carTelemetry2021)
+        {
+            actOffset = ExtractSingleCarTelemetry(ref dataPacket, offsetToStart, carTelemetry2021.CarTelemetryData);
+
+            retValue = ExtractCarTelemetryParameters2021(ref dataPacket, actOffset, packetLength, carTelemetry2021);
+        }
+        else if (carTelemetryData is CarTelemetry2022 carTelemetry2022)
+        {
+            actOffset = ExtractSingleCarTelemetry(ref dataPacket, offsetToStart, carTelemetry2022.CarTelemetryData);
+
+            retValue = ExtractCarTelemetryParameters2022(ref dataPacket, actOffset, packetLength, carTelemetry2022);
+        }
+        else if (carTelemetryData is CarTelemetry2023 carTelemetry2023)
+        {
+            actOffset = ExtractSingleCarTelemetry(ref dataPacket, offsetToStart, carTelemetry2023.CarTelemetryData);
+
+            retValue = ExtractCarTelemetryParameters2023(ref dataPacket, actOffset, packetLength, carTelemetry2023);
+        }
+        else if (carTelemetryData is CarTelemetry2024 carTelemetry2024)
+        {
+            actOffset = ExtractSingleCarTelemetry(ref dataPacket, offsetToStart, carTelemetry2024.CarTelemetryData);
+
+            retValue = ExtractCarTelemetryParameters2024(ref dataPacket, actOffset, packetLength, carTelemetry2024);
+        }
+        else if (carTelemetryData is CarTelemetry2025 carTelemetry2025)
+        {
+            actOffset = ExtractSingleCarTelemetry(ref dataPacket, offsetToStart, carTelemetry2025.CarTelemetryData);
+
+            retValue = ExtractCarTelemetryParameters2025(ref dataPacket, actOffset, packetLength, carTelemetry2025);
+        }
+        else if (carTelemetryData is CarTelemetry2026 carTelemetry2026)
+        {
+            actOffset = ExtractSingleCarTelemetry(ref dataPacket, offsetToStart, carTelemetry2026.CarTelemetryData);
+
+            retValue = ExtractCarTelemetryParameters2026(ref dataPacket, actOffset, packetLength, carTelemetry2026);
+        }
+        else
+        {
+            ThrowInvalidGameVersion();
         }
 
         return retValue;
@@ -576,25 +596,25 @@ internal class PacketToCarTelemetry(PacketHeader packetHeader) : PacketToXBase(p
                 // Tyres surface type
                 var surfaceByte = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-                carTelemetryData.SurfaceType.RearLeft = (SurfaceType)Enum.ToObject(typeof(SurfaceType), surfaceByte);
+                carTelemetryData.SurfaceType.RearLeft = (SurfaceType)surfaceByte;
 
                 actOffset += ConstData.TypeUInt8;
 
                 surfaceByte = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-                carTelemetryData.SurfaceType.RearRight = (SurfaceType)Enum.ToObject(typeof(SurfaceType), surfaceByte);
+                carTelemetryData.SurfaceType.RearRight = (SurfaceType)surfaceByte;
 
                 actOffset += ConstData.TypeUInt8;
 
                 surfaceByte = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-                carTelemetryData.SurfaceType.FrontLeft = (SurfaceType)Enum.ToObject(typeof(SurfaceType), surfaceByte);
+                carTelemetryData.SurfaceType.FrontLeft = (SurfaceType)surfaceByte;
 
                 actOffset += ConstData.TypeUInt8;
 
                 surfaceByte = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref dataPacket, actOffset));
 
-                carTelemetryData.SurfaceType.FrontRight = (SurfaceType)Enum.ToObject(typeof(SurfaceType), surfaceByte);
+                carTelemetryData.SurfaceType.FrontRight = (SurfaceType)surfaceByte;
 
                 actOffset += ConstData.TypeUInt8;
             }

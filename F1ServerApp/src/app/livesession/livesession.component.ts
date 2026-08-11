@@ -2,7 +2,6 @@ import { ChangeDetectorRef, Component, Inject, OnDestroy, OnInit } from '@angula
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { SignalrService } from '../services/signalr.service';
-import { interval, Subscription } from 'rxjs';
 import { SessionViewApiData } from '../data/sessiondata_api';
 import { SessionLiveViewApiData } from '../data/livesessiondata_api';
 import { LiveSessionViewData } from '../data/livesessionviewdata';
@@ -18,9 +17,10 @@ import { DriverViewData } from '../data/driverviewdata';
 export class LiveSessionComponent implements OnInit, OnDestroy
 {
   public liveSession!: LiveSessionViewData;
-  private updateSubscription!: Subscription;
+  public timeTable: DriverViewData[] = [];
   private readonly http!: HttpClient;
   private readonly serviceUrl!: string;
+  private readonly onLiveSessionDataUpdated = (liveSessionApiData: SessionLiveViewApiData) => { this.handleLiveSessionDataUpdated(liveSessionApiData); };
 
   // Constructor
   constructor(http: HttpClient, public liveSessionService: SignalrService , @Inject('BASE_URL') baseUrl: string, private readonly changeDetector: ChangeDetectorRef)
@@ -33,16 +33,23 @@ export class LiveSessionComponent implements OnInit, OnDestroy
   // Initialization
   ngOnInit()
   {
-    this.updateSubscription = interval(250).subscribe(() => { this.updateLiveSession() });
+    this.liveSessionService.addLiveSessionDataListener(this.onLiveSessionDataUpdated);
+
+    this.http.get<SessionLiveViewApiData>(this.serviceUrl + 'api/livesessiondata/').subscribe(
+    {
+      next: (liveSessionApiData) => { this.handleLiveSessionDataUpdated(liveSessionApiData); },
+      error: (err) => { console.error(err); }
+    });
   }
 
   // Deinitialization
   ngOnDestroy()
   {
-    this.updateSubscription.unsubscribe();
+    this.liveSessionService.removeLiveSessionDataListener(this.onLiveSessionDataUpdated);
   }
 
-  public getTimeTable(): DriverViewData[]
+  // Recompute the time table and the fastest-time highlight classes from the current live session state
+  private refreshTimeTable(): void
   {
     let timeTable: DriverViewData[] = [];
     let position = 1;
@@ -58,6 +65,10 @@ export class LiveSessionComponent implements OnInit, OnDestroy
           if (driverData)
           {
             driverData.setPosition(position);
+            driverData.setTimeClasses(this.liveSession.fastestSector1DriverId,
+                                       this.liveSession.fastestSector2DriverId,
+                                       this.liveSession.fastestSector3DriverId,
+                                       this.liveSession.fastestLapDriverId);
 
             timeTable.push(driverData);
 
@@ -71,70 +82,47 @@ export class LiveSessionComponent implements OnInit, OnDestroy
       console.log("No timetable data available!");
     }
 
-    return timeTable;
+    this.timeTable = timeTable;
   }
 
-  public getTimeColor(driver: DriverViewData, timeType: number): string
+  // Handle a live session data update pushed by the SignalR hub
+  private handleLiveSessionDataUpdated(liveSessionApiData: SessionLiveViewApiData)
   {
-    let classType = 'normalTime';
-
-    if (driver)
+    if (liveSessionApiData)
     {
-      if (timeType == 1 && this.liveSession.fastestSector1DriverId == driver.arrayIndex)
-      {
-        classType = 'fastestTime';
-      }
+      const previousSessionDbId = this.liveSession.sessionDbId;
+      const previousIsFinished = this.liveSession.isFinished;
 
-      if (timeType == 2 && this.liveSession.fastestSector2DriverId == driver.arrayIndex)
-      {
-        classType = 'fastestTime';
-      }
+      this.liveSession.setLiveSessionApiData(liveSessionApiData);
+      this.refreshTimeTable();
+      this.changeDetector.markForCheck();
 
-      if (timeType == 3 && this.liveSession.fastestSector3DriverId == driver.arrayIndex)
-      {
-        classType = 'fastestTime';
-      }
+      const sessionChanged = this.liveSession.sessionDbId > 0 && this.liveSession.sessionDbId != previousSessionDbId;
+      const sessionJustFinished = this.liveSession.isFinished && this.liveSession.isFinished != previousIsFinished;
 
-      if (timeType == 4 && this.liveSession.fastestLapDriverId == driver.arrayIndex)
+      if (this.liveSession.sessionDbId > 0 && (sessionChanged || sessionJustFinished))
       {
-        classType = 'fastestTime';
+        console.log("Live session db id " + this.liveSession.sessionDbId);
+
+        this.loadSessionDetails(this.liveSession.sessionDbId);
       }
     }
-
-    return classType;
   }
 
-  // Update live session data
-  private updateLiveSession()
+  // Load session details for the given session once, e.g. when the live session id changes
+  private loadSessionDetails(sessionDbId: number)
   {
-    this.http.get<SessionLiveViewApiData>(this.serviceUrl + 'api/livesessiondata/').subscribe(
+    this.http.get<SessionViewApiData>(this.serviceUrl + 'api/sessions/session/' + sessionDbId).subscribe(
     {
-      next: (liveSessionApiData) =>
+      next: (sessionApiData) =>
       {
-        if (liveSessionApiData)
+        if (sessionApiData)
         {
-          this.liveSession.setLiveSessionApiData(liveSessionApiData);
+          this.liveSession.setSessionApiData(sessionApiData, () => this.changeDetector.markForCheck());
           this.changeDetector.markForCheck();
         }
-      }, error: (err) => { console.error(err) }
+      },
+      error: (err) => { console.error(err); }
     });
-
-    if (this.liveSession && this.liveSession.sessionDbId > 0)
-    {
-      console.log("Live session db id " + this.liveSession.sessionDbId);
-
-      this.http.get<SessionViewApiData>(this.serviceUrl + 'api/sessions/session/' + this.liveSession.sessionDbId).subscribe(
-      {
-        next: (sessionApiData) =>
-        {
-          if (sessionApiData)
-          {
-            this.liveSession.setSessionApiData(sessionApiData, () => this.changeDetector.markForCheck());
-            this.changeDetector.markForCheck();
-          }
-        },
-        error: (err) => { console.error(err); }
-      });
-    }
   }
 }

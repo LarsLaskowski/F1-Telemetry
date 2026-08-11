@@ -45,6 +45,6 @@ body {
   font-family: Roboto, "Helvetica Neue", sans-serif;
 }
 
-session-td {
-   width: 100%
+.session-td {
+   width: 100%;
 }

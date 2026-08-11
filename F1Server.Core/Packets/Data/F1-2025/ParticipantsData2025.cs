@@ -15,6 +15,11 @@ public class ParticipantsData2025 : IParticipantsBase
     public ParticipantsData2025()
     {
         Participants = new ParticipantData2025[22];
+
+        for (int participant = 0; participant < Participants.Length; ++participant)
+        {
+            Participants[participant] = new ParticipantData2025();
+        }
     }
 
     #endregion // Constructors
@@ -25,7 +30,7 @@ public class ParticipantsData2025 : IParticipantsBase
     public ushort ActiveCars { get; set; }
 
     /// <inheritdoc/>
-    public IParticipantDataBase[] Participants { get; set; }
+    public IParticipantDataBase[] Participants { get; }
 
     #endregion // IParticipantsBase
 }

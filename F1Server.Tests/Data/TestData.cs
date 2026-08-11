@@ -1,8 +1,4 @@
-﻿using System;
-using System.IO;
-using System.Linq;
-
-using F1Server.Core;
+﻿using F1Server.Core;
 using F1Server.Core.Data;
 using F1Server.Core.Enumerations;
 using F1Server.Core.Packets.Interfaces;
@@ -13,7 +9,6 @@ using F1Server.Service.Processors;
 using F1Server.Service.Runtime;
 
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace F1Server.Tests.Data;
 
@@ -182,7 +177,7 @@ internal static class TestData
 
         var sessionProcessor = processor.GetProcessor(packetData.PacketHeader);
 
-        Assert.IsInstanceOfType<SessionProcessor>(sessionProcessor);
+        Assert.IsInstanceOfType<SessionProcessor>(sessionProcessor, $"SessionProcessor is expected for the given packet header ({gameVersion})!");
 
         var sessionDataBase = sessionData as ISessionDataBase;
 

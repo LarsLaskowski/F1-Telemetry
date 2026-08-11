@@ -1,12 +1,8 @@
-﻿using System.IO;
-
-using F1Server.Core;
+﻿using F1Server.Core;
 using F1Server.Core.Data;
 using F1Server.Core.Enumerations;
 using F1Server.Core.PacketData;
 using F1Server.Core.Packets.Interfaces;
-
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace F1Server.Tests;
 
@@ -60,10 +56,10 @@ public class PacketSession2023Tests
     #region Methods F1 2023
 
     /// <summary>
-    /// Check whether the given file has a correct participants data content
+    /// Check whether the given file is a session packet
     /// </summary>
     [TestMethod]
-    public void PacketSessionCheckSession2023IsCorrectPacketType()
+    public void PacketSessionCheck2023IsCorrectPacketType()
     {
         var isCorrect = _packetData.PacketHeader?.PacketType == PacketTypes.Session;
 
@@ -74,7 +70,7 @@ public class PacketSession2023Tests
     /// Check whether the given file is a F1 2023 packet
     /// </summary>
     [TestMethod]
-    public void PacketSessionCheckSession2023IsCorrectGameVersion()
+    public void PacketSessionCheck2023IsCorrectGameVersion()
     {
         var isCorrect = _packetData.PacketHeader?.GameVersion == 2023;
 
@@ -85,7 +81,7 @@ public class PacketSession2023Tests
     /// Check whether the analyzer construct the correct class object
     /// </summary>
     [TestMethod]
-    public void PacketSessionCheckSession2023IsSessionObject()
+    public void PacketSessionCheck2023IsSessionObject()
     {
         if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12023SessionSize + ConstData.F12023HeaderSize)
         {
@@ -201,6 +197,131 @@ public class PacketSession2023Tests
                 var isCorrect = sessionData.PacketData?.FormulaType == Formula.F2;
 
                 Assert.IsTrue(isCorrect, "Invalid formula type!");
+            }
+            else
+            {
+                Assert.Fail("Invalid session packet, expected F1 2023!");
+            }
+        }
+        else
+        {
+            Assert.IsNull(_packetData.PacketHeader, "Invalid F1 2023 packet header or content!");
+        }
+    }
+
+    /// <summary>
+    /// Check speed unit (2023)
+    /// </summary>
+    [TestMethod]
+    public void PacketSessionSpeedUnit2023ExpectedKilometersPerHour()
+    {
+        if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12023SessionSize + ConstData.F12023HeaderSize)
+        {
+            var session = _packetAnalyzer.GetSessionData(_packetData.PacketHeader, _packetContent);
+
+            if (session is SessionData sessionData && sessionData.PacketData is ISessionData2023 sessionData2023)
+            {
+                Assert.AreEqual(SpeedUnits.KilometersPerHour, sessionData2023.SpeedUnit, "Incorrect speed unit!");
+            }
+            else
+            {
+                Assert.Fail("Invalid session packet, expected F1 2023!");
+            }
+        }
+        else
+        {
+            Assert.IsNull(_packetData.PacketHeader, "Invalid F1 2023 packet header or content!");
+        }
+    }
+
+    /// <summary>
+    /// Check temperature unit (2023)
+    /// </summary>
+    [TestMethod]
+    public void PacketSessionTemperatureUnit2023ExpectedCelsius()
+    {
+        if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12023SessionSize + ConstData.F12023HeaderSize)
+        {
+            var session = _packetAnalyzer.GetSessionData(_packetData.PacketHeader, _packetContent);
+
+            if (session is SessionData sessionData && sessionData.PacketData is ISessionData2023 sessionData2023)
+            {
+                Assert.AreEqual(TemperatureUnits.Celsius, sessionData2023.TemperatureUnit, "Incorrect temperature unit!");
+            }
+            else
+            {
+                Assert.Fail("Invalid session packet, expected F1 2023!");
+            }
+        }
+        else
+        {
+            Assert.IsNull(_packetData.PacketHeader, "Invalid F1 2023 packet header or content!");
+        }
+    }
+
+    /// <summary>
+    /// Check number of safety car periods (2023)
+    /// </summary>
+    [TestMethod]
+    public void PacketSessionSafetyCarPeriods2023ExpectedZero()
+    {
+        if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12023SessionSize + ConstData.F12023HeaderSize)
+        {
+            var session = _packetAnalyzer.GetSessionData(_packetData.PacketHeader, _packetContent);
+
+            if (session is SessionData sessionData && sessionData.PacketData is ISessionData2023 sessionData2023)
+            {
+                Assert.AreEqual(0u, sessionData2023.SafetyCarPeriods, "Incorrect number of safety car periods!");
+            }
+            else
+            {
+                Assert.Fail("Invalid session packet, expected F1 2023!");
+            }
+        }
+        else
+        {
+            Assert.IsNull(_packetData.PacketHeader, "Invalid F1 2023 packet header or content!");
+        }
+    }
+
+    /// <summary>
+    /// Check number of virtual safety car periods (2023)
+    /// </summary>
+    [TestMethod]
+    public void PacketSessionVirtualSafetyCarPeriods2023ExpectedZero()
+    {
+        if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12023SessionSize + ConstData.F12023HeaderSize)
+        {
+            var session = _packetAnalyzer.GetSessionData(_packetData.PacketHeader, _packetContent);
+
+            if (session is SessionData sessionData && sessionData.PacketData is ISessionData2023 sessionData2023)
+            {
+                Assert.AreEqual(0u, sessionData2023.VirtualSafetyCarPeriods, "Incorrect number of virtual safety car periods!");
+            }
+            else
+            {
+                Assert.Fail("Invalid session packet, expected F1 2023!");
+            }
+        }
+        else
+        {
+            Assert.IsNull(_packetData.PacketHeader, "Invalid F1 2023 packet header or content!");
+        }
+    }
+
+    /// <summary>
+    /// Check number of red flags (2023)
+    /// </summary>
+    [TestMethod]
+    public void PacketSessionRedFlags2023ExpectedZero()
+    {
+        if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12023SessionSize + ConstData.F12023HeaderSize)
+        {
+            var session = _packetAnalyzer.GetSessionData(_packetData.PacketHeader, _packetContent);
+
+            if (session is SessionData sessionData && sessionData.PacketData is ISessionData2023 sessionData2023)
+            {
+                Assert.AreEqual(0u, sessionData2023.RedFlags, "Incorrect number of red flags!");
             }
             else
             {

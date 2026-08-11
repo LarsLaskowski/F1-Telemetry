@@ -15,7 +15,7 @@ public interface IParticipantsBase
     /// <summary>
     /// Data about participants in current session
     /// </summary>
-    IParticipantDataBase[] Participants { get; set; }
+    IParticipantDataBase[] Participants { get; }
 
     #endregion // Properties
 }

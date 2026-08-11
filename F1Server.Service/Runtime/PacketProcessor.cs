@@ -15,8 +15,8 @@ using F1Server.Data;
 using F1Server.Db.Entity;
 using F1Server.Db.Entity.Repositories;
 using F1Server.Db.Entity.Tables;
+using F1Server.Service.Cache;
 using F1Server.Service.Processors;
-using F1Server.WebApi.Cache;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -98,9 +98,9 @@ internal class PacketProcessor : IDisposable
     public bool UseDatabase { get; }
 
     /// <summary>
-    /// Last error
+    /// Last error of the most recent processed packet, <see cref="string.Empty"/> when the packet was processed without an error
     /// </summary>
-    public string? LastError { get; private set; }
+    public string LastError { get; private set; } = string.Empty;
 
     /// <summary>
     /// Number of current game
@@ -139,7 +139,7 @@ internal class PacketProcessor : IDisposable
         }
         catch (Exception ex)
         {
-            Logger?.LogError(ex, "Error getting packet timestamp!");
+            Logger?.ErrorGettingPacketTimestamp(ex);
         }
 
         return packetTimestamp;
@@ -209,7 +209,7 @@ internal class PacketProcessor : IDisposable
             {
                 LastError = ex.ToString();
 
-                Logger?.LogError(ex, "Error processing packet {PacketType}!", receivedPacketData.PacketHeader?.PacketType);
+                Logger?.ErrorProcessingPacket(ex, receivedPacketData.PacketHeader?.PacketType);
             }
         }
 
@@ -242,7 +242,7 @@ internal class PacketProcessor : IDisposable
         }
         catch (Exception ex)
         {
-            Logger?.LogError(ex, "Error in packet received event subscriber!");
+            Logger?.ErrorInPacketReceivedEvent(ex);
         }
     }
 
@@ -259,7 +259,7 @@ internal class PacketProcessor : IDisposable
 
         RecordHeaderParseExceptionIfPresent(receivedPacketData.HeaderParseException);
 
-        Logger?.LogWarning("Rejected packet header: {RejectionCode}, packet length {PacketLength} bytes, reported game version {GameVersion}", receivedPacketData.HeaderRejectionCode, receivedPacketData.PacketLength, receivedPacketData.ReportedGameVersion);
+        Logger?.RejectedPacketHeader(receivedPacketData.HeaderRejectionCode, receivedPacketData.PacketLength, receivedPacketData.ReportedGameVersion);
     }
 
     /// <summary>
@@ -274,7 +274,27 @@ internal class PacketProcessor : IDisposable
             return;
         }
 
-        Logger?.LogError(exception, "Error parsing packet header!");
+        Logger?.ErrorParsingPacketHeader(exception);
+    }
+
+    /// <summary>
+    /// Takes over the error of the packet analyzer when a packet could not be converted into a data object,
+    /// using the bounded packet type as metric dimension and keeping the error text in the log message only
+    /// </summary>
+    /// <param name="receivedPacketData">Received packet that produced no data object</param>
+    private void RecordAnalyzerError(ReceivedPacketData receivedPacketData)
+    {
+        if (string.IsNullOrWhiteSpace(_packetAnalyzer.LastError))
+        {
+            // A packet type the reported game version does not support has no transformation, it returns no object and no reason
+            return;
+        }
+
+        LastError = _packetAnalyzer.LastError;
+
+        _appData?.AppMetrics?.ProcessingErrors.Add(1, new KeyValuePair<string, object?>("PacketType", receivedPacketData.PacketHeader?.PacketType));
+
+        Logger?.AnalyzerError(receivedPacketData.PacketHeader?.PacketType, _packetAnalyzer.LastError);
     }
 
     /// <summary>
@@ -359,10 +379,14 @@ internal class PacketProcessor : IDisposable
             {
                 retValue = ProcessPacketInternal(receivedPacketData, packetData);
             }
+            else
+            {
+                RecordAnalyzerError(receivedPacketData);
+            }
         }
         catch (Exception ex)
         {
-            Logger?.LogError(ex, "Error analyzing packet {PacketType}!", receivedPacketData.PacketHeader?.PacketType);
+            Logger?.ErrorAnalyzingPacket(ex, receivedPacketData.PacketHeader?.PacketType);
 
             LastError = ex.ToString();
         }
@@ -444,7 +468,7 @@ internal class PacketProcessor : IDisposable
         }
         catch (Exception ex)
         {
-            Logger?.LogError(ex, "Error processing packet {PacketType}!", packetHeader.PacketType);
+            Logger?.ErrorProcessingPacket(ex, packetHeader.PacketType);
 
             LastError = ex.ToString();
         }
@@ -580,7 +604,7 @@ internal class PacketProcessor : IDisposable
             }
             else
             {
-                Logger?.LogWarning("Received flashback event, but no valid event details found!");
+                Logger?.FlashbackEventWithoutDetails();
             }
         }
     }
@@ -649,7 +673,7 @@ internal class PacketProcessor : IDisposable
                 currentActivity?.SetStatus(ActivityStatusCode.Error, ex.ToString());
                 currentActivity?.AddException(ex);
 
-                Logger?.LogError(ex, "Error checking game version {GameVersion}!", gameVersion);
+                Logger?.ErrorCheckingGameVersion(ex, gameVersion);
             }
         }
     }
@@ -699,7 +723,7 @@ internal class PacketProcessor : IDisposable
             }
             catch (Exception ex)
             {
-                Logger?.LogError(ex, "Error removing invalid session from database - session: {SessionDbId}!", Session?.SessionDbId);
+                Logger?.ErrorRemovingInvalidSession(ex, Session?.SessionDbId);
             }
 
             if (_appData != null)
@@ -727,7 +751,7 @@ internal class PacketProcessor : IDisposable
 
             currentActivity?.AddTag("f1.session_id", sessionData.PacketHeader.UniqueSessionId);
 
-            Logger?.LogInformation("New session started with id {SessionId}", sessionData.PacketHeader.UniqueSessionId);
+            Logger?.NewSessionStarted(sessionData.PacketHeader.UniqueSessionId);
 
             _waitingForFirstSessionPacket = false;
             _isNewSession = false;

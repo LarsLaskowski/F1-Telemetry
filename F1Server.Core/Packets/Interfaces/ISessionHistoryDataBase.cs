@@ -45,12 +45,12 @@ public interface ISessionHistoryDataBase
     /// <summary>
     /// Array (max 100) lap data
     /// </summary>
-    ILapHistoryDataBase[] LapHistory { get; set; }
+    ILapHistoryDataBase[] LapHistory { get; }
 
     /// <summary>
     /// History data of tyre stints
     /// </summary>
-    ITyreStintHistoryDataBase[] TyreStintHistory { get; set; }
+    ITyreStintHistoryDataBase[] TyreStintHistory { get; }
 
     #endregion // Properties
 }
