@@ -10,7 +10,7 @@
     </BuildCommand>
     <!-- Command to create an optimized build of the project that's ready for publishing -->
     <ProductionBuildCommand>npm run build</ProductionBuildCommand>
-    <ShouldRunNpmAudit>false</ShouldRunNpmAudit>
+    <ShouldRunNpmAudit>true</ShouldRunNpmAudit>
     <!-- Folder where production build objects will be placed -->
     <BuildOutputFolder>$(MSBuildProjectDirectory)\dist\f1serverapp</BuildOutputFolder>
   </PropertyGroup>
