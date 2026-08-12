@@ -3,6 +3,7 @@ import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { Subscription, timer } from 'rxjs';
 import { SignalrService } from '../services/signalr.service';
+import { LoggerService } from '../services/logger.service';
 
 @Component(
 {
@@ -19,11 +20,11 @@ export class NavMenuComponent implements OnInit, OnDestroy
   private lastHubConnectionState: boolean = false;
   private timerSubscription: Subscription | undefined;
 
-  constructor(public liveSessionService: SignalrService, private readonly router: Router, @Inject('BASE_URL') baseUrl: string)
+  constructor(public liveSessionService: SignalrService, private readonly router: Router, @Inject('BASE_URL') baseUrl: string, private readonly logger: LoggerService)
   {
     this.apiUrl = baseUrl;
 
-    console.log('Base url: ' + this.apiUrl);
+    this.logger.log('Base url: ' + this.apiUrl);
   }
 
   ngOnInit()
@@ -78,7 +79,7 @@ export class NavMenuComponent implements OnInit, OnDestroy
 
   private reloadCurrentPage()
   {
-    console.info("Current URL: " + this.router.url);
+    this.logger.info("Current URL: " + this.router.url);
 
     this.router.navigateByUrl(this.router.url);
   }
