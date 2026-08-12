@@ -64,6 +64,25 @@ internal partial class FolderRenameProcessor
     }
 
     /// <summary>
+    /// Sanitizes a directory name so it cannot contain path separators or invalid file
+    /// name characters and cannot resolve to a directory-navigation segment such as
+    /// <c>.</c> or <c>..</c>
+    /// </summary>
+    /// <param name="directoryName">Directory name to sanitize</param>
+    /// <returns>Directory name that is safe to combine with a parent directory path</returns>
+    private static string SanitizeDirectoryName(string directoryName)
+    {
+        var invalidChars = Path.GetInvalidFileNameChars();
+
+        var sanitizedChars = directoryName.Select(character => invalidChars.Contains(character) || character == '/' || character == '\\'
+                                                                   ? '_'
+                                                                   : character)
+                                          .ToArray();
+
+        return new string(sanitizedChars).Trim('.', ' ');
+    }
+
+    /// <summary>
     /// Gets the regular expression to search for directories
     /// </summary>
     /// <returns>Regualar expression</returns>
@@ -139,6 +158,7 @@ internal partial class FolderRenameProcessor
         }
 
         newDirectoryName = AppendSessionType(newDirectoryName, sessionData);
+        newDirectoryName = SanitizeDirectoryName(newDirectoryName);
 
         var fullDirName = Directory.GetParent(directoryToRename)?.FullName;
 
