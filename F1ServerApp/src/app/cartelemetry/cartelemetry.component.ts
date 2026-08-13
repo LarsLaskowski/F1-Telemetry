@@ -8,6 +8,7 @@ import { ParticipantViewApiData } from '../data/participantdata_api';
 import { BaseChartDirective } from 'ng2-charts';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { MatButton } from '@angular/material/button';
+import { LoggerService } from '../services/logger.service';
 
 @Component(
 {
@@ -66,13 +67,13 @@ export class CarTelemetryComponent
     };
 
   // Constructor
-  constructor(@Inject(MAT_DIALOG_DATA) public data: any, public http: HttpClient, @Inject('BASE_URL') public baseUrl: string, private readonly changeDetector: ChangeDetectorRef)
+  constructor(@Inject(MAT_DIALOG_DATA) public data: any, public http: HttpClient, @Inject('BASE_URL') public baseUrl: string, private readonly changeDetector: ChangeDetectorRef, private readonly logger: LoggerService)
   {
     Chart.defaults.font.size = 15;
 
     this.isLoadingData = true;
 
-    console.info("Session id: " + data.sessionId);
+    this.logger.info("Session id: " + data.sessionId);
 
     this.loadParticipants(data.sessionId);
   }
@@ -111,7 +112,7 @@ export class CarTelemetryComponent
       {
         next: (result) =>
         {
-          console.info("Telemetry data points: " + result.length);
+          this.logger.info("Telemetry data points: " + result.length);
 
           result.forEach((entry) =>
           {
@@ -127,7 +128,7 @@ export class CarTelemetryComponent
   // Fill the chart
   fillChart()
   {
-    console.log("fillChart - start");
+    this.logger.log("fillChart - start");
 
     if (this.telemetries != null && this.telemetries.size > 0)
     {
@@ -206,42 +207,42 @@ export class CarTelemetryComponent
 
     this.changeDetector.markForCheck();
 
-    console.log("fillChart - end");
+    this.logger.log("fillChart - end");
   }
 
   // Chart is clicked
   public chartSpeedClicked(e: any): void
   {
-    console.log(e);
+    this.logger.log(e);
   }
 
   // Chart is hovered
   public chartSpeedHovered(e: any): void
   {
-    console.log(e);
+    this.logger.log(e);
   }
 
   // Chart is clicked
   public chartThrottleClicked(e: any): void
   {
-    console.log(e);
+    this.logger.log(e);
   }
 
   // Chart is hovered
   public chartThrottleHovered(e: any): void
   {
-    console.log(e);
+    this.logger.log(e);
   }
 
   // Chart is clicked
   public chartBrakeClicked(e: any): void
   {
-    console.log(e);
+    this.logger.log(e);
   }
 
   // Chart is hovered
   public chartBrakeHovered(e: any): void
   {
-    console.log(e);
+    this.logger.log(e);
   }
 }

@@ -6,6 +6,7 @@ import { SessionViewApiData } from '../data/sessiondata_api';
 import { SessionLiveViewApiData } from '../data/livesessiondata_api';
 import { LiveSessionViewData } from '../data/livesessionviewdata';
 import { DriverViewData } from '../data/driverviewdata';
+import { LoggerService } from '../services/logger.service';
 
 @Component(
 {
@@ -23,7 +24,7 @@ export class LiveSessionComponent implements OnInit, OnDestroy
   private readonly onLiveSessionDataUpdated = (liveSessionApiData: SessionLiveViewApiData) => { this.handleLiveSessionDataUpdated(liveSessionApiData); };
 
   // Constructor
-  constructor(http: HttpClient, public liveSessionService: SignalrService , @Inject('BASE_URL') baseUrl: string, private readonly changeDetector: ChangeDetectorRef)
+  constructor(http: HttpClient, public liveSessionService: SignalrService , @Inject('BASE_URL') baseUrl: string, private readonly changeDetector: ChangeDetectorRef, private readonly logger: LoggerService)
   {
     this.http = http;
     this.serviceUrl = baseUrl;
@@ -79,7 +80,7 @@ export class LiveSessionComponent implements OnInit, OnDestroy
     }
     else
     {
-      console.log("No timetable data available!");
+      this.logger.log("No timetable data available!");
     }
 
     this.timeTable = timeTable;
@@ -102,7 +103,7 @@ export class LiveSessionComponent implements OnInit, OnDestroy
 
       if (this.liveSession.sessionDbId > 0 && (sessionChanged || sessionJustFinished))
       {
-        console.log("Live session db id " + this.liveSession.sessionDbId);
+        this.logger.log("Live session db id " + this.liveSession.sessionDbId);
 
         this.loadSessionDetails(this.liveSession.sessionDbId);
       }

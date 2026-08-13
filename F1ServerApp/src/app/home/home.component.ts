@@ -8,6 +8,7 @@ import { Chart, ChartData, ChartOptions, ChartType } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
 import { lastValueFrom, Observable, Subscription, throwError, timer } from 'rxjs';
 import { Router } from '@angular/router';
+import { LoggerService } from '../services/logger.service';
 
 @Component(
 {
@@ -33,12 +34,12 @@ export class HomeComponent
   private sessionsTimerSub: Subscription | undefined;
 
   // Constructor
-  constructor(http: HttpClient, public liveSessionService: SignalrService, private router: Router, @Inject('BASE_URL') baseUrl: string, private readonly changeDetector: ChangeDetectorRef)
+  constructor(http: HttpClient, public liveSessionService: SignalrService, private router: Router, @Inject('BASE_URL') baseUrl: string, private readonly changeDetector: ChangeDetectorRef, private readonly logger: LoggerService)
   {
     this.apiUrl = baseUrl;
     this.httpClient = http;
 
-    console.log("Constructor - HomeComponent - start");
+    this.logger.log("Constructor - HomeComponent - start");
 
     Chart.defaults.font.weight = 'bold';
     Chart.defaults.font.size = 15;
@@ -46,7 +47,7 @@ export class HomeComponent
     this.startSessionsReload();
     this.startConnectionCheck();
 
-    console.log("Constructor - HomeComponent - end");
+    this.logger.log("Constructor - HomeComponent - end");
   }
 
   // Get game session from backend
@@ -60,7 +61,7 @@ export class HomeComponent
       {
         next: (result) =>
         {
-          console.log("GamesViewApiData: " + result.length)
+          this.logger.log("GamesViewApiData: " + result.length)
 
           result.forEach((gameData) =>
           {
@@ -91,18 +92,18 @@ export class HomeComponent
   // Fill the chart
   fillChart()
   {
-    console.log("fillChart - start");
+    this.logger.log("fillChart - start");
 
     if (this.games != null && this.games.size > 0)
     {
-      console.info("Games in chart: " + this.games.size);
+      this.logger.info("Games in chart: " + this.games.size);
 
       this.chartGameDatas.length = 0;
       this.chartGameLabels.length = 0;
 
       this.games.forEach(game =>
       {
-        console.log("Game: ", game.gameVersion, game.gameSessions);
+        this.logger.log("Game: ", game.gameVersion, game.gameSessions);
 
         this.chartGameLabels.push(game.gameVersion);
         this.chartGameDatas.push(game.gameSessions);
@@ -119,13 +120,13 @@ export class HomeComponent
       };
     }
 
-    console.log("fillChart - end");
+    this.logger.log("fillChart - end");
   }
 
   // Page is destroyed
   ngOnDestroy()
   {
-    console.info("Home: in ngOnDestroy");
+    this.logger.info("Home: in ngOnDestroy");
 
     if (this.healthTimerSub != null)
     {
@@ -152,7 +153,7 @@ export class HomeComponent
   // Start reload of game sessions
   private startSessionsReload()
   {
-    console.info("Home: in startSessionsReload")
+    this.logger.info("Home: in startSessionsReload")
 
     this.sessionsTimerSub = timer(1, 60000).subscribe(() => this.getGameSessions());
   }
@@ -160,15 +161,15 @@ export class HomeComponent
   // Start connection check
   private startConnectionCheck()
   {
-    console.info("Home: in startConnectionCheck");
+    this.logger.info("Home: in startConnectionCheck");
 
     this.healthTimerSub = timer(1, 30000).subscribe(async () =>
     {
       let currentApiHealthState = await this.getHealthState();
       let currentHubHealthState = this.liveSessionService.isConnected();
 
-      console.info("API health: " + currentApiHealthState);
-      console.info("HUB health: " + currentHubHealthState);
+      this.logger.info("API health: " + currentApiHealthState);
+      this.logger.info("HUB health: " + currentHubHealthState);
 
       if (this.lastApiHealthState != currentApiHealthState
         || this.lastHubHealthState != currentHubHealthState)
@@ -216,13 +217,13 @@ export class HomeComponent
   // Chart is clicked
   public chartClicked(e: any): void
   {
-    console.log(e);
+    this.logger.log(e);
   }
 
   // Chart is hovered
   public chartHovered(e: any): void
   {
-    console.log(e);
+    this.logger.log(e);
   }
 
   // Online?

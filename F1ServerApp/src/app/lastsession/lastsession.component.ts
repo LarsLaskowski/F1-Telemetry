@@ -6,6 +6,7 @@ import { SessionViewApiData } from '../data/sessiondata_api';
 import { LastSessionViewData } from '../data/lastsessionviewdata';
 import { FinalClassificationViewApiData } from '../data/finalclassificationviewdata_api';
 import { ActivatedRoute } from '@angular/router';
+import { LoggerService } from '../services/logger.service';
 
 @Component(
 {
@@ -31,7 +32,7 @@ export class LastSessionComponent implements OnInit
   dataSource = new MatTableDataSource();
 
   // Constructor
-  constructor(http: HttpClient, @Inject('BASE_URL') baseUrl: string, private route: ActivatedRoute, private readonly changeDetector: ChangeDetectorRef)
+  constructor(http: HttpClient, @Inject('BASE_URL') baseUrl: string, private route: ActivatedRoute, private readonly changeDetector: ChangeDetectorRef, private readonly logger: LoggerService)
   {
     this.http = http;
     this.serviceUrl = baseUrl;
@@ -48,7 +49,7 @@ export class LastSessionComponent implements OnInit
         {
           this.lastSessionId = Number(params.get('session'));
 
-          console.log("Loading session data (param): " + this.lastSessionId);
+          this.logger.log("Loading session data (param): " + this.lastSessionId);
         }
 
         this.checkSessionId();
@@ -62,7 +63,7 @@ export class LastSessionComponent implements OnInit
     // No session id? Search last finished session id
     if (this.lastSessionId == 0)
     {
-      console.info("No session number - loading last finished session");
+      this.logger.info("No session number - loading last finished session");
 
       if (this.http != null)
       {
@@ -79,7 +80,7 @@ export class LastSessionComponent implements OnInit
     }
     else
     {
-      console.log("Session number found - load session");
+      this.logger.log("Session number found - load session");
 
       // Load session data
       this.loadSessionData();
@@ -88,7 +89,7 @@ export class LastSessionComponent implements OnInit
 
   loadSessionData()
   {
-    console.log("Load data for session: " + this.lastSessionId);
+    this.logger.log("Load data for session: " + this.lastSessionId);
 
     if (this.http != null && this.lastSessionId > 0 && this.lastSession != null)
     {
