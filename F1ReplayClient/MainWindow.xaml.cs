@@ -69,6 +69,8 @@ public partial class MainWindow : Window, IDisposable
         }
 
         _viewData.Status = "Ready";
+
+        Closed += OnWindowClosed;
     }
 
     #endregion // Constructors
@@ -262,6 +264,16 @@ public partial class MainWindow : Window, IDisposable
         _cts?.Cancel();
     }
 
+    /// <summary>
+    /// Release the cancellation token source when the window closes, since WPF does not dispose windows automatically
+    /// </summary>
+    /// <param name="sender">Sender</param>
+    /// <param name="eventArgs">Event arguments</param>
+    private void OnWindowClosed(object? sender, EventArgs eventArgs)
+    {
+        Dispose();
+    }
+
     #endregion // View methods
 
     #region Methods
@@ -370,210 +382,215 @@ public partial class MainWindow : Window, IDisposable
             TcpClient? tcpClient = null;
             NetworkStream? netStream = null;
 
-            foreach (var file in CurrentFolderFiles)
+            try
             {
-                var skipPacket = false;
-
-                timeWatch.Restart();
-
-                if (cancelToken.IsCancellationRequested)
+                foreach (var file in CurrentFolderFiles)
                 {
-                    break;
-                }
+                    var skipPacket = false;
 
-                while (_viewData.IsPaused)
-                {
-                    cancelToken.WaitHandle.WaitOne(25);
-                }
+                    timeWatch.Restart();
 
-                // The packet is read in one piece, so the internal buffering of the stream is not needed
-                using (var fs = new FileStream(file.FileName, FileMode.Open, FileAccess.Read, FileShare.Read, 0, FileOptions.SequentialScan))
-                {
-                    var fileLength = (int)file.FileInfo.Length;
-
-                    try
+                    if (cancelToken.IsCancellationRequested)
                     {
-                        // fileLength must fit the rented buffer behind the length prefix, otherwise ReadExactly would throw
-                        if (fileLength > maxPayloadLength)
+                        break;
+                    }
+
+                    while (_viewData.IsPaused)
+                    {
+                        cancelToken.WaitHandle.WaitOne(25);
+                    }
+
+                    // The packet is read in one piece, so the internal buffering of the stream is not needed
+                    using (var fs = new FileStream(file.FileName, FileMode.Open, FileAccess.Read, FileShare.Read, 0, FileOptions.SequentialScan))
+                    {
+                        var fileLength = (int)file.FileInfo.Length;
+
+                        try
                         {
-                            throw new InvalidDataException($"Packet file '{file.FileName}' ({fileLength} bytes) exceeds the maximum buffer size of {maxPayloadLength} bytes.");
-                        }
-
-                        var stepTimestamp = Stopwatch.GetTimestamp();
-
-                        fs.ReadExactly(buffer, sizeof(int), fileLength);
-
-                        timings.ReadTicks += Stopwatch.GetTimestamp() - stepTimestamp;
-
-                        stepTimestamp = Stopwatch.GetTimestamp();
-
-                        var packet = new ReceivedPacketData();
-
-                        packet.SetRawData(buffer.AsSpan(sizeof(int), fileLength).ToArray());
-
-                        packetType = DeterminePacketType(packet, out var eventCode);
-
-                        timings.AnalyzeTicks += Stopwatch.GetTimestamp() - stepTimestamp;
-
-                        if (packetType == PacketTypes.Session)
-                        {
-                            sessionFrequency++;
-                        }
-
-                        if (string.IsNullOrWhiteSpace(eventCode) == false
-                            && eventCode != "BUTN")
-                        {
-                            // BeginInvoke keeps the replay loop running instead of waiting for the dispatcher
-                            Application.Current.Dispatcher.BeginInvoke(() => _viewData.EventCodes.Insert(0, eventCode));
-                        }
-
-                        PacketTypeToView(packetType, packetCounters);
-
-                        if (_viewData.IgnoreCarPackets
-                            && (packetType == PacketTypes.CarSetups
-                                || packetType == PacketTypes.CarDamage
-                                || packetType == PacketTypes.Motion
-                                || packetType == PacketTypes.TyreSets
-                                || packetType == PacketTypes.MotionEx))
-                        {
-                            skipPacket = true;
-                        }
-
-                        // send data, but never announce a length the server-side framing would reject
-                        if (_viewData.SendData
-                            && skipPacket == false
-                            && fileLength <= ConstData.MaxReplayPacketLength)
-                        {
-                            if (tcpClient == null || tcpClient.Connected == false)
+                            // fileLength must fit the rented buffer behind the length prefix, otherwise ReadExactly would throw
+                            if (fileLength > maxPayloadLength)
                             {
-                                // An existing but no longer connected client means the server has closed the connection
-                                if (tcpClient != null)
-                                {
-                                    timings.ClosedByServer++;
-                                }
-
-                                netStream?.Dispose();
-                                tcpClient?.Dispose();
-
-                                netStream = null;
-                                tcpClient = null;
-
-                                if (Connect(hostName, port, timings, ref tcpClient, ref netStream))
-                                {
-                                    failedConnectsInRow = 0;
-                                }
-                                else
-                                {
-                                    ++failedConnectsInRow;
-                                }
+                                throw new InvalidDataException($"Packet file '{file.FileName}' ({fileLength} bytes) exceeds the maximum buffer size of {maxPayloadLength} bytes.");
                             }
 
-                            if (netStream != null)
+                            var stepTimestamp = Stopwatch.GetTimestamp();
+
+                            fs.ReadExactly(buffer, sizeof(int), fileLength);
+
+                            timings.ReadTicks += Stopwatch.GetTimestamp() - stepTimestamp;
+
+                            stepTimestamp = Stopwatch.GetTimestamp();
+
+                            var packet = new ReceivedPacketData();
+
+                            packet.SetRawData(buffer.AsSpan(sizeof(int), fileLength).ToArray());
+
+                            packetType = DeterminePacketType(packet, out var eventCode);
+
+                            timings.AnalyzeTicks += Stopwatch.GetTimestamp() - stepTimestamp;
+
+                            if (packetType == PacketTypes.Session)
                             {
-                                // Prefix every packet with its length so the reused connection can be framed on the server side
-                                BinaryPrimitives.WriteInt32LittleEndian(buffer.AsSpan(0, sizeof(int)), fileLength);
+                                sessionFrequency++;
+                            }
 
-                                stepTimestamp = Stopwatch.GetTimestamp();
+                            if (string.IsNullOrWhiteSpace(eventCode) == false
+                                && eventCode != "BUTN")
+                            {
+                                // BeginInvoke keeps the replay loop running instead of waiting for the dispatcher
+                                Application.Current.Dispatcher.BeginInvoke(() => _viewData.EventCodes.Insert(0, eventCode));
+                            }
 
-                                // Prefix and payload go out as one write, otherwise every packet costs an additional round trip
-                                netStream.Write(buffer.AsSpan(0, sizeof(int) + fileLength));
+                            PacketTypeToView(packetType, packetCounters);
 
-                                timings.SendTicks += Stopwatch.GetTimestamp() - stepTimestamp;
+                            if (_viewData.IgnoreCarPackets
+                                && (packetType == PacketTypes.CarSetups
+                                    || packetType == PacketTypes.CarDamage
+                                    || packetType == PacketTypes.Motion
+                                    || packetType == PacketTypes.TyreSets
+                                    || packetType == PacketTypes.MotionEx))
+                            {
+                                skipPacket = true;
+                            }
+
+                            // send data, but never announce a length the server-side framing would reject
+                            if (_viewData.SendData
+                                && skipPacket == false
+                                && fileLength <= ConstData.MaxReplayPacketLength)
+                            {
+                                if (tcpClient == null || tcpClient.Connected == false)
+                                {
+                                    // An existing but no longer connected client means the server has closed the connection
+                                    if (tcpClient != null)
+                                    {
+                                        timings.ClosedByServer++;
+                                    }
+
+                                    netStream?.Dispose();
+                                    tcpClient?.Dispose();
+
+                                    netStream = null;
+                                    tcpClient = null;
+
+                                    if (Connect(hostName, port, timings, ref tcpClient, ref netStream))
+                                    {
+                                        failedConnectsInRow = 0;
+                                    }
+                                    else
+                                    {
+                                        ++failedConnectsInRow;
+                                    }
+                                }
+
+                                if (netStream != null)
+                                {
+                                    // Prefix every packet with its length so the reused connection can be framed on the server side
+                                    BinaryPrimitives.WriteInt32LittleEndian(buffer.AsSpan(0, sizeof(int)), fileLength);
+
+                                    stepTimestamp = Stopwatch.GetTimestamp();
+
+                                    // Prefix and payload go out as one write, otherwise every packet costs an additional round trip
+                                    netStream.Write(buffer.AsSpan(0, sizeof(int) + fileLength));
+
+                                    timings.SendTicks += Stopwatch.GetTimestamp() - stepTimestamp;
+                                }
                             }
                         }
+                        catch (Exception ex) when (ex is IOException || ex is SocketException)
+                        {
+                            // The connection is broken, so it is dropped here and rebuilt with the next packet
+                            timings.LastError = ex.Message;
+
+                            netStream?.Dispose();
+                            tcpClient?.Dispose();
+
+                            netStream = null;
+                            tcpClient = null;
+                        }
+                        catch (Exception ex)
+                        {
+                            // A problem with a single packet file must not drop the connection
+                            timings.LastError = ex.Message;
+                        }
+                        finally
+                        {
+                            fs.Close();
+                        }
                     }
-                    catch (Exception ex) when (ex is IOException || ex is SocketException)
+
+                    ++processedFiles;
+
+                    timeWatch.Stop();
+
+                    // A server that cannot be reached would cost a connection timeout for every remaining file
+                    if (failedConnectsInRow >= MaxConnectAttemptsInRow)
                     {
-                        // The connection is broken, so it is dropped here and rebuilt with the next packet
-                        timings.LastError = ex.Message;
+                        timings.LastError = $"{timings.LastError} - replay stopped after {failedConnectsInRow} failed connection attempts";
 
-                        netStream?.Dispose();
-                        tcpClient?.Dispose();
+                        UpdateProgressView(processedFiles,
+                                           processingDuration,
+                                           processingWatch.Elapsed,
+                                           packetCounters,
+                                           timings);
 
-                        netStream = null;
-                        tcpClient = null;
+                        break;
                     }
-                    catch (Exception ex)
+
+                    if (skipPacket)
                     {
-                        // A problem with a single packet file must not drop the connection
-                        timings.LastError = ex.Message;
+                        processingDuration += lastFileDuration;
                     }
-                    finally
+                    else
                     {
-                        fs.Close();
+                        processingDuration += timeWatch.Elapsed.TotalMilliseconds;
+
+                        lastFileDuration = timeWatch.Elapsed.TotalMilliseconds;
+                    }
+
+                    // Break after special packets?
+                    var breakAtPacket = (packetType == PacketTypes.Event && _viewData.BreakAtEventPacket)
+                                        || (packetType == PacketTypes.Session && _viewData.BreakAtSessionPacket)
+                                        || (packetType == PacketTypes.LapData && _viewData.BreakAtLapDataPacket)
+                                        || (packetType == PacketTypes.Participants && _viewData.BreakAtParticipantsPacket)
+                                        || (packetType == PacketTypes.FinalClassification && _viewData.BreakAtFinalClassificationPacket)
+                                        || (packetType == PacketTypes.SessionHistory && _viewData.BreakAtSessionHistoryPacket)
+                                        || (packetType == PacketTypes.CarTelemetry && _viewData.BreakAtCarTelemetryPacket)
+                                        || (packetType == PacketTypes.CarTelemetry2 && _viewData.BreakAtCarTelemetry2Packet)
+                                        || (packetType == PacketTypes.CarStatus && _viewData.BreakAtCarStatusPacket)
+                                        || (packetType == PacketTypes.TimeTrial && _viewData.BreakAtTimeTrialPacket)
+                                        || (packetType == PacketTypes.LapPositions && _viewData.BreakAtLapPositionsPacket);
+
+                    // Refreshing the view for every single packet floods the dispatcher with change notifications
+                    if (breakAtPacket || viewWatch.ElapsedMilliseconds >= ViewRefreshIntervalMs)
+                    {
+                        UpdateProgressView(processedFiles,
+                                           processingDuration,
+                                           processingWatch.Elapsed,
+                                           packetCounters,
+                                           timings);
+
+                        viewWatch.Restart();
+                    }
+
+                    if (breakAtPacket)
+                    {
+                        _viewData.CurrentPacketType = packetType;
+
+                        _viewData.IsPaused = true;
+                    }
+                    else if (_viewData.CurrentPacketType != PacketTypes.Unknown)
+                    {
+                        _viewData.CurrentPacketType = PacketTypes.Unknown;
                     }
                 }
 
-                ++processedFiles;
-
-                timeWatch.Stop();
-
-                // A server that cannot be reached would cost a connection timeout for every remaining file
-                if (failedConnectsInRow >= MaxConnectAttemptsInRow)
-                {
-                    timings.LastError = $"{timings.LastError} - replay stopped after {failedConnectsInRow} failed connection attempts";
-
-                    UpdateProgressView(processedFiles,
-                                       processingDuration,
-                                       processingWatch.Elapsed,
-                                       packetCounters,
-                                       timings);
-
-                    break;
-                }
-
-                if (skipPacket)
-                {
-                    processingDuration += lastFileDuration;
-                }
-                else
-                {
-                    processingDuration += timeWatch.Elapsed.TotalMilliseconds;
-
-                    lastFileDuration = timeWatch.Elapsed.TotalMilliseconds;
-                }
-
-                // Break after special packets?
-                var breakAtPacket = (packetType == PacketTypes.Event && _viewData.BreakAtEventPacket)
-                                    || (packetType == PacketTypes.Session && _viewData.BreakAtSessionPacket)
-                                    || (packetType == PacketTypes.LapData && _viewData.BreakAtLapDataPacket)
-                                    || (packetType == PacketTypes.Participants && _viewData.BreakAtParticipantsPacket)
-                                    || (packetType == PacketTypes.FinalClassification && _viewData.BreakAtFinalClassificationPacket)
-                                    || (packetType == PacketTypes.SessionHistory && _viewData.BreakAtSessionHistoryPacket)
-                                    || (packetType == PacketTypes.CarTelemetry && _viewData.BreakAtCarTelemetryPacket)
-                                    || (packetType == PacketTypes.CarTelemetry2 && _viewData.BreakAtCarTelemetry2Packet)
-                                    || (packetType == PacketTypes.CarStatus && _viewData.BreakAtCarStatusPacket)
-                                    || (packetType == PacketTypes.TimeTrial && _viewData.BreakAtTimeTrialPacket)
-                                    || (packetType == PacketTypes.LapPositions && _viewData.BreakAtLapPositionsPacket);
-
-                // Refreshing the view for every single packet floods the dispatcher with change notifications
-                if (breakAtPacket || viewWatch.ElapsedMilliseconds >= ViewRefreshIntervalMs)
-                {
-                    UpdateProgressView(processedFiles,
-                                       processingDuration,
-                                       processingWatch.Elapsed,
-                                       packetCounters,
-                                       timings);
-
-                    viewWatch.Restart();
-                }
-
-                if (breakAtPacket)
-                {
-                    _viewData.CurrentPacketType = packetType;
-
-                    _viewData.IsPaused = true;
-                }
-                else if (_viewData.CurrentPacketType != PacketTypes.Unknown)
-                {
-                    _viewData.CurrentPacketType = PacketTypes.Unknown;
-                }
+                netStream?.Dispose();
+                tcpClient?.Dispose();
             }
-
-            netStream?.Dispose();
-            tcpClient?.Dispose();
-
-            ArrayPool<byte>.Shared.Return(buffer);
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(buffer);
+            }
 
             UpdateProgressView(processedFiles,
                                processingDuration,
@@ -687,9 +704,10 @@ public partial class MainWindow : Window, IDisposable
                                              file.OverallFrameIdentifier = packet.PacketHeader.OverallFrameIdentifier;
                                          }
                                      }
-                                     catch
+                                     catch (Exception ex)
                                      {
-                                         // Ignore exceptions in this step
+                                         // A malformed or unreadable file must not abort sorting of the remaining files
+                                         Debug.WriteLine($"Failed to read sort key from '{file.FileName}': {ex.Message}");
                                      }
                                      finally
                                      {

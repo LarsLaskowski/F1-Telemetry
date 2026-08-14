@@ -23,6 +23,10 @@ internal static class Program
 
                 Console.WriteLine($"Folders renamed: {foldersRenamed}");
             }
+            else
+            {
+                Console.WriteLine($"Directory does not exist: {args[0]}");
+            }
         }
         else
         {
