@@ -14,6 +14,7 @@ import { MatButton } from '@angular/material/button'
 import { ChampionshipTrackViewData } from '../data/championshiptrackviewdata'
 import { ActivatedRoute } from '@angular/router';
 import { getTrackOrderForYear } from '../data/track-order';
+import { NotificationService } from '../services/notification.service';
 
 @Component(
 {
@@ -36,7 +37,7 @@ export class ChampionshipsComponent
   displayedColumns: string[] = this.csColumns.slice();
   dataSource = new MatTableDataSource();
 
-  constructor(http: HttpClient, @Inject('BASE_URL') baseUrl: string, public dialog: MatDialog, private readonly route: ActivatedRoute, private readonly changeDetector: ChangeDetectorRef)
+  constructor(http: HttpClient, @Inject('BASE_URL') baseUrl: string, public dialog: MatDialog, private readonly route: ActivatedRoute, private readonly changeDetector: ChangeDetectorRef, private readonly notificationService: NotificationService)
   {
     this.http = http;
     this.serviceUrl = baseUrl;
@@ -73,7 +74,11 @@ export class ChampionshipsComponent
             });
           }
         },
-        error: (err) => { console.error(err); },
+        error: (err) =>
+        {
+          console.error(err);
+          this.notificationService.showError('Failed to load championships.');
+        },
         complete: () =>
         {
           this.championshipsCount = this.championships.size;
@@ -134,7 +139,11 @@ export class ChampionshipsComponent
           this.loadChampionships();
         }
       },
-      error: (err) => { console.error(err); }
+      error: (err) =>
+      {
+        console.error(err);
+        this.notificationService.showError('Failed to create championship.');
+      }
     });
   }
 

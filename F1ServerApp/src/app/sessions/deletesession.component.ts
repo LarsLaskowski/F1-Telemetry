@@ -8,6 +8,7 @@ import { MatFormField, MatHint, MatLabel, MatFormFieldModule } from '@angular/ma
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button'
 import { MatInputModule } from '@angular/material/input';
+import { NotificationService } from '../services/notification.service';
 
 @Component(
 {
@@ -36,7 +37,7 @@ export class DeleteSessionComponent
   isDeleting: boolean = false;
   isDeleted: boolean = false;
 
-  constructor(public http: HttpClient, @Inject('BASE_URL') public baseUrl: string, @Inject(MAT_DIALOG_DATA) public data: any, public dialogRef: MatDialogRef<DeleteSessionComponent>, private readonly changeDetector: ChangeDetectorRef)
+  constructor(public http: HttpClient, @Inject('BASE_URL') public baseUrl: string, @Inject(MAT_DIALOG_DATA) public data: any, public dialogRef: MatDialogRef<DeleteSessionComponent>, private readonly changeDetector: ChangeDetectorRef, private readonly notificationService: NotificationService)
   {
     this.sessionId = data.sessionId;
     this.session = data.sessionData;
@@ -57,7 +58,14 @@ export class DeleteSessionComponent
 
           this.changeDetector.markForCheck();
         },
-        error: (err) => { console.error(err); },
+        error: (err) =>
+        {
+          console.error(err);
+
+          this.isDeleting = false;
+          this.notificationService.showError('Failed to delete session.');
+          this.changeDetector.markForCheck();
+        },
         complete: () =>
         {
           if (this.isDeleted)

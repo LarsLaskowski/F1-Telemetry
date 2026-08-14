@@ -9,6 +9,7 @@ import { BaseChartDirective } from 'ng2-charts';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { MatButton } from '@angular/material/button';
 import { LoggerService } from '../services/logger.service';
+import { NotificationService } from '../services/notification.service';
 
 @Component(
 {
@@ -67,7 +68,7 @@ export class CarTelemetryComponent
     };
 
   // Constructor
-  constructor(@Inject(MAT_DIALOG_DATA) public data: any, public http: HttpClient, @Inject('BASE_URL') public baseUrl: string, private readonly changeDetector: ChangeDetectorRef, private readonly logger: LoggerService)
+  constructor(@Inject(MAT_DIALOG_DATA) public data: any, public http: HttpClient, @Inject('BASE_URL') public baseUrl: string, private readonly changeDetector: ChangeDetectorRef, private readonly logger: LoggerService, private readonly notificationService: NotificationService)
   {
     Chart.defaults.font.size = 15;
 
@@ -97,7 +98,14 @@ export class CarTelemetryComponent
             }
           })
         },
-        error: (err) => { console.error(err); },
+        error: (err) =>
+        {
+          console.error(err);
+
+          this.isLoadingData = false;
+          this.notificationService.showError('Failed to load participants of session.');
+          this.changeDetector.markForCheck();
+        },
         complete: () => { this.loadTelemetryData(humanParticipantId); }
       });
     }
@@ -119,7 +127,14 @@ export class CarTelemetryComponent
             this.telemetries.add(entry);
           });
         },
-        error: (err) => { console.error(err); },
+        error: (err) =>
+        {
+          console.error(err);
+
+          this.isLoadingData = false;
+          this.notificationService.showError('Failed to load telemetry data.');
+          this.changeDetector.markForCheck();
+        },
         complete: () => { this.fillChart(); }
       });
     }

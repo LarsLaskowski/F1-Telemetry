@@ -12,6 +12,7 @@ import { MatOption } from '@angular/material/core';
 import { MatFormField, MatLabel, MatSelect } from '@angular/material/select';
 import { MatButton } from '@angular/material/button';
 import { getTrackOrderForYear, parseGameVersionYear } from '../data/track-order';
+import { NotificationService } from '../services/notification.service';
 
 @Component(
   {
@@ -31,7 +32,7 @@ export class CreateChampionshipComponent
   isCreated: boolean = false;
   isCreateable: boolean = false;
 
-  constructor(public http: HttpClient, @Inject('BASE_URL') public serviceUrl: string, @Inject(MAT_DIALOG_DATA) public data: any, public dialogRef: MatDialogRef<CreateChampionshipComponent>, private readonly changeDetector: ChangeDetectorRef)
+  constructor(public http: HttpClient, @Inject('BASE_URL') public serviceUrl: string, @Inject(MAT_DIALOG_DATA) public data: any, public dialogRef: MatDialogRef<CreateChampionshipComponent>, private readonly changeDetector: ChangeDetectorRef, private readonly notificationService: NotificationService)
   {
     this.loadGames();
 
@@ -95,7 +96,8 @@ export class CreateChampionshipComponent
         error: (err) =>
         {
           console.error(err);
-         }
+          this.notificationService.showError('Failed to load games.');
+        }
       });
     }
   }
@@ -214,7 +216,14 @@ export class CreateChampionshipComponent
 
           this.changeDetector.markForCheck();
         },
-        error: (err) => { console.error(err); },
+        error: (err) =>
+        {
+          console.error(err);
+
+          this.isCreating = false;
+          this.notificationService.showError('Failed to create championship.');
+          this.changeDetector.markForCheck();
+        },
         complete: () =>
         {
           if (this.isCreated)

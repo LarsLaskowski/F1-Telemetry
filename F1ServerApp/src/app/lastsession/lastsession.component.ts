@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, Inject, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, Inject, OnDestroy, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { MatTableModule, MatTableDataSource, MatHeaderCell, MatHeaderCellDef, MatColumnDef, MatCell, MatCellDef, MatRow, MatRowDef } from '@angular/material/table';
@@ -6,7 +6,9 @@ import { SessionViewApiData } from '../data/sessiondata_api';
 import { LastSessionViewData } from '../data/lastsessionviewdata';
 import { FinalClassificationViewApiData } from '../data/finalclassificationviewdata_api';
 import { ActivatedRoute } from '@angular/router';
+import { Subscription } from 'rxjs';
 import { LoggerService } from '../services/logger.service';
+import { NotificationService } from '../services/notification.service';
 
 @Component(
 {
@@ -16,7 +18,7 @@ import { LoggerService } from '../services/logger.service';
   styleUrls: ['./lastsession.component.css']
 })
 
-export class LastSessionComponent implements OnInit
+export class LastSessionComponent implements OnInit, OnDestroy
 {
   private readonly http!: HttpClient;
   private readonly serviceUrl!: string;
@@ -24,6 +26,7 @@ export class LastSessionComponent implements OnInit
   isRace: boolean = false;
   lastSessionId: number = 0;
   finalClassifications: FinalClassificationViewApiData[] = [];
+  private queryParamsSubscription!: Subscription;
 
   raceColumns: string[] = ['position', 'driver', 'team', 'gridPosition', 'fastestLaptime', 'pitStops', 'lapsDriven', 'totalRacetime'];
   practiceColumns: string[] = ['position', 'driver', 'team', 'fastestLaptime', 'fastestLaptimeDiff', 'lapsDriven'];
@@ -32,16 +35,17 @@ export class LastSessionComponent implements OnInit
   dataSource = new MatTableDataSource();
 
   // Constructor
-  constructor(http: HttpClient, @Inject('BASE_URL') baseUrl: string, private route: ActivatedRoute, private readonly changeDetector: ChangeDetectorRef, private readonly logger: LoggerService)
+  constructor(http: HttpClient, @Inject('BASE_URL') baseUrl: string, private route: ActivatedRoute, private readonly changeDetector: ChangeDetectorRef, private readonly logger: LoggerService, private readonly notificationService: NotificationService)
   {
     this.http = http;
     this.serviceUrl = baseUrl;
     this.lastSession = new LastSessionViewData(http, baseUrl);
   }
 
+  // Initialization
   ngOnInit()
   {
-    this.route.queryParamMap.subscribe(
+    this.queryParamsSubscription = this.route.queryParamMap.subscribe(
     {
       next: (params) =>
       {
@@ -54,8 +58,18 @@ export class LastSessionComponent implements OnInit
 
         this.checkSessionId();
       },
-      error: (err) => { console.error(err); }
+      error: (err) =>
+      {
+        console.error(err);
+        this.notificationService.showError('Failed to read session query parameters.');
+      }
     });
+  }
+
+  // Deinitialization
+  ngOnDestroy()
+  {
+    this.queryParamsSubscription.unsubscribe();
   }
 
   checkSessionId()
@@ -73,7 +87,11 @@ export class LastSessionComponent implements OnInit
           {
             this.lastSessionId = result;
           },
-          error: (err) => { console.error(err); },
+          error: (err) =>
+          {
+            console.error(err);
+            this.notificationService.showError('Failed to determine the last finished session.');
+          },
           complete: () => { this.loadSessionData(); }
         });
       }
@@ -103,7 +121,11 @@ export class LastSessionComponent implements OnInit
             this.changeDetector.markForCheck();
           }
         },
-        error: (err) => { console.error(err); },
+        error: (err) =>
+        {
+          console.error(err);
+          this.notificationService.showError('Failed to load session data.');
+        },
         complete: () => { this.loadTimeTable(); }
       });
     }
@@ -135,7 +157,11 @@ export class LastSessionComponent implements OnInit
             this.lastSession.setFinalClassificationApiData(finalClassifications);
           }
         },
-        error: (err) => { console.error(err); },
+        error: (err) =>
+        {
+          console.error(err);
+          this.notificationService.showError('Failed to load the final classification.');
+        },
         complete: () => { this.prepareFinalClassificationTable(); }
       });
     }

@@ -7,6 +7,7 @@ import { SessionLiveViewApiData } from '../data/livesessiondata_api';
 import { LiveSessionViewData } from '../data/livesessionviewdata';
 import { DriverViewData } from '../data/driverviewdata';
 import { LoggerService } from '../services/logger.service';
+import { NotificationService } from '../services/notification.service';
 
 @Component(
 {
@@ -24,7 +25,7 @@ export class LiveSessionComponent implements OnInit, OnDestroy
   private readonly onLiveSessionDataUpdated = (liveSessionApiData: SessionLiveViewApiData) => { this.handleLiveSessionDataUpdated(liveSessionApiData); };
 
   // Constructor
-  constructor(http: HttpClient, public liveSessionService: SignalrService , @Inject('BASE_URL') baseUrl: string, private readonly changeDetector: ChangeDetectorRef, private readonly logger: LoggerService)
+  constructor(http: HttpClient, public liveSessionService: SignalrService , @Inject('BASE_URL') baseUrl: string, private readonly changeDetector: ChangeDetectorRef, private readonly logger: LoggerService, private readonly notificationService: NotificationService)
   {
     this.http = http;
     this.serviceUrl = baseUrl;
@@ -39,7 +40,11 @@ export class LiveSessionComponent implements OnInit, OnDestroy
     this.http.get<SessionLiveViewApiData>(this.serviceUrl + 'api/livesessiondata/').subscribe(
     {
       next: (liveSessionApiData) => { this.handleLiveSessionDataUpdated(liveSessionApiData); },
-      error: (err) => { console.error(err); }
+      error: (err) =>
+      {
+        console.error(err);
+        this.notificationService.showError('Failed to load live session data.');
+      }
     });
   }
 
@@ -123,7 +128,11 @@ export class LiveSessionComponent implements OnInit, OnDestroy
           this.changeDetector.markForCheck();
         }
       },
-      error: (err) => { console.error(err); }
+      error: (err) =>
+      {
+        console.error(err);
+        this.notificationService.showError('Failed to load session details.');
+      }
     });
   }
 }

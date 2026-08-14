@@ -7,7 +7,7 @@
       @if (!session) {
         <mat-label>Delete session - unknown</mat-label>
       }
-      <input matInput placeholder="Session code" [(ngModel)]="sessionCode" cdkFocusInitial>
+      <input matInput type="number" placeholder="Session code" [(ngModel)]="sessionCode" cdkFocusInitial>
       @if (!isDeleting) {
         <mat-hint>Enter session code</mat-hint>
       }

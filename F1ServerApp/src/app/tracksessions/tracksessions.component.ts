@@ -5,6 +5,7 @@ import { SessionViewApiData } from '../data/sessiondata_api';
 import { SessionViewData } from '../data/sessionviewdata';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { Subscription } from 'rxjs';
+import { NotificationService } from '../services/notification.service';
 
 @Component(
 {
@@ -24,7 +25,7 @@ export class TrackSessionsComponent implements OnInit, OnDestroy
   private readonly baseUrl: string;
   private queryParamsSubscription!: Subscription;
 
-  constructor(http: HttpClient, private route: ActivatedRoute, @Inject('BASE_URL') baseUrl: string, private readonly changeDetector: ChangeDetectorRef)
+  constructor(http: HttpClient, private route: ActivatedRoute, @Inject('BASE_URL') baseUrl: string, private readonly changeDetector: ChangeDetectorRef, private readonly notificationService: NotificationService)
   {
     this.http = http;
     this.baseUrl = baseUrl;
@@ -35,7 +36,7 @@ export class TrackSessionsComponent implements OnInit, OnDestroy
   {
     this.queryParamsSubscription = this.route.queryParams.subscribe(params =>
     {
-      this.trackId = params['trackId'];
+      this.trackId = Number(params['trackId']);
       this.trackName = params['trackName'];
     });
 
@@ -54,7 +55,11 @@ export class TrackSessionsComponent implements OnInit, OnDestroy
 
         this.changeDetector.markForCheck();
       },
-      error: (err) => { console.error(err); }
+      error: (err) =>
+      {
+        console.error(err);
+        this.notificationService.showError('Failed to load sessions of track.');
+      }
     });
   }
 
