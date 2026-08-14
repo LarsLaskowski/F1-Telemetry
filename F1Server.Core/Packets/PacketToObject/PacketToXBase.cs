@@ -1,6 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
 
-using F1Server.Core.Data;
 using F1Server.Core.Enumerations;
 using F1Server.Core.Packets.Data;
 
@@ -23,7 +22,7 @@ internal abstract class PacketToXBase
     /// <summary>
     /// Size of game version dependent packet header size
     /// </summary>
-    public int HeaderSize => GetHeaderSize();
+    public int HeaderSize => PacketHeader?.HeaderSize ?? 0;
 
     /// <summary>
     /// Last error of the transformation, <see cref="string.Empty"/> when the transformation succeeded
@@ -112,26 +111,6 @@ internal abstract class PacketToXBase
         }
 
         return isValid;
-    }
-
-    /// <summary>
-    /// Returns packet header size game version dependent
-    /// </summary>
-    /// <returns>Header size</returns>
-    private int GetHeaderSize()
-    {
-        return GameVersion switch
-               {
-                   2019 => ConstData.F12019HeaderSize,
-                   2020 => ConstData.F12020HeaderSize,
-                   2021 => ConstData.F12020HeaderSize,
-                   2022 => ConstData.F12020HeaderSize,
-                   2023 => ConstData.F12023HeaderSize,
-                   2024 => ConstData.F12024HeaderSize,
-                   2025 => ConstData.F12025HeaderSize,
-                   2026 => ConstData.F12026HeaderSize,
-                   _ => 0
-               };
     }
 
     #endregion // Methods
