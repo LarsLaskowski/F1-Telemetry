@@ -7,6 +7,7 @@ import { LastSessionViewData } from '../data/lastsessionviewdata';
 import { FinalClassificationViewApiData } from '../data/finalclassificationviewdata_api';
 import { MAT_DIALOG_DATA, MatDialogContent, MatDialogActions, MatDialogClose } from '@angular/material/dialog';
 import { MatButton } from '@angular/material/button'
+import { NotificationService } from '../services/notification.service';
 
 @Component(
 {
@@ -32,7 +33,7 @@ export class ShowSessionComponent implements OnInit
   dataSource = new MatTableDataSource();
 
   // Constructor
-  constructor(http: HttpClient, @Inject('BASE_URL') baseUrl: string, @Inject(MAT_DIALOG_DATA) public data: any, private readonly changeDetector: ChangeDetectorRef)
+  constructor(http: HttpClient, @Inject('BASE_URL') baseUrl: string, @Inject(MAT_DIALOG_DATA) public data: any, private readonly changeDetector: ChangeDetectorRef, private readonly notificationService: NotificationService)
   {
     this.http = http;
     this.serviceUrl = baseUrl;
@@ -76,7 +77,11 @@ export class ShowSessionComponent implements OnInit
             this.session.setSessionApiData(sessionApiData, () => this.changeDetector.markForCheck());
           }
         },
-        error: (err) => { console.error(err); },
+        error: (err) =>
+        {
+          console.error(err);
+          this.notificationService.showError('Failed to load session data.');
+        },
         complete: () => { this.loadTimeTable(); }
       });
     }
@@ -108,7 +113,11 @@ export class ShowSessionComponent implements OnInit
             this.session.setFinalClassificationApiData(finalClassifications);
           }
         },
-        error: (err) => { console.error(err); },
+        error: (err) =>
+        {
+          console.error(err);
+          this.notificationService.showError('Failed to load the final classification.');
+        },
         complete: () => { this.prepareFinalClassificationTable(); }
       });
     }

@@ -15,10 +15,10 @@
   <mat-form-field style="margin-left: 30px">
     <mat-label>Select carreer mode</mat-label>
     <mat-select [(value)]="careerMode" (selectionChange)="onCareerModeChanged($event)">
-      <mat-option value="-1">None</mat-option>
-      <mat-option value="0">Career</mat-option>
-      <mat-option value="1">My team</mat-option>
-      <mat-option value="2">Solo championship</mat-option>
+      <mat-option [value]="-1">None</mat-option>
+      <mat-option [value]="0">Career</mat-option>
+      <mat-option [value]="1">My team</mat-option>
+      <mat-option [value]="2">Solo championship</mat-option>
     </mat-select>
   </mat-form-field>
 </div>

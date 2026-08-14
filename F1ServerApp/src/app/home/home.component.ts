@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, Inject } from '@angular/core';
+import { ChangeDetectorRef, Component, Inject, OnDestroy, OnInit } from '@angular/core';
 import { SignalrService } from '../services/signalr.service';
 import { HttpClient, HttpResponse } from '@angular/common/http';
 
@@ -18,7 +18,7 @@ import { LoggerService } from '../services/logger.service';
   styleUrls: ['./home.component.css']
 })
 
-export class HomeComponent
+export class HomeComponent implements OnInit, OnDestroy
 {
   apiUrl: string;
   httpClient: HttpClient | undefined;
@@ -39,15 +39,19 @@ export class HomeComponent
     this.apiUrl = baseUrl;
     this.httpClient = http;
 
-    this.logger.log("Constructor - HomeComponent - start");
-
     Chart.defaults.font.weight = 'bold';
     Chart.defaults.font.size = 15;
+  }
+
+  // Initialization
+  ngOnInit()
+  {
+    this.logger.log("ngOnInit - HomeComponent - start");
 
     this.startSessionsReload();
     this.startConnectionCheck();
 
-    this.logger.log("Constructor - HomeComponent - end");
+    this.logger.log("ngOnInit - HomeComponent - end");
   }
 
   // Get game session from backend

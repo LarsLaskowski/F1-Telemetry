@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, Inject, ViewChild, AfterViewInit } from '@angular/core';
+import { ChangeDetectorRef, Component, Inject, ViewChild, AfterViewInit, OnDestroy } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { SessionViewApiData } from '../data/sessiondata_api';
@@ -17,6 +17,8 @@ import { MatIconModule } from '@angular/material/icon'
 import { MatButtonModule } from '@angular/material/button'
 import { MatTooltipModule } from '@angular/material/tooltip'
 import { Router } from '@angular/router';
+import { Subscription } from 'rxjs';
+import { NotificationService } from '../services/notification.service';
 
 @Component(
 {
@@ -44,7 +46,7 @@ import { Router } from '@angular/router';
   styleUrls: ['./sessions.component.css']
 })
 
-export class SessionsComponent implements AfterViewInit
+export class SessionsComponent implements AfterViewInit, OnDestroy
 {
   displayedColumns: string[] = ['gameInfo', 'track', 'sessionType', 'fastestLap', 'aiDifficulty', 'weather', 'laps', 'telemetry', 'championship', 'delete'];
   sessions: SessionViewDataEx[] = [];
@@ -53,11 +55,12 @@ export class SessionsComponent implements AfterViewInit
   isLoading = false;
   games = new Set<string>();
   expandedSession: SessionViewDataEx | undefined;
+  private paginatorSubscription!: Subscription;
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
 
-  constructor(public http: HttpClient, @Inject('BASE_URL') public baseUrl: string, public dialog: MatDialog, private readonly router: Router, private readonly changeDetector: ChangeDetectorRef)
+  constructor(public http: HttpClient, @Inject('BASE_URL') public baseUrl: string, public dialog: MatDialog, private readonly router: Router, private readonly changeDetector: ChangeDetectorRef, private readonly notificationService: NotificationService)
   {
   }
 
@@ -68,10 +71,16 @@ export class SessionsComponent implements AfterViewInit
 
     this.loadSessions(0, 15)
 
-    this.paginator.page.subscribe(event =>
+    this.paginatorSubscription = this.paginator.page.subscribe(event =>
     {
       this.loadSessions(event.pageIndex, event.pageSize);
     })
+  }
+
+  // Deinitialization
+  ngOnDestroy()
+  {
+    this.paginatorSubscription?.unsubscribe();
   }
 
   // Apply filter
@@ -162,7 +171,14 @@ export class SessionsComponent implements AfterViewInit
 
           this.changeDetector.markForCheck();
         },
-        error: (err) => { console.error(err); },
+        error: (err) =>
+        {
+          console.error(err);
+
+          this.isLoading = false;
+          this.notificationService.showError('Failed to load sessions.');
+          this.changeDetector.markForCheck();
+        },
         complete: () =>
         {
           setTimeout(() =>
@@ -206,7 +222,11 @@ export class SessionsComponent implements AfterViewInit
 
           this.changeDetector.markForCheck();
         },
-        error: (err) => { console.error(err); }
+        error: (err) =>
+        {
+          console.error(err);
+          this.notificationService.showError('Failed to add session to championship.');
+        }
       });
     }
   }
@@ -247,7 +267,11 @@ export class SessionsComponent implements AfterViewInit
           this.loadSessions(this.paginator.pageIndex, this.paginator.pageSize)
         }
       },
-      error: (err) => { console.error(err); }
+      error: (err) =>
+      {
+        console.error(err);
+        this.notificationService.showError('Failed to delete session.');
+      }
     });
   }
 }

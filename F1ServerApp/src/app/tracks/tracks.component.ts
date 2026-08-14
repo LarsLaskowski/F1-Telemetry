@@ -6,6 +6,7 @@ import { TrackViewData } from '../data/trackviewdata';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatCardContent, MatCardHeader, MatCardTitle, MatCardSubtitle, MatCardTitleGroup, MatCard } from '@angular/material/card';
 import { MatSlideToggle, MatSlideToggleChange } from '@angular/material/slide-toggle';
+import { NotificationService } from '../services/notification.service';
 
 @Component(
  {
@@ -32,7 +33,7 @@ export class TracksComponent
   withReferenceTime = false;
   public tracks: Set<TrackViewData> = new Set();
 
-  constructor(http: HttpClient, @Inject('BASE_URL') baseUrl: string, private readonly changeDetector: ChangeDetectorRef)
+  constructor(http: HttpClient, @Inject('BASE_URL') baseUrl: string, private readonly changeDetector: ChangeDetectorRef, private readonly notificationService: NotificationService)
   {
     this.apiUrl = baseUrl;
     this.http = http;
@@ -65,7 +66,11 @@ export class TracksComponent
 
           this.changeDetector.markForCheck();
         },
-        error: (err) => { console.error(err); }
+        error: (err) =>
+        {
+          console.error(err);
+          this.notificationService.showError('Failed to load tracks.');
+        }
       });
     }
   }
