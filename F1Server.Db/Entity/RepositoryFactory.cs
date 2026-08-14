@@ -1,4 +1,7 @@
-﻿using F1Server.Core.Exceptions;
+﻿using System.Collections.Concurrent;
+using System.Linq.Expressions;
+
+using F1Server.Core.Exceptions;
 using F1Server.Db.Entity.Repositories.Base;
 
 using Microsoft.EntityFrameworkCore;
@@ -18,6 +21,12 @@ public sealed class RepositoryFactory : IDisposable
     /// Lazily created pool providing <see cref="F1ServerDbContext"/> instances to all factory instances
     /// </summary>
     private static readonly Lazy<PooledDbContextFactory<F1ServerDbContext>> _contextPool = new Lazy<PooledDbContextFactory<F1ServerDbContext>>(CreateContextPool);
+
+    /// <summary>
+    /// Compiled constructor delegates per repository type, built once per type instead of resolving the
+    /// constructor via reflection on every <see cref="GetRepository{TRepository}"/> call
+    /// </summary>
+    private static readonly ConcurrentDictionary<Type, Func<F1ServerDbContext, RepositoryBase>> _repositoryActivators = new ConcurrentDictionary<Type, Func<F1ServerDbContext, RepositoryBase>>();
 
     /// <summary>
     /// Number of factory instances created since application start
@@ -109,6 +118,23 @@ public sealed class RepositoryFactory : IDisposable
         return new PooledDbContextFactory<F1ServerDbContext>(F1ServerDbContext.BuildOptions(ServiceProvider));
     }
 
+    /// <summary>
+    /// Builds a compiled factory delegate for the given repository type
+    /// </summary>
+    /// <param name="repositoryType">Type of the repository</param>
+    /// <returns>Delegate creating a repository from a <see cref="F1ServerDbContext"/></returns>
+    /// <exception cref="InvalidOperationException">Thrown when the repository type has no public constructor accepting a <see cref="F1ServerDbContext"/></exception>
+    private static Func<F1ServerDbContext, RepositoryBase> CreateRepositoryActivator(Type repositoryType)
+    {
+        var constructor = repositoryType.GetConstructor([typeof(F1ServerDbContext)])
+                              ?? throw new InvalidOperationException($"{repositoryType} has no public constructor accepting {nameof(F1ServerDbContext)}.");
+
+        var parameter = Expression.Parameter(typeof(F1ServerDbContext), "dbContext");
+
+        return Expression.Lambda<Func<F1ServerDbContext, RepositoryBase>>(Expression.New(constructor, parameter), parameter)
+                         .Compile();
+    }
+
     #endregion // Static methods
 
     #region Methods
@@ -118,13 +144,15 @@ public sealed class RepositoryFactory : IDisposable
     /// </summary>
     /// <typeparam name="TRepository">Type of the repository to be created</typeparam>
     /// <returns>Repository</returns>
+    /// <exception cref="InvalidOperationException">Thrown when the repository type has no public constructor accepting a <see cref="F1ServerDbContext"/></exception>
     public TRepository? GetRepository<TRepository>()
         where TRepository : RepositoryBase
     {
-        if (_repositories.TryGetValue(typeof(TRepository), out var repository) == false && _dbContext != null
-            && Activator.CreateInstance(typeof(TRepository), _dbContext) is TRepository repo)
+        if (_repositories.TryGetValue(typeof(TRepository), out var repository) == false && _dbContext != null)
         {
-            repository = _repositories[typeof(TRepository)] = repo;
+            var activator = _repositoryActivators.GetOrAdd(typeof(TRepository), CreateRepositoryActivator);
+
+            repository = _repositories[typeof(TRepository)] = activator(_dbContext);
         }
 
         return (TRepository?)repository;
