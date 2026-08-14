@@ -79,6 +79,52 @@ public class PacketTesterProgramTests
         }
     }
 
+    /// <summary>
+    /// Builds a synthetic packet file with a valid F1 2024 header for the given raw packet type byte
+    /// </summary>
+    /// <param name="packetTypeId">Raw packet type byte written into the header (the parsed packet type is this value plus one)</param>
+    /// <param name="totalLength">Total length of the packet file in bytes</param>
+    /// <returns>Path to the temporary packet file</returns>
+    private static string CreateHeaderOnlyPacketFile(byte packetTypeId, int totalLength)
+    {
+        var data = new byte[totalLength];
+
+        BitConverter.GetBytes((ushort)2024).CopyTo(data, 0);
+
+        data[6] = packetTypeId;
+
+        var filePath = Path.GetTempFileName();
+
+        File.WriteAllBytes(filePath, data);
+
+        return filePath;
+    }
+
+    /// <summary>
+    /// Invokes <see cref="F1PacketTester.Program.FileTests"/> and captures the console output it writes
+    /// </summary>
+    /// <param name="filePath">Path to the packet file</param>
+    /// <returns>Captured console output</returns>
+    private static string InvokeFileTests(string filePath)
+    {
+        var originalOut = Console.Out;
+
+        try
+        {
+            using var writer = new StringWriter();
+
+            Console.SetOut(writer);
+
+            F1PacketTester.Program.FileTests(filePath, new ConsoleProgressBar(1, "Test"));
+
+            return writer.ToString();
+        }
+        finally
+        {
+            Console.SetOut(originalOut);
+        }
+    }
+
     #endregion // Static methods
 
     #region Methods
@@ -242,6 +288,66 @@ public class PacketTesterProgramTests
         finally
         {
             File.Delete(filePath);
+        }
+    }
+
+    /// <summary>
+    /// Check that a readable session packet is dispatched without a skip message
+    /// </summary>
+    [TestMethod]
+    public void ProgramFileTestsValidSessionPacketWritesNoSkipMessage()
+    {
+        var filePath = CreateHeaderOnlyPacketFile(1, HeaderSize);
+
+        try
+        {
+            var output = InvokeFileTests(filePath);
+
+            Assert.DoesNotContain("Skipping", output, "Unexpected skip message for a valid, readable session packet!");
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    /// <summary>
+    /// Check that a readable event packet is dispatched without a skip message
+    /// </summary>
+    [TestMethod]
+    public void ProgramFileTestsValidEventPacketWritesNoSkipMessage()
+    {
+        var filePath = CreateHeaderOnlyPacketFile(3, HeaderSize + 4);
+
+        try
+        {
+            var output = InvokeFileTests(filePath);
+
+            Assert.DoesNotContain("Skipping", output, "Unexpected skip message for a valid, readable event packet!");
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    /// <summary>
+    /// Check that a file which cannot be read is skipped with a message instead of aborting the batch
+    /// </summary>
+    [TestMethod]
+    public void ProgramFileTestsUnreadableFileWritesSkipMessage()
+    {
+        var directoryPath = Directory.CreateTempSubdirectory().FullName;
+
+        try
+        {
+            var output = InvokeFileTests(directoryPath);
+
+            Assert.Contains("Skipping", output, "Expected a skip message when the file cannot be read!");
+        }
+        finally
+        {
+            Directory.Delete(directoryPath);
         }
     }
 
