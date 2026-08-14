@@ -103,5 +103,7 @@ export class TracksComponent
   trackReferenceTimeToggled(event: MatSlideToggleChange)
   {
     this.withReferenceTime = event.checked;
+
+    this.loadTracks();
   }
 }
