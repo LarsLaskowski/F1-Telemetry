@@ -215,7 +215,9 @@ internal static class Program
         // The packet type (zero based packet id) follows the version fields in the header
         var packetId = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref memRef, packetTypeOffset));
 
-        var packetType = (PacketTypes)packetId + 1;
+        // PacketTypes reserves 0 for Unknown, so the zero based packet id from the header is
+        // shifted by one to land on the matching enum value (mirrors ReceivedPacketData.ParseHeaderFields)
+        var packetType = (PacketTypes)(packetId + 1);
 
         if (Enum.IsDefined(packetType) == false)
         {
