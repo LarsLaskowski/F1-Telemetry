@@ -6,8 +6,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Sockets;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -671,18 +669,23 @@ public partial class MainWindow : Window, IDisposable
                                      state.Break();
                                  }
 
-                                 var buffer = ArrayPool<byte>.Shared.Rent(30);
+                                 var buffer = ArrayPool<byte>.Shared.Rent(ConstData.F12023HeaderSize);
 
                                  using (var fs = new FileStream(file.FileName, FileMode.Open, FileAccess.Read))
                                  {
                                      try
                                      {
-                                         fs.ReadExactly(buffer, 0, 30);
+                                         fs.ReadExactly(buffer, 0, ConstData.F12023HeaderSize);
 
-                                         ref var memRef = ref MemoryMarshal.GetReference(buffer.AsSpan());
+                                         var packet = new ReceivedPacketData();
 
-                                         file.SessionTime = Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref memRef, 15));
-                                         file.OverallFrameIdentifier = Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref memRef, 23));
+                                         packet.SetRawData(buffer.AsSpan(0, ConstData.F12023HeaderSize).ToArray());
+
+                                         if (packet.PacketHeader is not null)
+                                         {
+                                             file.SessionTime = packet.PacketHeader.SessionTimeNum;
+                                             file.OverallFrameIdentifier = packet.PacketHeader.OverallFrameIdentifier;
+                                         }
                                      }
                                      catch
                                      {
