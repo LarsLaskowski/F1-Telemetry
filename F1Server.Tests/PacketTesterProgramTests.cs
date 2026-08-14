@@ -79,6 +79,56 @@ public class PacketTesterProgramTests
         }
     }
 
+    /// <summary>
+    /// Builds a synthetic packet file with a valid header for the given game version and raw packet type byte
+    /// </summary>
+    /// <param name="gameVersion">Game version written into the header</param>
+    /// <param name="packetTypeId">Raw packet type byte written into the header (the parsed packet type is this value plus one)</param>
+    /// <param name="totalLength">Total length of the packet file in bytes</param>
+    /// <returns>Path to the temporary packet file</returns>
+    private static string CreateHeaderOnlyPacketFile(ushort gameVersion, byte packetTypeId, int totalLength)
+    {
+        var data = new byte[totalLength];
+
+        BitConverter.GetBytes(gameVersion).CopyTo(data, 0);
+
+        // From 2023 the header carries an extra GameYear byte before the packet type
+        var packetTypeOffset = gameVersion >= 2023 ? 6 : 5;
+
+        data[packetTypeOffset] = packetTypeId;
+
+        var filePath = Path.GetTempFileName();
+
+        File.WriteAllBytes(filePath, data);
+
+        return filePath;
+    }
+
+    /// <summary>
+    /// Invokes <see cref="F1PacketTester.Program.FileTests"/> and captures the console output it writes
+    /// </summary>
+    /// <param name="filePath">Path to the packet file</param>
+    /// <returns>Captured console output</returns>
+    private static string InvokeFileTests(string filePath)
+    {
+        var originalOut = Console.Out;
+
+        try
+        {
+            using var writer = new StringWriter();
+
+            Console.SetOut(writer);
+
+            F1PacketTester.Program.FileTests(filePath, new ConsoleProgressBar(1, "Test"));
+
+            return writer.ToString();
+        }
+        finally
+        {
+            Console.SetOut(originalOut);
+        }
+    }
+
     #endregion // Static methods
 
     #region Methods
@@ -238,6 +288,128 @@ public class PacketTesterProgramTests
             var output = InvokeTestSessionPacket(filePath);
 
             Assert.AreEqual(string.Empty, output, "No message expected for a truncated packet!");
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    /// <summary>
+    /// Check that a readable session packet is dispatched without a skip message
+    /// </summary>
+    [TestMethod]
+    public void ProgramFileTestsValidSessionPacketWritesNoSkipMessage()
+    {
+        var filePath = CreateHeaderOnlyPacketFile(2024, 1, HeaderSize);
+
+        try
+        {
+            var output = InvokeFileTests(filePath);
+
+            Assert.DoesNotContain("Skipping", output, "Unexpected skip message for a valid, readable session packet!");
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    /// <summary>
+    /// Check that a readable event packet is dispatched without a skip message
+    /// </summary>
+    [TestMethod]
+    public void ProgramFileTestsValidEventPacketWritesNoSkipMessage()
+    {
+        var filePath = CreateHeaderOnlyPacketFile(2024, 3, HeaderSize + 4);
+
+        try
+        {
+            var output = InvokeFileTests(filePath);
+
+            Assert.DoesNotContain("Skipping", output, "Unexpected skip message for a valid, readable event packet!");
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    /// <summary>
+    /// Check that a file which cannot be read is skipped with a message instead of aborting the batch
+    /// </summary>
+    [TestMethod]
+    public void ProgramFileTestsUnreadableFileWritesSkipMessage()
+    {
+        var directoryPath = Directory.CreateTempSubdirectory().FullName;
+
+        try
+        {
+            var output = InvokeFileTests(directoryPath);
+
+            Assert.Contains("Skipping", output, "Expected a skip message when the file cannot be read!");
+        }
+        finally
+        {
+            Directory.Delete(directoryPath);
+        }
+    }
+
+    /// <summary>
+    /// Check that a packet shorter than the minimum header size writes a too-small message instead of throwing
+    /// </summary>
+    [TestMethod]
+    public void ProgramFileTestsTooShortFileWritesTooSmallMessage()
+    {
+        var filePath = Path.GetTempFileName();
+
+        File.WriteAllBytes(filePath, new byte[4]);
+
+        try
+        {
+            var output = InvokeFileTests(filePath);
+
+            Assert.Contains("too small to contain a packet header", output, "Expected a too-small message for a packet shorter than the minimum header size!");
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    /// <summary>
+    /// Check that a packet with an undefined packet type is skipped without writing a message
+    /// </summary>
+    [TestMethod]
+    public void ProgramFileTestsUndefinedPacketTypeWritesNoMessage()
+    {
+        var filePath = CreateHeaderOnlyPacketFile(2024, 250, HeaderSize);
+
+        try
+        {
+            var output = InvokeFileTests(filePath);
+
+            Assert.AreEqual(string.Empty, output, "No message expected for an undefined packet type!");
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    /// <summary>
+    /// Check that a packet with an unrecognized game version is skipped without writing a message
+    /// </summary>
+    [TestMethod]
+    public void ProgramFileTestsUnrecognizedGameVersionWritesNoMessage()
+    {
+        var filePath = CreateHeaderOnlyPacketFile(1999, 1, 23);
+
+        try
+        {
+            var output = InvokeFileTests(filePath);
+
+            Assert.AreEqual(string.Empty, output, "No message expected for an unrecognized game version!");
         }
         finally
         {

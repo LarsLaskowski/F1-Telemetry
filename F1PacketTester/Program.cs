@@ -72,7 +72,87 @@ internal static class Program
     internal static void TestSessionPacket(string file, int gameVersion, int packetHeaderSize, ConsoleProgressBar progressBar)
     {
         var fInfo = new FileInfo(file);
-        var data = File.ReadAllBytes(file).AsSpan();
+        var rawData = File.ReadAllBytes(file);
+
+        TestSessionPacket(fInfo, rawData, gameVersion, packetHeaderSize, progressBar);
+    }
+
+    /// <summary>
+    /// File tests
+    /// </summary>
+    /// <param name="file">Path to file</param>
+    /// <param name="progressBar">Progress bar used to report findings without breaking the bar</param>
+    internal static void FileTests(string file, ConsoleProgressBar progressBar)
+    {
+        var fInfo = new FileInfo(file);
+        byte[] rawData;
+
+        try
+        {
+            rawData = File.ReadAllBytes(file);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            progressBar.WriteLine($"Skipping {fInfo.Name}: {ex.Message}");
+
+            return;
+        }
+
+        var packet = new ReceivedPacketData();
+
+        packet.SetRawData(rawData);
+
+        if (packet.PacketHeader is null)
+        {
+            if (packet.HeaderRejectionCode is HeaderRejectionCode.PacketTooShort or HeaderRejectionCode.Undersized2023Header)
+            {
+                progressBar.WriteLine($"File {fInfo.Name} is too small to contain a packet header");
+            }
+
+            return;
+        }
+
+        var packetType = packet.PacketHeader.PacketType;
+
+        if (Enum.IsDefined(packetType) == false)
+        {
+            return;
+        }
+
+        var packetHeaderSize = packet.PacketHeader.HeaderSize;
+
+        if (packetHeaderSize == 0)
+        {
+            return;
+        }
+
+        switch (packetType)
+        {
+            case PacketTypes.Event:
+                {
+                    TestEventPacket(fInfo, rawData, packetHeaderSize, progressBar);
+                }
+                break;
+
+            case PacketTypes.Session:
+                {
+                    TestSessionPacket(fInfo, rawData, packet.PacketHeader.GameVersion, packetHeaderSize, progressBar);
+                }
+                break;
+        }
+    }
+
+    /// <summary>
+    /// Test session packet using packet data that has already been loaded
+    /// </summary>
+    /// <param name="fInfo">File information</param>
+    /// <param name="rawData">Already loaded packet data</param>
+    /// <param name="gameVersion">Game version</param>
+    /// <param name="packetHeaderSize">Size of the packet header</param>
+    /// <param name="progressBar">Progress bar used to report findings without breaking the bar</param>
+    private static void TestSessionPacket(FileInfo fInfo, byte[] rawData, int gameVersion, int packetHeaderSize, ConsoleProgressBar progressBar)
+    {
+        var data = rawData.AsSpan();
 
         ref var memRef = ref MemoryMarshal.GetReference(data);
 
@@ -165,69 +245,15 @@ internal static class Program
     }
 
     /// <summary>
-    /// File tests
+    /// Test event packet using packet data that has already been loaded
     /// </summary>
-    /// <param name="file">Path to file</param>
-    /// <param name="progressBar">Progress bar used to report findings without breaking the bar</param>
-    private static void FileTests(string file, ConsoleProgressBar progressBar)
-    {
-        var fInfo = new FileInfo(file);
-        var rawData = File.ReadAllBytes(file);
-
-        var packet = new ReceivedPacketData();
-
-        packet.SetRawData(rawData);
-
-        if (packet.PacketHeader is null)
-        {
-            if (packet.HeaderRejectionCode is HeaderRejectionCode.PacketTooShort or HeaderRejectionCode.Undersized2023Header)
-            {
-                progressBar.WriteLine($"File {fInfo.Name} is too small to contain a packet header");
-            }
-
-            return;
-        }
-
-        var packetType = packet.PacketHeader.PacketType;
-
-        if (Enum.IsDefined(packetType) == false)
-        {
-            return;
-        }
-
-        var packetHeaderSize = packet.PacketHeader.HeaderSize;
-
-        if (packetHeaderSize == 0)
-        {
-            return;
-        }
-
-        switch (packetType)
-        {
-            case PacketTypes.Event:
-                {
-                    TestEventPacket(file, packetHeaderSize, progressBar);
-                }
-                break;
-
-            case PacketTypes.Session:
-                {
-                    TestSessionPacket(file, packet.PacketHeader.GameVersion, packetHeaderSize, progressBar);
-                }
-                break;
-        }
-    }
-
-    /// <summary>
-    /// Test event packet
-    /// </summary>
-    /// <param name="file">Path to file</param>
+    /// <param name="fInfo">File information</param>
+    /// <param name="rawData">Already loaded packet data</param>
     /// <param name="packetHeaderSize">Size of the packet header</param>
     /// <param name="progressBar">Progress bar used to report findings without breaking the bar</param>
-    private static void TestEventPacket(string file, int packetHeaderSize, ConsoleProgressBar progressBar)
+    private static void TestEventPacket(FileInfo fInfo, byte[] rawData, int packetHeaderSize, ConsoleProgressBar progressBar)
     {
-        var fInfo = new FileInfo(file);
-        var data = File.ReadAllBytes(file).AsSpan();
+        var data = rawData.AsSpan();
 
         if (data.Length < packetHeaderSize + 4)
         {

@@ -174,9 +174,9 @@ internal partial class FolderRenameProcessor
 
                     isRenamed = true;
                 }
-                catch
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
                 {
-                    // Ignore exceptions
+                    Console.WriteLine($"   failed to rename '{directoryToRename}' to '{newDirectoryPath}': {ex.Message}");
                 }
             }
         }
