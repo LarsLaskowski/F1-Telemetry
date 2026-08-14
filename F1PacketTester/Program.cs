@@ -1,4 +1,3 @@
-using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -15,27 +14,6 @@ namespace F1PacketTester;
 /// </summary>
 internal static class Program
 {
-    #region Constants
-
-    /// <summary>
-    /// Offset of the packet type byte for game versions before F1 2023
-    /// (game version uint16, major, minor and packet version bytes)
-    /// </summary>
-    private const int PacketTypeOffset = 5;
-
-    /// <summary>
-    /// Offset of the packet type byte for F1 2023 and newer
-    /// (an additional game year byte precedes the version fields)
-    /// </summary>
-    private const int PacketTypeOffset2023 = 6;
-
-    /// <summary>
-    /// Minimum number of bytes required to read the packet type from the header
-    /// </summary>
-    private const int MinimumHeaderSize = PacketTypeOffset2023 + 1;
-
-    #endregion // Constants
-
     #region Methods
 
     /// <summary>
@@ -194,48 +172,35 @@ internal static class Program
     private static void FileTests(string file, ConsoleProgressBar progressBar)
     {
         var fInfo = new FileInfo(file);
-        var data = File.ReadAllBytes(file).AsSpan();
+        var rawData = File.ReadAllBytes(file);
 
-        if (data.Length < MinimumHeaderSize)
+        var packet = new ReceivedPacketData();
+
+        packet.SetRawData(rawData);
+
+        if (packet.PacketHeader is null)
         {
-            progressBar.WriteLine($"File {fInfo.Name} is too small to contain a packet header");
+            if (packet.HeaderRejectionCode is HeaderRejectionCode.PacketTooShort or HeaderRejectionCode.Undersized2023Header)
+            {
+                progressBar.WriteLine($"File {fInfo.Name} is too small to contain a packet header");
+            }
 
             return;
         }
 
-        ref var memRef = ref MemoryMarshal.GetReference(data);
-
-        // The game version is stored in the first two bytes of every packet header (uint16)
-        var gameVersion = Unsafe.ReadUnaligned<ushort>(ref memRef);
-
-        // Since F1 2023 the header contains an additional game year byte before the version
-        // fields, which shifts the packet type byte by one
-        var packetTypeOffset = gameVersion >= 2023 ? PacketTypeOffset2023 : PacketTypeOffset;
-
-        // The packet type (zero based packet id) follows the version fields in the header
-        var packetId = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref memRef, packetTypeOffset));
-
-        // PacketTypes reserves 0 for Unknown, so the zero based packet id from the header is
-        // shifted by one to land on the matching enum value (mirrors ReceivedPacketData.ParseHeaderFields)
-        var packetType = (PacketTypes)(packetId + 1);
+        var packetType = packet.PacketHeader.PacketType;
 
         if (Enum.IsDefined(packetType) == false)
         {
             return;
         }
 
-        var packetHeaderSize = gameVersion switch
-                               {
-                                   2019 => ConstData.F12019HeaderSize,
-                                   2020 => ConstData.F12020HeaderSize,
-                                   2021 => ConstData.F12020HeaderSize,
-                                   2022 => ConstData.F12020HeaderSize,
-                                   2023 => ConstData.F12023HeaderSize,
-                                   2024 => ConstData.F12024HeaderSize,
-                                   2025 => ConstData.F12025HeaderSize,
-                                   2026 => ConstData.F12026HeaderSize,
-                                   _ => throw new InvalidEnumArgumentException()
-                               };
+        var packetHeaderSize = packet.PacketHeader.HeaderSize;
+
+        if (packetHeaderSize == 0)
+        {
+            return;
+        }
 
         switch (packetType)
         {
@@ -247,7 +212,7 @@ internal static class Program
 
             case PacketTypes.Session:
                 {
-                    TestSessionPacket(file, gameVersion, packetHeaderSize, progressBar);
+                    TestSessionPacket(file, packet.PacketHeader.GameVersion, packetHeaderSize, progressBar);
                 }
                 break;
         }

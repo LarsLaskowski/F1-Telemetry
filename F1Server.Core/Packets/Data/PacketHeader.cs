@@ -1,4 +1,5 @@
-﻿using F1Server.Core.Enumerations;
+﻿using F1Server.Core.Data;
+using F1Server.Core.Enumerations;
 using F1Server.Core.Packets.Interfaces;
 
 namespace F1Server.Core.Packets.Data;
@@ -17,6 +18,23 @@ public class PacketHeader : IHeader
     /// tolerance. Not part of any header interface - an implementation-only addition.
     /// </summary>
     public uint SessionTimeNum { get; set; }
+
+    /// <summary>
+    /// Size of the packet header in bytes, derived from <see cref="GameVersion"/>. Zero for an
+    /// unrecognized game version. Not part of any header interface - an implementation-only addition.
+    /// </summary>
+    public int HeaderSize => GameVersion switch
+                             {
+                                 2019 => ConstData.F12019HeaderSize,
+                                 2020 => ConstData.F12020HeaderSize,
+                                 2021 => ConstData.F12020HeaderSize,
+                                 2022 => ConstData.F12020HeaderSize,
+                                 2023 => ConstData.F12023HeaderSize,
+                                 2024 => ConstData.F12024HeaderSize,
+                                 2025 => ConstData.F12025HeaderSize,
+                                 2026 => ConstData.F12026HeaderSize,
+                                 _ => 0
+                             };
 
     #endregion // Properties
 
