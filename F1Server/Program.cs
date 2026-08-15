@@ -18,7 +18,9 @@ using Microsoft.Extensions.DependencyInjection;
 namespace F1Server;
 
 /// <summary>
-/// Class for starting the project
+/// Class for starting the project. Uses <see cref="Console"/> output instead of <see cref="Microsoft.Extensions.Logging.ILogger"/>
+/// throughout, since most of the startup flow runs before or independently of the DI-configured, opt-in
+/// OpenTelemetry logging pipeline, which is only wired up when OTLP logging environment variables are present
 /// </summary>
 public static class Program
 {
