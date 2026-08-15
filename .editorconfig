@@ -250,3 +250,11 @@ dotnet_diagnostic.RH4119.severity = none
 dotnet_diagnostic.RH7004.severity = none
 dotnet_diagnostic.RH8027.severity = none
 dotnet_diagnostic.RH8306.severity = none
+
+# MSTEST analyzer rules enforcement
+dotnet_diagnostic.MSTEST0037.severity = error
+dotnet_diagnostic.MSTEST0038.severity = error
+dotnet_diagnostic.MSTEST0039.severity = error
+dotnet_diagnostic.MSTEST0049.severity = error
+dotnet_diagnostic.MSTEST0065.severity = error
+dotnet_diagnostic.MSTEST0068.severity = error

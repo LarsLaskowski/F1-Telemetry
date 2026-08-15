@@ -88,7 +88,7 @@ public class TimerManagerTests
 
                 timerManager.PrepareTimer(() => Interlocked.Increment(ref secondActionCallCount));
 
-                Assert.IsTrue(firstActionCalled.Wait(FirstTickTimeout), "The first registered action should have been invoked by the timer.");
+                Assert.IsTrue(firstActionCalled.Wait(FirstTickTimeout, TestContext.CancellationToken), "The first registered action should have been invoked by the timer.");
 
                 Assert.AreEqual(firstStart, timerManager.TimerStarted, "The start timestamp should not be overwritten by a repeated call.");
                 Assert.AreEqual(0, Volatile.Read(ref secondActionCallCount), "The action of a repeated call should not be registered.");
@@ -120,7 +120,7 @@ public class TimerManagerTests
 
                 Assert.IsTrue(firstTick.Wait(FirstTickTimeout, TestContext.CancellationToken), "The timer should have ticked at least once.");
 
-                Thread.Sleep(TickObservationTime);
+                TestContext.CancellationToken.WaitHandle.WaitOne(TickObservationTime);
 
                 Assert.IsLessThanOrEqualTo(MaxExpectedTickCount, Volatile.Read(ref tickCount), "Repeated calls should not start additional timers.");
             }
@@ -145,7 +145,7 @@ public class TimerManagerTests
 
                 timerManager.PrepareTimer(() => Interlocked.Increment(ref startedActionCount));
 
-                Assert.IsTrue(actionInvoked.Wait(FirstTickTimeout), "The timer should have ticked using the first registered action.");
+                Assert.IsTrue(actionInvoked.Wait(FirstTickTimeout, TestContext.CancellationToken), "The timer should have ticked using the first registered action.");
 
                 Assert.IsTrue(timerManager.IsTimerStarted, "The timer should be marked as started after concurrent calls.");
                 Assert.AreEqual(0, Volatile.Read(ref startedActionCount), "A call after the timer has been started should not register another action.");

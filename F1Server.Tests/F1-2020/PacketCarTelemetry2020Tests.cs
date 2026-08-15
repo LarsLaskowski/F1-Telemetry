@@ -84,7 +84,7 @@ public class PacketCarTelemetry2020Tests
     public void PacketCarTelemetryCheckCarTelemetry2020IsCarTelemetryDataObject()
     {
         Assert.IsNotNull(_packetData.PacketHeader, "Missing packet header!");
-        Assert.IsTrue(_packetContent?.Length == ConstData.F12020CarTelemetrySize + ConstData.F12020HeaderSize, "Packet content has unexpected length!");
+        Assert.AreEqual(ConstData.F12020CarTelemetrySize + ConstData.F12020HeaderSize, _packetContent?.Length, "Packet content has unexpected length!");
 
         var isCorrect = false;
         var carTelemetry = _packetAnalyzer.GetCarTelemetry(_packetData.PacketHeader, _packetContent);

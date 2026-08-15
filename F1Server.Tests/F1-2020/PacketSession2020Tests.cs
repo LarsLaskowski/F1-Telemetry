@@ -84,7 +84,7 @@ public class PacketSession2020Tests
     public void PacketSessionCheck2020IsSessionDataObject()
     {
         Assert.IsNotNull(_packetData.PacketHeader, "Missing packet header!");
-        Assert.IsTrue(_packetContent?.Length == ConstData.F12020SessionSize + ConstData.F12020HeaderSize, "Packet content has unexpected length!");
+        Assert.AreEqual(ConstData.F12020SessionSize + ConstData.F12020HeaderSize, _packetContent?.Length, "Packet content has unexpected length!");
 
         var isCorrect = false;
         var session = _packetAnalyzer.GetSessionData(_packetData.PacketHeader, _packetContent);

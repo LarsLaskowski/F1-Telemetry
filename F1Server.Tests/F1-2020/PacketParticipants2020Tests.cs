@@ -84,7 +84,7 @@ public class PacketParticipants2020Tests
     public void PacketParticipantsCheckParticipants2020IsParticipantsDataObject()
     {
         Assert.IsNotNull(_packetData.PacketHeader, "Missing packet header!");
-        Assert.IsTrue(_packetContent?.Length == ConstData.F12020ParticipantsSize + ConstData.F12020HeaderSize, "Packet content has unexpected length!");
+        Assert.AreEqual(ConstData.F12020ParticipantsSize + ConstData.F12020HeaderSize, _packetContent?.Length, "Packet content has unexpected length!");
 
         var isCorrect = false;
         var participants = _packetAnalyzer.GetParticipantsData(_packetData.PacketHeader, _packetContent);

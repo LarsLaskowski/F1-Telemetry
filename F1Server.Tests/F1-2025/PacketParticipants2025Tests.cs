@@ -118,7 +118,7 @@ public class PacketParticipants2025Tests
     {
         var data = (IParticipantData2025[])GetParticipantsData().Participants;
 
-        Assert.IsTrue(data[19].DriverName.Contains("Max Kane"), "Driver name is invalid!");
+        Assert.Contains("Max Kane", data[19].DriverName, "Driver name is invalid!");
     }
 
     #endregion // Methods F1 2025
