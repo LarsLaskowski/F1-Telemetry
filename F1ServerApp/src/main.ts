@@ -15,6 +15,8 @@ export function getBaseUrl()
     return environment.apiUrl ?? "https://localhost";
   }
 
+  // Local backend API dev port (see F1Server.WebApi/Properties/launchSettings.json),
+  // not the frontend dev server port (4810, see npm start / README.md).
   return "http://localhost:4812/";
 }
 

@@ -12,7 +12,7 @@
     <ProductionBuildCommand>npm run build</ProductionBuildCommand>
     <ShouldRunNpmAudit>true</ShouldRunNpmAudit>
     <!-- Folder where production build objects will be placed -->
-    <BuildOutputFolder>$(MSBuildProjectDirectory)\dist\f1serverapp</BuildOutputFolder>
+    <BuildOutputFolder>$(MSBuildProjectDirectory)\dist\f1-server-app</BuildOutputFolder>
   </PropertyGroup>
   <ItemGroup>
     <Folder Include="src\app\utils\" />
