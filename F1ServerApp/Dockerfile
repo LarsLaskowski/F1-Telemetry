@@ -9,8 +9,6 @@ ENV PATH /app/node_modules/.bin:$PATH
 
 COPY ./package.json ./package-lock.json /app/
 
-RUN npm install -g npm@latest
-
 RUN echo "NODE Version: " && node --version
 RUN echo "NPM  Version: " && npm --version
 
@@ -20,7 +18,7 @@ COPY . /app
 
 RUN npm run build
 
-FROM ${BASE_NGINX} AS runtime
+FROM ${BASE_NGINX}@${BASE_NGINX_DIGEST} AS runtime
 ARG BASE_NGINX
 ARG BASE_NGINX_DIGEST
 
@@ -31,7 +29,7 @@ COPY ["./conf/default.conf","/etc/nginx/conf.d/default.conf.template"]
 COPY ["docker_entrypoint.sh", "/docker_entrypoint.sh"]
 RUN ["chmod", "+x", "/docker_entrypoint.sh"]
 
-RUN apk add curl
+RUN apk add --no-cache curl
 HEALTHCHECK --interval=5m --timeout=3s --retries=5 CMD curl --fail http://localhost/api/health || exit 1
 
 WORKDIR /usr/share/nginx/html
