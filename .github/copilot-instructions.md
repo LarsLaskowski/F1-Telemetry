@@ -4,6 +4,20 @@ These instructions apply to the F1-Telemetry solution. Keep suggestions aligned 
 
 ---
 
+## Additional documentation
+
+These documents are binding project conventions, not optional background reading:
+
+- [`docs/ARCHITECTURE.md`](../docs/ARCHITECTURE.md) — current system architecture and the
+  reasoning behind key design decisions (packet pipeline, multi-database access, hosting,
+  observability, frontend bootstrap). Read it before proposing structural changes, and keep
+  it up to date when a change alters the architecture it describes.
+- [`docs/UNIT_TESTS.md`](../docs/UNIT_TESTS.md) — binding test conventions for
+  `F1Server.Tests` (naming, structure, assertions, what not to introduce). Follow it
+  whenever adding or changing tests, in addition to the [Testing](#testing) section below.
+
+---
+
 ## Git workflow
 
 - Never run `git commit`, `git push`, create branches, or perform other Git write operations without explicit user approval
