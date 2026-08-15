@@ -182,5 +182,32 @@ public class PacketParticipants2024Tests
         }
     }
 
+    /// <summary>
+    /// Check tech level (2024)
+    /// </summary>
+    [TestMethod]
+    public void PacketParticipantsTechLevel2024ExpectedValue()
+    {
+        if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12024ParticipantsSize + ConstData.F12024HeaderSize)
+        {
+            var participants = _packetAnalyzer.GetParticipantsData(_packetData.PacketHeader, _packetContent);
+
+            if (participants is Participants participantsData && participantsData.PacketData is IParticipantsBase baseData && baseData.Participants is IParticipantData2024[] data)
+            {
+                var isCorrect = data[21].TechLevel == 0;
+
+                Assert.IsTrue(isCorrect, "Incorrect tech level!");
+            }
+            else
+            {
+                Assert.Fail("Invalid participants packet, expected F1 2024!");
+            }
+        }
+        else
+        {
+            Assert.IsNull(_packetData.PacketHeader, "Invalid F1 2024 packet header or content!");
+        }
+    }
+
     #endregion // Methods F1 2024
 }
