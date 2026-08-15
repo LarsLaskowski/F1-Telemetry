@@ -83,22 +83,18 @@ public class PacketSession2021Tests
     [TestMethod]
     public void PacketSessionCheck2021IsSessionObject()
     {
-        if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12021SessionSize + ConstData.F12020HeaderSize)
-        {
-            var isCorrect = false;
-            var session = _packetAnalyzer.GetSessionData(_packetData.PacketHeader, _packetContent);
+        Assert.IsNotNull(_packetData.PacketHeader, "Missing packet header!");
+        Assert.IsTrue(_packetContent?.Length >= ConstData.F12021SessionSize + ConstData.F12021HeaderSize, "Packet content too short!");
 
-            if (session is SessionData sessionData)
-            {
-                isCorrect = sessionData.PacketData is ISessionData2021;
-            }
+        var isCorrect = false;
+        var session = _packetAnalyzer.GetSessionData(_packetData.PacketHeader, _packetContent);
 
-            Assert.IsTrue(isCorrect, "Packet is not a session packet");
-        }
-        else
+        if (session is SessionData sessionData)
         {
-            Assert.IsNull(_packetData.PacketHeader, "Invalid F1 2021 packet header or content!");
+            isCorrect = sessionData.PacketData is ISessionData2021;
         }
+
+        Assert.IsTrue(isCorrect, "Packet is not a session packet");
     }
 
     /// <summary>
@@ -107,24 +103,20 @@ public class PacketSession2021Tests
     [TestMethod]
     public void PacketSessionAiDifficulty2021ExpectedSixty()
     {
-        if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12021SessionSize + ConstData.F12020HeaderSize)
+        Assert.IsNotNull(_packetData.PacketHeader, "Missing packet header!");
+        Assert.IsTrue(_packetContent?.Length >= ConstData.F12021SessionSize + ConstData.F12021HeaderSize, "Packet content too short!");
+
+        var session = _packetAnalyzer.GetSessionData(_packetData.PacketHeader, _packetContent);
+
+        if (session is SessionData sessionData && sessionData.PacketData is ISessionData2021 sessionData2021)
         {
-            var session = _packetAnalyzer.GetSessionData(_packetData.PacketHeader, _packetContent);
+            var isCorrect = sessionData2021.AiDifficulty == 60;
 
-            if (session is SessionData sessionData && sessionData.PacketData is ISessionData2021 sessionData2021)
-            {
-                var isCorrect = sessionData2021.AiDifficulty == 60;
-
-                Assert.IsTrue(isCorrect, "Incorrect ai difficulty!");
-            }
-            else
-            {
-                Assert.Fail("Invalid session packet, expected F1 2021!");
-            }
+            Assert.IsTrue(isCorrect, "Incorrect ai difficulty!");
         }
         else
         {
-            Assert.IsNull(_packetData.PacketHeader, "Invalid F1 2021 packet header or content!");
+            Assert.Fail("Invalid session packet, expected F1 2021!");
         }
     }
 
@@ -134,24 +126,20 @@ public class PacketSession2021Tests
     [TestMethod]
     public void PacketSessionTrack2021ExpectedAbuDhabi()
     {
-        if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12021SessionSize + ConstData.F12020HeaderSize)
+        Assert.IsNotNull(_packetData.PacketHeader, "Missing packet header!");
+        Assert.IsTrue(_packetContent?.Length >= ConstData.F12021SessionSize + ConstData.F12021HeaderSize, "Packet content too short!");
+
+        var session = _packetAnalyzer.GetSessionData(_packetData.PacketHeader, _packetContent);
+
+        if (session is SessionData sessionData && sessionData.PacketData is ISessionData2021)
         {
-            var session = _packetAnalyzer.GetSessionData(_packetData.PacketHeader, _packetContent);
+            var isCorrect = sessionData.PacketData?.TrackName.Equals("Abu Dhabi");
 
-            if (session is SessionData sessionData && sessionData.PacketData is ISessionData2021)
-            {
-                var isCorrect = sessionData.PacketData?.TrackName.Equals("Abu Dhabi");
-
-                Assert.IsTrue(isCorrect, "Invalid track!");
-            }
-            else
-            {
-                Assert.Fail("Invalid session packet, expected F1 2021!");
-            }
+            Assert.IsTrue(isCorrect, "Invalid track!");
         }
         else
         {
-            Assert.IsNull(_packetData.PacketHeader, "Invalid F1 2021 packet header or content!");
+            Assert.Fail("Invalid session packet, expected F1 2021!");
         }
     }
 
@@ -161,24 +149,20 @@ public class PacketSession2021Tests
     [TestMethod]
     public void PacketSessionTrackLength2021ExpectedValue()
     {
-        if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12021SessionSize + ConstData.F12020HeaderSize)
+        Assert.IsNotNull(_packetData.PacketHeader, "Missing packet header!");
+        Assert.IsTrue(_packetContent?.Length >= ConstData.F12021SessionSize + ConstData.F12021HeaderSize, "Packet content too short!");
+
+        var session = _packetAnalyzer.GetSessionData(_packetData.PacketHeader, _packetContent);
+
+        if (session is SessionData sessionData && sessionData.PacketData is ISessionData2021)
         {
-            var session = _packetAnalyzer.GetSessionData(_packetData.PacketHeader, _packetContent);
+            var isCorrect = sessionData.PacketData?.TrackLength == 5547;
 
-            if (session is SessionData sessionData && sessionData.PacketData is ISessionData2021)
-            {
-                var isCorrect = sessionData.PacketData?.TrackLength == 5547;
-
-                Assert.IsTrue(isCorrect, "Invalid track length!");
-            }
-            else
-            {
-                Assert.Fail("Invalid session packet, expected F1 2021!");
-            }
+            Assert.IsTrue(isCorrect, "Invalid track length!");
         }
         else
         {
-            Assert.IsNull(_packetData.PacketHeader, "Invalid F1 2021 packet header or content!");
+            Assert.Fail("Invalid session packet, expected F1 2021!");
         }
     }
 
@@ -188,24 +172,20 @@ public class PacketSession2021Tests
     [TestMethod]
     public void PacketSessionFormulaType2021ExpectedF2()
     {
-        if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12021SessionSize + ConstData.F12020HeaderSize)
+        Assert.IsNotNull(_packetData.PacketHeader, "Missing packet header!");
+        Assert.IsTrue(_packetContent?.Length >= ConstData.F12021SessionSize + ConstData.F12021HeaderSize, "Packet content too short!");
+
+        var session = _packetAnalyzer.GetSessionData(_packetData.PacketHeader, _packetContent);
+
+        if (session is SessionData sessionData && sessionData.PacketData is ISessionData2021)
         {
-            var session = _packetAnalyzer.GetSessionData(_packetData.PacketHeader, _packetContent);
+            var isCorrect = sessionData.PacketData?.FormulaType == Formula.F2;
 
-            if (session is SessionData sessionData && sessionData.PacketData is ISessionData2021)
-            {
-                var isCorrect = sessionData.PacketData?.FormulaType == Formula.F2;
-
-                Assert.IsTrue(isCorrect, "Invalid formula type!");
-            }
-            else
-            {
-                Assert.Fail("Invalid session packet, expected F1 2021!");
-            }
+            Assert.IsTrue(isCorrect, "Invalid formula type!");
         }
         else
         {
-            Assert.IsNull(_packetData.PacketHeader, "Invalid F1 2021 packet header or content!");
+            Assert.Fail("Invalid session packet, expected F1 2021!");
         }
     }
 

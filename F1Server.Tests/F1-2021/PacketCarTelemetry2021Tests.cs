@@ -3,7 +3,6 @@ using F1Server.Core.Data;
 using F1Server.Core.Enumerations;
 using F1Server.Core.PacketData;
 using F1Server.Core.Packets.Data;
-using F1Server.Core.Packets.Interfaces;
 
 namespace F1Server.Tests;
 
@@ -84,22 +83,18 @@ public class PacketCarTelemetry2021Tests
     [TestMethod]
     public void PacketCarTelemetryCheckCarTelemetry2021IsCarTelemetryObject()
     {
-        if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12021CarTelemetrySize + ConstData.F12020HeaderSize)
-        {
-            var isCorrect = false;
-            var carTelemetry = _packetAnalyzer.GetCarTelemetry(_packetData.PacketHeader, _packetContent);
+        Assert.IsNotNull(_packetData.PacketHeader, "Missing packet header!");
+        Assert.IsTrue(_packetContent?.Length >= ConstData.F12021CarTelemetrySize + ConstData.F12021HeaderSize, "Packet content too short!");
 
-            if (carTelemetry is CarTelemetry packetData)
-            {
-                isCorrect = packetData.PacketData is CarTelemetry2021;
-            }
+        var isCorrect = false;
+        var carTelemetry = _packetAnalyzer.GetCarTelemetry(_packetData.PacketHeader, _packetContent);
 
-            Assert.IsTrue(isCorrect, "Packet is not a car telemetry packet");
-        }
-        else
+        if (carTelemetry is CarTelemetry packetData)
         {
-            Assert.IsNull(_packetData.PacketHeader, "Invalid F1 2021 packet header or content!");
+            isCorrect = packetData.PacketData is CarTelemetry2021;
         }
+
+        Assert.IsTrue(isCorrect, "Packet is not a car telemetry packet");
     }
 
     /// <summary>
@@ -108,24 +103,18 @@ public class PacketCarTelemetry2021Tests
     [TestMethod]
     public void PacketCarTelemetryTyrePressure2021ExpectedValue()
     {
-        if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12021CarTelemetrySize + ConstData.F12020HeaderSize)
+        Assert.IsNotNull(_packetData.PacketHeader, "Missing packet header!");
+        Assert.IsTrue(_packetContent?.Length >= ConstData.F12021CarTelemetrySize + ConstData.F12021HeaderSize, "Packet content too short!");
+
+        var carTelemetry = _packetAnalyzer.GetCarTelemetry(_packetData.PacketHeader, _packetContent);
+
+        if (carTelemetry is CarTelemetry telemetryData && telemetryData.PacketData is CarTelemetry2021 carTelemetryData2021)
         {
-            var carTelemetry = _packetAnalyzer.GetCarTelemetry(_packetData.PacketHeader, _packetContent);
-
-            if (carTelemetry is CarTelemetry telemetryData && telemetryData.PacketData is CarTelemetry2021)
-            {
-                var isCorrect = telemetryData.PacketData?.CarTelemetryData[0].TyresPressure.FrontLeft == 22.200000762939453;
-
-                Assert.IsTrue(isCorrect, "Incorrect tyre pressure (FL)!");
-            }
-            else
-            {
-                Assert.Fail("Invalid car telemetry format, expected F1 2021!");
-            }
+            Assert.AreEqual(22.200000762939453F, carTelemetryData2021.CarTelemetryData[0].TyresPressure.FrontLeft, 0.0001F, "Incorrect tyre pressure (FL)!");
         }
         else
         {
-            Assert.IsNull(_packetData.PacketHeader, "Invalid F1 2021 packet header or content!");
+            Assert.Fail("Invalid car telemetry format, expected F1 2021!");
         }
     }
 
@@ -135,24 +124,20 @@ public class PacketCarTelemetry2021Tests
     [TestMethod]
     public void PacketCarTelemetrySpeed2021ExpectedValue()
     {
-        if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12021CarTelemetrySize + ConstData.F12020HeaderSize)
+        Assert.IsNotNull(_packetData.PacketHeader, "Missing packet header!");
+        Assert.IsTrue(_packetContent?.Length >= ConstData.F12021CarTelemetrySize + ConstData.F12021HeaderSize, "Packet content too short!");
+
+        var carTelemetry = _packetAnalyzer.GetCarTelemetry(_packetData.PacketHeader, _packetContent);
+
+        if (carTelemetry is CarTelemetry telemetryData && telemetryData.PacketData is CarTelemetry2021)
         {
-            var carTelemetry = _packetAnalyzer.GetCarTelemetry(_packetData.PacketHeader, _packetContent);
+            var isCorrect = telemetryData.PacketData?.CarTelemetryData[0].Speed == 301;
 
-            if (carTelemetry is CarTelemetry telemetryData && telemetryData.PacketData is CarTelemetry2021)
-            {
-                var isCorrect = telemetryData.PacketData?.CarTelemetryData[0].Speed == 301;
-
-                Assert.IsTrue(isCorrect, "Incorrect speed!");
-            }
-            else
-            {
-                Assert.Fail("Invalid car telemetry format, expected F1 2021!");
-            }
+            Assert.IsTrue(isCorrect, "Incorrect speed!");
         }
         else
         {
-            Assert.IsNull(_packetData.PacketHeader, "Invalid F1 2021 packet header or content!");
+            Assert.Fail("Invalid car telemetry format, expected F1 2021!");
         }
     }
 
@@ -162,24 +147,20 @@ public class PacketCarTelemetry2021Tests
     [TestMethod]
     public void PacketCarTelemetryTyreInnerTemperature2021ExpectedValue()
     {
-        if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12021CarTelemetrySize + ConstData.F12020HeaderSize)
+        Assert.IsNotNull(_packetData.PacketHeader, "Missing packet header!");
+        Assert.IsTrue(_packetContent?.Length >= ConstData.F12021CarTelemetrySize + ConstData.F12021HeaderSize, "Packet content too short!");
+
+        var carTelemetry = _packetAnalyzer.GetCarTelemetry(_packetData.PacketHeader, _packetContent);
+
+        if (carTelemetry is CarTelemetry telemetryData && telemetryData.PacketData is CarTelemetry2021)
         {
-            var carTelemetry = _packetAnalyzer.GetCarTelemetry(_packetData.PacketHeader, _packetContent);
+            var isCorrect = telemetryData.PacketData?.CarTelemetryData[0].TyresInnerTemperature.RearRight == 87;
 
-            if (carTelemetry is CarTelemetry telemetryData && telemetryData.PacketData is CarTelemetry2021)
-            {
-                var isCorrect = telemetryData.PacketData?.CarTelemetryData[0].TyresInnerTemperature.RearRight == 87;
-
-                Assert.IsTrue(isCorrect, "Incorrect tyre inner temperature (RR)!");
-            }
-            else
-            {
-                Assert.Fail("Invalid car telemetry format, expected F1 2021!");
-            }
+            Assert.IsTrue(isCorrect, "Incorrect tyre inner temperature (RR)!");
         }
         else
         {
-            Assert.IsNull(_packetData.PacketHeader, "Invalid F1 2021 packet header or content!");
+            Assert.Fail("Invalid car telemetry format, expected F1 2021!");
         }
     }
 
@@ -189,24 +170,20 @@ public class PacketCarTelemetry2021Tests
     [TestMethod]
     public void PacketCarTelemetryWheelSurface2021ExpectedValue()
     {
-        if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12021CarTelemetrySize + ConstData.F12020HeaderSize)
+        Assert.IsNotNull(_packetData.PacketHeader, "Missing packet header!");
+        Assert.IsTrue(_packetContent?.Length >= ConstData.F12021CarTelemetrySize + ConstData.F12021HeaderSize, "Packet content too short!");
+
+        var carTelemetry = _packetAnalyzer.GetCarTelemetry(_packetData.PacketHeader, _packetContent);
+
+        if (carTelemetry is CarTelemetry telemetryData && telemetryData.PacketData is CarTelemetry2021)
         {
-            var carTelemetry = _packetAnalyzer.GetCarTelemetry(_packetData.PacketHeader, _packetContent);
+            var isCorrect = telemetryData.PacketData?.CarTelemetryData[0].SurfaceType.FrontRight == SurfaceType.Tarmac;
 
-            if (carTelemetry is CarTelemetry telemetryData && telemetryData.PacketData is ICarTelemetry2021)
-            {
-                var isCorrect = telemetryData.PacketData?.CarTelemetryData[0].SurfaceType.FrontRight == SurfaceType.Tarmac;
-
-                Assert.IsTrue(isCorrect, "Incorrect wheel surface type (FR)!");
-            }
-            else
-            {
-                Assert.Fail("Invalid car telemetry format, expected F1 2021!");
-            }
+            Assert.IsTrue(isCorrect, "Incorrect wheel surface type (FR)!");
         }
         else
         {
-            Assert.IsNull(_packetData.PacketHeader, "Invalid F1 2021 packet header or content!");
+            Assert.Fail("Invalid car telemetry format, expected F1 2021!");
         }
     }
 
@@ -216,24 +193,20 @@ public class PacketCarTelemetry2021Tests
     [TestMethod]
     public void PacketCarTelemetryEngineRpm2021ExpectedValue()
     {
-        if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12021CarTelemetrySize + ConstData.F12020HeaderSize)
+        Assert.IsNotNull(_packetData.PacketHeader, "Missing packet header!");
+        Assert.IsTrue(_packetContent?.Length >= ConstData.F12021CarTelemetrySize + ConstData.F12021HeaderSize, "Packet content too short!");
+
+        var carTelemetry = _packetAnalyzer.GetCarTelemetry(_packetData.PacketHeader, _packetContent);
+
+        if (carTelemetry is CarTelemetry telemetryData && telemetryData.PacketData is CarTelemetry2021)
         {
-            var carTelemetry = _packetAnalyzer.GetCarTelemetry(_packetData.PacketHeader, _packetContent);
+            var isCorrect = telemetryData.PacketData?.CarTelemetryData[0].EngineRPM == 8191;
 
-            if (carTelemetry is CarTelemetry telemetryData && telemetryData.PacketData is CarTelemetry2021)
-            {
-                var isCorrect = telemetryData.PacketData?.CarTelemetryData[0].EngineRPM == 8191;
-
-                Assert.IsTrue(isCorrect, "Incorrect engine rpm!");
-            }
-            else
-            {
-                Assert.Fail("Invalid car telemetry format, expected F1 2021!");
-            }
+            Assert.IsTrue(isCorrect, "Incorrect engine rpm!");
         }
         else
         {
-            Assert.IsNull(_packetData.PacketHeader, "Invalid F1 2021 packet header or content!");
+            Assert.Fail("Invalid car telemetry format, expected F1 2021!");
         }
     }
 
