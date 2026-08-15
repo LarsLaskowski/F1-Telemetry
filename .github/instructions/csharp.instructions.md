@@ -555,6 +555,7 @@ The following rules are intentionally disabled in `.editorconfig`:
 | RH0428 | none | Reihitsu rule disabled project-wide |
 | RH2102 | none | Reihitsu rule disabled project-wide |
 | RH4119 | none | Reihitsu rule disabled project-wide |
+| RH4124 | none | Reihitsu rule disabled project-wide |
 | RH7004 | none | Reihitsu rule disabled project-wide |
 | RH8027 | none | Reihitsu rule disabled project-wide |
 | RH8306 | none | Reihitsu rule disabled project-wide |
