@@ -83,7 +83,7 @@ public class PacketSession2022Tests
     [TestMethod]
     public void PacketSessionCheck2022IsSessionObject()
     {
-        if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12022SessionSize + ConstData.F12020HeaderSize)
+        if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12022SessionSize + ConstData.F12022HeaderSize)
         {
             var isCorrect = false;
             var session = _packetAnalyzer.GetSessionData(_packetData.PacketHeader, _packetContent);
@@ -107,7 +107,7 @@ public class PacketSession2022Tests
     [TestMethod]
     public void PacketSessionAiDifficulty2022ExpectedFifty()
     {
-        if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12022SessionSize + ConstData.F12020HeaderSize)
+        if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12022SessionSize + ConstData.F12022HeaderSize)
         {
             var session = _packetAnalyzer.GetSessionData(_packetData.PacketHeader, _packetContent);
 
@@ -134,7 +134,7 @@ public class PacketSession2022Tests
     [TestMethod]
     public void PacketSessionTrack2022ExpectedMonaco()
     {
-        if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12022SessionSize + ConstData.F12020HeaderSize)
+        if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12022SessionSize + ConstData.F12022HeaderSize)
         {
             var session = _packetAnalyzer.GetSessionData(_packetData.PacketHeader, _packetContent);
 
@@ -161,7 +161,7 @@ public class PacketSession2022Tests
     [TestMethod]
     public void PacketSessionTrackLength2022ExpectedValue()
     {
-        if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12022SessionSize + ConstData.F12020HeaderSize)
+        if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12022SessionSize + ConstData.F12022HeaderSize)
         {
             var session = _packetAnalyzer.GetSessionData(_packetData.PacketHeader, _packetContent);
 
@@ -188,7 +188,7 @@ public class PacketSession2022Tests
     [TestMethod]
     public void PacketSessionFormulaType2022ExpectedF2()
     {
-        if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12022SessionSize + ConstData.F12020HeaderSize)
+        if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12022SessionSize + ConstData.F12022HeaderSize)
         {
             var session = _packetAnalyzer.GetSessionData(_packetData.PacketHeader, _packetContent);
 

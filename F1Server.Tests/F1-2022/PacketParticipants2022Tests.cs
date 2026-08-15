@@ -83,7 +83,7 @@ public class PacketParticipants2022Tests
     [TestMethod]
     public void PacketParticipantsCheckParticipants2022IsParticipantsObject()
     {
-        if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12022ParticipantsSize + ConstData.F12020HeaderSize)
+        if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12022ParticipantsSize + ConstData.F12022HeaderSize)
         {
             var isCorrect = false;
             var participants = _packetAnalyzer.GetParticipantsData(_packetData.PacketHeader, _packetContent);
@@ -107,7 +107,7 @@ public class PacketParticipants2022Tests
     [TestMethod]
     public void PacketParticipantsActiveCars2022ExpectedValue()
     {
-        if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12022ParticipantsSize + ConstData.F12020HeaderSize)
+        if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12022ParticipantsSize + ConstData.F12022HeaderSize)
         {
             var participants = _packetAnalyzer.GetParticipantsData(_packetData.PacketHeader, _packetContent);
 
@@ -134,7 +134,7 @@ public class PacketParticipants2022Tests
     [TestMethod]
     public void PacketParticipantsIsHumanControlled2022ExpectedValue()
     {
-        if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12022ParticipantsSize + ConstData.F12020HeaderSize)
+        if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12022ParticipantsSize + ConstData.F12022HeaderSize)
         {
             var participants = _packetAnalyzer.GetParticipantsData(_packetData.PacketHeader, _packetContent);
 
@@ -161,7 +161,7 @@ public class PacketParticipants2022Tests
     [TestMethod]
     public void PacketParticipantsDriverName2022ExpectedValue()
     {
-        if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12022ParticipantsSize + ConstData.F12020HeaderSize)
+        if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12022ParticipantsSize + ConstData.F12022HeaderSize)
         {
             var participants = _packetAnalyzer.GetParticipantsData(_packetData.PacketHeader, _packetContent);
 

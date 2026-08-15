@@ -84,7 +84,7 @@ public class PacketCarTelemetry2022Tests
     [TestMethod]
     public void PacketCarTelemetryCheckCarTelemetry2022IsCarTelemetryDataObject()
     {
-        if (_packetData.PacketHeader != null && _packetContent?.Length == ConstData.F12022CarTelemetrySize + ConstData.F12020HeaderSize)
+        if (_packetData.PacketHeader != null && _packetContent?.Length == ConstData.F12022CarTelemetrySize + ConstData.F12022HeaderSize)
         {
             var isCorrect = false;
             var carTelemetry = _packetAnalyzer.GetCarTelemetry(_packetData.PacketHeader, _packetContent);
@@ -108,7 +108,7 @@ public class PacketCarTelemetry2022Tests
     [TestMethod]
     public void PacketCarTelemetryTyrePressure2022ExpectedValue()
     {
-        if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12022CarTelemetrySize + ConstData.F12020HeaderSize)
+        if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12022CarTelemetrySize + ConstData.F12022HeaderSize)
         {
             var carTelemetry = _packetAnalyzer.GetCarTelemetry(_packetData.PacketHeader, _packetContent);
 
@@ -135,7 +135,7 @@ public class PacketCarTelemetry2022Tests
     [TestMethod]
     public void PacketCarTelemetrySpeed2022ExpectedValue()
     {
-        if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12022CarTelemetrySize + ConstData.F12020HeaderSize)
+        if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12022CarTelemetrySize + ConstData.F12022HeaderSize)
         {
             var carTelemetry = _packetAnalyzer.GetCarTelemetry(_packetData.PacketHeader, _packetContent);
 
@@ -162,7 +162,7 @@ public class PacketCarTelemetry2022Tests
     [TestMethod]
     public void PacketCarTelemetryTyreInnerTemperature2022ExpectedValue()
     {
-        if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12022CarTelemetrySize + ConstData.F12020HeaderSize)
+        if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12022CarTelemetrySize + ConstData.F12022HeaderSize)
         {
             var carTelemetry = _packetAnalyzer.GetCarTelemetry(_packetData.PacketHeader, _packetContent);
 
@@ -189,7 +189,7 @@ public class PacketCarTelemetry2022Tests
     [TestMethod]
     public void PacketCarTelemetryWheelSurface2022ExpectedValue()
     {
-        if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12022CarTelemetrySize + ConstData.F12020HeaderSize)
+        if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12022CarTelemetrySize + ConstData.F12022HeaderSize)
         {
             var carTelemetry = _packetAnalyzer.GetCarTelemetry(_packetData.PacketHeader, _packetContent);
 
@@ -216,7 +216,7 @@ public class PacketCarTelemetry2022Tests
     [TestMethod]
     public void PacketCarTelemetryEngineRpm2022ExpectedValue()
     {
-        if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12022CarTelemetrySize + ConstData.F12020HeaderSize)
+        if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12022CarTelemetrySize + ConstData.F12022HeaderSize)
         {
             var carTelemetry = _packetAnalyzer.GetCarTelemetry(_packetData.PacketHeader, _packetContent);
 
