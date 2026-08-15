@@ -156,7 +156,7 @@ public class PacketEvent2023Tests
 
             if (packetData is EventData eventData && eventData.PacketData?.EventDetails is IEventDataDetails2023 eventDetails)
             {
-                Assert.AreEqual(319.26413F, eventDetails.TopSpeed, "Incorrect top speed value!");
+                Assert.AreEqual(319.26413F, eventDetails.TopSpeed, 0.0001F, "Incorrect top speed value!");
             }
             else
             {

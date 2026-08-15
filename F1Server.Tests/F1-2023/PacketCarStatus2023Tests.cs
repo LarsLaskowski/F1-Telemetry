@@ -111,11 +111,9 @@ public class PacketCarStatus2023Tests
         {
             var carStatus = _packetAnalyzer.GetCarStatus(_packetData.PacketHeader, _packetContent);
 
-            if (carStatus is CarStatus statusData && statusData.PacketData is CarStatus2023)
+            if (carStatus is CarStatus statusData && statusData.PacketData is CarStatus2023 statusData2023)
             {
-                var isCorrect = statusData.PacketData?.CarStatusData[0].FuelRemainingLaps == 6.92339754F;
-
-                Assert.IsTrue(isCorrect, "Incorrect fuel remaining laps!");
+                Assert.AreEqual(6.92339754F, statusData2023.CarStatusData[0].FuelRemainingLaps, 0.0001F, "Incorrect fuel remaining laps!");
             }
             else
             {

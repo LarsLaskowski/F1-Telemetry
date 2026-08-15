@@ -182,5 +182,59 @@ public class PacketParticipants2023Tests
         }
     }
 
+    /// <summary>
+    /// Check platform (2023)
+    /// </summary>
+    [TestMethod]
+    public void PacketParticipantsPlatform2023ExpectedValue()
+    {
+        if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12023ParticipantsSize + ConstData.F12023HeaderSize)
+        {
+            var participants = _packetAnalyzer.GetParticipantsData(_packetData.PacketHeader, _packetContent);
+
+            if (participants is Participants participantsData && participantsData.PacketData is IParticipantsBase baseData && baseData.Participants is IParticipantData2023[] data)
+            {
+                var isCorrect = data[21].Platform == Platforms.XBox;
+
+                Assert.IsTrue(isCorrect, "Incorrect platform!");
+            }
+            else
+            {
+                Assert.Fail("Invalid participants packet, expected F1 2023!");
+            }
+        }
+        else
+        {
+            Assert.IsNull(_packetData.PacketHeader, "Invalid F1 2023 packet header or content!");
+        }
+    }
+
+    /// <summary>
+    /// Check show online names setting (2023)
+    /// </summary>
+    [TestMethod]
+    public void PacketParticipantsIsShowOnlineNames2023ExpectedValue()
+    {
+        if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12023ParticipantsSize + ConstData.F12023HeaderSize)
+        {
+            var participants = _packetAnalyzer.GetParticipantsData(_packetData.PacketHeader, _packetContent);
+
+            if (participants is Participants participantsData && participantsData.PacketData is IParticipantsBase baseData && baseData.Participants is IParticipantData2023[] data)
+            {
+                var isCorrect = data[21].IsShowOnlineNames == false;
+
+                Assert.IsTrue(isCorrect, "Incorrect show online names setting!");
+            }
+            else
+            {
+                Assert.Fail("Invalid participants packet, expected F1 2023!");
+            }
+        }
+        else
+        {
+            Assert.IsNull(_packetData.PacketHeader, "Invalid F1 2023 packet header or content!");
+        }
+    }
+
     #endregion // Methods F1 2023
 }
