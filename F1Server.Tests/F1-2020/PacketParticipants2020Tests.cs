@@ -83,22 +83,18 @@ public class PacketParticipants2020Tests
     [TestMethod]
     public void PacketParticipantsCheckParticipants2020IsParticipantsDataObject()
     {
-        if (_packetData.PacketHeader != null && _packetContent?.Length == ConstData.F12020ParticipantsSize + ConstData.F12020HeaderSize)
-        {
-            var isCorrect = false;
-            var participants = _packetAnalyzer.GetParticipantsData(_packetData.PacketHeader, _packetContent);
+        Assert.IsNotNull(_packetData.PacketHeader, "Missing packet header!");
+        Assert.IsTrue(_packetContent?.Length == ConstData.F12020ParticipantsSize + ConstData.F12020HeaderSize, "Packet content has unexpected length!");
 
-            if (participants is Participants data)
-            {
-                isCorrect = data.PacketData is IParticipantsBase baseData && baseData.Participants is IParticipantData2020[];
-            }
+        var isCorrect = false;
+        var participants = _packetAnalyzer.GetParticipantsData(_packetData.PacketHeader, _packetContent);
 
-            Assert.IsTrue(isCorrect, "Packet is not a participants data packet");
-        }
-        else
+        if (participants is Participants data)
         {
-            Assert.IsNull(_packetData.PacketHeader, "Invalid F1 2020 packet header or content!");
+            isCorrect = data.PacketData is IParticipantsBase baseData && baseData.Participants is IParticipantData2020[];
         }
+
+        Assert.IsTrue(isCorrect, "Packet is not a participants data packet");
     }
 
     /// <summary>
@@ -107,24 +103,20 @@ public class PacketParticipants2020Tests
     [TestMethod]
     public void PacketParticipantsActiveCars2020ExpectedValue()
     {
-        if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12020ParticipantsSize + ConstData.F12020HeaderSize)
+        Assert.IsNotNull(_packetData.PacketHeader, "Missing packet header!");
+        Assert.IsTrue(_packetContent?.Length >= ConstData.F12020ParticipantsSize + ConstData.F12020HeaderSize, "Packet content too short!");
+
+        var participants = _packetAnalyzer.GetParticipantsData(_packetData.PacketHeader, _packetContent);
+
+        if (participants is Participants participantsData && participantsData.PacketData is IParticipantsBase baseData && baseData.Participants is IParticipantData2020[])
         {
-            var participants = _packetAnalyzer.GetParticipantsData(_packetData.PacketHeader, _packetContent);
+            var isCorrect = participantsData.PacketData.ActiveCars == 1;
 
-            if (participants is Participants participantsData && participantsData.PacketData is IParticipantsBase baseData && baseData.Participants is IParticipantData2020[])
-            {
-                var isCorrect = participantsData.PacketData.ActiveCars == 1;
-
-                Assert.IsTrue(isCorrect, "Incorrect active cars!");
-            }
-            else
-            {
-                Assert.Fail("Invalid participants packet, expected F1 2020!");
-            }
+            Assert.IsTrue(isCorrect, "Incorrect active cars!");
         }
         else
         {
-            Assert.IsNull(_packetData.PacketHeader, "Invalid F1 2020 packet header or content!");
+            Assert.Fail("Invalid participants packet, expected F1 2020!");
         }
     }
 
@@ -134,24 +126,20 @@ public class PacketParticipants2020Tests
     [TestMethod]
     public void PacketParticipantsIsHumanControlled2020ExpectedValue()
     {
-        if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12020ParticipantsSize + ConstData.F12020HeaderSize)
+        Assert.IsNotNull(_packetData.PacketHeader, "Missing packet header!");
+        Assert.IsTrue(_packetContent?.Length >= ConstData.F12020ParticipantsSize + ConstData.F12020HeaderSize, "Packet content too short!");
+
+        var participants = _packetAnalyzer.GetParticipantsData(_packetData.PacketHeader, _packetContent);
+
+        if (participants is Participants participantsData && participantsData.PacketData is IParticipantsBase baseData && baseData.Participants is IParticipantData2020[] data)
         {
-            var participants = _packetAnalyzer.GetParticipantsData(_packetData.PacketHeader, _packetContent);
+            var isCorrect = data[0].IsAIControlled == false;
 
-            if (participants is Participants participantsData && participantsData.PacketData is IParticipantsBase baseData && baseData.Participants is IParticipantData2020[] data)
-            {
-                var isCorrect = data[0].IsAIControlled == false;
-
-                Assert.IsTrue(isCorrect, "First driver is not controlled by human!");
-            }
-            else
-            {
-                Assert.Fail("Invalid participants packet, expected F1 2020!");
-            }
+            Assert.IsTrue(isCorrect, "First driver is not controlled by human!");
         }
         else
         {
-            Assert.IsNull(_packetData.PacketHeader, "Invalid F1 2020 packet header or content!");
+            Assert.Fail("Invalid participants packet, expected F1 2020!");
         }
     }
 
@@ -161,24 +149,20 @@ public class PacketParticipants2020Tests
     [TestMethod]
     public void PacketParticipantsDriverNationality2020ExpectedValue()
     {
-        if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12020ParticipantsSize + ConstData.F12020HeaderSize)
+        Assert.IsNotNull(_packetData.PacketHeader, "Missing packet header!");
+        Assert.IsTrue(_packetContent?.Length >= ConstData.F12020ParticipantsSize + ConstData.F12020HeaderSize, "Packet content too short!");
+
+        var participants = _packetAnalyzer.GetParticipantsData(_packetData.PacketHeader, _packetContent);
+
+        if (participants is Participants participantsData && participantsData.PacketData is IParticipantsBase baseData && baseData.Participants is IParticipantData2020[] data)
         {
-            var participants = _packetAnalyzer.GetParticipantsData(_packetData.PacketHeader, _packetContent);
+            var isCorrect = data[0].Nationality == 29;
 
-            if (participants is Participants participantsData && participantsData.PacketData is IParticipantsBase baseData && baseData.Participants is IParticipantData2020[] data)
-            {
-                var isCorrect = data[0].Nationality == 29;
-
-                Assert.IsTrue(isCorrect, "Driver nationality is invalid!");
-            }
-            else
-            {
-                Assert.Fail("Invalid participants packet, expected F1 2020!");
-            }
+            Assert.IsTrue(isCorrect, "Driver nationality is invalid!");
         }
         else
         {
-            Assert.IsNull(_packetData.PacketHeader, "Invalid F1 2020 packet header or content!");
+            Assert.Fail("Invalid participants packet, expected F1 2020!");
         }
     }
 

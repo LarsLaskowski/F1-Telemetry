@@ -83,22 +83,17 @@ public class PacketEvent2020Tests
     [TestMethod]
     public void PacketEvent2020CheckEventDataIsEventDataObject()
     {
-        if (_packetData.PacketHeader != null)
-        {
-            var isCorrect = false;
-            var eventData = _packetAnalyzer.GetEventData(_packetData.PacketHeader, File.ReadAllBytes(@"SampleData/F1-2020-Event-TopSpeed.packet"));
+        Assert.IsNotNull(_packetData.PacketHeader, "Missing packet header!");
 
-            if (eventData is EventData data && data.PacketData is EventData2020)
-            {
-                isCorrect = true;
-            }
+        var isCorrect = false;
+        var eventData = _packetAnalyzer.GetEventData(_packetData.PacketHeader, File.ReadAllBytes(@"SampleData/F1-2020-Event-TopSpeed.packet"));
 
-            Assert.IsTrue(isCorrect, "Packet is not a event data packet");
-        }
-        else
+        if (eventData is EventData data && data.PacketData is EventData2020)
         {
-            Assert.IsNull(_packetData.PacketHeader, "Invalid F1 2020 packet header!");
+            isCorrect = true;
         }
+
+        Assert.IsTrue(isCorrect, "Packet is not a event data packet");
     }
 
     /// <summary>
@@ -107,22 +102,17 @@ public class PacketEvent2020Tests
     [TestMethod]
     public void PacketEvent2020IsTopSpeedPacketExpectedTrue()
     {
-        if (_packetData.PacketHeader != null)
-        {
-            var packetData = _packetAnalyzer.GetEventData(_packetData.PacketHeader, File.ReadAllBytes(@"SampleData/F1-2020-Event-TopSpeed.packet"));
+        Assert.IsNotNull(_packetData.PacketHeader, "Missing packet header!");
 
-            if (packetData is EventData eventData)
-            {
-                Assert.IsTrue(eventData.EventCode.Equals("SPTP"), "No top speed event packet!");
-            }
-            else
-            {
-                Assert.Fail("Invalid packet data, expected F1 2020!");
-            }
+        var packetData = _packetAnalyzer.GetEventData(_packetData.PacketHeader, File.ReadAllBytes(@"SampleData/F1-2020-Event-TopSpeed.packet"));
+
+        if (packetData is EventData eventData)
+        {
+            Assert.IsTrue(eventData.EventCode.Equals("SPTP"), "No top speed event packet!");
         }
         else
         {
-            Assert.IsNull(_packetData.PacketHeader, "Invalid F1 2020 packet header!");
+            Assert.Fail("Invalid packet data, expected F1 2020!");
         }
     }
 
@@ -132,22 +122,17 @@ public class PacketEvent2020Tests
     [TestMethod]
     public void PacketEvent2020IsTopSpeedExpectedValue()
     {
-        if (_packetData.PacketHeader != null)
-        {
-            var packetData = _packetAnalyzer.GetEventData(_packetData.PacketHeader, File.ReadAllBytes(@"SampleData/F1-2020-Event-TopSpeed.packet"));
+        Assert.IsNotNull(_packetData.PacketHeader, "Missing packet header!");
 
-            if (packetData is EventData eventData && eventData.PacketData?.EventDetails is IEventDataDetails2020 eventDetails)
-            {
-                Assert.AreEqual(319.895874F, eventDetails.TopSpeed, "Incorrect top speed value!");
-            }
-            else
-            {
-                Assert.Fail("Invalid packet data, expected F1 2020!");
-            }
+        var packetData = _packetAnalyzer.GetEventData(_packetData.PacketHeader, File.ReadAllBytes(@"SampleData/F1-2020-Event-TopSpeed.packet"));
+
+        if (packetData is EventData eventData && eventData.PacketData?.EventDetails is IEventDataDetails2020 eventDetails)
+        {
+            Assert.AreEqual(319.895874F, eventDetails.TopSpeed, 0.0001F, "Incorrect top speed value!");
         }
         else
         {
-            Assert.IsNull(_packetData.PacketHeader, "Invalid F1 2020 packet header!");
+            Assert.Fail("Invalid packet data, expected F1 2020!");
         }
     }
 
@@ -157,22 +142,17 @@ public class PacketEvent2020Tests
     [TestMethod]
     public void PacketEvent2020IsTopSpeedVehicleExpectedNineteen()
     {
-        if (_packetData.PacketHeader != null)
-        {
-            var packetData = _packetAnalyzer.GetEventData(_packetData.PacketHeader, File.ReadAllBytes(@"SampleData/F1-2020-Event-TopSpeed.packet"));
+        Assert.IsNotNull(_packetData.PacketHeader, "Missing packet header!");
 
-            if (packetData is EventData eventData && eventData.PacketData?.EventDetails is IEventDataDetails2020 eventDetails)
-            {
-                Assert.AreEqual(19, eventDetails.VehicleIndex, "Incorrect vehicle value!");
-            }
-            else
-            {
-                Assert.Fail("Invalid packet data, expected F1 2020!");
-            }
+        var packetData = _packetAnalyzer.GetEventData(_packetData.PacketHeader, File.ReadAllBytes(@"SampleData/F1-2020-Event-TopSpeed.packet"));
+
+        if (packetData is EventData eventData && eventData.PacketData?.EventDetails is IEventDataDetails2020 eventDetails)
+        {
+            Assert.AreEqual(19, eventDetails.VehicleIndex, "Incorrect vehicle value!");
         }
         else
         {
-            Assert.IsNull(_packetData.PacketHeader, "Invalid F1 2020 packet header!");
+            Assert.Fail("Invalid packet data, expected F1 2020!");
         }
     }
 
@@ -182,22 +162,17 @@ public class PacketEvent2020Tests
     [TestMethod]
     public void PacketEvent2020IsTopSpeedEventTypeExpectedSpeedTrap()
     {
-        if (_packetData.PacketHeader != null)
-        {
-            var packetData = _packetAnalyzer.GetEventData(_packetData.PacketHeader, File.ReadAllBytes(@"SampleData/F1-2020-Event-TopSpeed.packet"));
+        Assert.IsNotNull(_packetData.PacketHeader, "Missing packet header!");
 
-            if (packetData is EventData eventData && eventData.PacketData?.EventDetails is IEventDataDetails2020 eventDetails)
-            {
-                Assert.AreEqual(EventType.SpeedTrap, eventDetails.EventType, "Incorrect event type!");
-            }
-            else
-            {
-                Assert.Fail("Invalid packet data, expected F1 2020!");
-            }
+        var packetData = _packetAnalyzer.GetEventData(_packetData.PacketHeader, File.ReadAllBytes(@"SampleData/F1-2020-Event-TopSpeed.packet"));
+
+        if (packetData is EventData eventData && eventData.PacketData?.EventDetails is IEventDataDetails2020 eventDetails)
+        {
+            Assert.AreEqual(EventType.SpeedTrap, eventDetails.EventType, "Incorrect event type!");
         }
         else
         {
-            Assert.IsNull(_packetData.PacketHeader, "Invalid F1 2020 packet header!");
+            Assert.Fail("Invalid packet data, expected F1 2020!");
         }
     }
 
