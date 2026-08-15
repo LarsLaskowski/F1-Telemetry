@@ -122,5 +122,79 @@ public class PacketProcessor2026Tests
         }
     }
 
+    /// <summary>
+    /// Test that the factory selects the correct processor type for every F1 2026 packet type that has
+    /// a dedicated processor, using real F1 2026 sample packets instead of only the session packet
+    /// </summary>
+    [TestMethod]
+    public void PacketProcessorGetProcessor2026ReturnsCorrectProcessorPerPacketType()
+    {
+        if (_packetData.PacketHeader != null && _processorFactory != null)
+        {
+            var gameData = new LiveGameData()
+                           {
+                               GameVersion = _packetData.PacketHeader.GameVersion
+                           };
+
+            (string SampleFile, Type ProcessorType)[] expectedProcessors = [
+                                                                               (@"SampleData/F1-2026-Participants.packet", typeof(ParticipantsProcessor)),
+                                                                               (@"SampleData/F1-2026-LapData.packet", typeof(LapDataProcessor)),
+                                                                               (@"SampleData/F1-2026-CarStatus.packet", typeof(CarStatusProcessor)),
+                                                                               (@"SampleData/F1-2026-CarTelemetry.packet", typeof(CarTelemetryProcessor)),
+                                                                               (@"SampleData/F1-2026-SessionHistory.packet", typeof(SessionHistoryProcessor)),
+                                                                               (@"SampleData/F1-2026-FinalClassification.packet", typeof(FinalClassificationProcessor)),
+                                                                               (@"SampleData/F1-2026-TimeTrial.packet", typeof(TimeTrialProcessor)),
+                                                                               (@"SampleData/F1-2026-LapPositions.packet", typeof(LapPositionsProcessor))
+                                                                           ];
+
+            foreach (var (sampleFile, processorType) in expectedProcessors)
+            {
+                var samplePacketData = new ReceivedPacketData();
+
+                samplePacketData.SetRawData(File.ReadAllBytes(sampleFile));
+
+                Assert.IsNotNull(samplePacketData.PacketHeader, $"Missing header for sample file {sampleFile}!");
+
+                var processor = _processorFactory.GetProcessor(samplePacketData.PacketHeader, gameData);
+
+                Assert.IsNotNull(processor, $"No processor object for sample file {sampleFile}!");
+                Assert.AreEqual(processorType, processor.GetType(), $"Wrong processor type for sample file {sampleFile}!");
+            }
+        }
+        else
+        {
+            Assert.IsNotNull(_packetData.PacketHeader, "Missing header (2026) object!");
+            Assert.IsNotNull(_processorFactory, "Missing processor object!");
+        }
+    }
+
+    /// <summary>
+    /// Test that the factory tracks the frame identifier and session timestamp of the real F1 2026
+    /// packet header on the created processor, so downstream logic can rely on both reflecting the
+    /// actually received packet rather than a stale or default value
+    /// </summary>
+    [TestMethod]
+    public void PacketProcessorGetProcessor2026TracksFrameIdentifierOfPacket()
+    {
+        if (_packetData.PacketHeader != null && _processorFactory != null)
+        {
+            var gameData = new LiveGameData()
+                           {
+                               GameVersion = _packetData.PacketHeader.GameVersion
+                           };
+
+            var processor = _processorFactory.GetProcessor(_packetData.PacketHeader, gameData);
+
+            Assert.IsNotNull(processor, "No processor (2026) object!");
+            Assert.AreEqual(_packetData.PacketHeader.FrameIdentifier, processor.CurrentFrameIdentifier, "Processor did not track the F1 2026 packet frame identifier!");
+            Assert.AreEqual(_packetData.PacketHeader.SessionTimeNum, processor.SessionTimestampNum, "Processor did not track the F1 2026 packet session timestamp!");
+        }
+        else
+        {
+            Assert.IsNotNull(_packetData.PacketHeader, "Missing header (2026) object!");
+            Assert.IsNotNull(_processorFactory, "Missing processor object!");
+        }
+    }
+
     #endregion // Methods
 }

@@ -110,11 +110,9 @@ public class PacketCarStatus2026Tests
     {
         var carStatus = _packetAnalyzer.GetCarStatus(_packetData.PacketHeader!, _packetContent);
 
-        if (carStatus is CarStatus statusData && statusData.PacketData is CarStatus2026)
+        if (carStatus is CarStatus statusData && statusData.PacketData is CarStatus2026 carStatus2026)
         {
-            var isCorrect = statusData.PacketData?.CarStatusData[4].FuelRemainingLaps == 1.14814556F;
-
-            Assert.IsTrue(isCorrect, "Incorrect fuel remaining laps!");
+            Assert.AreEqual(1.14814556F, carStatus2026.CarStatusData[4].FuelRemainingLaps, 0.0001F, "Incorrect fuel remaining laps!");
         }
         else
         {
@@ -150,11 +148,9 @@ public class PacketCarStatus2026Tests
     {
         var carStatus = _packetAnalyzer.GetCarStatus(_packetData.PacketHeader!, _packetContent);
 
-        if (carStatus is CarStatus statusData && statusData.PacketData is CarStatus2026)
+        if (carStatus is CarStatus statusData && statusData.PacketData is CarStatus2026 carStatus2026)
         {
-            var isCorrect = statusData.PacketData?.CarStatusData[19].ERSDeployedThisLap == 842641.6F;
-
-            Assert.IsTrue(isCorrect, "Incorrect ERS deployed this lap value!");
+            Assert.AreEqual(842641.6F, carStatus2026.CarStatusData[19].ERSDeployedThisLap, 0.0001F, "Incorrect ERS deployed this lap value!");
         }
         else
         {
@@ -170,11 +166,9 @@ public class PacketCarStatus2026Tests
     {
         var carStatus = _packetAnalyzer.GetCarStatus(_packetData.PacketHeader!, _packetContent);
 
-        if (carStatus is CarStatus statusData && statusData.PacketData is CarStatus2026)
+        if (carStatus is CarStatus statusData && statusData.PacketData is CarStatus2026 carStatus2026 && carStatus2026.CarStatusData[19] is ICarStatusData2026 carStatusData2026)
         {
-            var harvestLimit = (statusData.PacketData?.CarStatusData[19] as ICarStatusData2026)?.ERSHarvestLimitPerLap;
-
-            Assert.AreEqual(4000000F, harvestLimit, "Incorrect ERS harvest limit per lap!");
+            Assert.AreEqual(4000000F, carStatusData2026.ERSHarvestLimitPerLap, 0.0001F, "Incorrect ERS harvest limit per lap!");
         }
         else
         {

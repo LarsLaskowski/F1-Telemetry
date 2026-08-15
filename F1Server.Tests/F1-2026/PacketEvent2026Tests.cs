@@ -95,5 +95,48 @@ public class PacketEvent2026Tests
         }
     }
 
+    /// <summary>
+    /// Check that the event data class recognizes the sample as a session start event and not as any
+    /// other convenience event flag (2026)
+    /// </summary>
+    [TestMethod]
+    public void PacketEventSessionStart2026IsRecognizedAsSessionStart()
+    {
+        var eventData = _packetAnalyzer.GetEventData(_packetData.PacketHeader!, _packetContent);
+
+        if (eventData is EventData data)
+        {
+            Assert.IsTrue(data.IsSessionStart, "Event data must be recognized as a session start event!");
+            Assert.IsFalse(data.IsSessionEnd, "Event data must not be recognized as a session end event!");
+            Assert.IsFalse(data.IsFlashback, "Event data must not be recognized as a flashback event!");
+        }
+        else
+        {
+            Assert.Fail("Invalid event packet, expected F1 2026!");
+        }
+    }
+
+    /// <summary>
+    /// The session start event carries no additional event details in any F1 game version, so the
+    /// detail fields must stay at their unset default values instead of leftover data from a previous
+    /// packet
+    /// </summary>
+    [TestMethod]
+    public void PacketEventSessionStartDetails2026ExpectedDefaultValues()
+    {
+        var eventData = _packetAnalyzer.GetEventData(_packetData.PacketHeader!, _packetContent);
+
+        if (eventData is EventData data && data.PacketData is IEventDataBase baseData)
+        {
+            Assert.AreEqual(EventType.Unknown, baseData.EventDetails.EventType, "Session start must not carry an event type!");
+            Assert.AreEqual((ushort)0, baseData.EventDetails.VehicleIndex, "Session start must not carry a vehicle index!");
+            Assert.AreEqual(0F, baseData.EventDetails.FastestLap, 0.0001F, "Session start must not carry a fastest lap time!");
+        }
+        else
+        {
+            Assert.Fail("Invalid event packet, expected F1 2026!");
+        }
+    }
+
     #endregion // Methods F1 2026
 }
