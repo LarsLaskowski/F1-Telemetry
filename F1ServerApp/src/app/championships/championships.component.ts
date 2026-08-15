@@ -21,8 +21,7 @@ import { LoggerService } from '../services/logger.service';
 {
   imports: [MatTableModule, MatProgressSpinner, MatOption, MatSelect, MatLabel, MatFormField, MatButton],
   selector: 'app-championships',
-  templateUrl: './championships.component.html',
-  styleUrls: ['./championships.component.css']
+  templateUrl: './championships.component.html'
 })
 
 export class ChampionshipsComponent

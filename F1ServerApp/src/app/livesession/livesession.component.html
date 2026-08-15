@@ -1,7 +1,3 @@
-@if (!liveSession) {
-  <p><em>Loading...</em></p>
-}
-
 @if (liveSession) {
   <h1>{{liveSession.gameVersion}} - {{ liveSession.formulaType }} - {{ liveSession.track }} - {{ liveSession.sessionType }}</h1>
 }

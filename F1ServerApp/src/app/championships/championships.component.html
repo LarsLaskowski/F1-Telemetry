@@ -68,7 +68,11 @@
         <!-- Difficulty -->
         <ng-container matColumnDef="difficulty">
           <th mat-header-cell *matHeaderCellDef> Difficulty </th>
-          <td mat-cell *matCellDef="let entry"></td>
+          <td mat-cell *matCellDef="let entry">
+            @if (entry.raceDifficulty > 0) {
+              {{ entry.raceDifficulty }}
+            }
+          </td>
         </ng-container>
         <!-- Points -->
         <ng-container matColumnDef="points">

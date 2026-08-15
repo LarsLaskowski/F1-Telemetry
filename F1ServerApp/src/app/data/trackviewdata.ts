@@ -40,6 +40,9 @@ export class TrackViewData
 
       if (this.trackId > 0)
       {
+        // Known gap: the short-layout tracks (Silverstone Short / Texas Short / Suzuka Short,
+        // track IDs 23-25) and Hanoi (track ID 26) have no dedicated map artwork yet, so this
+        // path resolves to a near-empty placeholder image for those track IDs.
         this.imagePath = "/assets/tracks/track-" + this.trackId + ".png";
 
         if (this.httpClient != null)
