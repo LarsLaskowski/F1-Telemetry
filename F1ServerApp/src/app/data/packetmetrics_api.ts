@@ -24,6 +24,7 @@ export interface SessionPacketMetricsViewApiData
   timeTrial: PacketMetricsViewApiData;
   lapPositions: PacketMetricsViewApiData;
   carTelemetry2: PacketMetricsViewApiData;
+  totalPacketsReceived: number;
   unsuccessfullyProcessed: number;
   errors: number;
 }

@@ -8,6 +8,15 @@ import { FinalClassificationViewApiData } from '../data/finalclassificationviewd
 import { MAT_DIALOG_DATA, MatDialogContent, MatDialogActions, MatDialogClose } from '@angular/material/dialog';
 import { MatButton } from '@angular/material/button'
 import { NotificationService } from '../services/notification.service';
+import { SessionType } from '../data/enums';
+
+/**
+ * Dialog data passed to {@link ShowSessionComponent} via MAT_DIALOG_DATA.
+ */
+export interface ShowSessionDialogData
+{
+  sessionId: number;
+}
 
 @Component(
 {
@@ -33,7 +42,7 @@ export class ShowSessionComponent implements OnInit
   dataSource = new MatTableDataSource();
 
   // Constructor
-  constructor(http: HttpClient, @Inject('BASE_URL') baseUrl: string, @Inject(MAT_DIALOG_DATA) public data: any, private readonly changeDetector: ChangeDetectorRef, private readonly notificationService: NotificationService)
+  constructor(http: HttpClient, @Inject('BASE_URL') baseUrl: string, @Inject(MAT_DIALOG_DATA) public data: ShowSessionDialogData, private readonly changeDetector: ChangeDetectorRef, private readonly notificationService: NotificationService)
   {
     this.http = http;
     this.serviceUrl = baseUrl;
@@ -91,11 +100,11 @@ export class ShowSessionComponent implements OnInit
   {
     if (this.http != null && this.sessionId > 0 && this.session != null)
     {
-      if (this.session.sessionRawType >= 10)
+      if (this.session.sessionRawType >= SessionType.Race)
       {
         this.displayedColumns = this.raceColumns.slice();
       }
-      else if (this.session.sessionRawType >= 5)
+      else if (this.session.sessionRawType >= SessionType.Qualifying1)
       {
         this.displayedColumns = this.qualifyingColumns.slice();
       }
@@ -197,7 +206,7 @@ export class ShowSessionComponent implements OnInit
   {
     if (this.session != null)
     {
-      return this.session.sessionRawType > 9;
+      return this.session.sessionRawType >= SessionType.Race;
     }
 
     return false;

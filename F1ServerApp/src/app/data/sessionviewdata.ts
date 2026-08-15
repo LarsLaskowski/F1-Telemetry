@@ -2,6 +2,7 @@ import { ParticipantViewData } from "./participantviewdata";
 import { SessionViewApiData } from "./sessiondata_api";
 import { ParticipantViewApiData } from '../data/participantdata_api';
 import { HttpClient } from "@angular/common/http";
+import { Formula, matchFormulaType, matchSessionType, matchWeatherIcon, SessionType, WeatherCondition } from "./enums";
 
 export interface ISessionViewData
 {
@@ -18,12 +19,14 @@ export interface ISessionViewData
   hasCarTelemetry: boolean;
   isTelemetryChecking: boolean;
   isActiveChampionship: boolean;
+  championshipId: number;
   isInChampionship: boolean;
   isChampionshipChecking: boolean;
   isExpanded: boolean;
   participants: Set<ParticipantViewData>;
   httpClient: HttpClient | undefined;
   baseUrl: string;
+  hideImageButtons: boolean;
 }
 
 export class SessionViewData implements ISessionViewData
@@ -69,9 +72,9 @@ export class SessionViewData implements ISessionViewData
       this.aiDifficulty = sessionData.aiDifficulty;
       this.sessionRawType = sessionData.sessionType;
 
-      this.matchFormulaType(sessionData.formulaType);
-      this.matchSessionType(sessionData.sessionType);
-      this.matchWeatherType(sessionData.weather);
+      this.formulaType = matchFormulaType(sessionData.formulaType as Formula);
+      this.sessionType = matchSessionType(sessionData.sessionType as SessionType);
+      this.weatherType = matchWeatherIcon(sessionData.weather as WeatherCondition);
 
       this.isTelemetryChecking = true;
       this.checkCarTelemetry(onUpdate);
@@ -142,189 +145,6 @@ export class SessionViewData implements ISessionViewData
     }
 
     return isInChampionship;
-  }
-
-  // Match formula type
-  private matchFormulaType(formulaNumType: number)
-  {
-    switch (formulaNumType)
-    {
-      case 0:
-        this.formulaType = "F1";
-        break;
-
-      case 1:
-        this.formulaType = "F1 Classic";
-        break;
-
-      case 2:
-        this.formulaType = "F2";
-        break;
-
-      case 3:
-        this.formulaType = "F1 Generic";
-        break;
-
-      case 4:
-        this.formulaType = "Beta";
-        break;
-
-      case 5:
-        this.formulaType = "Supercars";
-        break;
-
-      case 6:
-        this.formulaType = "E-Sports";
-        break;
-
-      case 7:
-        this.formulaType = "F2 2021";
-        break;
-
-      case 8:
-        this.formulaType = "F1 World";
-        break;
-
-      case 9:
-        this.formulaType = "F1 Elimination";
-        break;
-
-      case 13:
-        this.formulaType = "F1";
-        break;
-
-      default:
-        this.formulaType = "Unknown";
-        break;
-    }
-  }
-
-  // Match session type
-  private matchSessionType(sessionNumType: number)
-  {
-    switch (sessionNumType)
-    {
-      case 0:
-        this.sessionType = "Not set";
-        break;
-
-      case 1:
-        this.sessionType = "Practice session 1";
-        break;
-
-      case 2:
-        this.sessionType = "Practice session 2";
-        break;
-
-      case 3:
-        this.sessionType = "Practice session 3";
-        break;
-
-      case 4:
-        this.sessionType = "Short practice";
-        break;
-
-      case 5:
-        this.sessionType = "Qualifying session 1";
-        break;
-
-      case 6:
-        this.sessionType = "Qualifying session 2";
-        break;
-
-      case 7:
-        this.sessionType = "Qualifying session 3";
-        break;
-
-      case 8:
-        this.sessionType = "Short qualifying";
-        break;
-
-      case 9:
-        this.sessionType = "One shot qualifying";
-        break;
-
-      case 10:
-        // Race
-        this.sessionType = "Race";
-        break;
-
-      case 11:
-        // Race 2
-        this.sessionType = "Race";
-        break;
-
-      case 12:
-        this.sessionType = "Race";
-        break;
-
-      case 13:
-        this.sessionType = "Time trial";
-        break;
-
-      case 14:
-        this.sessionType = "Sprint shootout 1";
-        break;
-
-      case 15:
-        this.sessionType = "Sprint shootout 2";
-        break;
-
-      case 16:
-        this.sessionType = "Sprint shootout 3";
-        break;
-
-      case 17:
-        this.sessionType = "Short sprint shootout";
-        break;
-
-      case 18:
-        this.sessionType = "One shot sprint shootout";
-        break;
-
-      case 100:
-        this.sessionType = "Sprint";
-        break;
-
-      default:
-        this.sessionType = "Unknown";
-        break;
-    }
-  }
-
-  // Match weather type
-  private matchWeatherType(weather: number)
-  {
-    switch (weather)
-    {
-      case 0:
-        this.weatherType = "sunny";
-        break;
-
-      case 1:
-        this.weatherType = "partly_cloudy_day";
-        break;
-
-      case 2:
-        this.weatherType = "cloudy";
-        break;
-
-      case 3:
-        this.weatherType = "rainy";
-        break;
-
-      case 4:
-        this.weatherType = "rainy_heavy";
-        break;
-
-      case 5:
-        this.weatherType = "thunderstorm";
-        break;
-
-      default:
-        this.weatherType = "sunny";
-        break;
-    }
   }
 
   // Car telemetry available?

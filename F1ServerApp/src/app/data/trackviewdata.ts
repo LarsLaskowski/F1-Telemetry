@@ -3,6 +3,7 @@ import { HttpClient } from "@angular/common/http";
 import { FastestLapOfTrackViewApiData } from "./fastestlapoftrackviewdata_api";
 import { FastestLapOfTrackViewData } from "./fastestlapoftrackviewdata";
 import { CalculateTimes } from "../utils/calculatetimes";
+import { FastestLapSessionType, Formula, matchFastestLapSessionType, matchFormulaType } from "./enums";
 
 export class TrackViewData
 {
@@ -53,8 +54,8 @@ export class TrackViewData
               {
                 let viewData = new FastestLapOfTrackViewData();
 
-                viewData.formulaType = this.matchFormulaType(lapData.formulaType);
-                viewData.sessionLapType = this.matchLapSessionType(lapData.lapSessionType);
+                viewData.formulaType = matchFormulaType(lapData.formulaType as Formula);
+                viewData.sessionLapType = matchFastestLapSessionType(lapData.lapSessionType as FastestLapSessionType);
                 viewData.driverName = lapData.driverName;
                 viewData.gameVersionName = lapData.gameVersionName;
                 viewData.lapTime = CalculateTimes.matchTimeOutput(lapData.lapTime);
@@ -77,51 +78,5 @@ export class TrackViewData
         }
       }
     }
-  }
-
-  // Match formula type
-  private matchFormulaType(formulaNumType: number): string
-  {
-    let result = "";
-
-    switch (formulaNumType)
-    {
-      case 0:
-        result = "F1";
-        break;
-
-      case 2:
-        result = "F2";
-        break;
-
-      default:
-        result = "Unknown";
-        break;
-    }
-
-    return result;
-  }
-
-  // Match lap session type
-  private matchLapSessionType(lapSessionType: number): string
-  {
-    let result: string = ""
-
-    switch (lapSessionType)
-    {
-      case 0:
-        result = "Practice";
-        break;
-
-      case 1:
-        result = "Qualifying";
-        break;
-
-      case 2:
-        result = "Race";
-        break;
-    }
-
-    return result;
   }
 }

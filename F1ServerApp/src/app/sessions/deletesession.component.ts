@@ -10,6 +10,15 @@ import { MatButtonModule } from '@angular/material/button'
 import { MatInputModule } from '@angular/material/input';
 import { NotificationService } from '../services/notification.service';
 
+/**
+ * Dialog data passed to {@link DeleteSessionComponent} via MAT_DIALOG_DATA.
+ */
+export interface DeleteSessionDialogData
+{
+  sessionId: number;
+  sessionData: SessionViewData;
+}
+
 @Component(
 {
   imports: [
@@ -37,7 +46,7 @@ export class DeleteSessionComponent
   isDeleting: boolean = false;
   isDeleted: boolean = false;
 
-  constructor(public http: HttpClient, @Inject('BASE_URL') public baseUrl: string, @Inject(MAT_DIALOG_DATA) public data: any, public dialogRef: MatDialogRef<DeleteSessionComponent>, private readonly changeDetector: ChangeDetectorRef, private readonly notificationService: NotificationService)
+  constructor(public http: HttpClient, @Inject('BASE_URL') public baseUrl: string, @Inject(MAT_DIALOG_DATA) public data: DeleteSessionDialogData, public dialogRef: MatDialogRef<DeleteSessionComponent>, private readonly changeDetector: ChangeDetectorRef, private readonly notificationService: NotificationService)
   {
     this.sessionId = data.sessionId;
     this.session = data.sessionData;

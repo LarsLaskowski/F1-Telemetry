@@ -19,6 +19,7 @@ import { MatTooltipModule } from '@angular/material/tooltip'
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { NotificationService } from '../services/notification.service';
+import { LoggerService } from '../services/logger.service';
 
 @Component(
 {
@@ -60,7 +61,7 @@ export class SessionsComponent implements AfterViewInit, OnDestroy
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
 
-  constructor(public http: HttpClient, @Inject('BASE_URL') public baseUrl: string, public dialog: MatDialog, private readonly router: Router, private readonly changeDetector: ChangeDetectorRef, private readonly notificationService: NotificationService)
+  constructor(public http: HttpClient, @Inject('BASE_URL') public baseUrl: string, public dialog: MatDialog, private readonly router: Router, private readonly changeDetector: ChangeDetectorRef, private readonly notificationService: NotificationService, private readonly logger: LoggerService)
   {
   }
 
@@ -96,7 +97,7 @@ export class SessionsComponent implements AfterViewInit, OnDestroy
     const pageIndex = event.pageIndex;
     const pageSize = event.pageSize;
 
-    console.log("Page change - pageIndex: " + pageIndex + " pageSize: " + pageSize);
+    this.logger.log("Page change - pageIndex: " + pageIndex + " pageSize: " + pageSize);
 
     this.loadSessions(pageIndex, pageSize)
   }
@@ -151,7 +152,7 @@ export class SessionsComponent implements AfterViewInit, OnDestroy
 
     if (this.http != null)
     {
-      console.log("Load sessions - pageIndex: " + pageIndex + " pageSize: " + pageSize)
+      this.logger.log("Load sessions - pageIndex: " + pageIndex + " pageSize: " + pageSize)
 
       this.http.get<SessionPageResultApi<SessionViewApiData>>(this.baseUrl + 'api/sessions', { params }).subscribe(
       {
@@ -187,7 +188,7 @@ export class SessionsComponent implements AfterViewInit, OnDestroy
             this.changeDetector.markForCheck();
           });
 
-          console.log("Total sessions: " + this.sessionsCount)
+          this.logger.log("Total sessions: " + this.sessionsCount)
         }
       });
     }
@@ -216,7 +217,7 @@ export class SessionsComponent implements AfterViewInit, OnDestroy
       {
         next: () =>
         {
-          console.log("Session " + sessionData.sessionId + " added to championship");
+          this.logger.log("Session " + sessionData.sessionId + " added to championship");
 
           sessionData.isInChampionship = true;
 
@@ -255,7 +256,7 @@ export class SessionsComponent implements AfterViewInit, OnDestroy
 
     let dialogRef = this.dialog.open(DeleteSessionComponent, dialogConfig);
 
-    console.log("Open delete session dialog for session: " + sessionData.sessionId);
+    this.logger.log("Open delete session dialog for session: " + sessionData.sessionId);
 
     dialogRef.afterClosed().subscribe(
     {

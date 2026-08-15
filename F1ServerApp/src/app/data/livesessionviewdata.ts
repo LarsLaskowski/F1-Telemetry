@@ -2,6 +2,7 @@ import { CalculateTimes } from "../utils/calculatetimes";
 import { DriverViewData } from "./driverviewdata";
 import { SessionLiveViewApiData } from "./livesessiondata_api";
 import { SessionViewData } from "./sessionviewdata";
+import { matchWeatherLabel, WeatherCondition } from "./enums";
 
 export class LiveSessionViewData extends SessionViewData
 {
@@ -43,7 +44,7 @@ export class LiveSessionViewData extends SessionViewData
       this.airTemperature = liveSessionApiData.airTemperature;
       this.trackTemperature = liveSessionApiData.trackTemperature;
       this.isSafetyCar = liveSessionApiData.isSafetyCar;
-      this.weatherCondition = this.matchWeatherCondition(liveSessionApiData.weather);
+      this.weatherCondition = matchWeatherLabel(liveSessionApiData.weather as WeatherCondition);
       this.fastestSector1 = CalculateTimes.matchTimeOutput(liveSessionApiData.fastestSector1);
       this.fastestSector2 = CalculateTimes.matchTimeOutput(liveSessionApiData.fastestSector2);
       this.fastestSector3 = CalculateTimes.matchTimeOutput(liveSessionApiData.fastestSector3);
@@ -166,44 +167,5 @@ export class LiveSessionViewData extends SessionViewData
         this.drivers.set(driver.arrayIndex, driverData);
       }
     });
-  }
-
-  // Match weather condition
-  private matchWeatherCondition(weather: number): string
-  {
-    let output = "";
-
-    switch (weather)
-    {
-      case 0:
-        output = "Clear";
-        break;
-
-      case 1:
-        output = "Light clouds";
-        break;
-
-      case 2:
-        output = "Overcast";
-        break;
-
-      case 3:
-        output = "Light rain";
-        break;
-
-      case 4:
-        output = "Heavy rain";
-        break;
-
-      case 5:
-        output = "Storm";
-        break;
-
-      default:
-        output = "Unknown";
-        break;
-    }
-
-    return output;
   }
 }
