@@ -112,11 +112,9 @@ public class PacketCarTelemetry2023Tests
         {
             var carTelemetry = _packetAnalyzer.GetCarTelemetry(_packetData.PacketHeader, _packetContent);
 
-            if (carTelemetry is CarTelemetry telemetryData && telemetryData.PacketData is CarTelemetry2023)
+            if (carTelemetry is CarTelemetry telemetryData && telemetryData.PacketData is CarTelemetry2023 telemetryData2023)
             {
-                var isCorrect = telemetryData.PacketData?.CarTelemetryData[0].TyresPressure.FrontLeft == 23.0082989F;
-
-                Assert.IsTrue(isCorrect, "Incorrect tyre pressure (FL)!");
+                Assert.AreEqual(23.0082989F, telemetryData2023.CarTelemetryData[0].TyresPressure.FrontLeft, 0.0001F, "Incorrect tyre pressure (FL)!");
             }
             else
             {

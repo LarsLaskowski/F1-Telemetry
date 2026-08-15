@@ -122,5 +122,34 @@ public class PacketProcessor2022Tests
         }
     }
 
+    /// <summary>
+    /// Test that the session processor built from the actual F1 2022 session packet retains the
+    /// F1 2022 game version and tracks the frame bookkeeping parsed from that packet, beyond the
+    /// generic processor type/instance checks above
+    /// </summary>
+    [TestMethod]
+    public void PacketProcessorSessionProcessorTracksGameVersion2022ExpectedValue()
+    {
+        if (_packetData.PacketHeader != null && _processorFactory != null)
+        {
+            var gameData = new LiveGameData()
+                           {
+                               GameVersion = _packetData.PacketHeader.GameVersion
+                           };
+
+            var processor = _processorFactory.GetProcessor(_packetData.PacketHeader, gameData);
+
+            Assert.IsNotNull(processor, "No processor (2022) object!");
+            Assert.AreEqual(2022, processor.GameInfo.GameVersion, "Processor did not retain the F1 2022 game version!");
+            Assert.AreEqual(_packetData.PacketHeader.FrameIdentifier, processor.CurrentFrameIdentifier, "Processor did not track the current frame identifier of the F1 2022 packet!");
+            Assert.AreEqual(_packetData.PacketHeader.SessionTimeNum, processor.SessionTimestampNum, "Processor did not track the session timestamp of the F1 2022 packet!");
+        }
+        else
+        {
+            Assert.IsNotNull(_packetData.PacketHeader, "Missing header 2022 object!");
+            Assert.IsNotNull(_processorFactory, "Missing processor object!");
+        }
+    }
+
     #endregion // Methods
 }

@@ -82,22 +82,17 @@ public class PacketLapData2020Tests
     [TestMethod]
     public void PacketLapDataCheckLapData2020IsLapDataObject()
     {
-        if (_packetData.PacketHeader != null)
-        {
-            var isCorrect = false;
-            var lapData = _packetAnalyzer.GetLapData(_packetData.PacketHeader, File.ReadAllBytes(@"SampleData/F1-2020-LapData.packet"));
+        Assert.IsNotNull(_packetData.PacketHeader, "Missing packet header!");
 
-            if (lapData is LapData data && data.PacketData is ILapDataComplete dataComplete)
-            {
-                isCorrect = dataComplete.LapData is ILapData2020[];
-            }
+        var isCorrect = false;
+        var lapData = _packetAnalyzer.GetLapData(_packetData.PacketHeader, File.ReadAllBytes(@"SampleData/F1-2020-LapData.packet"));
 
-            Assert.IsTrue(isCorrect, "Packet is not a lap data packet");
-        }
-        else
+        if (lapData is LapData data && data.PacketData is ILapDataComplete dataComplete)
         {
-            Assert.IsNull(_packetData.PacketHeader, "Invalid F1 2020 packet header!");
+            isCorrect = dataComplete.LapData is ILapData2020[];
         }
+
+        Assert.IsTrue(isCorrect, "Packet is not a lap data packet");
     }
 
     /// <summary>
@@ -106,24 +101,19 @@ public class PacketLapData2020Tests
     [TestMethod]
     public void PacketLapDataCarsOnLap2020ExpectedOne()
     {
-        if (_packetData.PacketHeader != null)
+        Assert.IsNotNull(_packetData.PacketHeader, "Missing packet header!");
+
+        var lapData = _packetAnalyzer.GetLapData(_packetData.PacketHeader, File.ReadAllBytes(@"SampleData/F1-2020-LapData.packet"));
+
+        if (lapData is LapData lapInfo && lapInfo.PacketData is ILapDataComplete data && data.LapData is ILapData2020[])
         {
-            var lapData = _packetAnalyzer.GetLapData(_packetData.PacketHeader, File.ReadAllBytes(@"SampleData/F1-2020-LapData.packet"));
+            var cars = data.LapData.Count(l => l.IsEmpty == false);
 
-            if (lapData is LapData lapInfo && lapInfo.PacketData is ILapDataComplete data && data.LapData is ILapData2020[])
-            {
-                var cars = data.LapData.Count(l => l.IsEmpty == false);
-
-                Assert.AreEqual(1, cars, "More than one car found!");
-            }
-            else
-            {
-                Assert.Fail("Invalid lap format, expected F1 2020!");
-            }
+            Assert.AreEqual(1, cars, "More than one car found!");
         }
         else
         {
-            Assert.IsNull(_packetData.PacketHeader, "Invalid F1 2020 packet header!");
+            Assert.Fail("Invalid lap format, expected F1 2020!");
         }
     }
 

@@ -122,5 +122,60 @@ public class PacketProcessor2023Tests
         }
     }
 
+    /// <summary>
+    /// Test that repeated requests for the same 2023 session reuse the cached processor instance,
+    /// instead of creating a new one on every call
+    /// </summary>
+    [TestMethod]
+    public void PacketProcessorSessionProcessorReturns2023SameInstanceForSameSession()
+    {
+        if (_packetData.PacketHeader != null && _processorFactory != null)
+        {
+            var gameData = new LiveGameData()
+                           {
+                               GameVersion = _packetData.PacketHeader.GameVersion
+                           };
+
+            var firstProcessor = _processorFactory.GetProcessor(_packetData.PacketHeader, gameData);
+            var secondProcessor = _processorFactory.GetProcessor(_packetData.PacketHeader, gameData);
+
+            Assert.IsNotNull(firstProcessor, "No processor (first call) object!");
+            Assert.IsNotNull(secondProcessor, "No processor (second call) object!");
+            Assert.AreSame(firstProcessor, secondProcessor, "Processor was not reused for the same session!");
+        }
+        else
+        {
+            Assert.IsNotNull(_packetData.PacketHeader, "Missing header 2023 object!");
+            Assert.IsNotNull(_processorFactory, "Missing processor object!");
+        }
+    }
+
+    /// <summary>
+    /// Test that the frame and session timestamp of the returned 2023 processor are updated from
+    /// the packet header of the requesting packet
+    /// </summary>
+    [TestMethod]
+    public void PacketProcessorSessionProcessor2023UpdatesFrameIdentifier()
+    {
+        if (_packetData.PacketHeader != null && _processorFactory != null)
+        {
+            var gameData = new LiveGameData()
+                           {
+                               GameVersion = _packetData.PacketHeader.GameVersion
+                           };
+
+            var processor = _processorFactory.GetProcessor(_packetData.PacketHeader, gameData);
+
+            Assert.IsNotNull(processor, "No processor object!");
+            Assert.AreEqual(_packetData.PacketHeader.FrameIdentifier, processor.CurrentFrameIdentifier, "Current frame identifier was not updated!");
+            Assert.AreEqual(_packetData.PacketHeader.SessionTimeNum, processor.SessionTimestampNum, "Session timestamp was not updated!");
+        }
+        else
+        {
+            Assert.IsNotNull(_packetData.PacketHeader, "Missing header 2023 object!");
+            Assert.IsNotNull(_processorFactory, "Missing processor object!");
+        }
+    }
+
     #endregion // Methods
 }

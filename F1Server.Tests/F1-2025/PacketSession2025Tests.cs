@@ -1,4 +1,4 @@
-﻿using F1Server.Core;
+using F1Server.Core;
 using F1Server.Core.Data;
 using F1Server.Core.Enumerations;
 using F1Server.Core.PacketData;
@@ -83,22 +83,9 @@ public class PacketSession2025Tests
     [TestMethod]
     public void PacketSessionCheck2025IsSessionObject()
     {
-        if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12025SessionSize + ConstData.F12025HeaderSize)
-        {
-            var isCorrect = false;
-            var session = _packetAnalyzer.GetSessionData(_packetData.PacketHeader, _packetContent);
+        var data = GetSessionData();
 
-            if (session is SessionData sessionData)
-            {
-                isCorrect = sessionData.PacketData is ISessionData2025;
-            }
-
-            Assert.IsTrue(isCorrect, "Packet is not a session packet");
-        }
-        else
-        {
-            Assert.IsNull(_packetData.PacketHeader, "Invalid F1 2025 packet header or content!");
-        }
+        Assert.IsNotNull(data, "Packet is not a session packet");
     }
 
     /// <summary>
@@ -107,25 +94,9 @@ public class PacketSession2025Tests
     [TestMethod]
     public void PacketSessionAiDifficulty2025ExpectedSixty()
     {
-        if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12025SessionSize + ConstData.F12025HeaderSize)
-        {
-            var session = _packetAnalyzer.GetSessionData(_packetData.PacketHeader, _packetContent);
+        var data = GetSessionData();
 
-            if (session is SessionData sessionData && sessionData.PacketData is ISessionData2025 sessionData2025)
-            {
-                var isCorrect = sessionData2025.AiDifficulty == 60;
-
-                Assert.IsTrue(isCorrect, "Incorrect ai difficulty!");
-            }
-            else
-            {
-                Assert.Fail("Invalid session packet, expected F1 2025!");
-            }
-        }
-        else
-        {
-            Assert.IsNull(_packetData.PacketHeader, "Invalid F1 2025 packet header or content!");
-        }
+        Assert.AreEqual((ushort)60, data.AiDifficulty, "Incorrect ai difficulty!");
     }
 
     /// <summary>
@@ -134,25 +105,9 @@ public class PacketSession2025Tests
     [TestMethod]
     public void PacketSessionTrack2025ExpectedSuzuka()
     {
-        if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12025SessionSize + ConstData.F12025HeaderSize)
-        {
-            var session = _packetAnalyzer.GetSessionData(_packetData.PacketHeader, _packetContent);
+        var data = GetSessionData();
 
-            if (session is SessionData sessionData && sessionData.PacketData is ISessionData2025)
-            {
-                var isCorrect = sessionData.PacketData?.TrackName.Equals("Suzuka");
-
-                Assert.IsTrue(isCorrect, "Invalid track id!");
-            }
-            else
-            {
-                Assert.Fail("Invalid session packet, expected F1 2025!");
-            }
-        }
-        else
-        {
-            Assert.IsNull(_packetData.PacketHeader, "Invalid F1 2025 packet header or content!");
-        }
+        Assert.IsTrue(data.TrackName.Equals("Suzuka"), "Invalid track id!");
     }
 
     /// <summary>
@@ -161,25 +116,9 @@ public class PacketSession2025Tests
     [TestMethod]
     public void PacketSessionTrackLength2025ExpectedValue()
     {
-        if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12025SessionSize + ConstData.F12025HeaderSize)
-        {
-            var session = _packetAnalyzer.GetSessionData(_packetData.PacketHeader, _packetContent);
+        var data = GetSessionData();
 
-            if (session is SessionData sessionData && sessionData.PacketData is ISessionData2025)
-            {
-                var isCorrect = sessionData.PacketData?.TrackLength == 5809;
-
-                Assert.IsTrue(isCorrect, "Invalid track length!");
-            }
-            else
-            {
-                Assert.Fail("Invalid session packet, expected F1 2025!");
-            }
-        }
-        else
-        {
-            Assert.IsNull(_packetData.PacketHeader, "Invalid F1 2025 packet header or content!");
-        }
+        Assert.AreEqual(5809, data.TrackLength, "Invalid track length!");
     }
 
     /// <summary>
@@ -188,26 +127,34 @@ public class PacketSession2025Tests
     [TestMethod]
     public void PacketSessionFormulaType2025ExpectedF1Modern()
     {
-        if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12025SessionSize + ConstData.F12025HeaderSize)
-        {
-            var session = _packetAnalyzer.GetSessionData(_packetData.PacketHeader, _packetContent);
+        var data = GetSessionData();
 
-            if (session is SessionData sessionData && sessionData.PacketData is ISessionData2025)
-            {
-                var isCorrect = sessionData.PacketData?.FormulaType == Formula.F1Modern;
-
-                Assert.IsTrue(isCorrect, "Invalid formula type!");
-            }
-            else
-            {
-                Assert.Fail("Invalid session packet, expected F1 2025!");
-            }
-        }
-        else
-        {
-            Assert.IsNull(_packetData.PacketHeader, "Invalid F1 2025 packet header or content!");
-        }
+        Assert.AreEqual(Formula.F1Modern, data.FormulaType, "Invalid formula type!");
     }
 
     #endregion // Methods F1 2025
+
+    #region Private methods
+
+    /// <summary>
+    /// Reads the session data of the sample packet
+    /// </summary>
+    /// <returns>Session data of the sample packet</returns>
+    private static ISessionData2025 GetSessionData()
+    {
+        Assert.IsNotNull(_packetData.PacketHeader, "Missing packet header!");
+        Assert.IsTrue(_packetContent?.Length >= ConstData.F12025SessionSize + ConstData.F12025HeaderSize, "Packet content too short!");
+
+        var session = _packetAnalyzer.GetSessionData(_packetData.PacketHeader, _packetContent);
+
+        Assert.IsInstanceOfType<SessionData>(session, "Packet is not a session packet!");
+
+        var packetData = ((SessionData)session).PacketData;
+
+        Assert.IsInstanceOfType<ISessionData2025>(packetData, "Invalid session packet, expected F1 2025!");
+
+        return (ISessionData2025)packetData;
+    }
+
+    #endregion // Private methods
 }

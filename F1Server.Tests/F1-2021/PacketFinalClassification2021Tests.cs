@@ -71,22 +71,18 @@ public class PacketFinalClassification2021Tests
     [TestMethod]
     public void PacketFinalClassificationCheck2021IsFinalClassificationObject()
     {
-        if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12021FinalClassificationSize + ConstData.F12020HeaderSize)
-        {
-            var isCorrect = false;
-            var finalClassification = _packetAnalyzer.GetFinalClassificationData(_packetData.PacketHeader, _packetContent);
+        Assert.IsNotNull(_packetData.PacketHeader, "Missing packet header!");
+        Assert.IsTrue(_packetContent?.Length >= ConstData.F12021FinalClassificationSize + ConstData.F12021HeaderSize, "Packet content too short!");
 
-            if (finalClassification is FinalClassificationData finalClassificationData)
-            {
-                isCorrect = finalClassificationData.PacketData is not null;
-            }
+        var isCorrect = false;
+        var finalClassification = _packetAnalyzer.GetFinalClassificationData(_packetData.PacketHeader, _packetContent);
 
-            Assert.IsTrue(isCorrect, "Packet is not a final classification packet");
-        }
-        else
+        if (finalClassification is FinalClassificationData finalClassificationData)
         {
-            Assert.IsNull(_packetData.PacketHeader, "Invalid F1 2021 packet header or content!");
+            isCorrect = finalClassificationData.PacketData is not null;
         }
+
+        Assert.IsTrue(isCorrect, "Packet is not a final classification packet");
     }
 
     #endregion // Methods F1 2021

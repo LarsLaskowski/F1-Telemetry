@@ -83,7 +83,7 @@ public class PacketCarStatus2022Tests
     [TestMethod]
     public void PacketCarStatusCheckCarStatus2022IsCarStatusDataObject()
     {
-        if (_packetData.PacketHeader != null && _packetContent?.Length == ConstData.F12022CarStatusSize + ConstData.F12020HeaderSize)
+        if (_packetData.PacketHeader != null && _packetContent?.Length == ConstData.F12022CarStatusSize + ConstData.F12022HeaderSize)
         {
             var isCorrect = false;
             var carStatus = _packetAnalyzer.GetCarStatus(_packetData.PacketHeader, _packetContent);
@@ -107,15 +107,13 @@ public class PacketCarStatus2022Tests
     [TestMethod]
     public void PacketCarStatusFuelRemainingLaps2022ExpectedValue()
     {
-        if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12022CarStatusSize + ConstData.F12020HeaderSize)
+        if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12022CarStatusSize + ConstData.F12022HeaderSize)
         {
             var carStatus = _packetAnalyzer.GetCarStatus(_packetData.PacketHeader, _packetContent);
 
-            if (carStatus is CarStatus statusData && statusData.PacketData is CarStatus2022)
+            if (carStatus is CarStatus statusData && statusData.PacketData is CarStatus2022 statusData2022)
             {
-                var isCorrect = statusData.PacketData?.CarStatusData[0].FuelRemainingLaps == 1.65665889F;
-
-                Assert.IsTrue(isCorrect, "Incorrect fuel remaining laps!");
+                Assert.AreEqual(1.65665889F, statusData2022.CarStatusData[0].FuelRemainingLaps, 0.0001F, "Incorrect fuel remaining laps!");
             }
             else
             {
@@ -134,7 +132,7 @@ public class PacketCarStatus2022Tests
     [TestMethod]
     public void PacketCarStatusVisualTyreCompound2022ExpectedValue()
     {
-        if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12022CarStatusSize + ConstData.F12020HeaderSize)
+        if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12022CarStatusSize + ConstData.F12022HeaderSize)
         {
             var carStatus = _packetAnalyzer.GetCarStatus(_packetData.PacketHeader, _packetContent);
 
@@ -161,7 +159,7 @@ public class PacketCarStatus2022Tests
     [TestMethod]
     public void PacketCarStatusERSDeployedThisLap2022ExpectedValue()
     {
-        if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12022CarStatusSize + ConstData.F12020HeaderSize)
+        if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12022CarStatusSize + ConstData.F12022HeaderSize)
         {
             var carStatus = _packetAnalyzer.GetCarStatus(_packetData.PacketHeader, _packetContent);
 
@@ -188,7 +186,7 @@ public class PacketCarStatus2022Tests
     [TestMethod]
     public void PacketCarStatusFuelCapacity2022ExpectedValue()
     {
-        if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12022CarStatusSize + ConstData.F12020HeaderSize)
+        if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12022CarStatusSize + ConstData.F12022HeaderSize)
         {
             var carStatus = _packetAnalyzer.GetCarStatus(_packetData.PacketHeader, _packetContent);
 
@@ -215,7 +213,7 @@ public class PacketCarStatus2022Tests
     [TestMethod]
     public void PacketCarStatusEngineMaxRpm2022ExpectedValue()
     {
-        if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12022CarStatusSize + ConstData.F12020HeaderSize)
+        if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12022CarStatusSize + ConstData.F12022HeaderSize)
         {
             var carStatus = _packetAnalyzer.GetCarStatus(_packetData.PacketHeader, _packetContent);
 

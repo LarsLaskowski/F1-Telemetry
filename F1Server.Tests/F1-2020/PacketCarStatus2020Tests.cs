@@ -83,22 +83,18 @@ public class PacketCarStatus2020Tests
     [TestMethod]
     public void PacketCarStatusCheckCarStatus2020IsCarStatusDataObject()
     {
-        if (_packetData.PacketHeader != null && _packetContent?.Length == ConstData.F12020CarStatusSize + ConstData.F12020HeaderSize)
-        {
-            var isCorrect = false;
-            var carStatus = _packetAnalyzer.GetCarStatus(_packetData.PacketHeader, _packetContent);
+        Assert.IsNotNull(_packetData.PacketHeader, "Missing packet header!");
+        Assert.AreEqual(ConstData.F12020CarStatusSize + ConstData.F12020HeaderSize, _packetContent?.Length, "Packet content has unexpected length!");
 
-            if (carStatus is CarStatus packetData)
-            {
-                isCorrect = packetData.PacketData is CarStatus2020;
-            }
+        var isCorrect = false;
+        var carStatus = _packetAnalyzer.GetCarStatus(_packetData.PacketHeader, _packetContent);
 
-            Assert.IsTrue(isCorrect, "Packet is not a car status data packet");
-        }
-        else
+        if (carStatus is CarStatus packetData)
         {
-            Assert.IsNull(_packetData.PacketHeader, "Invalid F1 2020 packet header or content!");
+            isCorrect = packetData.PacketData is CarStatus2020;
         }
+
+        Assert.IsTrue(isCorrect, "Packet is not a car status data packet");
     }
 
     /// <summary>
@@ -107,24 +103,18 @@ public class PacketCarStatus2020Tests
     [TestMethod]
     public void PacketCarStatusFuelRemainingLaps2020ExpectedValue()
     {
-        if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12020CarStatusSize + ConstData.F12020HeaderSize)
+        Assert.IsNotNull(_packetData.PacketHeader, "Missing packet header!");
+        Assert.IsTrue(_packetContent?.Length >= ConstData.F12020CarStatusSize + ConstData.F12020HeaderSize, "Packet content too short!");
+
+        var carStatus = _packetAnalyzer.GetCarStatus(_packetData.PacketHeader, _packetContent);
+
+        if (carStatus is CarStatus statusData && statusData.PacketData is CarStatus2020 carStatus2020)
         {
-            var carStatus = _packetAnalyzer.GetCarStatus(_packetData.PacketHeader, _packetContent);
-
-            if (carStatus is CarStatus statusData && statusData.PacketData is CarStatus2020)
-            {
-                var isCorrect = statusData.PacketData?.CarStatusData[0].FuelRemainingLaps == 13.1783037F;
-
-                Assert.IsTrue(isCorrect, "Incorrect fuel remaining laps!");
-            }
-            else
-            {
-                Assert.Fail("Invalid car status format, expected F1 2020!");
-            }
+            Assert.AreEqual(13.1783037F, carStatus2020.CarStatusData[0].FuelRemainingLaps, 0.0001F, "Incorrect fuel remaining laps!");
         }
         else
         {
-            Assert.IsNull(_packetData.PacketHeader, "Invalid F1 2020 packet header or content!");
+            Assert.Fail("Invalid car status format, expected F1 2020!");
         }
     }
 
@@ -134,24 +124,20 @@ public class PacketCarStatus2020Tests
     [TestMethod]
     public void PacketCarStatusVisualTyreCompound2020ExpectedValue()
     {
-        if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12020CarStatusSize + ConstData.F12020HeaderSize)
+        Assert.IsNotNull(_packetData.PacketHeader, "Missing packet header!");
+        Assert.IsTrue(_packetContent?.Length >= ConstData.F12020CarStatusSize + ConstData.F12020HeaderSize, "Packet content too short!");
+
+        var carStatus = _packetAnalyzer.GetCarStatus(_packetData.PacketHeader, _packetContent);
+
+        if (carStatus is CarStatus statusData && statusData.PacketData is CarStatus2020)
         {
-            var carStatus = _packetAnalyzer.GetCarStatus(_packetData.PacketHeader, _packetContent);
+            var isCorrect = statusData.PacketData?.CarStatusData[0].VisualTyreCompound == VisualTyreCompound.Hard;
 
-            if (carStatus is CarStatus statusData && statusData.PacketData is CarStatus2020)
-            {
-                var isCorrect = statusData.PacketData?.CarStatusData[0].VisualTyreCompound == VisualTyreCompound.Hard;
-
-                Assert.IsTrue(isCorrect, "Incorrect visual tyre compound!");
-            }
-            else
-            {
-                Assert.Fail("Invalid car status format, expected F1 2020!");
-            }
+            Assert.IsTrue(isCorrect, "Incorrect visual tyre compound!");
         }
         else
         {
-            Assert.IsNull(_packetData.PacketHeader, "Invalid F1 2020 packet header or content!");
+            Assert.Fail("Invalid car status format, expected F1 2020!");
         }
     }
 
@@ -161,24 +147,20 @@ public class PacketCarStatus2020Tests
     [TestMethod]
     public void PacketCarStatusERSDeployedThisLap2020ExpectedValue()
     {
-        if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12020CarStatusSize + ConstData.F12020HeaderSize)
+        Assert.IsNotNull(_packetData.PacketHeader, "Missing packet header!");
+        Assert.IsTrue(_packetContent?.Length >= ConstData.F12020CarStatusSize + ConstData.F12020HeaderSize, "Packet content too short!");
+
+        var carStatus = _packetAnalyzer.GetCarStatus(_packetData.PacketHeader, _packetContent);
+
+        if (carStatus is CarStatus statusData && statusData.PacketData is CarStatus2020)
         {
-            var carStatus = _packetAnalyzer.GetCarStatus(_packetData.PacketHeader, _packetContent);
+            var isCorrect = statusData.PacketData?.CarStatusData[0].ERSDeployedThisLap == 0;
 
-            if (carStatus is CarStatus statusData && statusData.PacketData is CarStatus2020)
-            {
-                var isCorrect = statusData.PacketData?.CarStatusData[0].ERSDeployedThisLap == 0;
-
-                Assert.IsTrue(isCorrect, "Incorrect ERS deployed this lap value!");
-            }
-            else
-            {
-                Assert.Fail("Invalid car status format, expected F1 2020!");
-            }
+            Assert.IsTrue(isCorrect, "Incorrect ERS deployed this lap value!");
         }
         else
         {
-            Assert.IsNull(_packetData.PacketHeader, "Invalid F1 2020 packet header or content!");
+            Assert.Fail("Invalid car status format, expected F1 2020!");
         }
     }
 
@@ -188,24 +170,20 @@ public class PacketCarStatus2020Tests
     [TestMethod]
     public void PacketCarStatusFuelCapacity2020ExpectedValue()
     {
-        if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12020CarStatusSize + ConstData.F12020HeaderSize)
+        Assert.IsNotNull(_packetData.PacketHeader, "Missing packet header!");
+        Assert.IsTrue(_packetContent?.Length >= ConstData.F12020CarStatusSize + ConstData.F12020HeaderSize, "Packet content too short!");
+
+        var carStatus = _packetAnalyzer.GetCarStatus(_packetData.PacketHeader, _packetContent);
+
+        if (carStatus is CarStatus statusData && statusData.PacketData is CarStatus2020)
         {
-            var carStatus = _packetAnalyzer.GetCarStatus(_packetData.PacketHeader, _packetContent);
+            var isCorrect = statusData.PacketData.CarStatusData[0].FuelCapacity == 110;
 
-            if (carStatus is CarStatus statusData && statusData.PacketData is CarStatus2020)
-            {
-                var isCorrect = statusData.PacketData.CarStatusData[0].FuelCapacity == 110;
-
-                Assert.IsTrue(isCorrect, "Incorrect fuel capacity!");
-            }
-            else
-            {
-                Assert.Fail("Invalid car status format, expected F1 2020!");
-            }
+            Assert.IsTrue(isCorrect, "Incorrect fuel capacity!");
         }
         else
         {
-            Assert.IsNull(_packetData.PacketHeader, "Invalid F1 2020 packet header or content!");
+            Assert.Fail("Invalid car status format, expected F1 2020!");
         }
     }
 
@@ -215,24 +193,20 @@ public class PacketCarStatus2020Tests
     [TestMethod]
     public void PacketCarStatusEngineMaxRpm2020ExpectedValue()
     {
-        if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12020CarStatusSize + ConstData.F12020HeaderSize)
+        Assert.IsNotNull(_packetData.PacketHeader, "Missing packet header!");
+        Assert.IsTrue(_packetContent?.Length >= ConstData.F12020CarStatusSize + ConstData.F12020HeaderSize, "Packet content too short!");
+
+        var carStatus = _packetAnalyzer.GetCarStatus(_packetData.PacketHeader, _packetContent);
+
+        if (carStatus is CarStatus statusData && statusData.PacketData is CarStatus2020)
         {
-            var carStatus = _packetAnalyzer.GetCarStatus(_packetData.PacketHeader, _packetContent);
+            var isCorrect = statusData.PacketData?.CarStatusData[0].MaxRPM == 13000;
 
-            if (carStatus is CarStatus statusData && statusData.PacketData is CarStatus2020)
-            {
-                var isCorrect = statusData.PacketData?.CarStatusData[0].MaxRPM == 13000;
-
-                Assert.IsTrue(isCorrect, "Incorrect engine rpm!");
-            }
-            else
-            {
-                Assert.Fail("Invalid car status format, expected F1 2020!");
-            }
+            Assert.IsTrue(isCorrect, "Incorrect engine rpm!");
         }
         else
         {
-            Assert.IsNull(_packetData.PacketHeader, "Invalid F1 2020 packet header or content!");
+            Assert.Fail("Invalid car status format, expected F1 2020!");
         }
     }
 

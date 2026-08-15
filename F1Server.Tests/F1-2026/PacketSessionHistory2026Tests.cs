@@ -1,4 +1,4 @@
-﻿using F1Server.Core;
+using F1Server.Core;
 using F1Server.Core.Data;
 using F1Server.Core.Enumerations;
 using F1Server.Core.PacketData;
@@ -54,6 +54,30 @@ public class PacketSessionHistory2026Tests
 
     #endregion // Initializer/Cleanup
 
+    #region Static methods
+
+    /// <summary>
+    /// Reads the session history data of the sample packet
+    /// </summary>
+    /// <returns>Session history data of the sample packet</returns>
+    private static SessionHistoryData2026 GetSessionHistoryData()
+    {
+        Assert.IsNotNull(_packetData.PacketHeader, "Missing packet header!");
+        Assert.IsTrue(_packetContent?.Length >= ConstData.F12026SessionHistorySize + ConstData.F12026HeaderSize, "Packet content too short!");
+
+        var sessionHistory = _packetAnalyzer.GetSessionHistoryData(_packetData.PacketHeader, _packetContent);
+
+        Assert.IsInstanceOfType<SessionHistoryData>(sessionHistory, "Packet was not transformed into session history data!");
+
+        var packetData = ((SessionHistoryData)sessionHistory).PacketData;
+
+        Assert.IsInstanceOfType<SessionHistoryData2026>(packetData, "Session history packet is not a F1 2026 object!");
+
+        return (SessionHistoryData2026)packetData;
+    }
+
+    #endregion // Static methods
+
     #region Methods F1 2026
 
     /// <summary>
@@ -73,22 +97,7 @@ public class PacketSessionHistory2026Tests
     [TestMethod]
     public void PacketSessionHistoryCheck2026IsSessionHistoryObject()
     {
-        if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12026SessionHistorySize + ConstData.F12026HeaderSize)
-        {
-            var isCorrect = false;
-            var sessionHistory = _packetAnalyzer.GetSessionHistoryData(_packetData.PacketHeader, _packetContent);
-
-            if (sessionHistory is SessionHistoryData sessionHistoryData)
-            {
-                isCorrect = sessionHistoryData.PacketData is not null;
-            }
-
-            Assert.IsTrue(isCorrect, "Packet is not a session history packet");
-        }
-        else
-        {
-            Assert.IsNull(_packetData.PacketHeader, "Invalid F1 2026 packet header or content!");
-        }
+        Assert.IsNotNull(GetSessionHistoryData(), "Packet is not a session history packet!");
     }
 
     /// <summary>
@@ -97,22 +106,7 @@ public class PacketSessionHistory2026Tests
     [TestMethod]
     public void PacketSessionHistoryCheck2026BestLap()
     {
-        if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12026SessionHistorySize + ConstData.F12026HeaderSize)
-        {
-            var isCorrect = false;
-            var sessionHistory = _packetAnalyzer.GetSessionHistoryData(_packetData.PacketHeader, _packetContent);
-
-            if (sessionHistory is SessionHistoryData sessionHistoryData && sessionHistoryData.PacketData is SessionHistoryData2026)
-            {
-                isCorrect = sessionHistoryData.PacketData.BestLapNumber == 2;
-            }
-
-            Assert.IsTrue(isCorrect, "Best lap number is invalid!");
-        }
-        else
-        {
-            Assert.IsNull(_packetData.PacketHeader, "Invalid F1 2026 packet header or content!");
-        }
+        Assert.AreEqual((ushort)2, GetSessionHistoryData().BestLapNumber, "Best lap number is invalid!");
     }
 
     /// <summary>
@@ -121,22 +115,7 @@ public class PacketSessionHistory2026Tests
     [TestMethod]
     public void PacketSessionHistoryCheck2026BestLapCarIndex()
     {
-        if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12026SessionHistorySize + ConstData.F12026HeaderSize)
-        {
-            var isCorrect = false;
-            var sessionHistory = _packetAnalyzer.GetSessionHistoryData(_packetData.PacketHeader, _packetContent);
-
-            if (sessionHistory is SessionHistoryData sessionHistoryData && sessionHistoryData.PacketData is SessionHistoryData2026)
-            {
-                isCorrect = sessionHistoryData.PacketData.CarIndex == 7;
-            }
-
-            Assert.IsTrue(isCorrect, "Car index of best lap is invalid!");
-        }
-        else
-        {
-            Assert.IsNull(_packetData.PacketHeader, "Invalid F1 2026 packet header or content!");
-        }
+        Assert.AreEqual((ushort)7, GetSessionHistoryData().CarIndex, "Car index of best lap is invalid!");
     }
 
     /// <summary>
@@ -145,22 +124,7 @@ public class PacketSessionHistory2026Tests
     [TestMethod]
     public void PacketSessionHistoryCheck2026NumberOfLaps()
     {
-        if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12026SessionHistorySize + ConstData.F12026HeaderSize)
-        {
-            var isCorrect = false;
-            var sessionHistory = _packetAnalyzer.GetSessionHistoryData(_packetData.PacketHeader, _packetContent);
-
-            if (sessionHistory is SessionHistoryData sessionHistoryData && sessionHistoryData.PacketData is SessionHistoryData2026)
-            {
-                isCorrect = sessionHistoryData.PacketData.NumberOfLaps == 3;
-            }
-
-            Assert.IsTrue(isCorrect, "Number of laps is invalid!");
-        }
-        else
-        {
-            Assert.IsNull(_packetData.PacketHeader, "Invalid F1 2026 packet header or content!");
-        }
+        Assert.AreEqual((ushort)3, GetSessionHistoryData().NumberOfLaps, "Number of laps is invalid!");
     }
 
     /// <summary>
@@ -169,22 +133,7 @@ public class PacketSessionHistory2026Tests
     [TestMethod]
     public void PacketSessionHistoryCheck2026LapTime()
     {
-        if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12026SessionHistorySize + ConstData.F12026HeaderSize)
-        {
-            var isCorrect = false;
-            var sessionHistory = _packetAnalyzer.GetSessionHistoryData(_packetData.PacketHeader, _packetContent);
-
-            if (sessionHistory is SessionHistoryData sessionHistoryData && sessionHistoryData.PacketData is SessionHistoryData2026)
-            {
-                isCorrect = sessionHistoryData.PacketData.LapHistory[0].LapTime == 83435;
-            }
-
-            Assert.IsTrue(isCorrect, "Lap time is invalid!");
-        }
-        else
-        {
-            Assert.IsNull(_packetData.PacketHeader, "Invalid F1 2026 packet header or content!");
-        }
+        Assert.AreEqual(83435u, GetSessionHistoryData().LapHistory[0].LapTime, "Lap time is invalid!");
     }
 
     /// <summary>
@@ -193,22 +142,7 @@ public class PacketSessionHistory2026Tests
     [TestMethod]
     public void PacketSessionHistoryCheck2026Sector1Time()
     {
-        if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12026SessionHistorySize + ConstData.F12026HeaderSize)
-        {
-            var isCorrect = false;
-            var sessionHistory = _packetAnalyzer.GetSessionHistoryData(_packetData.PacketHeader, _packetContent);
-
-            if (sessionHistory is SessionHistoryData sessionHistoryData && sessionHistoryData.PacketData is SessionHistoryData2026)
-            {
-                isCorrect = sessionHistoryData.PacketData.LapHistory[0].Sector1Time == 29372;
-            }
-
-            Assert.IsTrue(isCorrect, "Sector 1 time is invalid!");
-        }
-        else
-        {
-            Assert.IsNull(_packetData.PacketHeader, "Invalid F1 2026 packet header or content!");
-        }
+        Assert.AreEqual((ushort)29372, GetSessionHistoryData().LapHistory[0].Sector1Time, "Sector 1 time is invalid!");
     }
 
     /// <summary>
@@ -217,22 +151,7 @@ public class PacketSessionHistory2026Tests
     [TestMethod]
     public void PacketSessionHistoryCheck2026Sector3Time()
     {
-        if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12026SessionHistorySize + ConstData.F12026HeaderSize)
-        {
-            var isCorrect = false;
-            var sessionHistory = _packetAnalyzer.GetSessionHistoryData(_packetData.PacketHeader, _packetContent);
-
-            if (sessionHistory is SessionHistoryData sessionHistoryData && sessionHistoryData.PacketData is SessionHistoryData2026)
-            {
-                isCorrect = sessionHistoryData.PacketData.LapHistory[0].Sector3Time == 35549;
-            }
-
-            Assert.IsTrue(isCorrect, "Sector 3 time is invalid!");
-        }
-        else
-        {
-            Assert.IsNull(_packetData.PacketHeader, "Invalid F1 2026 packet header or content!");
-        }
+        Assert.AreEqual((ushort)35549, GetSessionHistoryData().LapHistory[0].Sector3Time, "Sector 3 time is invalid!");
     }
 
     /// <summary>
@@ -241,22 +160,7 @@ public class PacketSessionHistory2026Tests
     [TestMethod]
     public void PacketSessionHistoryCheck2026TyreStints()
     {
-        if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12026SessionHistorySize + ConstData.F12026HeaderSize)
-        {
-            var isCorrect = false;
-            var sessionHistory = _packetAnalyzer.GetSessionHistoryData(_packetData.PacketHeader, _packetContent);
-
-            if (sessionHistory is SessionHistoryData sessionHistoryData && sessionHistoryData.PacketData is SessionHistoryData2026)
-            {
-                isCorrect = sessionHistoryData.PacketData.NumberOfTyreStints == 1;
-            }
-
-            Assert.IsTrue(isCorrect, "Number of tyre stints is invalid!");
-        }
-        else
-        {
-            Assert.IsNull(_packetData.PacketHeader, "Invalid F1 2026 packet header or content!");
-        }
+        Assert.AreEqual((ushort)1, GetSessionHistoryData().NumberOfTyreStints, "Number of tyre stints is invalid!");
     }
 
     /// <summary>
@@ -265,22 +169,7 @@ public class PacketSessionHistory2026Tests
     [TestMethod]
     public void PacketSessionHistoryCheck2026FirstTyreStintActual()
     {
-        if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12026SessionHistorySize + ConstData.F12026HeaderSize)
-        {
-            var isCorrect = false;
-            var sessionHistory = _packetAnalyzer.GetSessionHistoryData(_packetData.PacketHeader, _packetContent);
-
-            if (sessionHistory is SessionHistoryData sessionHistoryData && sessionHistoryData.PacketData is SessionHistoryData2026)
-            {
-                isCorrect = sessionHistoryData.PacketData.TyreStintHistory[0].TyreActualCompound == 16;
-            }
-
-            Assert.IsTrue(isCorrect, "Actual compound of first tyre stint is invalid!");
-        }
-        else
-        {
-            Assert.IsNull(_packetData.PacketHeader, "Invalid F1 2026 packet header or content!");
-        }
+        Assert.AreEqual((ushort)16, GetSessionHistoryData().TyreStintHistory[0].TyreActualCompound, "Actual compound of first tyre stint is invalid!");
     }
 
     /// <summary>
@@ -289,22 +178,7 @@ public class PacketSessionHistory2026Tests
     [TestMethod]
     public void PacketSessionHistoryCheck2026FirstTyreStintVisual()
     {
-        if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12026SessionHistorySize + ConstData.F12026HeaderSize)
-        {
-            var isCorrect = false;
-            var sessionHistory = _packetAnalyzer.GetSessionHistoryData(_packetData.PacketHeader, _packetContent);
-
-            if (sessionHistory is SessionHistoryData sessionHistoryData && sessionHistoryData.PacketData is SessionHistoryData2026)
-            {
-                isCorrect = sessionHistoryData.PacketData.TyreStintHistory[0].TyreVisualCompound == 16;
-            }
-
-            Assert.IsTrue(isCorrect, "Visual compound of first tyre stint is invalid!");
-        }
-        else
-        {
-            Assert.IsNull(_packetData.PacketHeader, "Invalid F1 2026 packet header or content!");
-        }
+        Assert.AreEqual((ushort)16, GetSessionHistoryData().TyreStintHistory[0].TyreVisualCompound, "Visual compound of first tyre stint is invalid!");
     }
 
     /// <summary>
@@ -313,22 +187,9 @@ public class PacketSessionHistory2026Tests
     [TestMethod]
     public void PacketSessionHistoryCheck2026VisualCompoundMapper()
     {
-        if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12026SessionHistorySize + ConstData.F12026HeaderSize)
-        {
-            var sessionHistory = _packetAnalyzer.GetSessionHistoryData(_packetData.PacketHeader, _packetContent);
-            var visualCompound = VisualTyreCompound.Unknown;
+        var visualCompound = TyreCompoundMapper.MapVisualTyreCompoundToEnum(GetSessionHistoryData().TyreStintHistory[0].TyreVisualCompound);
 
-            if (sessionHistory is SessionHistoryData sessionHistoryData && sessionHistoryData.PacketData is SessionHistoryData2026)
-            {
-                visualCompound = TyreCompoundMapper.MapVisualTyreCompoundToEnum(sessionHistoryData.PacketData.TyreStintHistory[0].TyreVisualCompound);
-            }
-
-            Assert.AreEqual(VisualTyreCompound.Soft, visualCompound, "Visual compound mapping is invalid!");
-        }
-        else
-        {
-            Assert.IsNull(_packetData.PacketHeader, "Invalid F1 2026 packet header or content!");
-        }
+        Assert.AreEqual(VisualTyreCompound.Soft, visualCompound, "Visual compound mapping is invalid!");
     }
 
     #endregion // Methods F1 2026

@@ -77,7 +77,7 @@ public static class ConstData
     #region Consts F1 2020
 
     /// <summary>
-    /// Headersize for F1 2020, 2021 and 2022
+    /// Headersize for F1 2020
     /// </summary>
     public const int F12020HeaderSize = 24;
 
@@ -134,6 +134,11 @@ public static class ConstData
     #endregion // Consts F1 2020
 
     #region Consts F1 2021
+
+    /// <summary>
+    /// Headersize for F1 2021
+    /// </summary>
+    public const int F12021HeaderSize = 24;
 
     /// <summary>
     /// Size of session data
@@ -203,6 +208,11 @@ public static class ConstData
     #endregion // Consts F1 2021
 
     #region Consts F1 2022
+
+    /// <summary>
+    /// Headersize for F1 2022
+    /// </summary>
+    public const int F12022HeaderSize = 24;
 
     /// <summary>
     /// Size of session data

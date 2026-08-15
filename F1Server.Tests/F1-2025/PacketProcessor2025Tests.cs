@@ -1,4 +1,5 @@
-﻿using F1Server.Core.Data;
+using F1Server.Core.Data;
+using F1Server.Core.Packets.Data;
 using F1Server.Data;
 using F1Server.Service.Processors;
 using F1Server.Tests.Data;
@@ -68,23 +69,18 @@ public class PacketProcessor2025Tests
     [TestMethod]
     public void PacketProcessorSessionProcessorIsSessionProcessor()
     {
-        if (_packetData24.PacketHeader != null && _processorFactory != null)
-        {
-            var gameData = new LiveGameData()
-                           {
-                               GameVersion = _packetData24.PacketHeader.GameVersion
-                           };
+        Assert.IsNotNull(_packetData24.PacketHeader, "Missing header object!");
+        Assert.IsNotNull(_processorFactory, "Missing processor object!");
 
-            var processor = _processorFactory.GetProcessor(_packetData24.PacketHeader, gameData);
+        var gameData = new LiveGameData()
+                       {
+                           GameVersion = _packetData24.PacketHeader.GameVersion
+                       };
 
-            Assert.IsNotNull(processor, "No processor object!");
-            Assert.AreEqual(typeof(SessionProcessor), processor.GetType(), "No session processor object!");
-        }
-        else
-        {
-            Assert.IsNotNull(_packetData24.PacketHeader, "Missing header object!");
-            Assert.IsNotNull(_processorFactory, "Missing processor object!");
-        }
+        var processor = _processorFactory.GetProcessor(_packetData24.PacketHeader, gameData);
+
+        Assert.IsNotNull(processor, "No processor object!");
+        Assert.AreEqual(typeof(SessionProcessor), processor.GetType(), "No session processor object!");
     }
 
     /// <summary>
@@ -93,33 +89,102 @@ public class PacketProcessor2025Tests
     [TestMethod]
     public void PacketProcessorSessionProcessorIsNewSessionProcessor()
     {
-        if (_packetData24.PacketHeader != null && _packetData.PacketHeader != null && _processorFactory != null)
-        {
-            var gameData = new LiveGameData()
-                           {
-                               GameVersion = _packetData24.PacketHeader.GameVersion
-                           };
+        Assert.IsNotNull(_packetData24.PacketHeader, "Missing header 2024 object!");
+        Assert.IsNotNull(_packetData.PacketHeader, "Missing header 2025 object!");
+        Assert.IsNotNull(_processorFactory, "Missing processor object!");
 
-            var processor24 = _processorFactory.GetProcessor(_packetData24.PacketHeader, gameData);
+        var gameData = new LiveGameData()
+                       {
+                           GameVersion = _packetData24.PacketHeader.GameVersion
+                       };
 
-            Assert.IsNotNull(processor24, "No processor (2024) object!");
-            Assert.AreEqual(typeof(SessionProcessor), processor24.GetType(), "No session processor (2024) object!");
+        var processor24 = _processorFactory.GetProcessor(_packetData24.PacketHeader, gameData);
 
-            gameData.GameVersion = _packetData.PacketHeader.GameVersion;
+        Assert.IsNotNull(processor24, "No processor (2024) object!");
+        Assert.AreEqual(typeof(SessionProcessor), processor24.GetType(), "No session processor (2024) object!");
 
-            var processor25 = _processorFactory.GetProcessor(_packetData.PacketHeader, gameData);
+        gameData.GameVersion = _packetData.PacketHeader.GameVersion;
 
-            Assert.IsNotNull(processor25, "No processor (2025) object!");
-            Assert.AreEqual(typeof(SessionProcessor), processor25.GetType(), "No session processor (2025) object!");
+        var processor25 = _processorFactory.GetProcessor(_packetData.PacketHeader, gameData);
 
-            Assert.AreNotEqual(processor25, processor24, "Same session processor object!");
-        }
-        else
-        {
-            Assert.IsNotNull(_packetData24.PacketHeader, "Missing header 2024 object!");
-            Assert.IsNotNull(_packetData.PacketHeader, "Missing header 2025 object!");
-            Assert.IsNotNull(_processorFactory, "Missing processor object!");
-        }
+        Assert.IsNotNull(processor25, "No processor (2025) object!");
+        Assert.AreEqual(typeof(SessionProcessor), processor25.GetType(), "No session processor (2025) object!");
+
+        Assert.AreNotEqual(processor25, processor24, "Same session processor object!");
+    }
+
+    /// <summary>
+    /// Test that repeated calls for the same F1 2025 session reuse the cached processor instance
+    /// </summary>
+    [TestMethod]
+    public void PacketProcessorSessionProcessor2025SameSessionReturnsSameInstance()
+    {
+        Assert.IsNotNull(_packetData.PacketHeader, "Missing header 2025 object!");
+        Assert.IsNotNull(_processorFactory, "Missing processor object!");
+
+        var gameData = new LiveGameData()
+                       {
+                           GameVersion = _packetData.PacketHeader.GameVersion
+                       };
+
+        var firstProcessor = _processorFactory.GetProcessor(_packetData.PacketHeader, gameData);
+        var secondProcessor = _processorFactory.GetProcessor(_packetData.PacketHeader, gameData);
+
+        Assert.IsNotNull(firstProcessor, "No processor object on first call!");
+        Assert.IsNotNull(secondProcessor, "No processor object on second call!");
+        Assert.AreEqual(firstProcessor, secondProcessor, "Processor was not reused within the same session!");
+    }
+
+    /// <summary>
+    /// Test that the processor tracks the current frame identifier of the F1 2025 header
+    /// </summary>
+    [TestMethod]
+    public void PacketProcessorSessionProcessor2025TracksCurrentFrameIdentifier()
+    {
+        Assert.IsNotNull(_packetData.PacketHeader, "Missing header 2025 object!");
+        Assert.IsNotNull(_processorFactory, "Missing processor object!");
+
+        var gameData = new LiveGameData()
+                       {
+                           GameVersion = _packetData.PacketHeader.GameVersion
+                       };
+
+        var processor = _processorFactory.GetProcessor(_packetData.PacketHeader, gameData);
+
+        Assert.IsNotNull(processor, "No processor object!");
+        Assert.AreEqual(_packetData.PacketHeader.FrameIdentifier, processor.CurrentFrameIdentifier, "Processor did not track the current frame identifier!");
+    }
+
+    /// <summary>
+    /// Test that a new F1 2025 session id causes the factory to create a new processor instance
+    /// </summary>
+    [TestMethod]
+    public void PacketProcessorSessionProcessor2025NewSessionIdReturnsNewInstance()
+    {
+        Assert.IsNotNull(_packetData.PacketHeader, "Missing header 2025 object!");
+        Assert.IsNotNull(_processorFactory, "Missing processor object!");
+
+        var gameData = new LiveGameData()
+                       {
+                           GameVersion = _packetData.PacketHeader.GameVersion
+                       };
+
+        var firstProcessor = _processorFactory.GetProcessor(_packetData.PacketHeader, gameData);
+
+        var secondSessionHeader = new PacketHeader
+                                  {
+                                      GameVersion = _packetData.PacketHeader.GameVersion,
+                                      PacketType = _packetData.PacketHeader.PacketType,
+                                      FrameIdentifier = _packetData.PacketHeader.FrameIdentifier,
+                                      UniqueSessionId = _packetData.PacketHeader.UniqueSessionId + 1
+                                  };
+
+        var secondProcessor = _processorFactory.GetProcessor(secondSessionHeader, gameData);
+
+        Assert.IsNotNull(firstProcessor, "No processor object for the first session!");
+        Assert.IsNotNull(secondProcessor, "No processor object for the second session!");
+        Assert.AreEqual(typeof(SessionProcessor), secondProcessor.GetType(), "No session processor object for the second session!");
+        Assert.AreNotEqual(firstProcessor, secondProcessor, "Processor was not recreated after a session change!");
     }
 
     #endregion // Methods

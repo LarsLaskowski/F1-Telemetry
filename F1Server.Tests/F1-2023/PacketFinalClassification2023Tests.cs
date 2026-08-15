@@ -2,6 +2,7 @@
 using F1Server.Core.Data;
 using F1Server.Core.Enumerations;
 using F1Server.Core.PacketData;
+using F1Server.Core.Packets.Data;
 
 namespace F1Server.Tests;
 
@@ -71,21 +72,48 @@ public class PacketFinalClassification2023Tests
     [TestMethod]
     public void PacketFinalClassificationCheck2023IsFinalClassificationObject()
     {
-        if (_packetData.PacketHeader != null && _packetContent?.Length >= ConstData.F12023FinalClassificationSize + ConstData.F12023HeaderSize)
+        Assert.IsNotNull(_packetData.PacketHeader, "Missing packet header!");
+        Assert.IsTrue(_packetContent?.Length >= ConstData.F12023FinalClassificationSize + ConstData.F12023HeaderSize, "Packet content too short!");
+
+        var isCorrect = false;
+        var finalClassification = _packetAnalyzer.GetFinalClassificationData(_packetData.PacketHeader, _packetContent);
+
+        if (finalClassification is FinalClassificationData finalClassificationData)
         {
-            var isCorrect = false;
-            var finalClassification = _packetAnalyzer.GetFinalClassificationData(_packetData.PacketHeader, _packetContent);
+            isCorrect = finalClassificationData.PacketData is not null;
+        }
 
-            if (finalClassification is FinalClassificationData finalClassificationData)
-            {
-                isCorrect = finalClassificationData.PacketData is not null;
-            }
+        Assert.IsTrue(isCorrect, "Packet is not a final classification packet");
+    }
 
-            Assert.IsTrue(isCorrect, "Packet is not a final classification packet");
+    /// <summary>
+    /// Check finishing position, points, laps completed, pit stops, result status and tyre stint
+    /// data of the first car in the final classification content (2023)
+    /// </summary>
+    [TestMethod]
+    public void PacketFinalClassificationCheck2023ContentValues()
+    {
+        Assert.IsNotNull(_packetData.PacketHeader, "Missing packet header!");
+        Assert.IsTrue(_packetContent?.Length >= ConstData.F12023FinalClassificationSize + ConstData.F12023HeaderSize, "Packet content too short!");
+
+        var finalClassification = _packetAnalyzer.GetFinalClassificationData(_packetData.PacketHeader, _packetContent);
+
+        if (finalClassification is FinalClassificationData finalClassificationData && finalClassificationData.PacketData is FinalClassificationData2023 packetData2023)
+        {
+            var car = (FinalClassificationCarData2023)packetData2023.FinalClassifications[0];
+
+            Assert.AreEqual((ushort)22, packetData2023.NumberOfCars, "Incorrect number of cars!");
+            Assert.AreEqual((ushort)10, car.Position, "Incorrect finishing position!");
+            Assert.AreEqual((ushort)1, car.LapsCompleted, "Incorrect number of laps completed!");
+            Assert.AreEqual((ushort)0, car.Points, "Incorrect number of points!");
+            Assert.AreEqual((ushort)2, car.PitStops, "Incorrect number of pit stops!");
+            Assert.AreEqual(ResultStatus.Finished, car.ResultStatus, "Incorrect result status!");
+            Assert.AreEqual((ushort)1, car.NumTyreStints, "Incorrect number of tyre stints!");
+            Assert.AreEqual((ushort)255, car.TyreStintsEndLaps[0], "Incorrect tyre stint end lap!");
         }
         else
         {
-            Assert.IsNull(_packetData.PacketHeader, "Invalid F1 2023 packet header or content!");
+            Assert.Fail("Invalid final classification packet, expected F1 2023!");
         }
     }
 

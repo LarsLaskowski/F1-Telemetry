@@ -292,12 +292,38 @@ public class SessionProcessorTests
     }
 
     /// <summary>
+    /// Method to test receiving the correct processor for given packet
+    /// </summary>
+    [TestMethod]
+    public void ReceiveProcessorExpectedSessionProcessor2020()
+    {
+        Assert.IsNotNull(_packetData20.PacketHeader, "Packet header variable is null!");
+
+        var sessionProcessor = TestData.Processor2020.GetProcessor(_packetData20.PacketHeader);
+
+        Assert.IsInstanceOfType<SessionProcessor>(sessionProcessor, "SessionProcessor is expected for the given packet header (2020)!");
+    }
+
+    /// <summary>
     /// Test the expected game version is 2021
     /// </summary>
     [TestMethod]
     public void PacketProcessorExpectedGame2021()
     {
         Assert.AreEqual(2021, TestData.Processor2021.CurrentGame, "Game version is invalid!");
+    }
+
+    /// <summary>
+    /// Method to test receiving the correct processor for given packet
+    /// </summary>
+    [TestMethod]
+    public void ReceiveProcessorExpectedSessionProcessor2021()
+    {
+        Assert.IsNotNull(_packetData21.PacketHeader, "Packet header variable is null!");
+
+        var sessionProcessor = TestData.Processor2021.GetProcessor(_packetData21.PacketHeader);
+
+        Assert.IsInstanceOfType<SessionProcessor>(sessionProcessor, "SessionProcessor is expected for the given packet header (2021)!");
     }
 
     /// <summary>
@@ -310,12 +336,38 @@ public class SessionProcessorTests
     }
 
     /// <summary>
+    /// Method to test receiving the correct processor for given packet
+    /// </summary>
+    [TestMethod]
+    public void ReceiveProcessorExpectedSessionProcessor2022()
+    {
+        Assert.IsNotNull(_packetData22.PacketHeader, "Packet header variable is null!");
+
+        var sessionProcessor = TestData.Processor2022.GetProcessor(_packetData22.PacketHeader);
+
+        Assert.IsInstanceOfType<SessionProcessor>(sessionProcessor, "SessionProcessor is expected for the given packet header (2022)!");
+    }
+
+    /// <summary>
     /// Test the expected game version is 2023
     /// </summary>
     [TestMethod]
     public void PacketProcessorExpectedGame2023()
     {
         Assert.AreEqual(2023, TestData.Processor2023.CurrentGame, "Game version is invalid!");
+    }
+
+    /// <summary>
+    /// Method to test receiving the correct processor for given packet
+    /// </summary>
+    [TestMethod]
+    public void ReceiveProcessorExpectedSessionProcessor2023()
+    {
+        Assert.IsNotNull(_packetData23.PacketHeader, "Packet header variable is null!");
+
+        var sessionProcessor = TestData.Processor2023.GetProcessor(_packetData23.PacketHeader);
+
+        Assert.IsInstanceOfType<SessionProcessor>(sessionProcessor, "SessionProcessor is expected for the given packet header (2023)!");
     }
 
     /// <summary>
@@ -622,6 +674,7 @@ public class SessionProcessorTests
     [DataRow(2023, DisplayName = "ProcessSessionPacket_ExpectedGearBoxAssistChanged2023")]
     [DataRow(2024, DisplayName = "ProcessSessionPacket_ExpectedGearBoxAssistChanged2024")]
     [DataRow(2025, DisplayName = "ProcessSessionPacket_ExpectedGearBoxAssistChanged2025")]
+    [DataRow(2026, DisplayName = "ProcessSessionPacket_ExpectedGearBoxAssistChanged2026")]
     public void ProcessSessionPacketExpectedGearBoxAssistChanged(int gameVersion)
     {
         var packetHeader = GetGameDependentPacketHeader(gameVersion);
@@ -666,6 +719,10 @@ public class SessionProcessorTests
             var dbSessionData = dbFactory.GetRepository<SessionRepository>()?.GetQuery()?.FirstOrDefault(s => s.SessionId == packetHeader.UniqueSessionId);
 
             Assert.IsNotNull(dbSessionData, $"Session database object ({gameVersion}) is null!");
+
+            // Reset the persisted change flag explicitly, because earlier tests sharing the same static session data
+            // (e.g. weather/steering/braking) may already have flipped it as a side effect of their own Process call
+            dbFactory.GetRepository<SessionAttributesRepository>()?.Refresh(s => s.SessionId == dbSessionData.Id, attr => attr.GearBoxAssistChanged = false);
 
             var dbSessionAttrData = dbFactory.GetRepository<SessionAttributesRepository>()?.GetQuery()?.FirstOrDefault(s => s.SessionId == dbSessionData.Id);
 

@@ -128,5 +128,82 @@ public class PacketLapData2026Tests
         }
     }
 
+    /// <summary>
+    /// Check the last lap time of a car that has already completed a lap (2026)
+    /// </summary>
+    [TestMethod]
+    public void PacketLapDataLastLapTime2026ExpectedValue()
+    {
+        var lapData = _packetAnalyzer.GetLapData(_packetData.PacketHeader!, _packetContent);
+
+        if (lapData is LapData lapInfo && lapInfo.PacketData is ILapDataComplete data && data.LapData is ILapData2026[] cars && cars[17] is ILapData2023 car17)
+        {
+            Assert.AreEqual(89963u, car17.LastLapTime, "Last lap time is wrong!");
+        }
+        else
+        {
+            Assert.Fail("Invalid lap format, expected F1 2026!");
+        }
+    }
+
+    /// <summary>
+    /// Check the current lap time and sector times of a car still on track (2026)
+    /// </summary>
+    [TestMethod]
+    public void PacketLapDataCurrentLapAndSectorTimes2026ExpectedValues()
+    {
+        var lapData = _packetAnalyzer.GetLapData(_packetData.PacketHeader!, _packetContent);
+
+        if (lapData is LapData lapInfo && lapInfo.PacketData is ILapDataComplete data && data.LapData is ILapData2026[] cars && cars[9] is ILapData2023 car9)
+        {
+            Assert.AreEqual(80414u, car9.CurrentLapTime, "Current lap time is wrong!");
+            Assert.AreEqual((ushort)31686, car9.Sector1Time, "Sector 1 time is wrong!");
+            Assert.AreEqual((ushort)19056, car9.Sector2Time, "Sector 2 time is wrong!");
+        }
+        else
+        {
+            Assert.Fail("Invalid lap format, expected F1 2026!");
+        }
+    }
+
+    /// <summary>
+    /// Check the delta to the race leader of a car running behind (2026)
+    /// </summary>
+    [TestMethod]
+    public void PacketLapDataDeltaToRaceLeader2026ExpectedValue()
+    {
+        var lapData = _packetAnalyzer.GetLapData(_packetData.PacketHeader!, _packetContent);
+
+        if (lapData is LapData lapInfo && lapInfo.PacketData is ILapDataComplete data && data.LapData is ILapData2026[] cars && cars[19] is ILapData2023 car19 && cars[19] is ILapData2024 car19Minutes)
+        {
+            Assert.AreEqual((ushort)41605, car19.DeltaToRaceLeader, "Delta to race leader (milliseconds part) is wrong!");
+            Assert.AreEqual((ushort)2, car19Minutes.DeltaToRaceLeaderMinutes, "Delta to race leader (minutes part) is wrong!");
+        }
+        else
+        {
+            Assert.Fail("Invalid lap format, expected F1 2026!");
+        }
+    }
+
+    /// <summary>
+    /// Check the warning counters and current lap number of a car (2026)
+    /// </summary>
+    [TestMethod]
+    public void PacketLapDataWarningsAndLapNumber2026ExpectedValues()
+    {
+        var lapData = _packetAnalyzer.GetLapData(_packetData.PacketHeader!, _packetContent);
+
+        if (lapData is LapData lapInfo && lapInfo.PacketData is ILapDataComplete data && data.LapData is ILapData2026[] cars && cars[9] is ILapData2023 car9)
+        {
+            Assert.AreEqual((ushort)0, car9.Warnings, "Warnings count is wrong!");
+            Assert.AreEqual((ushort)0, car9.CornerCuttingWarnings, "Corner cutting warnings count is wrong!");
+            Assert.AreEqual((ushort)1, cars[9].CurrentLapNumber, "Current lap number is wrong!");
+        }
+        else
+        {
+            Assert.Fail("Invalid lap format, expected F1 2026!");
+        }
+    }
+
     #endregion // Methods F1 2026
 }

@@ -489,7 +489,8 @@ public sealed class TelemetryClient : ITelemetryClient, IDisposable
 
         Volatile.Write(ref _lastPacketReceivedTicks, DateTime.UtcNow.Ticks);
 
-        if (_statisticsTimerRunning == false)
+        if (_statisticsTimerRunning == false
+            && _statisticsTimer != null)
         {
             _statisticsTimerRunning = true;
 

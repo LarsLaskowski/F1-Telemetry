@@ -409,3 +409,6 @@ FodyWeavers.xsd
 /F1PacketTester/Properties/launchSettings.json
 /F1SessionFolderRename/Properties/launchSettings.json
 /F1ReplayClient/Properties/launchSettings.json
+
+# Claude Code agent worktrees (local scratch state)
+/.claude/worktrees/
