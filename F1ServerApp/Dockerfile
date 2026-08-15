@@ -1,6 +1,6 @@
 ARG BASE_SDK="node:26-alpine"
 ARG BASE_NGINX="nginx:1-alpine"
-ARG BASE_NGINX_DIGEST=
+ARG BASE_NGINX_DIGEST
 
 FROM ${BASE_SDK} AS build
 WORKDIR /app
