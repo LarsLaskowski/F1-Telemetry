@@ -1,11 +1,11 @@
-<div style="clear: both; margin: 20px">
+<div class="session-header">
   @if (session) {
-    <h2 style="float: left">{{session.gameVersion}} - {{ session.formulaType }} - {{ session.track }} - {{ session.sessionType }}</h2>
+    <h2 class="session-header-float">{{session.gameVersion}} - {{ session.formulaType }} - {{ session.track }} - {{ session.sessionType }}</h2>
   }
-  <h4 style="float: left">Session id: {{session.sessionId}}</h4>
+  <h4 class="session-header-float">Session id: {{session.sessionId}}</h4>
 </div>
 <mat-dialog-content>
-  <table mat-table [dataSource]="dataSource" style="margin: 10px">
+  <table mat-table [dataSource]="dataSource" class="session-table">
 
     <!-- Position -->
     <ng-container matColumnDef="position">

@@ -1,4 +1,4 @@
-<div style="margin-top: 10px; display: flex; width: 90%; align-items: center; flex-wrap: nowrap; margin-left: 5px; margin-right: 5px; justify-content: center">
+<div class="selector-row">
   <mat-form-field>
     <mat-label>Select game version</mat-label>
     <mat-select [(value)]="selectedGame" (selectionChange)="onGameChanged($event)">
@@ -12,7 +12,7 @@
     </mat-select>
   </mat-form-field>
 
-  <mat-form-field style="margin-left: 30px">
+  <mat-form-field class="career-mode-field">
     <mat-label>Select carreer mode</mat-label>
     <mat-select [(value)]="careerMode" (selectionChange)="onCareerModeChanged($event)">
       <mat-option [value]="-1">None</mat-option>
@@ -24,7 +24,7 @@
 </div>
 
 @if (selectedGame) {
-  <div style="height: -webkit-fill-available">
+  <div class="tracks-container">
     @for (gameTrack of gameTracks; track gameTrack; let i = $index)
       {
       <div>
@@ -37,16 +37,16 @@
 }
 
 @if (!selectedGame) {
-  <div style="height: -webkit-fill-available">
+  <div class="tracks-container">
   </div>
 }
 
-<div style="margin: 20px; position: center">
-  <div style="display: flex; justify-content: center;">
+<div class="create-button-container">
+  <div class="create-button-row">
     <button mat-flat-button [hidden]="isCreating" mat-fab extended disabled [disabled]="!isCreateable" aria-label="Create championship" (click)="createChampionship()">
       <mat-icon>add_circle</mat-icon>
       Create championship
     </button>
   </div>
-  <mat-spinner [hidden]="!isCreating" diameter="52" strokeWidth="2" style="top: 14px; right: 0; margin-left: 20px; display: inline-flex" />
+  <mat-spinner [hidden]="!isCreating" diameter="52" strokeWidth="2" class="create-spinner" />
 </div>

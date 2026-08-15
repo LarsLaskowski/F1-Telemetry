@@ -1,10 +1,4 @@
-@if (!lastSession) {
-  <p><em>Loading...</em></p>
-}
-
-@if (lastSession) {
-  <h2>{{lastSession.gameVersion}} - {{ lastSession.formulaType }} - {{ lastSession.track }} - {{ lastSession.sessionType }}</h2>
-}
+<h2>{{lastSession.gameVersion}} - {{ lastSession.formulaType }} - {{ lastSession.track }} - {{ lastSession.sessionType }}</h2>
 <h5>AI Difficulty: {{ lastSession.aiDifficulty}}</h5>
 <!--<h6 *ngIf="lastSession">Fastest lap: {{ lastSession.fastestLap }} - driver: {{ lastSession.fastestLapDriver }}</h6>-->
 

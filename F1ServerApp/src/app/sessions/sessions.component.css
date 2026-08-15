@@ -2,6 +2,48 @@ session-table {
   width: 100%;
 }
 
+.loading-spinner, .laps-icon {
+  display: block;
+}
+
+.loading-spinner {
+  margin: 2rem auto;
+}
+
+.fastestlap-header {
+  padding-left: 30px;
+}
+
+.fastestlap-cell {
+  clear: both;
+  display: flex;
+}
+
+.fastestlap-toggle-button {
+  margin-right: 2px;
+}
+
+.fastestlap-text {
+  align-self: center;
+}
+
+.fastestlap-spinner {
+  margin-top: 13px;
+  margin-left: 15px;
+}
+
+.cell-spinner {
+  margin-top: 12px;
+}
+
+.icon-symbol {
+  font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+}
+
+.icon-symbol-fill {
+  font-variation-settings: 'FILL' 1, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+}
+
 .mat-mdc-form-field {
   font-size: 14px;
   width: 100%;

@@ -1,3 +1,16 @@
+.session-header {
+  clear: both;
+  margin: 20px;
+}
+
+.session-header-float {
+  float: left;
+}
+
+.session-table {
+  margin: 10px;
+}
+
 .fastestTime {
    color: rebeccapurple;
    font-weight: bold;

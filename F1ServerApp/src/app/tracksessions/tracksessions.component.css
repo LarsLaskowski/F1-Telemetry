@@ -1,15 +1,3 @@
-a {
-  color: #0366d6;
-}
-
-code {
-  color: #e01a76;
-}
-
-p {
-  vertical-align: middle;
-}
-
 .td-position {
   vertical-align: middle;
 }
@@ -34,15 +22,6 @@ p {
   color: black;
   font-weight: normal;
   vertical-align: middle;
-}
-
-html, body {
-  height: 100%;
-}
-
-body {
-  margin: 0;
-  font-family: Roboto, "Helvetica Neue", sans-serif;
 }
 
 .session-td {

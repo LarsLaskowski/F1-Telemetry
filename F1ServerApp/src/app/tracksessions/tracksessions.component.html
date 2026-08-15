@@ -1,9 +1,5 @@
 <h1 id="tableLabel">Sessions of track {{ trackName }}</h1>
 
-@if (!sessions) {
-  <p><em>Loading...</em></p>
-}
-
 <h4><a class="nav-link text-dark" [routerLink]="['/tracks']">Back</a></h4>
 
 @if (sessions) {
