@@ -446,7 +446,7 @@
                   <ColumnDefinition Width="*" SharedSizeGroup="colTypesValue"/>
                </Grid.ColumnDefinitions>
                <TextBlock Grid.Column="0"
-              Text="TimeTrial:">
+                          Text="TimeTrial:">
                   <TextBlock.Style>
                      <Style TargetType="{x:Type TextBlock}">
                         <Setter Property="FontWeight" Value="Normal"/>
@@ -459,8 +459,8 @@
                   </TextBlock.Style>
                </TextBlock>
                <TextBlock Grid.Column="1"
-              Margin="10,0,0,0"
-              Text="{Binding Path=PacketViewTypes.TimeTrial, TargetNullValue=0, UpdateSourceTrigger=PropertyChanged}"/>
+                          Margin="10,0,0,0"
+                          Text="{Binding Path=PacketViewTypes.TimeTrial, TargetNullValue=0, UpdateSourceTrigger=PropertyChanged}"/>
             </Grid>
 
             <!-- Row 2 -->
