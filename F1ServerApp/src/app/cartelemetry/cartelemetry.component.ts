@@ -10,6 +10,15 @@ import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { MatButton } from '@angular/material/button';
 import { LoggerService } from '../services/logger.service';
 import { NotificationService } from '../services/notification.service';
+import { ChartInteractionEvent } from '../data/chartinteractionevent';
+
+/**
+ * Dialog data passed to {@link CarTelemetryComponent} via MAT_DIALOG_DATA.
+ */
+export interface CarTelemetryDialogData
+{
+  sessionId: number;
+}
 
 @Component(
 {
@@ -68,7 +77,7 @@ export class CarTelemetryComponent
     };
 
   // Constructor
-  constructor(@Inject(MAT_DIALOG_DATA) public data: any, public http: HttpClient, @Inject('BASE_URL') public baseUrl: string, private readonly changeDetector: ChangeDetectorRef, private readonly logger: LoggerService, private readonly notificationService: NotificationService)
+  constructor(@Inject(MAT_DIALOG_DATA) public data: CarTelemetryDialogData, public http: HttpClient, @Inject('BASE_URL') public baseUrl: string, private readonly changeDetector: ChangeDetectorRef, private readonly logger: LoggerService, private readonly notificationService: NotificationService)
   {
     Chart.defaults.font.size = 15;
 
@@ -226,37 +235,37 @@ export class CarTelemetryComponent
   }
 
   // Chart is clicked
-  public chartSpeedClicked(e: any): void
+  public chartSpeedClicked(e: ChartInteractionEvent): void
   {
     this.logger.log(e);
   }
 
   // Chart is hovered
-  public chartSpeedHovered(e: any): void
+  public chartSpeedHovered(e: ChartInteractionEvent): void
   {
     this.logger.log(e);
   }
 
   // Chart is clicked
-  public chartThrottleClicked(e: any): void
+  public chartThrottleClicked(e: ChartInteractionEvent): void
   {
     this.logger.log(e);
   }
 
   // Chart is hovered
-  public chartThrottleHovered(e: any): void
+  public chartThrottleHovered(e: ChartInteractionEvent): void
   {
     this.logger.log(e);
   }
 
   // Chart is clicked
-  public chartBrakeClicked(e: any): void
+  public chartBrakeClicked(e: ChartInteractionEvent): void
   {
     this.logger.log(e);
   }
 
   // Chart is hovered
-  public chartBrakeHovered(e: any): void
+  public chartBrakeHovered(e: ChartInteractionEvent): void
   {
     this.logger.log(e);
   }

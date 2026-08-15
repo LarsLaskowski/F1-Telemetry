@@ -9,10 +9,11 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatIcon } from '@angular/material/icon';
 import { MatCheckbox } from '@angular/material/checkbox';
 import { MatOption } from '@angular/material/core';
-import { MatFormField, MatLabel, MatSelect } from '@angular/material/select';
+import { MatFormField, MatLabel, MatSelect, MatSelectChange } from '@angular/material/select';
 import { MatButton } from '@angular/material/button';
 import { getTrackOrderForYear, parseGameVersionYear } from '../data/track-order';
 import { NotificationService } from '../services/notification.service';
+import { LoggerService } from '../services/logger.service';
 
 @Component(
   {
@@ -32,7 +33,7 @@ export class CreateChampionshipComponent
   isCreated: boolean = false;
   isCreateable: boolean = false;
 
-  constructor(public http: HttpClient, @Inject('BASE_URL') public serviceUrl: string, @Inject(MAT_DIALOG_DATA) public data: any, public dialogRef: MatDialogRef<CreateChampionshipComponent>, private readonly changeDetector: ChangeDetectorRef, private readonly notificationService: NotificationService)
+  constructor(public http: HttpClient, @Inject('BASE_URL') public serviceUrl: string, @Inject(MAT_DIALOG_DATA) public data: unknown, public dialogRef: MatDialogRef<CreateChampionshipComponent>, private readonly changeDetector: ChangeDetectorRef, private readonly notificationService: NotificationService, private readonly logger: LoggerService)
   {
     this.loadGames();
 
@@ -84,7 +85,7 @@ export class CreateChampionshipComponent
       {
         next: (result) =>
         {
-          console.log("Games found: " + result.length)
+          this.logger.log("Games found: " + result.length)
 
           result.forEach((gameData) =>
           {
@@ -102,14 +103,14 @@ export class CreateChampionshipComponent
     }
   }
 
-  onGameChanged(event: any)
+  onGameChanged(event: MatSelectChange)
   {
     this.adjustTracks();
 
     this.checkIsCreateable();
   }
 
-  onCareerModeChanged(event: any)
+  onCareerModeChanged(event: MatSelectChange)
   {
     this.checkIsCreateable();
   }
@@ -120,13 +121,13 @@ export class CreateChampionshipComponent
     {
       let track = this.tracks.get(idx);
 
-      console.log("selected track index: " + idx);
+      this.logger.log("selected track index: " + idx);
 
       if (track != undefined)
       {
         track.selected = checked;
 
-        console.log("selected track: " + track.name);
+        this.logger.log("selected track: " + track.name);
       }
 
       this.checkIsCreateable();

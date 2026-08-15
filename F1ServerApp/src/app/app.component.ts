@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, OnInit } from '@angular/core';
 
 import { SignalrService } from './services/signalr.service';
 import { NavMenuComponent } from './nav-menu/nav-menu.component';
@@ -12,13 +12,11 @@ import { RouterOutlet } from '@angular/router';
   templateUrl: './app.component.html'
 })
 
-export class AppComponent
+export class AppComponent implements OnInit
 {
-  private url!: string;
+  private readonly url: string;
 
-  title = 'app';
-
-  constructor(public signalRService: SignalrService, private http: HttpClient, @Inject('BASE_URL') baseUrl: string)
+  constructor(public signalRService: SignalrService, private readonly http: HttpClient, @Inject('BASE_URL') baseUrl: string)
   {
     this.url = baseUrl;
   }
@@ -32,6 +30,6 @@ export class AppComponent
 
   private startHttpRequest()
   {
-    this.http.get(this.url + 'api/livesession').subscribe();
+    this.http.get(this.url + 'api/livesession').subscribe({ error: (err) => console.error(err) });
   }
 }

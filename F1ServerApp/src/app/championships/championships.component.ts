@@ -15,6 +15,7 @@ import { ChampionshipTrackViewData } from '../data/championshiptrackviewdata'
 import { ActivatedRoute } from '@angular/router';
 import { getTrackOrderForYear } from '../data/track-order';
 import { NotificationService } from '../services/notification.service';
+import { LoggerService } from '../services/logger.service';
 
 @Component(
 {
@@ -37,7 +38,7 @@ export class ChampionshipsComponent
   displayedColumns: string[] = this.csColumns.slice();
   dataSource = new MatTableDataSource();
 
-  constructor(http: HttpClient, @Inject('BASE_URL') baseUrl: string, public dialog: MatDialog, private readonly route: ActivatedRoute, private readonly changeDetector: ChangeDetectorRef, private readonly notificationService: NotificationService)
+  constructor(http: HttpClient, @Inject('BASE_URL') baseUrl: string, public dialog: MatDialog, private readonly route: ActivatedRoute, private readonly changeDetector: ChangeDetectorRef, private readonly notificationService: NotificationService, private readonly logger: LoggerService)
   {
     this.http = http;
     this.serviceUrl = baseUrl;
@@ -106,7 +107,7 @@ export class ChampionshipsComponent
     {
       this.selectedChampionship.loadTracks().then(() =>
       {
-        console.info("Tracks loaded finished!");
+        this.logger.info("Tracks loaded finished!");
 
         if (this.selectedChampionship?.tracks != undefined)
         {

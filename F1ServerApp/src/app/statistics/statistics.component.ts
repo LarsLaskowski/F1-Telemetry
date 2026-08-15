@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, Inject } from '@angular/core';
+import { ChangeDetectorRef, Component, Inject, OnDestroy, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 
 import { StatisticsViewApiData } from '../data/statisticsviewdata_api';
@@ -11,7 +11,7 @@ import { Subscription, timer } from 'rxjs';
   templateUrl: './statistics.component.html',
   styleUrls: ['./statistics.component.css']
 })
-export class StatisticsComponent {
+export class StatisticsComponent implements OnInit, OnDestroy {
   public stats: StatisticsViewApiData | undefined;
   private updateSubscription!: Subscription;
   private readonly http!: HttpClient;

@@ -9,6 +9,7 @@ import { BaseChartDirective } from 'ng2-charts';
 import { lastValueFrom, Observable, Subscription, throwError, timer } from 'rxjs';
 import { Router } from '@angular/router';
 import { LoggerService } from '../services/logger.service';
+import { ChartInteractionEvent } from '../data/chartinteractionevent';
 
 @Component(
 {
@@ -219,13 +220,13 @@ export class HomeComponent implements OnInit, OnDestroy
   }
 
   // Chart is clicked
-  public chartClicked(e: any): void
+  public chartClicked(e: ChartInteractionEvent): void
   {
     this.logger.log(e);
   }
 
   // Chart is hovered
-  public chartHovered(e: any): void
+  public chartHovered(e: ChartInteractionEvent): void
   {
     this.logger.log(e);
   }

@@ -34,7 +34,7 @@ export class ChampionshipViewData
     }
   }
 
-  loadTracks(): Promise<any>
+  loadTracks(): Promise<void>
   {
     return new Promise((resolve) =>
     {
@@ -49,22 +49,22 @@ export class ChampionshipViewData
             this.isTracksLoaded = true;
             this.isLoadingTracks = false;
 
-            resolve("tracks loaded!")
+            resolve();
           });
         }
         else
         {
-          resolve("no data!");
+          resolve();
         }
       }
       else
       {
-        resolve("tracks already loaded");
+        resolve();
       }
     });
   }
 
-  private loadTracksInternal(tracks: ChampionshipTrackViewApiData[]): Promise<any>
+  private loadTracksInternal(tracks: ChampionshipTrackViewApiData[]): Promise<void>
   {
     this.tracks = [];
 
@@ -107,7 +107,7 @@ export class ChampionshipViewData
 
               if (tracksLoaded == countTracks)
               {
-                resolve("all tracks loaded!");
+                resolve();
               }
             },
             error: (err) => { console.error(err); }
@@ -115,7 +115,7 @@ export class ChampionshipViewData
         }
         else
         {
-          resolve("no http client!");
+          resolve();
         }
       });
     });
