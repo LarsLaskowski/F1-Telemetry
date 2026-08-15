@@ -1,4 +1,4 @@
-﻿using F1Server.Core;
+using F1Server.Core;
 using F1Server.Core.Data;
 using F1Server.Core.Enumerations;
 using F1Server.Core.PacketData;
@@ -82,22 +82,9 @@ public class PacketLapData2025Tests
     [TestMethod]
     public void PacketLapDataCheckLapData2025IsLapDataObject()
     {
-        if (_packetData.PacketHeader != null)
-        {
-            var isCorrect = false;
-            var lapData = _packetAnalyzer.GetLapData(_packetData.PacketHeader, File.ReadAllBytes(@"SampleData/F1-2025-LapData.packet"));
+        var cars = GetLapDataCars();
 
-            if (lapData is LapData data && data.PacketData is ILapDataComplete dataComplete)
-            {
-                isCorrect = dataComplete.LapData is ILapData2025[];
-            }
-
-            Assert.IsTrue(isCorrect, "Packet is not a lap data packet");
-        }
-        else
-        {
-            Assert.IsNull(_packetData.PacketHeader, "Invalid F1 2025 packet header!");
-        }
+        Assert.IsNotNull(cars, "Packet is not a lap data packet!");
     }
 
     /// <summary>
@@ -106,26 +93,85 @@ public class PacketLapData2025Tests
     [TestMethod]
     public void PacketLapDataCarsOnLap2025Expected3()
     {
-        if (_packetData.PacketHeader != null)
-        {
-            var lapData = _packetAnalyzer.GetLapData(_packetData.PacketHeader, File.ReadAllBytes(@"SampleData/F1-2025-LapData.packet"));
+        var cars = GetLapDataCars();
 
-            if (lapData is LapData lapInfo && lapInfo.PacketData is ILapDataComplete data && data.LapData is ILapData2025[])
-            {
-                var cars = data.LapData.Count(l => l.IsEmpty == false);
+        Assert.AreEqual(3, cars.Count(l => l.IsEmpty == false), "Number of cars is wrong!");
+    }
 
-                Assert.AreEqual(3, cars, "Number of cars is wrong!");
-            }
-            else
-            {
-                Assert.Fail("Invalid lap format, expected F1 2025!");
-            }
-        }
-        else
-        {
-            Assert.IsNull(_packetData.PacketHeader, "Invalid F1 2025 packet header!");
-        }
+    /// <summary>
+    /// Check the last lap time of a car with a completed lap (2025)
+    /// </summary>
+    [TestMethod]
+    public void PacketLapDataLastLapTime2025ExpectedValue()
+    {
+        var car = (ILapData2023)GetLapDataCars()[17];
+
+        Assert.AreEqual(89963U, car.LastLapTime, "Incorrect last lap time!");
+    }
+
+    /// <summary>
+    /// Check sector 1 and sector 2 time of the current lap (2025)
+    /// </summary>
+    [TestMethod]
+    public void PacketLapDataSectorTimes2025ExpectedValue()
+    {
+        var car = (ILapData2023)GetLapDataCars()[9];
+
+        Assert.AreEqual((ushort)31686, car.Sector1Time, "Incorrect sector 1 time!");
+        Assert.AreEqual((ushort)19056, car.Sector2Time, "Incorrect sector 2 time!");
+    }
+
+    /// <summary>
+    /// Check delta to race leader including the whole minute part (2025)
+    /// </summary>
+    [TestMethod]
+    public void PacketLapDataDeltaToRaceLeader2025ExpectedValue()
+    {
+        var car = GetLapDataCars()[19];
+        var car23 = (ILapData2023)car;
+
+        Assert.AreEqual((ushort)41605, car23.DeltaToRaceLeader, "Incorrect delta to race leader!");
+        Assert.AreEqual((ushort)2, car.DeltaToRaceLeaderMinutes, "Incorrect delta to race leader whole minute part!");
+    }
+
+    /// <summary>
+    /// Check accumulated warnings of a car without infringements (2025)
+    /// </summary>
+    [TestMethod]
+    public void PacketLapDataWarnings2025ExpectedZero()
+    {
+        var car = (ILapData2023)GetLapDataCars()[9];
+
+        Assert.AreEqual((ushort)0, car.Warnings, "Incorrect warnings!");
+        Assert.AreEqual((ushort)0, car.CornerCuttingWarnings, "Incorrect corner cutting warnings!");
     }
 
     #endregion // Methods F1 2025
+
+    #region Private methods
+
+    /// <summary>
+    /// Reads the lap data cars of the sample packet
+    /// </summary>
+    /// <returns>Lap data cars of the sample packet</returns>
+    private static ILapData2025[] GetLapDataCars()
+    {
+        Assert.IsNotNull(_packetData.PacketHeader, "Missing packet header!");
+
+        var lapData = _packetAnalyzer.GetLapData(_packetData.PacketHeader, File.ReadAllBytes(@"SampleData/F1-2025-LapData.packet"));
+
+        Assert.IsInstanceOfType<LapData>(lapData, "Packet is not a lap data packet!");
+
+        var dataComplete = ((LapData)lapData).PacketData;
+
+        Assert.IsInstanceOfType<ILapDataComplete>(dataComplete, "Packet is not a lap data packet!");
+
+        var cars = ((ILapDataComplete)dataComplete).LapData;
+
+        Assert.IsInstanceOfType<ILapData2025[]>(cars, "Packet is not a F1 2025 lap data packet!");
+
+        return (ILapData2025[])cars;
+    }
+
+    #endregion // Private methods
 }

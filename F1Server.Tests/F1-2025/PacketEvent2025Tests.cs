@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 
 using F1Server.Core;
 using F1Server.Core.Data;
@@ -94,6 +94,38 @@ public class PacketEvent2025Tests
         return data;
     }
 
+    /// <summary>
+    /// Reads the event data for the given source packet and raw payload
+    /// </summary>
+    /// <param name="source">Received sample packet supplying the header</param>
+    /// <param name="rawData">Raw packet bytes to analyze</param>
+    /// <returns>Event data of the packet</returns>
+    private static EventData GetEventData(ReceivedPacketData source, byte[] rawData)
+    {
+        Assert.IsNotNull(source.PacketHeader, "Invalid F1 2025 packet header!");
+
+        var packetData = _packetAnalyzer.GetEventData(source.PacketHeader, rawData);
+
+        Assert.IsInstanceOfType<EventData>(packetData, "Invalid packet data, expected F1 2025!");
+
+        return (EventData)packetData;
+    }
+
+    /// <summary>
+    /// Reads the F1 2025 event details for the given source packet and raw payload
+    /// </summary>
+    /// <param name="source">Received sample packet supplying the header</param>
+    /// <param name="rawData">Raw packet bytes to analyze</param>
+    /// <returns>Event details of the packet</returns>
+    private static IEventDataDetails2025 GetEventDetails(ReceivedPacketData source, byte[] rawData)
+    {
+        var eventData = GetEventData(source, rawData);
+
+        Assert.IsInstanceOfType<IEventDataDetails2025>(eventData.PacketData?.EventDetails, "Invalid packet data, expected F1 2025!");
+
+        return (IEventDataDetails2025)eventData.PacketData.EventDetails;
+    }
+
     #endregion // Static methods
 
     #region Methods
@@ -126,22 +158,9 @@ public class PacketEvent2025Tests
     [TestMethod]
     public void PacketEvent2025CheckEventDataIsEventDataObject()
     {
-        if (_packetDataPenalty.PacketHeader != null)
-        {
-            var isCorrect = false;
-            var eventData = _packetAnalyzer.GetEventData(_packetDataPenalty.PacketHeader, File.ReadAllBytes(@"SampleData/F1-2025-Event-Penalty.packet"));
+        var eventData = GetEventData(_packetDataPenalty, File.ReadAllBytes(@"SampleData/F1-2025-Event-Penalty.packet"));
 
-            if (eventData is EventData data && data.PacketData is EventData2025)
-            {
-                isCorrect = true;
-            }
-
-            Assert.IsTrue(isCorrect, "Packet is not a event data packet");
-        }
-        else
-        {
-            Assert.IsNull(_packetDataPenalty.PacketHeader, "Invalid F1 2025 packet header!");
-        }
+        Assert.IsInstanceOfType<EventData2025>(eventData.PacketData, "Packet is not a event data packet");
     }
 
     /// <summary>
@@ -150,23 +169,9 @@ public class PacketEvent2025Tests
     [TestMethod]
     public void PacketEvent2025IsTopSpeedPacketExpectedTrue()
     {
-        if (_packetDataTopSpeed.PacketHeader != null)
-        {
-            var packetData = _packetAnalyzer.GetEventData(_packetDataTopSpeed.PacketHeader, File.ReadAllBytes(@"SampleData/F1-2025-Event-TopSpeed.packet"));
+        var eventData = GetEventData(_packetDataTopSpeed, File.ReadAllBytes(@"SampleData/F1-2025-Event-TopSpeed.packet"));
 
-            if (packetData is EventData eventData)
-            {
-                Assert.IsTrue(eventData.EventCode.Equals("SPTP"), "No top speed event packet!");
-            }
-            else
-            {
-                Assert.Fail("Invalid packet data, expected F1 2025!");
-            }
-        }
-        else
-        {
-            Assert.IsNull(_packetDataTopSpeed.PacketHeader, "Invalid F1 2025 packet header!");
-        }
+        Assert.IsTrue(eventData.EventCode.Equals("SPTP"), "No top speed event packet!");
     }
 
     /// <summary>
@@ -175,23 +180,9 @@ public class PacketEvent2025Tests
     [TestMethod]
     public void PacketEvent2025IsTopSpeedExpectedValue()
     {
-        if (_packetDataTopSpeed.PacketHeader != null)
-        {
-            var packetData = _packetAnalyzer.GetEventData(_packetDataTopSpeed.PacketHeader, File.ReadAllBytes(@"SampleData/F1-2025-Event-TopSpeed.packet"));
+        var eventDetails = GetEventDetails(_packetDataTopSpeed, File.ReadAllBytes(@"SampleData/F1-2025-Event-TopSpeed.packet"));
 
-            if (packetData is EventData eventData && eventData.PacketData?.EventDetails is IEventDataDetails2025 eventDetails)
-            {
-                Assert.AreEqual(307.768463F, eventDetails.TopSpeed, "Incorrect top speed value!");
-            }
-            else
-            {
-                Assert.Fail("Invalid packet data, expected F1 2025!");
-            }
-        }
-        else
-        {
-            Assert.IsNull(_packetDataTopSpeed.PacketHeader, "Invalid F1 2025 packet header!");
-        }
+        Assert.AreEqual(307.768463F, eventDetails.TopSpeed, 0.0001F, "Incorrect top speed value!");
     }
 
     /// <summary>
@@ -200,23 +191,9 @@ public class PacketEvent2025Tests
     [TestMethod]
     public void PacketEvent2025IsTopSpeedVehicleExpectedTwenty()
     {
-        if (_packetDataTopSpeed.PacketHeader != null)
-        {
-            var packetData = _packetAnalyzer.GetEventData(_packetDataTopSpeed.PacketHeader, File.ReadAllBytes(@"SampleData/F1-2025-Event-TopSpeed.packet"));
+        var eventDetails = GetEventDetails(_packetDataTopSpeed, File.ReadAllBytes(@"SampleData/F1-2025-Event-TopSpeed.packet"));
 
-            if (packetData is EventData eventData && eventData.PacketData?.EventDetails is IEventDataDetails2025 eventDetails)
-            {
-                Assert.AreEqual(20, eventDetails.VehicleIndex, "Incorrect vehicle value!");
-            }
-            else
-            {
-                Assert.Fail("Invalid packet data, expected F1 2025!");
-            }
-        }
-        else
-        {
-            Assert.IsNull(_packetDataTopSpeed.PacketHeader, "Invalid F1 2025 packet header!");
-        }
+        Assert.AreEqual(20, eventDetails.VehicleIndex, "Incorrect vehicle value!");
     }
 
     /// <summary>
@@ -225,23 +202,9 @@ public class PacketEvent2025Tests
     [TestMethod]
     public void PacketEvent2025IsFlashbackPacketExpectedTrue()
     {
-        if (_packetDataFlashback.PacketHeader != null)
-        {
-            var packetData = _packetAnalyzer.GetEventData(_packetDataFlashback.PacketHeader, File.ReadAllBytes(@"SampleData/F1-2025-Event-Flashback.packet"));
+        var eventData = GetEventData(_packetDataFlashback, File.ReadAllBytes(@"SampleData/F1-2025-Event-Flashback.packet"));
 
-            if (packetData is EventData eventData)
-            {
-                Assert.IsTrue(eventData.EventCode.Equals("FLBK"), "No flashback event packet!");
-            }
-            else
-            {
-                Assert.Fail("Invalid packet data, expected F1 2025!");
-            }
-        }
-        else
-        {
-            Assert.IsNull(_packetDataFlashback.PacketHeader, "Invalid F1 2025 packet header!");
-        }
+        Assert.IsTrue(eventData.EventCode.Equals("FLBK"), "No flashback event packet!");
     }
 
     /// <summary>
@@ -250,23 +213,9 @@ public class PacketEvent2025Tests
     [TestMethod]
     public void PacketEvent2025IsFlashbackExpectedValue()
     {
-        if (_packetDataFlashback.PacketHeader != null)
-        {
-            var packetData = _packetAnalyzer.GetEventData(_packetDataFlashback.PacketHeader, File.ReadAllBytes(@"SampleData/F1-2025-Event-Flashback.packet"));
+        var eventDetails = GetEventDetails(_packetDataFlashback, File.ReadAllBytes(@"SampleData/F1-2025-Event-Flashback.packet"));
 
-            if (packetData is EventData eventData && eventData.PacketData?.EventDetails is IEventDataDetails2025 eventDetails)
-            {
-                Assert.AreEqual(1280U, eventDetails.FlashbackFrame, "Incorrect flashback value!");
-            }
-            else
-            {
-                Assert.Fail("Invalid packet data, expected F1 2025!");
-            }
-        }
-        else
-        {
-            Assert.IsNull(_packetDataFlashback.PacketHeader, "Invalid F1 2025 packet header!");
-        }
+        Assert.AreEqual(1280U, eventDetails.FlashbackFrame, "Incorrect flashback value!");
     }
 
     /// <summary>
@@ -275,23 +224,9 @@ public class PacketEvent2025Tests
     [TestMethod]
     public void PacketEvent2025IsPenaltyPacketExpectedTrue()
     {
-        if (_packetDataPenalty.PacketHeader != null)
-        {
-            var packetData = _packetAnalyzer.GetEventData(_packetDataPenalty.PacketHeader, File.ReadAllBytes(@"SampleData/F1-2025-Event-Penalty.packet"));
+        var eventData = GetEventData(_packetDataPenalty, File.ReadAllBytes(@"SampleData/F1-2025-Event-Penalty.packet"));
 
-            if (packetData is EventData eventData)
-            {
-                Assert.IsTrue(eventData.EventCode.Equals("PENA"), "No penalty event packet!");
-            }
-            else
-            {
-                Assert.Fail("Invalid packet data, expected F1 2025!");
-            }
-        }
-        else
-        {
-            Assert.IsNull(_packetDataPenalty.PacketHeader, "Invalid F1 2025 packet header!");
-        }
+        Assert.IsTrue(eventData.EventCode.Equals("PENA"), "No penalty event packet!");
     }
 
     /// <summary>
@@ -300,23 +235,9 @@ public class PacketEvent2025Tests
     [TestMethod]
     public void PacketEvent2025IsPenaltyTypeExpectedValue()
     {
-        if (_packetDataPenalty.PacketHeader != null)
-        {
-            var packetData = _packetAnalyzer.GetEventData(_packetDataPenalty.PacketHeader, File.ReadAllBytes(@"SampleData/F1-2025-Event-Penalty.packet"));
+        var eventDetails = GetEventDetails(_packetDataPenalty, File.ReadAllBytes(@"SampleData/F1-2025-Event-Penalty.packet"));
 
-            if (packetData is EventData eventData && eventData.PacketData?.EventDetails is IEventDataDetails2025 eventDetails)
-            {
-                Assert.AreEqual(PenaltyType.Warning, eventDetails.PenaltyType, "Incorrect penalty type value!");
-            }
-            else
-            {
-                Assert.Fail("Invalid packet data, expected F1 2025!");
-            }
-        }
-        else
-        {
-            Assert.IsNull(_packetDataPenalty.PacketHeader, "Invalid F1 2025 packet header!");
-        }
+        Assert.AreEqual(PenaltyType.Warning, eventDetails.PenaltyType, "Incorrect penalty type value!");
     }
 
     /// <summary>
@@ -325,23 +246,9 @@ public class PacketEvent2025Tests
     [TestMethod]
     public void PacketEvent2025IsPenaltyInfringementTypeExpectedLapInvalidRunningWide()
     {
-        if (_packetDataPenalty.PacketHeader != null)
-        {
-            var packetData = _packetAnalyzer.GetEventData(_packetDataPenalty.PacketHeader, File.ReadAllBytes(@"SampleData/F1-2025-Event-Penalty.packet"));
+        var eventDetails = GetEventDetails(_packetDataPenalty, File.ReadAllBytes(@"SampleData/F1-2025-Event-Penalty.packet"));
 
-            if (packetData is EventData eventData && eventData.PacketData?.EventDetails is IEventDataDetails2025 eventDetails)
-            {
-                Assert.AreEqual(InfringementType.SmallCollision, eventDetails.PenaltyInfringementType, "Incorrect infringement value!");
-            }
-            else
-            {
-                Assert.Fail("Invalid packet data, expected F1 2025!");
-            }
-        }
-        else
-        {
-            Assert.IsNull(_packetDataPenalty.PacketHeader, "Invalid F1 2025 packet header!");
-        }
+        Assert.AreEqual(InfringementType.SmallCollision, eventDetails.PenaltyInfringementType, "Incorrect infringement value!");
     }
 
     /// <summary>
@@ -350,23 +257,9 @@ public class PacketEvent2025Tests
     [TestMethod]
     public void PacketEvent2025IsPenaltyVehicleExpectedTwentyOne()
     {
-        if (_packetDataPenalty.PacketHeader != null)
-        {
-            var packetData = _packetAnalyzer.GetEventData(_packetDataPenalty.PacketHeader, File.ReadAllBytes(@"SampleData/F1-2025-Event-Penalty.packet"));
+        var eventDetails = GetEventDetails(_packetDataPenalty, File.ReadAllBytes(@"SampleData/F1-2025-Event-Penalty.packet"));
 
-            if (packetData is EventData eventData && eventData.PacketData?.EventDetails is IEventDataDetails2025 eventDetails)
-            {
-                Assert.AreEqual(21, eventDetails.VehicleIndex, "Incorrect vehicle value!");
-            }
-            else
-            {
-                Assert.Fail("Invalid packet data, expected F1 2025!");
-            }
-        }
-        else
-        {
-            Assert.IsNull(_packetDataPenalty.PacketHeader, "Invalid F1 2025 packet header!");
-        }
+        Assert.AreEqual(21, eventDetails.VehicleIndex, "Incorrect vehicle value!");
     }
 
     /// <summary>
@@ -375,23 +268,9 @@ public class PacketEvent2025Tests
     [TestMethod]
     public void PacketEvent2025IsPenaltyLapNumberExpectedSixteen()
     {
-        if (_packetDataPenalty.PacketHeader != null)
-        {
-            var packetData = _packetAnalyzer.GetEventData(_packetDataPenalty.PacketHeader, File.ReadAllBytes(@"SampleData/F1-2025-Event-Penalty.packet"));
+        var eventDetails = GetEventDetails(_packetDataPenalty, File.ReadAllBytes(@"SampleData/F1-2025-Event-Penalty.packet"));
 
-            if (packetData is EventData eventData && eventData.PacketData?.EventDetails is IEventDataDetails2025 eventDetails)
-            {
-                Assert.AreEqual(16, eventDetails.PenaltyLapNumber, "Incorrect lap number!");
-            }
-            else
-            {
-                Assert.Fail("Invalid packet data, expected F1 2025!");
-            }
-        }
-        else
-        {
-            Assert.IsNull(_packetDataPenalty.PacketHeader, "Invalid F1 2025 packet header!");
-        }
+        Assert.AreEqual(16, eventDetails.PenaltyLapNumber, "Incorrect lap number!");
     }
 
     /// <summary>
@@ -400,23 +279,9 @@ public class PacketEvent2025Tests
     [TestMethod]
     public void PacketEvent2025IsTopSpeedEventTypeExpectedSpeedTrap()
     {
-        if (_packetDataTopSpeed.PacketHeader != null)
-        {
-            var packetData = _packetAnalyzer.GetEventData(_packetDataTopSpeed.PacketHeader, File.ReadAllBytes(@"SampleData/F1-2025-Event-TopSpeed.packet"));
+        var eventDetails = GetEventDetails(_packetDataTopSpeed, File.ReadAllBytes(@"SampleData/F1-2025-Event-TopSpeed.packet"));
 
-            if (packetData is EventData eventData && eventData.PacketData?.EventDetails is IEventDataDetails2025 eventDetails)
-            {
-                Assert.AreEqual(EventType.SpeedTrap, eventDetails.EventType, "Incorrect event type!");
-            }
-            else
-            {
-                Assert.Fail("Invalid packet data, expected F1 2025!");
-            }
-        }
-        else
-        {
-            Assert.IsNull(_packetDataTopSpeed.PacketHeader, "Invalid F1 2025 packet header!");
-        }
+        Assert.AreEqual(EventType.SpeedTrap, eventDetails.EventType, "Incorrect event type!");
     }
 
     /// <summary>
@@ -425,23 +290,9 @@ public class PacketEvent2025Tests
     [TestMethod]
     public void PacketEvent2025IsFlashbackEventTypeExpectedFlashback()
     {
-        if (_packetDataFlashback.PacketHeader != null)
-        {
-            var packetData = _packetAnalyzer.GetEventData(_packetDataFlashback.PacketHeader, File.ReadAllBytes(@"SampleData/F1-2025-Event-Flashback.packet"));
+        var eventDetails = GetEventDetails(_packetDataFlashback, File.ReadAllBytes(@"SampleData/F1-2025-Event-Flashback.packet"));
 
-            if (packetData is EventData eventData && eventData.PacketData?.EventDetails is IEventDataDetails2025 eventDetails)
-            {
-                Assert.AreEqual(EventType.Flashback, eventDetails.EventType, "Incorrect event type!");
-            }
-            else
-            {
-                Assert.Fail("Invalid packet data, expected F1 2025!");
-            }
-        }
-        else
-        {
-            Assert.IsNull(_packetDataFlashback.PacketHeader, "Invalid F1 2025 packet header!");
-        }
+        Assert.AreEqual(EventType.Flashback, eventDetails.EventType, "Incorrect event type!");
     }
 
     /// <summary>
@@ -450,23 +301,9 @@ public class PacketEvent2025Tests
     [TestMethod]
     public void PacketEvent2025IsPenaltyEventTypeExpectedPenalty()
     {
-        if (_packetDataPenalty.PacketHeader != null)
-        {
-            var packetData = _packetAnalyzer.GetEventData(_packetDataPenalty.PacketHeader, File.ReadAllBytes(@"SampleData/F1-2025-Event-Penalty.packet"));
+        var eventDetails = GetEventDetails(_packetDataPenalty, File.ReadAllBytes(@"SampleData/F1-2025-Event-Penalty.packet"));
 
-            if (packetData is EventData eventData && eventData.PacketData?.EventDetails is IEventDataDetails2025 eventDetails)
-            {
-                Assert.AreEqual(EventType.Penalty, eventDetails.EventType, "Incorrect event type!");
-            }
-            else
-            {
-                Assert.Fail("Invalid packet data, expected F1 2025!");
-            }
-        }
-        else
-        {
-            Assert.IsNull(_packetDataPenalty.PacketHeader, "Invalid F1 2025 packet header!");
-        }
+        Assert.AreEqual(EventType.Penalty, eventDetails.EventType, "Incorrect event type!");
     }
 
     /// <summary>
@@ -475,25 +312,10 @@ public class PacketEvent2025Tests
     [TestMethod]
     public void PacketEvent2025IsDrsDisabledEventTypeExpectedDrsDisabled()
     {
-        if (_packetDataPenalty.PacketHeader != null)
-        {
-            var syntheticData = BuildSyntheticEventPacket("DRSD", 2);
-            var packetData = _packetAnalyzer.GetEventData(_packetDataPenalty.PacketHeader, syntheticData);
+        var eventDetails = GetEventDetails(_packetDataPenalty, BuildSyntheticEventPacket("DRSD", 2));
 
-            if (packetData is EventData eventData && eventData.PacketData?.EventDetails is IEventDataDetails2025 eventDetails)
-            {
-                Assert.AreEqual(EventType.DrsDisabled, eventDetails.EventType, "Incorrect event type!");
-                Assert.AreEqual(DrsDisabledReason.RedFlag, eventDetails.DrsDisabledReason, "Incorrect DRS disabled reason!");
-            }
-            else
-            {
-                Assert.Fail("Invalid packet data, expected F1 2025!");
-            }
-        }
-        else
-        {
-            Assert.IsNull(_packetDataPenalty.PacketHeader, "Invalid F1 2025 packet header!");
-        }
+        Assert.AreEqual(EventType.DrsDisabled, eventDetails.EventType, "Incorrect event type!");
+        Assert.AreEqual(DrsDisabledReason.RedFlag, eventDetails.DrsDisabledReason, "Incorrect DRS disabled reason!");
     }
 
     #endregion // Methods
