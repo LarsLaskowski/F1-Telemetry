@@ -4,7 +4,7 @@ Most NuGet packages used by F1-Telemetry are stable releases from Microsoft or
 from the upstream project itself. A few references deliberately deviate from
 that rule: three OpenTelemetry instrumentation packages only exist as
 pre-releases, the MySQL provider is a community fork, and the code analyzer is
-still on a beta line.
+still on a pre-release line.
 
 This document records those decisions, the reason each one is accepted, the risk
 it carries, and the condition under which it should be revisited. All versions
@@ -18,7 +18,7 @@ are pinned centrally in `Directory.Packages.props`.
 | `OpenTelemetry.Instrumentation.EventCounters` | `1.17.0-alpha.1` | Upstream never published a stable release | Accepted |
 | `OpenTelemetry.Instrumentation.Process` | `1.17.0-rc.1` | Upstream never published a stable release | Accepted |
 | `Microting.EntityFrameworkCore.MySql` | `10.0.10` | Pomelo has no EF Core 10 build | Accepted, revisit when Pomelo ships EF Core 10 |
-| `Reihitsu.Analyzer` | `1.0.0-beta6` | Latest published version of the analyzer | Accepted, build-time only |
+| `Reihitsu.Analyzer` | `1.0.0-rc1` | Latest published version of the analyzer | Accepted, build-time only |
 
 ## Pre-release OpenTelemetry instrumentation
 
@@ -75,10 +75,10 @@ Risk assessment:
 Revisit when: Pomelo publishes an EF Core 10 release. At that point the fork is
 no longer needed and the reference should move back to the upstream package.
 
-## Reihitsu.Analyzer beta
+## Reihitsu.Analyzer pre-release
 
 `Reihitsu.Analyzer` enforces the formatting and naming conventions described in
-`CLAUDE.md`; a clean build must show zero `RH####` warnings. `1.0.0-beta6` is
+`CLAUDE.md`; a clean build must show zero `RH####` warnings. `1.0.0-rc1` is
 the newest version published, so there is no stable release to move to.
 
 The reference is declared once in `Directory.Build.props` with

@@ -222,8 +222,8 @@ private readonly ILogger<MyClass> _logger;
   any other `RH` diagnostic unresolved. Always run a full rebuild (delete `obj`/`bin` if in
   doubt, since Roslyn does not always re-emit analyzer warnings for unchanged files) before
   declaring a change warning-free.
-- `.editorconfig` disables exactly seven `RH####` rules (RH0396, RH0428, RH2102, RH4119, RH7004,
-  RH8027, RH8306). Every other `RH` rule is active project-wide and must build warning-free.
+- `.editorconfig` disables exactly eight `RH####` rules (RH0396, RH0428, RH2102, RH4119, RH4124,
+  RH7004, RH8027, RH8306). Every other `RH` rule is active project-wide and must build warning-free.
 - The `reihitsu-format` global dotnet tool auto-fixes layout-only findings (chain alignment,
   initializer formatting, spacing, etc.). Prefer it over hand-formatting:
 
@@ -358,7 +358,7 @@ transformation logic close to the feature component → keep contract names sync
 
 StyleCop is **not** referenced by the solution, so no `SA####` rule is active or suppressed.
 `.editorconfig` disables CS8618, IDE0076, IDE0290, CA1822, CA2254 and the Reihitsu rules RH0396, RH0428,
-RH2102, RH4119, RH7004, RH8027 and RH8306 — see
+RH2102, RH4119, RH4124, RH7004, RH8027 and RH8306 — see
 `.github/instructions/csharp.instructions.md` for the rationale of each. Every other `RH####`
 rule is active. `GlobalSuppressions.cs` suppresses a set of SonarQube rules, each with its own
 justification.
