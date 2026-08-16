@@ -76,6 +76,29 @@ tooling workaround.
    across sessions.
 6. The processor persists the object through **`RepositoryFactory`** (see below).
 
+## Game version specifications
+
+- Every supported game year has a corresponding specification document under
+  `docs/` — e.g. `docs/F1 2025 Telemetry.md` for the 2025 game — converted from
+  EA's official UDP telemetry release for that year (the original PDF/DOCX/TXT is
+  kept alongside it under [`docs/original-specs/`](original-specs)). These
+  documents are the authoritative source for packet layouts, field types, and
+  appendix reference data (driver, team, track, nationality IDs) for that year,
+  and are what the per-year extraction paths described above (point 4) are
+  implemented against.
+- **A new game version must not be implemented before its specification document
+  exists under `docs/`.** Adding support for a new EA release means: obtain and
+  add the official specification (`F1 20XX Telemetry.md`, plus the original
+  PDF/DOCX/TXT under `docs/original-specs/`) first, then implement the per-year
+  extraction paths, entities, migrations, and tests against it — never the other
+  way around. This keeps every packet-layout change traceable to a written,
+  checked-in source instead of being reverse-engineered from captured packets or
+  guesswork.
+- Implementation plans for a new game version (see e.g.
+  [`docs/concepts/integrate_f1_2026.md`](concepts/integrate_f1_2026.md)) should
+  reference specific sections of that year's specification document for every
+  field-level or size change they describe.
+
 ## Data access
 
 - **`RepositoryFactory`** (`F1Server.Db/Entity/RepositoryFactory.cs`) wraps a
@@ -237,6 +260,59 @@ tooling workaround.
   the web app's footprint and an unused Node/Angular build output to the
   service's; nginx serving the compiled bundle is the natural fit instead, and
   the two images can be deployed, scaled, or restarted independently.
+
+## CI/CD & releases
+
+- **CI (`.github/workflows/ci.yml`)** runs on every push to `main` and on every pull
+  request, as two independent jobs:
+  - `build-test-analyze` restores, builds and tests only the backend entry points
+    (`F1Server/F1Server.csproj`, `F1Server.Tests/F1Server.Tests.csproj`) rather than
+    the whole `.slnx` — a solution-wide restore fails on the Linux runner because it
+    also pulls in the Windows-only `F1ReplayClient` WPF client and the Angular
+    `.esproj`. This is the same restricted project set the Dockerfile and CodeQL
+    build, and the one documented for local builds in
+    [`CONTRIBUTING.md`](CONTRIBUTING.md). Tests run with `--collect:"XPlat Code
+    Coverage"` (OpenCover format), and results feed a SonarQube Cloud analysis
+    (project `networlddev_f1-telemetry`) that is skipped whenever `SONAR_TOKEN` is
+    empty — which is always true for Dependabot-triggered and fork-PR runs, since
+    GitHub does not expose repository secrets to them; the build and tests still run
+    and still gate the PR in that case.
+  - `build-frontend` builds `F1ServerApp` with `npm ci --force --ignore-scripts`
+    (mirroring the flags the frontend Dockerfile uses) across a Node.js version
+    matrix (`24`, `26`). No frontend test step runs yet — no spec files exist in the
+    Angular project — the step is present but commented out, ready to enable once
+    tests are added.
+- **CodeQL (`.github/workflows/codeql.yml`)** runs a C#-only security analysis on
+  push to `main`, on every pull request, and on a weekly schedule (Mondays,
+  04:00 UTC), building the same restricted `F1Server/F1Server.csproj` project set as
+  CI for the same Linux-runner reason.
+- **Release (`.github/workflows/release.yml`)** triggers only on pushing a tag
+  matching `v*.*.*`. It rebuilds and retests the backend, then builds and pushes the
+  two [Deployment](#deployment) Docker images independently — server
+  (`networlddev/f1-telemetry`) and web app (`networlddev/f1-telemetry-app`) — each
+  tagged with both the version derived from the tag (`v1.2.3` → `1.2.3`) and
+  `latest`. The workflow pins each image's base layer by resolving
+  `mcr.microsoft.com/dotnet/aspnet:10.0-alpine` and `nginx:1-alpine` to their current
+  digest and passing it in as a `BASE_*_DIGEST` build arg, so a release records the
+  exact base image it was built against rather than floating on a mutable tag. The
+  job finishes by creating a GitHub Release for the tag with auto-generated release
+  notes plus a short list of the two published image references.
+- **Versioning is manual and lives in three places that must be bumped together
+  before tagging a release**, since nothing in CI or the release workflow keeps them
+  in sync automatically:
+  1. `AssemblyVersion` in [`SharedAssemblyInfo.cs`](../SharedAssemblyInfo.cs)
+     (`"1.18.*"` — the wildcard revision is filled in by the compiler).
+  2. `version` in `F1ServerApp/package.json` (and the matching lock-file entry in
+     `package-lock.json`) — this is also the value the Angular `FooterComponent`
+     imports directly from `package.json` and renders in the UI, so it is the one
+     end users actually see.
+  3. The `vX.Y.Z` git tag pushed to trigger the release workflow — its version
+     component becomes the Docker image tag and the GitHub Release name, and should
+     match the version bumped in the two places above.
+
+  In practice this has been done as a small dedicated commit (e.g. "Bump version to
+  1.18.0 for Angular and .NET assemblies") immediately before tagging, not folded
+  into a feature PR.
 
 ---
 
