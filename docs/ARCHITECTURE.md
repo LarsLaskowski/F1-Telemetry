@@ -144,6 +144,16 @@ tooling workaround.
   (`POST`/`PUT`/`DELETE`, never `GET`) so state-changing calls cannot be triggered
   by a plain link, an `<img>` tag, or another cross-site request — that verb
   discipline is the actual safety net in the absence of auth.
+- **Why there is no auth layer at all:** F1-Telemetry is built for private,
+  local-network use — a single user or a small group on a trusted LAN running
+  their own instance, not a multi-tenant service exposed to the internet. Given
+  that scope, adding a login/authorization layer was deliberately left out
+  rather than deferred as unfinished work. A direct consequence is that
+  mutating actions such as creating championships or deleting sessions are
+  reachable by anyone who can reach the API, with no further access control —
+  this is accepted as fine for the intended deployment (a private network),
+  not a gap to close. Treat any future request to add auth as a scope change
+  that needs an explicit decision, not a bug fix.
 
 ## Observability
 

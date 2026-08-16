@@ -40,7 +40,7 @@
             <a class="nav-link text-dark" [routerLink]="['/statistics']">Server Statistics</a>
           </li>
           <li class="nav-item" [routerLinkActive]="['link-active']">
-            <a class="nav-link text-dark" [routerLink]="liveSessionService.isLiveSession ? '/livesession' : null">
+            <a class="nav-link text-dark" [routerLink]="liveSessionService.isLiveSession ? '/livesession' : null" [title]="liveStatusTooltip()">
               @if (isLiveSession()) {
                 <div style="font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 48;">
                   <span class="material-symbols-outlined" style="color: #D32F2F">cast_connected</span>
