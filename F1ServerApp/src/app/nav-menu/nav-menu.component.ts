@@ -1,7 +1,7 @@
-import { Component, Inject, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, Inject, OnDestroy, OnInit } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { Subscription, timer } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { SignalrService } from '../services/signalr.service';
 import { LoggerService } from '../services/logger.service';
 
@@ -18,9 +18,9 @@ export class NavMenuComponent implements OnInit, OnDestroy
   public isExpanded = false;
   public apiUrl: string;
   private lastHubConnectionState: boolean = false;
-  private timerSubscription: Subscription | undefined;
+  private hubConnectedSub: Subscription | undefined;
 
-  constructor(public liveSessionService: SignalrService, private readonly router: Router, @Inject('BASE_URL') baseUrl: string, private readonly logger: LoggerService)
+  constructor(public liveSessionService: SignalrService, private readonly router: Router, @Inject('BASE_URL') baseUrl: string, private readonly logger: LoggerService, private readonly changeDetector: ChangeDetectorRef)
   {
     this.apiUrl = baseUrl;
 
@@ -34,9 +34,9 @@ export class NavMenuComponent implements OnInit, OnDestroy
 
   ngOnDestroy()
   {
-    if (this.timerSubscription != null)
+    if (this.hubConnectedSub != null)
     {
-      this.timerSubscription.unsubscribe();
+      this.hubConnectedSub.unsubscribe();
     }
   }
 
@@ -62,18 +62,33 @@ export class NavMenuComponent implements OnInit, OnDestroy
     return isLiveSession;
   }
 
+  liveStatusTooltip(): string
+  {
+    if (this.lastHubConnectionState == false)
+    {
+      return 'Live status unavailable: not connected to the server';
+    }
+
+    if (this.isLiveSession())
+    {
+      return 'Live session in progress - click to view';
+    }
+
+    return 'No live session in progress';
+  }
+
   private startConnectionCheck()
   {
-    this.timerSubscription = timer(1, 5000).subscribe(() =>
+    this.hubConnectedSub = this.liveSessionService.hubConnected$.subscribe(currentHubHealthState =>
     {
-      let currentHubHealthState = this.liveSessionService.isConnected();
-
       if (this.lastHubConnectionState != currentHubHealthState)
       {
         this.lastHubConnectionState = currentHubHealthState;
 
         this.reloadCurrentPage();
       }
+
+      this.changeDetector.markForCheck();
     });
   }
 

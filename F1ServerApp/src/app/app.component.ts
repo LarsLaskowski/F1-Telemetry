@@ -3,11 +3,12 @@ import { Component, Inject, OnInit } from '@angular/core';
 
 import { SignalrService } from './services/signalr.service';
 import { NavMenuComponent } from './nav-menu/nav-menu.component';
+import { FooterComponent } from './footer/footer.component';
 import { RouterOutlet } from '@angular/router';
 
 @Component(
 {
-  imports: [NavMenuComponent, RouterOutlet],
+  imports: [NavMenuComponent, RouterOutlet, FooterComponent],
   selector: 'app-root',
   templateUrl: './app.component.html'
 })

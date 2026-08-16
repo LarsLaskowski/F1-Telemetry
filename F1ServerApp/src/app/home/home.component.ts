@@ -33,6 +33,7 @@ export class HomeComponent implements OnInit, OnDestroy
   private lastHubHealthState: boolean = false;
   private healthTimerSub: Subscription | undefined;
   private sessionsTimerSub: Subscription | undefined;
+  private hubConnectedSub: Subscription | undefined;
 
   // Constructor
   constructor(http: HttpClient, public liveSessionService: SignalrService, private router: Router, @Inject('BASE_URL') baseUrl: string, private readonly changeDetector: ChangeDetectorRef, private readonly logger: LoggerService)
@@ -142,6 +143,11 @@ export class HomeComponent implements OnInit, OnDestroy
     {
       this.sessionsTimerSub.unsubscribe();
     }
+
+    if (this.hubConnectedSub != null)
+    {
+      this.hubConnectedSub.unsubscribe();
+    }
   }
 
   // Reload current page
@@ -168,19 +174,29 @@ export class HomeComponent implements OnInit, OnDestroy
   {
     this.logger.info("Home: in startConnectionCheck");
 
+    this.hubConnectedSub = this.liveSessionService.hubConnected$.subscribe(currentHubHealthState =>
+    {
+      this.logger.info("HUB health: " + currentHubHealthState);
+
+      if (this.lastHubHealthState != currentHubHealthState)
+      {
+        this.lastHubHealthState = currentHubHealthState;
+
+        this.reloadCurrentPage();
+      }
+
+      this.changeDetector.markForCheck();
+    });
+
     this.healthTimerSub = timer(1, 30000).subscribe(async () =>
     {
       let currentApiHealthState = await this.getHealthState();
-      let currentHubHealthState = this.liveSessionService.isConnected();
 
       this.logger.info("API health: " + currentApiHealthState);
-      this.logger.info("HUB health: " + currentHubHealthState);
 
-      if (this.lastApiHealthState != currentApiHealthState
-        || this.lastHubHealthState != currentHubHealthState)
+      if (this.lastApiHealthState != currentApiHealthState)
       {
         this.lastApiHealthState = currentApiHealthState;
-        this.lastHubHealthState = currentHubHealthState;
 
         this.reloadCurrentPage();
       }

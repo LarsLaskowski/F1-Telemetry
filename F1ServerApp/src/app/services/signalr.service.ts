@@ -11,9 +11,11 @@ export class SignalrService
 {
   private readonly isLiveSessionSubject: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
   private readonly liveSessionIdSubject: BehaviorSubject<number> = new BehaviorSubject<number>(0);
+  private readonly hubConnectedSubject: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
 
   public readonly isLiveSession$: Observable<boolean> = this.isLiveSessionSubject.asObservable();
   public readonly liveSessionId$: Observable<number> = this.liveSessionIdSubject.asObservable();
+  public readonly hubConnected$: Observable<boolean> = this.hubConnectedSubject.asObservable();
 
   private hubConnection!: signalR.HubConnection;
 
@@ -33,8 +35,18 @@ export class SignalrService
 
   public startConnection(baseUrl: string): void
   {
-    this.hubConnection = new signalR.HubConnectionBuilder().withUrl(baseUrl + 'live').withAutomaticReconnect().build();
-    this.hubConnection.start().then(() => this.logger.log('Connection started'))
+    this.hubConnection = new signalR.HubConnectionBuilder().withUrl(baseUrl + 'live', { withCredentials: false }).withAutomaticReconnect().build();
+
+    this.hubConnection.onreconnecting(() => this.hubConnectedSubject.next(false));
+    this.hubConnection.onreconnected(() => this.hubConnectedSubject.next(true));
+    this.hubConnection.onclose(() => this.hubConnectedSubject.next(false));
+
+    this.hubConnection.start().then(() =>
+    {
+      this.logger.log('Connection started');
+
+      this.hubConnectedSubject.next(true);
+    })
     .catch(err => console.error('Error while start connection: ' + err))
   }
 
@@ -60,17 +72,5 @@ export class SignalrService
   public removeLiveSessionDataListener(callback: (liveSessionData: SessionLiveViewApiData) => void): void
   {
     this.hubConnection.off('livesessiondataupdated', callback);
-  }
-
-  public isConnected(): boolean
-  {
-    let isConnected = false;
-
-    if (this.hubConnection !== null && this.hubConnection !== undefined)
-    {
-      isConnected = this.hubConnection.state === signalR.HubConnectionState.Connected;
-    }
-
-    return isConnected;
   }
 }
