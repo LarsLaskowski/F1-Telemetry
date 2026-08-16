@@ -57,17 +57,7 @@ public class ChampionshipEntity
     public bool IsFinished
     {
         get => DbIsFinished == 1;
-        set
-        {
-            if (value == true)
-            {
-                DbIsFinished = 1;
-            }
-            else
-            {
-                DbIsFinished = 0;
-            }
-        }
+        set => DbIsFinished = value ? (ushort)1 : (ushort)0;
     }
 
     #endregion // Properties

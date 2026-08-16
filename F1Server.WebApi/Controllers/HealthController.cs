@@ -1,5 +1,4 @@
-﻿using F1Server.Data;
-using F1Server.Db.Entity;
+﻿using F1Server.Db.Entity;
 using F1Server.WebApi.Hubs;
 
 using Microsoft.AspNetCore.Mvc;
@@ -16,7 +15,6 @@ public class HealthController : ControllerBase
 {
     #region Fields
 
-    private readonly F1ServerApplicationData _appData;
     private readonly ILogger<HealthController> _logger;
     private readonly IHubContext<LiveSessionHub> _hub;
 
@@ -27,13 +25,11 @@ public class HealthController : ControllerBase
     /// <summary>
     /// Constructor
     /// </summary>
-    /// <param name="appData">Application data</param>
     /// <param name="logger">Logging interface</param>
     /// <param name="hub">SignalR hub</param>
-    public HealthController(F1ServerApplicationData appData, ILogger<HealthController> logger, IHubContext<LiveSessionHub> hub)
+    public HealthController(ILogger<HealthController> logger, IHubContext<LiveSessionHub> hub)
     {
         _logger = logger;
-        _appData = appData;
         _hub = hub;
     }
 

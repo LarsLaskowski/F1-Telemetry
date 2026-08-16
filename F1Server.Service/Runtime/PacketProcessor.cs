@@ -420,7 +420,7 @@ internal class PacketProcessor : IDisposable
 
             if (Session != null && (Session.IsRecordable == true || Session.CurrentSession == null))
             {
-                isProcessed = ProcessPacket(packetData.PacketHeader!, packetContent);
+                isProcessed = ProcessPacket(packetData.PacketHeader, packetContent);
             }
 
             if (sessionIsFinished && Session != null)
