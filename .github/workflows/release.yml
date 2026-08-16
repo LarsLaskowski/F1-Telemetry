@@ -66,8 +66,8 @@ jobs:
           docker pull nginx:1-alpine
           RUNTIME_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' mcr.microsoft.com/dotnet/aspnet:10.0-alpine)
           NGINX_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' nginx:1-alpine)
-          echo "runtime=$RUNTIME_DIGEST" >> "$GITHUB_OUTPUT"
-          echo "nginx=$NGINX_DIGEST" >> "$GITHUB_OUTPUT"
+          echo "runtime=${RUNTIME_DIGEST#*@}" >> "$GITHUB_OUTPUT"
+          echo "nginx=${NGINX_DIGEST#*@}" >> "$GITHUB_OUTPUT"
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c # v4.2.0
