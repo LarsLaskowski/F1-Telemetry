@@ -289,9 +289,9 @@ public class AppMetrics : IAppMetrics
 
             // The per-type counters and gauges below are recorded deliberately in addition to the tagged
             // PacketProcessingTime histogram above, so each packet type has its own directly queryable
-            // Prometheus series (cf. InitMeters). The gauges only ever hold the last recorded value;
-            // consumers that need the full distribution per packet type should query PacketProcessingTime
-            // filtered by its "PacketType" tag instead
+            // Prometheus series, see InitMeters. The gauges only ever hold the last recorded value.
+            // Consumers that need the full distribution per packet type should query PacketProcessingTime
+            // filtered by its "PacketType" tag instead.
             switch (packetType)
             {
                 case PacketTypes.Event:

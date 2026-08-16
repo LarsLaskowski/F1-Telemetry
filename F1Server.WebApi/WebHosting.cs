@@ -323,7 +323,7 @@ public class WebHosting : IWebHosting
     {
         if (IsRunning)
         {
-            _webApplication?.StopAsync().GetAwaiter().GetResult();
+            _webApplication?.StopAsync(_cts?.Token ?? CancellationToken.None).GetAwaiter().GetResult();
 
             _cts?.Cancel();
             _cts?.Dispose();
