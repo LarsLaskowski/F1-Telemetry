@@ -791,7 +791,7 @@ public sealed class TelemetryClient : ITelemetryClient, IDisposable
             {
                 using var writer = new StreamWriter(fileStream);
 
-                writer.WriteLine($"Timestamp: {packetData.Timestamp:yyyy-MM-dd HH:mm:ss.fff} UTC # Number: {packetData.PacketNumber:D10} | Type: {packetData.PacketHeader?.PacketType, -20}| Length: {packetData.PacketLength}");
+                writer.WriteLine($"Timestamp: {packetData.Timestamp:yyyy-MM-dd HH:mm:ss.fff} UTC # Number: {packetData.PacketNumber:D10} | Type: {packetData.PacketHeader?.PacketType,-20}| Length: {packetData.PacketLength}");
             }
         }
     }
@@ -1074,25 +1074,25 @@ public sealed class TelemetryClient : ITelemetryClient, IDisposable
                 {
                     writer.WriteLine("------------------------------------------------------------------------------------------------------");
 
-                    writer.WriteLine($"Total packets received               : {lastSessionMetrics.TotalPacketsReceived, -6}");
-                    writer.WriteLine($"Errors occurred                      : {lastSessionMetrics.Errors, -6}");
-                    writer.WriteLine($"Session packets received             : {lastSessionMetrics.Session.Received, -6} (avg: {lastSessionMetrics.Session.AvgProcessingTime:F3}ms)");
-                    writer.WriteLine($"Lap packets received                 : {lastSessionMetrics.LapData.Received, -6} (avg: {lastSessionMetrics.LapData.AvgProcessingTime:F3}ms)");
-                    writer.WriteLine($"Event packets received               : {lastSessionMetrics.Event.Received, -6} (avg: {lastSessionMetrics.Event.AvgProcessingTime:F3}ms)");
-                    writer.WriteLine($"Participants packets received        : {lastSessionMetrics.Participants.Received, -6} (avg: {lastSessionMetrics.Participants.AvgProcessingTime:F3}ms)");
-                    writer.WriteLine($"Car telemetry packets received       : {lastSessionMetrics.CarTelemetry.Received, -6} (avg: {lastSessionMetrics.CarTelemetry.AvgProcessingTime:F3}ms)");
-                    writer.WriteLine($"Car status packets received          : {lastSessionMetrics.CarStatus.Received, -6} (avg: {lastSessionMetrics.CarStatus.AvgProcessingTime:F3}ms)");
-                    writer.WriteLine($"Car setup packets received           : {lastSessionMetrics.CarSetups.Received, -6} (avg: {lastSessionMetrics.CarSetups.AvgProcessingTime:F3}ms)");
-                    writer.WriteLine($"Car damage packets received          : {lastSessionMetrics.CarDamage.Received, -6} (avg: {lastSessionMetrics.CarDamage.AvgProcessingTime:F3}ms)");
-                    writer.WriteLine($"Motion packets received              : {lastSessionMetrics.Motion.Received, -6} (avg: {lastSessionMetrics.Motion.AvgProcessingTime:F3}ms)");
-                    writer.WriteLine($"MotionEx packets received            : {lastSessionMetrics.MotionEx.Received, -6} (avg: {lastSessionMetrics.MotionEx.AvgProcessingTime:F3}ms)");
-                    writer.WriteLine($"TyreSets packets received            : {lastSessionMetrics.TyreSets.Received, -6} (avg: {lastSessionMetrics.TyreSets.AvgProcessingTime:F3}ms)");
-                    writer.WriteLine($"Lap positions packets received       : {lastSessionMetrics.LapPositions.Received, -6} (avg: {lastSessionMetrics.LapPositions.AvgProcessingTime:F3}ms)");
-                    writer.WriteLine($"Time trial packets received          : {lastSessionMetrics.TimeTrial.Received, -6} (avg: {lastSessionMetrics.TimeTrial.AvgProcessingTime:F3}ms)");
-                    writer.WriteLine($"Lobby info packets received          : {lastSessionMetrics.LobbyInfo.Received, -6} (avg: {lastSessionMetrics.LobbyInfo.AvgProcessingTime:F3}ms)");
-                    writer.WriteLine($"Session history packets received     : {lastSessionMetrics.SessionHistory.Received, -6} (avg: {lastSessionMetrics.SessionHistory.AvgProcessingTime:F3}ms)");
-                    writer.WriteLine($"Car telemetry 2 packets received     : {lastSessionMetrics.CarTelemetry2.Received, -6} (avg: {lastSessionMetrics.CarTelemetry2.AvgProcessingTime:F3}ms)");
-                    writer.WriteLine($"Final classification packets received: {lastSessionMetrics.FinalClassification.Received, -6} (avg: {lastSessionMetrics.FinalClassification.AvgProcessingTime:F3}ms)");
+                    writer.WriteLine($"Total packets received               : {lastSessionMetrics.TotalPacketsReceived,-6}");
+                    writer.WriteLine($"Errors occurred                      : {lastSessionMetrics.Errors,-6}");
+                    writer.WriteLine($"Session packets received             : {lastSessionMetrics.Session.Received,-6} (avg: {lastSessionMetrics.Session.AvgProcessingTime:F3}ms)");
+                    writer.WriteLine($"Lap packets received                 : {lastSessionMetrics.LapData.Received,-6} (avg: {lastSessionMetrics.LapData.AvgProcessingTime:F3}ms)");
+                    writer.WriteLine($"Event packets received               : {lastSessionMetrics.Event.Received,-6} (avg: {lastSessionMetrics.Event.AvgProcessingTime:F3}ms)");
+                    writer.WriteLine($"Participants packets received        : {lastSessionMetrics.Participants.Received,-6} (avg: {lastSessionMetrics.Participants.AvgProcessingTime:F3}ms)");
+                    writer.WriteLine($"Car telemetry packets received       : {lastSessionMetrics.CarTelemetry.Received,-6} (avg: {lastSessionMetrics.CarTelemetry.AvgProcessingTime:F3}ms)");
+                    writer.WriteLine($"Car status packets received          : {lastSessionMetrics.CarStatus.Received,-6} (avg: {lastSessionMetrics.CarStatus.AvgProcessingTime:F3}ms)");
+                    writer.WriteLine($"Car setup packets received           : {lastSessionMetrics.CarSetups.Received,-6} (avg: {lastSessionMetrics.CarSetups.AvgProcessingTime:F3}ms)");
+                    writer.WriteLine($"Car damage packets received          : {lastSessionMetrics.CarDamage.Received,-6} (avg: {lastSessionMetrics.CarDamage.AvgProcessingTime:F3}ms)");
+                    writer.WriteLine($"Motion packets received              : {lastSessionMetrics.Motion.Received,-6} (avg: {lastSessionMetrics.Motion.AvgProcessingTime:F3}ms)");
+                    writer.WriteLine($"MotionEx packets received            : {lastSessionMetrics.MotionEx.Received,-6} (avg: {lastSessionMetrics.MotionEx.AvgProcessingTime:F3}ms)");
+                    writer.WriteLine($"TyreSets packets received            : {lastSessionMetrics.TyreSets.Received,-6} (avg: {lastSessionMetrics.TyreSets.AvgProcessingTime:F3}ms)");
+                    writer.WriteLine($"Lap positions packets received       : {lastSessionMetrics.LapPositions.Received,-6} (avg: {lastSessionMetrics.LapPositions.AvgProcessingTime:F3}ms)");
+                    writer.WriteLine($"Time trial packets received          : {lastSessionMetrics.TimeTrial.Received,-6} (avg: {lastSessionMetrics.TimeTrial.AvgProcessingTime:F3}ms)");
+                    writer.WriteLine($"Lobby info packets received          : {lastSessionMetrics.LobbyInfo.Received,-6} (avg: {lastSessionMetrics.LobbyInfo.AvgProcessingTime:F3}ms)");
+                    writer.WriteLine($"Session history packets received     : {lastSessionMetrics.SessionHistory.Received,-6} (avg: {lastSessionMetrics.SessionHistory.AvgProcessingTime:F3}ms)");
+                    writer.WriteLine($"Car telemetry 2 packets received     : {lastSessionMetrics.CarTelemetry2.Received,-6} (avg: {lastSessionMetrics.CarTelemetry2.AvgProcessingTime:F3}ms)");
+                    writer.WriteLine($"Final classification packets received: {lastSessionMetrics.FinalClassification.Received,-6} (avg: {lastSessionMetrics.FinalClassification.AvgProcessingTime:F3}ms)");
 
                     writer.WriteLine("------------------------------------------------------------------------------------------------------");
                 }
