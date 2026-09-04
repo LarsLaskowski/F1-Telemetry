@@ -264,19 +264,26 @@ tooling workaround.
 ## CI/CD & releases
 
 - **CI (`.github/workflows/ci.yml`)** runs on every push to `main` and on every pull
-  request, as two independent jobs:
-  - `build-test-analyze` restores, builds and tests only the backend entry points
+  request, as three independent jobs:
+  - `build-test` restores, builds and tests only the backend entry points
     (`F1Server/F1Server.csproj`, `F1Server.Tests/F1Server.Tests.csproj`) rather than
     the whole `.slnx` — a solution-wide restore fails on the Linux runner because it
     also pulls in the Windows-only `F1ReplayClient` WPF client and the Angular
     `.esproj`. This is the same restricted project set the Dockerfile and CodeQL
     build, and the one documented for local builds in
-    [`CONTRIBUTING.md`](CONTRIBUTING.md). Tests run with `--collect:"XPlat Code
-    Coverage"` (OpenCover format), and results feed a SonarQube Cloud analysis
-    (project `networlddev_f1-telemetry`) that is skipped whenever `SONAR_TOKEN` is
-    empty — which is always true for Dependabot-triggered and fork-PR runs, since
-    GitHub does not expose repository secrets to them; the build and tests still run
-    and still gate the PR in that case.
+    [`CONTRIBUTING.md`](CONTRIBUTING.md). This is the job that gates the PR.
+  - `sonar-analyze` repeats the same restricted restore/build/test cycle — the
+    SonarQube scanner instruments the MSBuild compilation itself, so analysis output
+    only exists for a build run between its `begin` and `end` steps in the same
+    job — this time with `--collect:"XPlat Code Coverage"` (OpenCover format)
+    feeding a SonarQube Cloud analysis (project `networlddev_f1-telemetry`). It is
+    a separate job from `build-test` specifically so a SonarQube-side failure (an
+    outage, an expired token, a quota limit) never fails the check that gates
+    merging into `main` or, downstream, cutting a release — only `build-test`'s
+    result does. Every SonarQube step, and the restore/build/test steps that feed
+    it, are skipped whenever `SONAR_TOKEN` is empty — which is always true for
+    Dependabot-triggered and fork-PR runs, since GitHub does not expose repository
+    secrets to them; `build-test` still runs and still gates the PR in that case.
   - `build-frontend` builds `F1ServerApp` with `npm ci --force --ignore-scripts`
     (mirroring the flags the frontend Dockerfile uses) across a Node.js version
     matrix (`24`, `26`). No frontend test step runs yet — no spec files exist in the
@@ -287,8 +294,10 @@ tooling workaround.
   04:00 UTC), building the same restricted `F1Server/F1Server.csproj` project set as
   CI for the same Linux-runner reason.
 - **Release (`.github/workflows/release.yml`)** triggers only on pushing a tag
-  matching `v*.*.*`. It rebuilds and retests the backend, then builds and pushes the
-  two [Deployment](#deployment) Docker images independently — server
+  matching `v*.*.*`. It rebuilds and retests the backend — intentionally without any
+  SonarQube step, so a release can never fail or be blocked by SonarQube status;
+  that only runs in CI's `sonar-analyze` job, on `main` pushes and pull requests —
+  then builds and pushes the two [Deployment](#deployment) Docker images independently — server
   (`networlddev/f1-telemetry`) and web app (`networlddev/f1-telemetry-app`) — each
   tagged with both the version derived from the tag (`v1.2.3` → `1.2.3`) and
   `latest`. The workflow pins each image's base layer by resolving
