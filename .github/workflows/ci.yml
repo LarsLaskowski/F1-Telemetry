@@ -7,18 +7,78 @@ on:
   pull_request:
 
 jobs:
-  build-test-analyze:
-    name: Build, Test & Analyze
+  build-test:
+    name: Build & Test
     runs-on: ubuntu-latest
 
     permissions:
       contents: read
       checks: write
 
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Install .NET 10 SDK
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          dotnet-version: '10.0.x'
+
+      # The solution also contains a Windows-only WPF client (F1ReplayClient) and
+      # the Angular .esproj, which a solution-wide restore would pull in and fail
+      # on Linux. Restore/build the backend entry points explicitly instead; the
+      # F1Server project graph covers all backend libraries and is the same set
+      # the Dockerfile builds.
+      - name: Restore
+        run: |
+          dotnet restore F1Server/F1Server.csproj
+          dotnet restore F1Server.Tests/F1Server.Tests.csproj
+
+      - name: Build
+        run: |
+          dotnet build F1Server/F1Server.csproj -c Release --no-restore
+          dotnet build F1Server.Tests/F1Server.Tests.csproj -c Release --no-restore
+
+      - name: Test
+        run: >
+          dotnet test F1Server.Tests/F1Server.Tests.csproj
+          -c Release --no-build
+          --logger trx
+          --results-directory ${{ runner.temp }}/TestResults
+
+      - name: Publish test report
+        uses: dorny/test-reporter@a43b3a5f7366b97d083190328d2c652e1a8b6aa2 # v3.0.0
+        # Creating check runs needs a writable token, which Dependabot and
+        # fork-triggered runs do not get. Skip there; the test step itself
+        # still fails the job on a failing test.
+        if: ${{ !cancelled() && github.actor != 'dependabot[bot]' && github.event.pull_request.head.repo.fork != true }}
+        with:
+          name: dotnet tests
+          path: ${{ runner.temp }}/TestResults/**/*.trx
+          reporter: dotnet-trx
+
+      - name: Upload test artifacts
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: ${{ !cancelled() }}
+        with:
+          name: test-results
+          path: ${{ runner.temp }}/TestResults/**/*.trx
+          if-no-files-found: warn
+
+  sonar-analyze:
+    name: SonarQube Analysis
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
     env:
       # Secrets are not exposed to Dependabot or fork-triggered runs, so the
       # token is empty there. The SonarQube steps below are skipped in that
-      # case so the build and tests still run.
+      # case — this job is a duplicate build/test cycle instrumented for
+      # SonarQube, kept in its own job precisely so a scanner-side failure
+      # never fails the build-test job that gates merging and, downstream,
+      # releases.
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
     steps:
       - name: Set up JDK 17
@@ -58,12 +118,15 @@ jobs:
           mkdir -p ${{ runner.temp }}/scanner
           dotnet tool update dotnet-sonarscanner --tool-path ${{ runner.temp }}/scanner
 
-      # The solution also contains a Windows-only WPF client (F1ReplayClient) and
-      # the Angular .esproj, which a solution-wide restore would pull in and fail
-      # on Linux. Restore/build the backend entry points explicitly instead; the
-      # F1Server project graph covers all backend libraries and is the same set
-      # the Dockerfile builds.
+      # Same restricted restore/build scope as the build-test job (see its
+      # Restore step comment). The build is repeated here, rather than shared
+      # via the build-test job, because the SonarQube scanner instruments the
+      # MSBuild compilation itself: analysis output only exists for a build
+      # that runs between `begin` and `end` in this same job. Restore/Build/
+      # Test are skipped along with the scanner steps when SONAR_TOKEN is
+      # empty, so this job does no wasted work for Dependabot/fork runs.
       - name: Restore
+        if: ${{ env.SONAR_TOKEN != '' }}
         run: |
           dotnet restore F1Server/F1Server.csproj
           dotnet restore F1Server.Tests/F1Server.Tests.csproj
@@ -81,15 +144,16 @@ jobs:
             /d:sonar.cs.opencover.reportsPaths="${{ runner.temp }}/TestResults/**/coverage.opencover.xml"
 
       - name: Build
+        if: ${{ env.SONAR_TOKEN != '' }}
         run: |
           dotnet build F1Server/F1Server.csproj -c Release --no-restore
           dotnet build F1Server.Tests/F1Server.Tests.csproj -c Release --no-restore
 
       - name: Test
+        if: ${{ env.SONAR_TOKEN != '' }}
         run: >
           dotnet test F1Server.Tests/F1Server.Tests.csproj
           -c Release --no-build
-          --logger trx
           --collect:"XPlat Code Coverage"
           --results-directory ${{ runner.temp }}/TestResults
           --
@@ -99,27 +163,6 @@ jobs:
         if: ${{ !cancelled() && env.SONAR_TOKEN != '' }}
         run: |
           ${{ runner.temp }}/scanner/dotnet-sonarscanner end /d:sonar.token="$SONAR_TOKEN"
-
-      - name: Publish test report
-        uses: dorny/test-reporter@a43b3a5f7366b97d083190328d2c652e1a8b6aa2 # v3.0.0
-        # Creating check runs needs a writable token, which Dependabot and
-        # fork-triggered runs do not get. Skip there; the test step itself
-        # still fails the job on a failing test.
-        if: ${{ !cancelled() && github.actor != 'dependabot[bot]' && github.event.pull_request.head.repo.fork != true }}
-        with:
-          name: dotnet tests
-          path: ${{ runner.temp }}/TestResults/**/*.trx
-          reporter: dotnet-trx
-
-      - name: Upload test & coverage artifacts
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        if: ${{ !cancelled() }}
-        with:
-          name: test-results
-          path: |
-            ${{ runner.temp }}/TestResults/**/*.trx
-            ${{ runner.temp }}/TestResults/**/coverage.opencover.xml
-          if-no-files-found: warn
 
   build-frontend:
     name: Build Angular app (Node.js ${{ matrix.node-version }})
