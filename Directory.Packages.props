@@ -11,7 +11,7 @@
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.12" />
     <!-- Database Providers - constrain to version 10.x.x -->
     <!-- Microting is a fork of Pomelo, which has no EF Core 10 release - see docs/dependency-decisions.md -->
-    <PackageVersion Include="Microting.EntityFrameworkCore.MySql" Version="10.0.11" />
+    <PackageVersion Include="Microting.EntityFrameworkCore.MySql" Version="10.0.12" />
     <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.3" />
     <!-- Microsoft Extensions -->
     <PackageVersion Include="Microsoft.Extensions.Caching.Hybrid" Version="10.10.0" />
@@ -24,7 +24,7 @@
     <PackageVersion Include="MSTest.TestFramework" Version="4.4.1" />
     <PackageVersion Include="coverlet.collector" Version="10.0.1" />
     <!-- Code Analysis - build-time only, rc1 is the latest release - see docs/dependency-decisions.md -->
-    <PackageVersion Include="Reihitsu.Analyzer" Version="1.0.0-rc2" />
+    <PackageVersion Include="Reihitsu.Analyzer" Version="1.0.0" />
     <!-- API Documentation & Swagger -->
     <PackageVersion Include="Swashbuckle.AspNetCore.Swagger" Version="10.2.3" />
     <PackageVersion Include="Swashbuckle.AspNetCore.SwaggerGen" Version="10.2.3" />
@@ -36,16 +36,16 @@
     <!-- OpenTelemetry - the EntityFrameworkCore, EventCounters and Process instrumentation packages
          have no stable release upstream and are kept in step with the stable SDK version above,
          see docs/dependency-decisions.md -->
-    <PackageVersion Include="OpenTelemetry" Version="1.18.0" />
-    <PackageVersion Include="OpenTelemetry.Exporter.Console" Version="1.18.0" />
-    <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.18.0" />
+    <PackageVersion Include="OpenTelemetry" Version="1.19.1" />
+    <PackageVersion Include="OpenTelemetry.Exporter.Console" Version="1.19.1" />
+    <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.19.1" />
     <PackageVersion Include="OpenTelemetry.Instrumentation.EntityFrameworkCore" Version="1.17.0-beta.1" />
-    <PackageVersion Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.18.0" />
+    <PackageVersion Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.19.0" />
     <PackageVersion Include="OpenTelemetry.Instrumentation.EventCounters" Version="1.17.0-alpha.1" />
     <PackageVersion Include="OpenTelemetry.Instrumentation.Process" Version="1.17.0-rc.1" />
-    <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="1.18.0" />
-    <PackageVersion Include="OpenTelemetry.Instrumentation.Runtime" Version="1.18.0" />
-    <PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="1.18.0" />
+    <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="1.19.0" />
+    <PackageVersion Include="OpenTelemetry.Instrumentation.Runtime" Version="1.19.0" />
+    <PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="1.19.1" />
     <!-- WPF / UI -->
     <PackageVersion Include="Ookii.Dialogs.Wpf" Version="5.0.1" />
   </ItemGroup>
