@@ -20,15 +20,15 @@
     <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.12" />
     <!-- Testing -->
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.10.1" />
-    <PackageVersion Include="MSTest.TestAdapter" Version="4.4.1" />
-    <PackageVersion Include="MSTest.TestFramework" Version="4.4.1" />
+    <PackageVersion Include="MSTest.TestAdapter" Version="4.5.1" />
+    <PackageVersion Include="MSTest.TestFramework" Version="4.5.1" />
     <PackageVersion Include="coverlet.collector" Version="10.1.0" />
     <!-- Code Analysis - build-time only, rc1 is the latest release - see docs/dependency-decisions.md -->
-    <PackageVersion Include="Reihitsu.Analyzer" Version="1.0.0" />
+    <PackageVersion Include="Reihitsu.Analyzer" Version="1.1.0" />
     <!-- API Documentation & Swagger -->
-    <PackageVersion Include="Swashbuckle.AspNetCore.Swagger" Version="10.2.3" />
-    <PackageVersion Include="Swashbuckle.AspNetCore.SwaggerGen" Version="10.2.3" />
-    <PackageVersion Include="Swashbuckle.AspNetCore.SwaggerUI" Version="10.2.3" />
+    <PackageVersion Include="Swashbuckle.AspNetCore.Swagger" Version="10.3.0" />
+    <PackageVersion Include="Swashbuckle.AspNetCore.SwaggerGen" Version="10.3.0" />
+    <PackageVersion Include="Swashbuckle.AspNetCore.SwaggerUI" Version="10.3.0" />
     <!-- Diagnostics - using 10.x to match OpenTelemetry requirements -->
     <PackageVersion Include="System.Diagnostics.DiagnosticSource" Version="10.0.5" />
     <!-- Telemetry / InfluxDB -->
