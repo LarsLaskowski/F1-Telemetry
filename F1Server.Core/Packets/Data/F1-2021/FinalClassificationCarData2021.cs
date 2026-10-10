@@ -23,69 +23,43 @@ public class FinalClassificationCarData2021 : IFinalClassificationCarBase
 
     #region IFinalClassificationCarBase
 
-    /// <summary>
-    /// Finishing position
-    /// </summary>
+    /// <inheritdoc/>
     public ushort Position { get; set; }
 
-    /// <summary>
-    /// Number of laps completed
-    /// </summary>
+    /// <inheritdoc/>
     public ushort LapsCompleted { get; set; }
 
-    /// <summary>
-    /// Grid position of the car
-    /// </summary>
+    /// <inheritdoc/>
     public ushort GridPosition { get; set; }
 
-    /// <summary>
-    /// Number of points scored
-    /// </summary>
+    /// <inheritdoc/>
     public ushort Points { get; set; }
 
-    /// <summary>
-    /// Number of pit stops made
-    /// </summary>
+    /// <inheritdoc/>
     public ushort PitStops { get; set; }
 
-    /// <summary>
-    /// Result status
-    /// </summary>
+    /// <inheritdoc/>
     public ResultStatus ResultStatus { get; set; }
 
-    /// <summary>
-    /// Best lap time of the session in milliseconds
-    /// </summary>
+    /// <inheritdoc/>
     public uint BestLapTimeInMs { get; set; }
 
-    /// <summary>
-    /// Total race time in seconds without penalties
-    /// </summary>
+    /// <inheritdoc/>
     public double TotalRaceTime { get; set; }
 
-    /// <summary>
-    /// Total penalties accumulated in seconds
-    /// </summary>
+    /// <inheritdoc/>
     public ushort PenaltiesTime { get; set; }
 
-    /// <summary>
-    /// Number of penalties applied to this driver
-    /// </summary>
+    /// <inheritdoc/>
     public ushort NumPenalties { get; set; }
 
-    /// <summary>
-    /// Number of tyre stints up to maximum
-    /// </summary>
+    /// <inheritdoc/>
     public ushort NumTyreStints { get; set; }
 
-    /// <summary>
-    /// Actual tyres used  by this driver
-    /// </summary>
+    /// <inheritdoc/>
     public ushort[] TyreStintsActual { get; }
 
-    /// <summary>
-    /// Visual tyre stints used by this driver
-    /// </summary>
+    /// <inheritdoc/>
     public ushort[] TyreStintsVisual { get; }
 
     #endregion // IFinalClassificationCarBase

@@ -30,14 +30,10 @@ public class EventData2020 : IEventDataBase
 
     #region IEventDataBase
 
-    /// <summary>
-    /// Event code
-    /// </summary>
+    /// <inheritdoc/>
     public string EventCode { get; set; }
 
-    /// <summary>
-    /// Event details
-    /// </summary>
+    /// <inheritdoc/>
     IEventDataDetailsBase IEventDataBase.EventDetails => EventDetails;
 
     #endregion // IEventDataBase

@@ -9,38 +9,26 @@ public class LiveGameData : ILiveGameData
 {
     #region ILiveBaseData
 
-    /// <summary>
-    /// Database id
-    /// </summary>
+    /// <inheritdoc/>
     public long DbId { get; set; }
 
     #endregion // ILiveBaseData
 
     #region ILiveGameData
 
-    /// <summary>
-    /// Actual game version
-    /// </summary>
+    /// <inheritdoc/>
     public int GameVersion { get; set; }
 
-    /// <summary>
-    /// Major version
-    /// </summary>
+    /// <inheritdoc/>
     public int MajorVersion { get; set; }
 
-    /// <summary>
-    /// Minor version
-    /// </summary>
+    /// <inheritdoc/>
     public int MinorVersion { get; set; }
 
-    /// <summary>
-    /// Name of the game
-    /// </summary>
+    /// <inheritdoc/>
     public string Name { get; set; }
 
-    /// <summary>
-    /// Last usage timestamp
-    /// </summary>
+    /// <inheritdoc/>
     public DateTime? LastTimeUsed { get; set; }
 
     #endregion // ILiveGameData

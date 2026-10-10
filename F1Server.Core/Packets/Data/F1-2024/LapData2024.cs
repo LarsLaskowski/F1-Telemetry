@@ -10,184 +10,114 @@ public class LapData2024 : ILapData2023, ILapData2024
 {
     #region ILapData2023
 
-    /// <summary>
-    /// Last lap time in milliseconds
-    /// </summary>
+    /// <inheritdoc/>
     public uint LastLapTime { get; set; }
 
-    /// <summary>
-    /// Current lap time in milliseconds
-    /// </summary>
+    /// <inheritdoc/>
     public uint CurrentLapTime { get; set; }
 
-    /// <summary>
-    /// Sector 1 time in milliseconds
-    /// </summary>
+    /// <inheritdoc/>
     public ushort Sector1Time { get; set; }
 
-    /// <summary>
-    /// Sector 1 whole minutes part
-    /// </summary>
+    /// <inheritdoc/>
     public ushort Sector1TimeMinutes { get; set; }
 
-    /// <summary>
-    /// Sector 2 time in milliseconds
-    /// </summary>
+    /// <inheritdoc/>
     public ushort Sector2Time { get; set; }
 
-    /// <summary>
-    /// Sector 2 whole minutes part
-    /// </summary>
+    /// <inheritdoc/>
     public ushort Sector2TimeMinutes { get; set; }
 
-    /// <summary>
-    /// Milliseconds part of the delta to the car in front (max representable value 59999), the whole
-    /// minutes part is held separately in <see cref="DeltaToCarInFrontMinutes"/>
-    /// </summary>
+    /// <inheritdoc/>
     public ushort DeltaToCarInFront { get; set; }
 
-    /// <summary>
-    /// Milliseconds part of the delta to the race leader (max representable value 59999), the whole
-    /// minutes part is held separately in <see cref="DeltaToRaceLeaderMinutes"/>
-    /// </summary>
+    /// <inheritdoc/>
     public ushort DeltaToRaceLeader { get; set; }
 
-    /// <summary>
-    /// Number of pit stops
-    /// </summary>
+    /// <inheritdoc/>
     public ushort NumberPitStops { get; set; }
 
-    /// <summary>
-    /// Accumulated number of warnings
-    /// </summary>
+    /// <inheritdoc/>
     public ushort Warnings { get; set; }
 
-    /// <summary>
-    /// Accumulated number of corner cutting warnings
-    /// </summary>
+    /// <inheritdoc/>
     public ushort CornerCuttingWarnings { get; set; }
 
-    /// <summary>
-    /// Number of drive through penalties left to serve
-    /// </summary>
+    /// <inheritdoc/>
     public ushort NumberUnservedDriveThroughPens { get; set; }
 
-    /// <summary>
-    /// Number of stop and go penalties left to serve
-    /// </summary>
+    /// <inheritdoc/>
     public ushort NumberUnservedStopAndGoPenalties { get; set; }
 
-    /// <summary>
-    /// Pit lane timing active flag
-    /// </summary>
+    /// <inheritdoc/>
     public bool IsPitLaneTimerActive { get; set; }
 
-    /// <summary>
-    /// Pit lane time in lane in milliseconds, only if <see cref="IsPitLaneTimerActive"/> is active
-    /// </summary>
+    /// <inheritdoc/>
     public ushort PitLaneTimeInLane { get; set; }
 
-    /// <summary>
-    /// Time of actual pit stop in milliseconds
-    /// </summary>
+    /// <inheritdoc/>
     public ushort PitStopTimer { get; set; }
 
-    /// <summary>
-    /// Flag if the car should serve a penalty at this stop
-    /// </summary>
+    /// <inheritdoc/>
     public bool PitStopShouldServePenalty { get; set; }
 
     #endregion // ILapData2023
 
     #region ILapData2024
 
-    /// <summary>
-    /// Time delta to car in front whole minute part
-    /// </summary>
+    /// <inheritdoc/>
     public ushort DeltaToCarInFrontMinutes { get; set; }
 
-    /// <summary>
-    /// Time delta to race leader whole minute part
-    /// </summary>
+    /// <inheritdoc/>
     public ushort DeltaToRaceLeaderMinutes { get; set; }
 
-    /// <summary>
-    /// Fastest speed through speed trap for this car in kmph
-    /// </summary>
+    /// <inheritdoc/>
     public float SpeedTrapFastestSpeed { get; set; }
 
-    /// <summary>
-    /// Lap no the fastest speed was achieved, 255 = not set
-    /// </summary>
+    /// <inheritdoc/>
     public ushort SpeedTrapFastestLap { get; set; }
 
     #endregion // ILapData2024
 
     #region ILapDataBase
 
-    /// <summary>
-    /// Flag if there is no car available (is nothing from the game)
-    /// </summary>
+    /// <inheritdoc/>
     public bool IsEmpty => GridPosition == 0 && CurrentLapTime == 0;
 
-    /// <summary>
-    /// Distance vehicle is around current lap in meters, negative is finish line not crossed yet
-    /// </summary>
+    /// <inheritdoc/>
     public float LapDistance { get; set; }
 
-    /// <summary>
-    /// Total distance travelled in session in meters, can be negative like <see cref="LapDistance"/>
-    /// </summary>
+    /// <inheritdoc/>
     public float TotalDistance { get; set; }
 
-    /// <summary>
-    /// Delta in seconds for safety car
-    /// </summary>
+    /// <inheritdoc/>
     public float SafetyCarDelta { get; set; }
 
-    /// <summary>
-    /// Actual race position
-    /// </summary>
+    /// <inheritdoc/>
     public ushort CarPosition { get; set; }
 
-    /// <summary>
-    /// Current lap number
-    /// </summary>
+    /// <inheritdoc/>
     public ushort CurrentLapNumber { get; set; }
 
-    /// <summary>
-    /// Current pit status
-    /// </summary>
+    /// <inheritdoc/>
     public PitStatus CurrentPitStatus { get; set; }
 
-    /// <summary>
-    /// Current sector
-    /// </summary>
+    /// <inheritdoc/>
     public Sector CurrentSector { get; set; }
 
-    /// <summary>
-    /// Is current lap invalid?
-    /// </summary>
+    /// <inheritdoc/>
     public bool IsCurrentLapInvalid { get; set; }
 
-    /// <summary>
-    /// Accumulated time penalties in seconds to be added
-    /// </summary>
+    /// <inheritdoc/>
     public ushort TimePenalties { get; set; }
 
-    /// <summary>
-    /// Grid start position
-    /// </summary>
+    /// <inheritdoc/>
     public ushort GridPosition { get; set; }
 
-    /// <summary>
-    /// Current driver status
-    /// </summary>
+    /// <inheritdoc/>
     public DriverStatus CurrentDriverStatus { get; set; }
 
-    /// <summary>
-    /// Current result status
-    /// </summary>
+    /// <inheritdoc/>
     public ResultStatus CurrentResultStatus { get; set; }
 
     #endregion // ILapDataBase

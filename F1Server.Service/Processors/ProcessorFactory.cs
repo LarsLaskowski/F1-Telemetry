@@ -135,9 +135,7 @@ public sealed class ProcessorFactory : IDisposable
 
     #region IDisposable
 
-    /// <summary>
-    /// Dispose method
-    /// </summary>
+    /// <inheritdoc/>
     public void Dispose()
     {
         Dispose(true);

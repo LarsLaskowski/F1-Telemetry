@@ -26,14 +26,10 @@ public class ParticipantsData2024 : IParticipantsBase
 
     #region IParticipantsBase
 
-    /// <summary>
-    /// Active cars
-    /// </summary>
+    /// <inheritdoc/>
     public ushort ActiveCars { get; set; }
 
-    /// <summary>
-    /// Data about participants in current session
-    /// </summary>
+    /// <inheritdoc/>
     public IParticipantDataBase[] Participants { get; }
 
     #endregion // IParticipantsBase

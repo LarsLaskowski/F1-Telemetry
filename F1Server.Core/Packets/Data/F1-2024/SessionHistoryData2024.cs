@@ -32,49 +32,31 @@ public class SessionHistoryData2024 : ISessionHistoryDataBase
 
     #region ISessionHistoryDataBase
 
-    /// <summary>
-    /// Index of car
-    /// </summary>
+    /// <inheritdoc/>
     public ushort CarIndex { get; set; }
 
-    /// <summary>
-    /// Number of laps in the data (including partial data of current lap)
-    /// </summary>
+    /// <inheritdoc/>
     public ushort NumberOfLaps { get; set; }
 
-    /// <summary>
-    /// Number of tyre stints in the data
-    /// </summary>
+    /// <inheritdoc/>
     public ushort NumberOfTyreStints { get; set; }
 
-    /// <summary>
-    /// Number of the lap on which the best lap time was achieved
-    /// </summary>
+    /// <inheritdoc/>
     public ushort BestLapNumber { get; set; }
 
-    /// <summary>
-    /// Number of lap with best sector 1 time
-    /// </summary>
+    /// <inheritdoc/>
     public ushort BestSector1LapNumber { get; set; }
 
-    /// <summary>
-    /// Number of lap with best sector 2 time
-    /// </summary>
+    /// <inheritdoc/>
     public ushort BestSector2LapNumber { get; set; }
 
-    /// <summary>
-    /// Number of lap with best sector 3 time
-    /// </summary>
+    /// <inheritdoc/>
     public ushort BestSector3LapNumber { get; set; }
 
-    /// <summary>
-    /// Array (max 100) lap data
-    /// </summary>
+    /// <inheritdoc/>
     public ILapHistoryDataBase[] LapHistory { get; }
 
-    /// <summary>
-    /// History data of tyre stints
-    /// </summary>
+    /// <inheritdoc/>
     public ITyreStintHistoryDataBase[] TyreStintHistory { get; }
 
     #endregion // ISessionHistoryDataBase

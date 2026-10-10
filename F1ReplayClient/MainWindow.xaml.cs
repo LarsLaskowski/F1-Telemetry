@@ -877,9 +877,7 @@ public partial class MainWindow : Window, IDisposable
 
     #region IDisposable
 
-    /// <summary>
-    /// Dispose method
-    /// </summary>
+    /// <inheritdoc/>
     public void Dispose()
     {
         Dispose(true);

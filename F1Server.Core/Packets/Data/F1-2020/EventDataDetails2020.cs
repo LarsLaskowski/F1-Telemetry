@@ -10,39 +10,25 @@ internal class EventDataDetails2020 : EventDataDetails2019, IEventDataDetails202
 {
     #region IEventDataDetails2020
 
-    /// <summary>
-    /// Type of penalty
-    /// </summary>
+    /// <inheritdoc/>
     public PenaltyType PenaltyType { get; set; }
 
-    /// <summary>
-    /// Type of infringement
-    /// </summary>
+    /// <inheritdoc/>
     public InfringementType PenaltyInfringementType { get; set; }
 
-    /// <summary>
-    /// Other vehicle index
-    /// </summary>
+    /// <inheritdoc/>
     public ushort PenaltyOtherVehicleIndex { get; set; }
 
-    /// <summary>
-    /// Time gained or time spent doing action in seconds
-    /// </summary>
+    /// <inheritdoc/>
     public ushort PenaltyTimeGained { get; set; }
 
-    /// <summary>
-    /// Lap of penalty occurred on
-    /// </summary>
+    /// <inheritdoc/>
     public ushort PenaltyLapNumber { get; set; }
 
-    /// <summary>
-    /// Number of places gained by this penalty
-    /// </summary>
+    /// <inheritdoc/>
     public ushort PenaltyPlacesGained { get; set; }
 
-    /// <summary>
-    /// Top speed achieved in km/h
-    /// </summary>
+    /// <inheritdoc/>
     public float TopSpeed { get; set; }
 
     #endregion // IEventDataDetails2020

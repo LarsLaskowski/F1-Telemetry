@@ -59,9 +59,7 @@ public class CarTelemetry2020 : ICarTelemetry2020
 
     #region ICarTelemetryBase
 
-    /// <summary>
-    /// Car telemetry of all cars
-    /// </summary>
+    /// <inheritdoc/>
     public ICarTelemetryDataBase[] CarTelemetryData { get; }
 
     #endregion // ICarTelemetryBase

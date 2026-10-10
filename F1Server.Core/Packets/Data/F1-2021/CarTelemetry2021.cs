@@ -35,28 +35,20 @@ public class CarTelemetry2021 : ICarTelemetry2021
 
     #region ICarTelemetry2021
 
-    /// <summary>
-    /// Index of MFD panel open - 255 = closed
-    /// </summary>
+    /// <inheritdoc/>
     public ushort MfdPanelIndex { get; set; }
 
-    /// <summary>
-    /// Index of MFD panel open (second player)
-    /// </summary>
+    /// <inheritdoc/>
     public ushort MfdPanelIndexSecondary { get; set; }
 
-    /// <summary>
-    /// Suggested gear
-    /// </summary>
+    /// <inheritdoc/>
     public ushort SuggestedGear { get; set; }
 
     #endregion // ICarTelemetry2021
 
     #region ICarTelemetryBase
 
-    /// <summary>
-    /// Car telemetry of all cars
-    /// </summary>
+    /// <inheritdoc/>
     public ICarTelemetryDataBase[] CarTelemetryData { get; }
 
     #endregion // ICarTelemetryBase

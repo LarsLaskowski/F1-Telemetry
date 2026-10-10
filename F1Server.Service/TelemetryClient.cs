@@ -1106,9 +1106,7 @@ public sealed class TelemetryClient : ITelemetryClient, IDisposable
 
     #region IDisposable
 
-    /// <summary>
-    /// Dispose
-    /// </summary>
+    /// <inheritdoc/>
     public void Dispose()
     {
         if (_applicationData != null)

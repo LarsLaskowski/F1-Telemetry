@@ -21,14 +21,10 @@ public class EventData2024 : IEventDataBase
 
     #region IEventDataBase
 
-    /// <summary>
-    /// Event code
-    /// </summary>
+    /// <inheritdoc/>
     public string EventCode { get; set; } = string.Empty;
 
-    /// <summary>
-    /// Event details
-    /// </summary>
+    /// <inheritdoc/>
     public IEventDataDetailsBase EventDetails { get; }
 
     #endregion // IEventDataBase

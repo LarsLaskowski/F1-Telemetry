@@ -26,23 +26,17 @@ public class LapDataComplete2022 : ILapDataComplete, ILapDataComplete2022
 
     #region ILapDataComplete
 
-    /// <summary>
-    /// Array with all lap data information of all cars
-    /// </summary>
+    /// <inheritdoc/>
     public ILapDataBase[] LapData { get; }
 
     #endregion // ILapDataComplete
 
     #region ILapDataComplete2022
 
-    /// <summary>
-    /// Index of personal best car in time trial (255 - invalid)
-    /// </summary>
+    /// <inheritdoc/>
     public ushort TimeTrialPersonalBestCarIndex { get; set; }
 
-    /// <summary>
-    /// Index of rival car in time trial (255 - invalid)
-    /// </summary>
+    /// <inheritdoc/>
     public ushort TimeTrialRivalCarIndex { get; set; }
 
     #endregion // ILapDataComplete2022

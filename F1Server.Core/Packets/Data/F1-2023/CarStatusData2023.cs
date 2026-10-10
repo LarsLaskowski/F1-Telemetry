@@ -10,133 +10,83 @@ public class CarStatusData2023 : ICarStatusData2023
 {
     #region ICarStatusDataBase
 
-    /// <summary>
-    /// Traction control 0 - off - 2 - high
-    /// </summary>
+    /// <inheritdoc/>
     public ushort TractionControl { get; set; }
 
-    /// <summary>
-    /// Anti lock brakes - 0 - off - 1 - on
-    /// </summary>
+    /// <inheritdoc/>
     public ushort AntiLockBrakes { get; set; }
 
-    /// <summary>
-    /// Fuel mix - 0 - lean - 1 - standard - 2 - rich - 3 - max
-    /// </summary>
+    /// <inheritdoc/>
     public ushort FuelMix { get; set; }
 
-    /// <summary>
-    /// Front brake bias in percentage
-    /// </summary>
+    /// <inheritdoc/>
     public ushort FrontBrakeBias { get; set; }
 
-    /// <summary>
-    /// Pit limiter status - 0 - off - 1 - on
-    /// </summary>
+    /// <inheritdoc/>
     public ushort PitLimiterStatus { get; set; }
 
-    /// <summary>
-    /// Current fuel mass
-    /// </summary>
+    /// <inheritdoc/>
     public float FuelInTank { get; set; }
 
-    /// <summary>
-    /// Fuel capacity
-    /// </summary>
+    /// <inheritdoc/>
     public float FuelCapacity { get; set; }
 
-    /// <summary>
-    /// Fuel remaining in terms of laps (value on MFD)
-    /// </summary>
+    /// <inheritdoc/>
     public float FuelRemainingLaps { get; set; }
 
-    /// <summary>
-    /// Cars max RPM, point of rev limiter
-    /// </summary>
+    /// <inheritdoc/>
     public uint MaxRPM { get; set; }
 
-    /// <summary>
-    /// Cars idle RPM
-    /// </summary>
+    /// <inheritdoc/>
     public uint IdleRPM { get; set; }
 
-    /// <summary>
-    /// Maximum number of gears
-    /// </summary>
+    /// <inheritdoc/>
     public ushort MaxGears { get; set; }
 
-    /// <summary>
-    /// DRS allowed - 0 - not allowed - 1 - allowed - -1 - unknown
-    /// </summary>
+    /// <inheritdoc/>
     public short DRSAllowed { get; set; }
 
-    /// <summary>
-    /// Tyre compound
-    /// </summary>
+    /// <inheritdoc/>
     public ushort ActualTyreCompound { get; set; }
 
-    /// <summary>
-    /// Visual tyre compound - can be different from actual compound
-    /// </summary>
+    /// <inheritdoc/>
     public VisualTyreCompound VisualTyreCompound { get; set; }
 
-    /// <summary>
-    /// FIA flags
-    /// </summary>
+    /// <inheritdoc/>
     public VehicleFiaFlagColor FiaFlags { get; set; }
 
-    /// <summary>
-    /// ERS energy store in Joules
-    /// </summary>
+    /// <inheritdoc/>
     public float ERSStoreEnergy { get; set; }
 
-    /// <summary>
-    /// ERS deployment mode - 0 - none - 1 - medium - 2 - hotlap - 3 - overtake
-    /// </summary>
+    /// <inheritdoc/>
     public ushort ERSDeployMode { get; set; }
 
-    /// <summary>
-    /// ERS energy harvested this lap by MGU-K
-    /// </summary>
+    /// <inheritdoc/>
     public float ERSHarvestedThisLapMGUK { get; set; }
 
-    /// <summary>
-    /// ERS energy harvested this lap by MGU-H
-    /// </summary>
+    /// <inheritdoc/>
     public float ERSHarvestedThisLapMGUH { get; set; }
 
-    /// <summary>
-    /// ERS energy deployed this lap
-    /// </summary>
+    /// <inheritdoc/>
     public float ERSDeployedThisLap { get; set; }
 
     #endregion // ICarStatusDataBase
 
     #region ICarStatusData2023
 
-    /// <summary>
-    /// Engine power output of ICE (W)
-    /// </summary>
+    /// <inheritdoc/>
     public float EnginePowerICE { get; set; }
 
-    /// <summary>
-    /// Engine power output of MGU-K (W)
-    /// </summary>
+    /// <inheritdoc/>
     public float EnginePowerMGUK { get; set; }
 
-    /// <summary>
-    /// DRS activation distance - 0 - DRS not available - non-zero - DRS will be available
-    /// </summary>
+    /// <inheritdoc/>
     public int DRSActivationDistance { get; set; }
 
-    /// <summary>
-    /// Age of laps of the current set of tyres
-    /// </summary>
+    /// <inheritdoc/>
     public ushort TyresAgeLaps { get; set; }
 
-    /// <summary>
-    /// Whether the car is paused in a network game
-    /// </summary>
+    /// <inheritdoc/>
     public ushort NetworkPaused { get; set; }
 
     #endregion // ICarStatusData2023

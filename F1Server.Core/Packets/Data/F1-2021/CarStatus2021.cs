@@ -28,9 +28,7 @@ public class CarStatus2021 : ICarStatus2021
 
     #region ICarStatusBase
 
-    /// <summary>
-    /// Car Status of all cars
-    /// </summary>
+    /// <inheritdoc/>
     public ICarStatusDataBase[] CarStatusData { get; }
 
     #endregion // ICarStatusBase

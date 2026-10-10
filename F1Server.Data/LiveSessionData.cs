@@ -10,103 +10,65 @@ public class LiveSessionData : ILiveSessionData
 {
     #region ILiveBaseData
 
-    /// <summary>
-    /// Database id
-    /// </summary>
+    /// <inheritdoc/>
     public long DbId { get; set; }
 
     #endregion // ILiveBaseData
 
     #region ILiveSessionData
 
-    /// <summary>
-    /// Current session game id from game
-    /// </summary>
+    /// <inheritdoc/>
     public ulong SessionGameId { get; set; }
 
-    /// <summary>
-    /// Session is finished
-    /// </summary>
+    /// <inheritdoc/>
     public bool IsFinished { get; set; }
 
-    /// <summary>
-    /// Current number of cars on track
-    /// </summary>
+    /// <inheritdoc/>
     public int CurrentCarsOnTrack { get; set; }
 
-    /// <summary>
-    /// Current session type
-    /// </summary>
+    /// <inheritdoc/>
     public SessionType SessionType { get; set; }
 
-    /// <summary>
-    /// Duration of session in seconds
-    /// </summary>
+    /// <inheritdoc/>
     public int SessionDuration { get; set; }
 
-    /// <summary>
-    /// Session time left in seconds
-    /// </summary>
+    /// <inheritdoc/>
     public int SessionTimeLeft { get; set; }
 
-    /// <summary>
-    /// Air temperature
-    /// </summary>
+    /// <inheritdoc/>
     public int AirTemperature { get; set; }
 
-    /// <summary>
-    /// Track temperature
-    /// </summary>
+    /// <inheritdoc/>
     public int TrackTemperature { get; set; }
 
-    /// <summary>
-    /// Safety car on track?
-    /// </summary>
+    /// <inheritdoc/>
     public bool IsSafetyCar { get; set; }
 
-    /// <summary>
-    /// Weather
-    /// </summary>
+    /// <inheritdoc/>
     public WeatherCondition Weather { get; set; }
 
-    /// <summary>
-    /// Fastest sector 1 time in milliseconds
-    /// </summary>
+    /// <inheritdoc/>
     public uint FastestSector1 { get; set; }
 
-    /// <summary>
-    /// Fastest sector 1 driver (index from game array)
-    /// </summary>
+    /// <inheritdoc/>
     public int FastestSector1Driver { get; set; }
 
-    /// <summary>
-    /// Fastest sector 2 time in milliseconds
-    /// </summary>
+    /// <inheritdoc/>
     public uint FastestSector2 { get; set; }
 
-    /// <summary>
-    /// Fastest sector 2 driver (index from game array)
-    /// </summary>
+    /// <inheritdoc/>
     public int FastestSector2Driver { get; set; }
 
-    /// <summary>
-    /// Fastest sector3 time in milliseconds
-    /// </summary>
+    /// <inheritdoc/>
     public uint FastestSector3 { get; set; }
 
-    /// <summary>
-    /// Fastest sector 3 driver (index from game array)
-    /// </summary>
+    /// <inheritdoc/>
     public int FastestSector3Driver { get; set; }
 
-    /// <summary>
-    /// Fastest lap time in milliseconds
-    /// </summary>
+    /// <inheritdoc/>
     public uint FastestLap { get; set; }
 
-    /// <summary>
-    /// Fastest lap driver (index from game array)
-    /// </summary>
+    /// <inheritdoc/>
     public int FastestLapDriver { get; set; }
 
     /// <summary>
@@ -119,14 +81,10 @@ public class LiveSessionData : ILiveSessionData
     /// </summary>
     public List<int> TimeTable { get; set; } = [];
 
-    /// <summary>
-    /// Participants in session, exposed read-only to callers holding the <see cref="ILiveSessionData"/> contract
-    /// </summary>
+    /// <inheritdoc/>
     IReadOnlyList<ILiveDriverData> ILiveSessionData.Drivers => Drivers;
 
-    /// <summary>
-    /// Current time table, exposed read-only to callers holding the <see cref="ILiveSessionData"/> contract
-    /// </summary>
+    /// <inheritdoc/>
     IReadOnlyList<int> ILiveSessionData.TimeTable => TimeTable;
 
     #endregion // ILiveSessionData

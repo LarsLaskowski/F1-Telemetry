@@ -32,9 +32,7 @@ public class CarStatus2020 : ICarStatus2020
 
     #region ICarStatusBase
 
-    /// <summary>
-    /// Car Status of all cars
-    /// </summary>
+    /// <inheritdoc/>
     public ICarStatusDataBase[] CarStatusData { get; }
 
     #endregion // ICarStatusBase

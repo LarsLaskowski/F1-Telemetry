@@ -342,9 +342,7 @@ public class WebHosting : IWebHosting
 
     #region IDisposable
 
-    /// <summary>
-    /// Dispose
-    /// </summary>
+    /// <inheritdoc/>
     public void Dispose()
     {
         Dispose(true);

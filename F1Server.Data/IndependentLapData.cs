@@ -9,29 +9,19 @@ public class IndependentLapData : IIndependentLapData
 {
     #region IIndependentLapData
 
-    /// <summary>
-    /// Current lap time
-    /// </summary>
+    /// <inheritdoc/>
     public uint CurrentLapTime { get; set; }
 
-    /// <summary>
-    /// Last lap time
-    /// </summary>
+    /// <inheritdoc/>
     public uint LastLapTime { get; set; }
 
-    /// <summary>
-    /// Sector 1 time
-    /// </summary>
+    /// <inheritdoc/>
     public uint Sector1Time { get; set; }
 
-    /// <summary>
-    /// Sector 2 time
-    /// </summary>
+    /// <inheritdoc/>
     public uint Sector2Time { get; set; }
 
-    /// <summary>
-    /// Sector 3 time
-    /// </summary>
+    /// <inheritdoc/>
     public uint Sector3Time { get; set; }
 
     #endregion // IIndependentLapData

@@ -23,123 +23,77 @@ public class SessionData2020 : ISessionData2020
 
     #region ISessionDataBase
 
-    /// <summary>
-    /// Is session recordable? Network games or time trial are not
-    /// </summary>
+    /// <inheritdoc/>
     public bool IsRecordable { get; set; }
 
-    /// <summary>
-    /// Weather condition
-    /// </summary>
+    /// <inheritdoc/>
     public WeatherCondition Weather { get; set; }
 
-    /// <summary>
-    /// Track temperature
-    /// </summary>
+    /// <inheritdoc/>
     public short TrackTemperature { get; set; }
 
-    /// <summary>
-    /// Air temperature
-    /// </summary>
+    /// <inheritdoc/>
     public short AirTemperature { get; set; }
 
-    /// <summary>
-    /// Total laps
-    /// </summary>
+    /// <inheritdoc/>
     public ushort TotalLaps { get; set; }
 
-    /// <summary>
-    /// Length of track
-    /// </summary>
+    /// <inheritdoc/>
     public int TrackLength { get; set; }
 
-    /// <summary>
-    /// Session type
-    /// </summary>
+    /// <inheritdoc/>
     public SessionType SessionType { get; set; }
 
-    /// <summary>
-    /// Track id, -1 when unknown
-    /// </summary>
+    /// <inheritdoc/>
     public short TrackId { get; set; }
 
-    /// <summary>
-    /// Name of the track
-    /// </summary>
+    /// <inheritdoc/>
     public string TrackName { get; set; }
 
-    /// <summary>
-    /// Formula type - F1 and so on
-    /// </summary>
+    /// <inheritdoc/>
     public Formula FormulaType { get; set; }
 
-    /// <summary>
-    /// Session time left in seconds
-    /// </summary>
+    /// <inheritdoc/>
     public int SessionTimeLeft { get; set; }
 
-    /// <summary>
-    /// Duration of current session
-    /// </summary>
+    /// <inheritdoc/>
     public int SessionDuration { get; set; }
 
-    /// <summary>
-    /// Pit speed limit
-    /// </summary>
+    /// <inheritdoc/>
     public ushort PitSpeedLimit { get; set; }
 
-    /// <summary>
-    /// Flag if game is paused
-    /// </summary>
+    /// <inheritdoc/>
     public bool IsGamePaused { get; set; }
 
-    /// <summary>
-    /// Flag if user is spectating
-    /// </summary>
+    /// <inheritdoc/>
     public bool IsSpectating { get; set; }
 
-    /// <summary>
-    /// Car index spectating
-    /// </summary>
+    /// <inheritdoc/>
     public ushort SpectatorCarIndex { get; set; }
 
-    /// <summary>
-    /// SLI Pro support
-    /// </summary>
+    /// <inheritdoc/>
     public bool IsSliProNativeSupport { get; set; }
 
-    /// <summary>
-    /// Number of marshal zones
-    /// </summary>
+    /// <inheritdoc/>
     public ushort NumberOfMarshalZones { get; set; }
 
-    /// <summary>
-    /// Marshal zone data
-    /// </summary>
+    /// <inheritdoc/>
     public MarshalZone[] MarshalZones { get; set; }
 
-    /// <summary>
-    /// Safety car status
-    /// </summary>
+    /// <inheritdoc/>
     public SafetyCarStatus SafetyCar { get; set; }
 
-    /// <summary>
-    /// Online or offline
-    /// </summary>
+    /// <inheritdoc/>
     public bool IsNetworkGame { get; set; }
 
     #endregion // ISessionDataBase
 
     #region ISessionData2020
 
-    /// <summary>
-    /// Number of weather samples to follow
-    /// </summary>
+    /// <inheritdoc/>
     public ushort NumberWeatherForecastSamples { get; set; }
 
-    /// <summary>
-    /// Weather forecast data
-    /// </summary>
+    /// <inheritdoc/>
     public WeatherForecastSample[] WeatherForecastSamples { get; }
 
     #endregion // ISessionData2020

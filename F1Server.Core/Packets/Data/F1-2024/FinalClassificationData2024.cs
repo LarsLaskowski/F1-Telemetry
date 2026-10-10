@@ -26,14 +26,10 @@ public class FinalClassificationData2024 : IFinalClassificationData
 
     #region IFinalClassificationData
 
-    /// <summary>
-    /// Number of cars in the final classification
-    /// </summary>
+    /// <inheritdoc/>
     public ushort NumberOfCars { get; set; }
 
-    /// <summary>
-    /// Data of final classification for each car
-    /// </summary>
+    /// <inheritdoc/>
     public IFinalClassificationCarBase[] FinalClassifications { get; }
 
     #endregion // IFinalClassificationData

@@ -9,88 +9,56 @@ public class CarTelemetryData2024 : ICarTelemetryData2024
 {
     #region ICarTelemetryDataBase
 
-    /// <summary>
-    /// Speed
-    /// </summary>
+    /// <inheritdoc/>
     public ushort Speed { get; set; }
 
-    /// <summary>
-    /// Amount of throttle applied (0.0 - 1.0)
-    /// </summary>
+    /// <inheritdoc/>
     public float Throttle { get; set; }
 
-    /// <summary>
-    /// Steering (-1.0 [full left] - 1.0 [full right])
-    /// </summary>
+    /// <inheritdoc/>
     public float Steer { get; set; }
 
-    /// <summary>
-    /// Amount of brake applied (0.0 - 1.0)
-    /// </summary>
+    /// <inheritdoc/>
     public float Brake { get; set; }
 
-    /// <summary>
-    /// Amount of clutch applied (0 - 100)
-    /// </summary>
+    /// <inheritdoc/>
     public ushort Clutch { get; set; }
 
-    /// <summary>
-    /// Current gear (1-8, N = 0, R = -1)
-    /// </summary>
+    /// <inheritdoc/>
     public short Gear { get; set; }
 
-    /// <summary>
-    /// Engine RPM
-    /// </summary>
+    /// <inheritdoc/>
     public ushort EngineRPM { get; set; }
 
-    /// <summary>
-    /// DRS active or not
-    /// </summary>
+    /// <inheritdoc/>
     public bool IsDRS { get; set; }
 
-    /// <summary>
-    /// Rev lights indicator in percent
-    /// </summary>
+    /// <inheritdoc/>
     public ushort RevLightsIndicator { get; set; }
 
-    /// <summary>
-    /// Brakes temperatures (celsius)
-    /// </summary>
+    /// <inheritdoc/>
     public Temperature BrakesTemperature { get; set; }
 
-    /// <summary>
-    /// Tyres surface temperature (celsius)
-    /// </summary>
+    /// <inheritdoc/>
     public Temperature TyresSurfaceTemperature { get; set; }
 
-    /// <summary>
-    /// Tyres inner temperature (celsius)
-    /// </summary>
+    /// <inheritdoc/>
     public Temperature TyresInnerTemperature { get; set; }
 
-    /// <summary>
-    /// Engine temperature (celsius)
-    /// </summary>
+    /// <inheritdoc/>
     public ushort EngineTemperature { get; set; }
 
-    /// <summary>
-    /// Tyres pressure
-    /// </summary>
+    /// <inheritdoc/>
     public TyresPressure TyresPressure { get; set; }
 
-    /// <summary>
-    /// Type of surface
-    /// </summary>
+    /// <inheritdoc/>
     public WheelSurface SurfaceType { get; set; }
 
     #endregion // ICarTelemetryDataBase
 
     #region ICarTelemetryData2023
 
-    /// <summary>
-    /// Rev lights bit
-    /// </summary>
+    /// <inheritdoc/>
     public ushort RevLightsBitValue { get; set; }
 
     #endregion // ICarTelemetryData2023

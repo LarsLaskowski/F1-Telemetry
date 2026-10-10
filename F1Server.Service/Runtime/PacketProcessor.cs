@@ -771,9 +771,7 @@ internal class PacketProcessor : IDisposable
 
     #region IDisposable
 
-    /// <summary>
-    /// Dispose
-    /// </summary>
+    /// <inheritdoc/>
     public void Dispose()
     {
         Dispose(true);
