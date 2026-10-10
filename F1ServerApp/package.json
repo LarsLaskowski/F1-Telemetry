@@ -1,6 +1,6 @@
 {
   "name": "f1-server-app",
-  "version": "1.18.3",
+  "version": "1.18.6",
   "scripts": {
     "ng": "ng",
     "start": "ng serve --port 4810 --host=127.0.0.1",
@@ -33,14 +33,9 @@
     "@angular/build": "^22.2.1",
     "@angular/cli": "~22.2.1",
     "@angular/compiler-cli": "^22.2.1",
-    "@types/jasmine": "~7.0.0",
-    "jasmine-core": "~7.0.2",
-    "karma": "~6.4.4",
-    "karma-chrome-launcher": "~3.2.0",
-    "karma-coverage": "~2.2.1",
-    "karma-jasmine": "~5.1.0",
-    "karma-jasmine-html-reporter": "~2.3.0",
-    "typescript": "^6.0"
+    "jsdom": "^30.1.2",
+    "typescript": "^6.0",
+    "vitest": "^5.0.3"
   },
   "overrides": {
     "piscina": "^5.3.2",

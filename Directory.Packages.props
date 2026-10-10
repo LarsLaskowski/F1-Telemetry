@@ -25,6 +25,7 @@
     <PackageVersion Include="coverlet.collector" Version="10.1.0" />
     <!-- Code Analysis - build-time only, rc1 is the latest release - see docs/dependency-decisions.md -->
     <PackageVersion Include="Reihitsu.Analyzer" Version="1.1.0" />
+    <PackageVersion Include="SonarAnalyzer.CSharp" Version="10.35.0.4138" />
     <!-- API Documentation & Swagger -->
     <PackageVersion Include="Swashbuckle.AspNetCore.Swagger" Version="10.3.0" />
     <PackageVersion Include="Swashbuckle.AspNetCore.SwaggerGen" Version="10.3.0" />

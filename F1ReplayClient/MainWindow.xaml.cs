@@ -150,7 +150,12 @@ public partial class MainWindow : Window, IDisposable
 
             CurrentFolderFiles.Clear();
 
-            Task.Run(() => AnalyzeFolder(folderPath));
+            _cts?.Cancel();
+            _cts?.Dispose();
+
+            _cts = new CancellationTokenSource();
+
+            Task.Run(() => AnalyzeFolder(folderPath), _cts.Token);
         }
     }
 

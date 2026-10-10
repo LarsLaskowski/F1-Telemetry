@@ -116,7 +116,7 @@ internal partial class FolderRenameProcessor
 
                     if (isSessionDetected && sessionDetector.SessionData != null)
                     {
-                        isRenamed = RenameDirectory(directoryToRename, sessionDetector.SessionData!);
+                        isRenamed = RenameDirectory(directoryToRename, sessionDetector.SessionData);
 
                         Console.WriteLine($"   renamed: {isRenamed}");
                     }
