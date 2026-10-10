@@ -131,6 +131,10 @@ jobs:
           dotnet restore F1Server/F1Server.csproj
           dotnet restore F1Server.Tests/F1Server.Tests.csproj
 
+      # sonar.coverage.exclusions only removes the startup/composition-root
+      # files (host bootstrap, web host wiring, OpenTelemetry setup) from the
+      # coverage metric; they are still analyzed for issues. They only wire
+      # up the real runtime environment and are not meaningfully unit-testable.
       - name: Begin SonarQube analysis
         if: ${{ env.SONAR_TOKEN != '' }}
         run: |
@@ -141,6 +145,7 @@ jobs:
             /d:sonar.exclusions="**/Migrations/**,F1ServerApp/**,**/*.packet,docs/**" \
             /d:sonar.test.exclusions="**/*.packet" \
             /d:sonar.global.exclusions="**/*.packet" \
+            /d:sonar.coverage.exclusions="F1Server/Program.cs,F1Server.WebApi/WebHosting.cs,F1Server.Observability/ObservabilityConfiguration.cs" \
             /d:sonar.cs.opencover.reportsPaths="${{ runner.temp }}/TestResults/**/coverage.opencover.xml"
 
       - name: Build
