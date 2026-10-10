@@ -10,88 +10,56 @@ public class LiveDriverData : ILiveDriverData
 {
     #region ILiveBaseData
 
-    /// <summary>
-    /// Database id
-    /// </summary>
+    /// <inheritdoc/>
     public long DbId { get; set; }
 
     #endregion // ILiveBaseData
 
     #region ILiveDriverData
 
-    /// <summary>
-    /// Index in game packet
-    /// </summary>
+    /// <inheritdoc/>
     public int ArrayIndex { get; set; }
 
-    /// <summary>
-    /// Driver name
-    /// </summary>
+    /// <inheritdoc/>
     public string DriverName { get; set; }
 
-    /// <summary>
-    /// Car number
-    /// </summary>
+    /// <inheritdoc/>
     public int CarNumber { get; set; }
 
-    /// <summary>
-    /// Grid position
-    /// </summary>
+    /// <inheritdoc/>
     public int GridPosition { get; set; }
 
-    /// <summary>
-    /// Car position on track
-    /// </summary>
+    /// <inheritdoc/>
     public int CarPosition { get; set; }
 
-    /// <summary>
-    /// Nationality
-    /// </summary>
+    /// <inheritdoc/>
     public string Nationality { get; set; }
 
-    /// <summary>
-    /// Team name
-    /// </summary>
+    /// <inheritdoc/>
     public string TeamName { get; set; }
 
-    /// <summary>
-    /// Current driver status - in garage or out lap or something else
-    /// </summary>
+    /// <inheritdoc/>
     public DriverStatus CurrentDriverStatus { get; set; }
 
-    /// <summary>
-    /// Current lap time in milliseconds (since F1 2020)
-    /// </summary>
+    /// <inheritdoc/>
     public uint CurrentLapTime { get; set; }
 
-    /// <summary>
-    /// Fastest time needed for sector 1 in milliseconds
-    /// </summary>
+    /// <inheritdoc/>
     public uint FastestSector1 { get; set; }
 
-    /// <summary>
-    /// Fastest time needed for sector 2 in milliseconds
-    /// </summary>
+    /// <inheritdoc/>
     public uint FastestSector2 { get; set; }
 
-    /// <summary>
-    /// Fastest time needed for sector 3 in milliseconds
-    /// </summary>
+    /// <inheritdoc/>
     public uint FastestSector3 { get; set; }
 
-    /// <summary>
-    /// Fastest lap in milliseconds
-    /// </summary>
+    /// <inheritdoc/>
     public uint FastestLapTime { get; set; }
 
-    /// <summary>
-    /// Number of laps driven by this driver
-    /// </summary>
+    /// <inheritdoc/>
     public int LapsDriven { get; set; }
 
-    /// <summary>
-    /// Currently used tyre type
-    /// </summary>
+    /// <inheritdoc/>
     public VisualTyreCompound CurrentUsedTyre { get; set; }
 
     #endregion // ILiveDriverData

@@ -10,67 +10,45 @@ public class ParticipantData2023 : IParticipantData2023
 {
     #region IParticipantDataBase
 
-    /// <summary>
-    /// Is AI controlled or human
-    /// </summary>
+    /// <inheritdoc/>
     public bool IsAIControlled { get; set; }
 
-    /// <summary>
-    /// Id of driver
-    /// </summary>
+    /// <inheritdoc/>
     public ushort DriverId { get; set; }
 
-    /// <summary>
-    /// Id of team
-    /// </summary>
+    /// <inheritdoc/>
     public ushort TeamId { get; set; }
 
-    /// <summary>
-    /// Race number of the car
-    /// </summary>
+    /// <inheritdoc/>
     public ushort RaceNumber { get; set; }
 
-    /// <summary>
-    /// Nationality of the driver
-    /// </summary>
+    /// <inheritdoc/>
     public ushort Nationality { get; set; }
 
-    /// <summary>
-    /// Name of the driver
-    /// </summary>
+    /// <inheritdoc/>
     public string DriverName { get; set; } = string.Empty;
 
-    /// <summary>
-    /// Is telemetry restricted or public?
-    /// </summary>
+    /// <inheritdoc/>
     public bool IsPublicTelemetry { get; set; }
 
     #endregion // IParticipantDataBase
 
     #region IParticipantData2021
 
-    /// <summary>
-    /// Identifier for network players
-    /// </summary>
+    /// <inheritdoc/>
     public ushort NetworkId { get; set; }
 
-    /// <summary>
-    /// Is my team?
-    /// </summary>
+    /// <inheritdoc/>
     public bool IsMyTeam { get; set; }
 
     #endregion // IParticipantData2021
 
     #region IParticipantData2023
 
-    /// <summary>
-    /// Players show online name setting
-    /// </summary>
+    /// <inheritdoc/>
     public bool IsShowOnlineNames { get; set; }
 
-    /// <summary>
-    /// Platform of player
-    /// </summary>
+    /// <inheritdoc/>
     public Platforms Platform { get; set; }
 
     #endregion // IParticipantData2023

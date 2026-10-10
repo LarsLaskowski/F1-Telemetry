@@ -10,19 +10,13 @@ public class LapData2019 : ILapData2019
 {
     #region ILapData2019
 
-    /// <summary>
-    /// Last lap time
-    /// </summary>
+    /// <inheritdoc/>
     public float LastLapTime { get; set; }
 
-    /// <summary>
-    /// Current lap time
-    /// </summary>
+    /// <inheritdoc/>
     public float CurrentLapTime { get; set; }
 
-    /// <summary>
-    /// Best lap time in session in seconds
-    /// </summary>
+    /// <inheritdoc/>
     public float BestLapTime { get; set; }
 
     /// <inheritdoc/>
@@ -35,69 +29,43 @@ public class LapData2019 : ILapData2019
 
     #region ILapDataBase
 
-    /// <summary>
-    /// Flag if there is no car available (is nothing from the game)
-    /// </summary>
+    /// <inheritdoc/>
     public bool IsEmpty => CurrentLapNumber == 0 && CarPosition == 0 && GridPosition == 0 && TotalDistance <= 0.0;
 
-    /// <summary>
-    /// Distance vehicle is around current lap in meters, negative is finish line not crossed yet
-    /// </summary>
+    /// <inheritdoc/>
     public float LapDistance { get; set; }
 
-    /// <summary>
-    /// Total distance travelled in session in meters, can be negative like <see cref="LapDistance"/>
-    /// </summary>
+    /// <inheritdoc/>
     public float TotalDistance { get; set; }
 
-    /// <summary>
-    /// Delta in seconds for safety car
-    /// </summary>
+    /// <inheritdoc/>
     public float SafetyCarDelta { get; set; }
 
-    /// <summary>
-    /// Actual race position
-    /// </summary>
+    /// <inheritdoc/>
     public ushort CarPosition { get; set; }
 
-    /// <summary>
-    /// Current lap number
-    /// </summary>
+    /// <inheritdoc/>
     public ushort CurrentLapNumber { get; set; }
 
-    /// <summary>
-    /// Current pit status
-    /// </summary>
+    /// <inheritdoc/>
     public PitStatus CurrentPitStatus { get; set; }
 
-    /// <summary>
-    /// Current sector
-    /// </summary>
+    /// <inheritdoc/>
     public Sector CurrentSector { get; set; }
 
-    /// <summary>
-    /// Is current lap invalid?
-    /// </summary>
+    /// <inheritdoc/>
     public bool IsCurrentLapInvalid { get; set; }
 
-    /// <summary>
-    /// Accumulated time penalties in seconds to be added
-    /// </summary>
+    /// <inheritdoc/>
     public ushort TimePenalties { get; set; }
 
-    /// <summary>
-    /// Grid start position
-    /// </summary>
+    /// <inheritdoc/>
     public ushort GridPosition { get; set; }
 
-    /// <summary>
-    /// Current driver status
-    /// </summary>
+    /// <inheritdoc/>
     public DriverStatus CurrentDriverStatus { get; set; }
 
-    /// <summary>
-    /// Current result status
-    /// </summary>
+    /// <inheritdoc/>
     public ResultStatus CurrentResultStatus { get; set; }
 
     #endregion // ILapDataBase

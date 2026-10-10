@@ -104,9 +104,7 @@ public sealed class TelemetryWriter : ITelemetryWriter, IDisposable
 
     #region Properties
 
-    /// <summary>
-    /// Gets a value indicating whether the telemetry writer is ready to write data
-    /// </summary>
+    /// <inheritdoc/>
     public bool IsReady { get; private set; }
 
     #endregion // Properties
@@ -376,9 +374,7 @@ public sealed class TelemetryWriter : ITelemetryWriter, IDisposable
 
     #region IDisposable
 
-    /// <summary>
-    /// Releases all resources used by the current instance of the <see cref="TelemetryWriter"/> class
-    /// </summary>
+    /// <inheritdoc/>
     public void Dispose()
     {
         // Complete the channel so the write task exits once it is drained

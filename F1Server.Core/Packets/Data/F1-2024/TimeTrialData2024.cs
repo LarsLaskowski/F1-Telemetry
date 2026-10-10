@@ -23,19 +23,13 @@ public class TimeTrialData2024 : ITimeTrialData2024
 
     #region ITimeTrialDataBase
 
-    /// <summary>
-    /// Player session best data set
-    /// </summary>
+    /// <inheritdoc/>
     public ITimeTrialDataSetBase PlayerSessionBestDataSet { get; }
 
-    /// <summary>
-    /// Personal best data set
-    /// </summary>
+    /// <inheritdoc/>
     public ITimeTrialDataSetBase PersonalBestDataSet { get; }
 
-    /// <summary>
-    /// Rival data set
-    /// </summary>
+    /// <inheritdoc/>
     public ITimeTrialDataSetBase RivalDataSet { get; }
 
     #endregion // ITimeTrialDataBase

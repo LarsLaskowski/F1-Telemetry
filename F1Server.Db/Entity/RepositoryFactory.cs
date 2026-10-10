@@ -213,9 +213,7 @@ public sealed class RepositoryFactory : IDisposable
 
     #region IDisposable
 
-    /// <summary>
-    /// Dispose
-    /// </summary>
+    /// <inheritdoc/>
     public void Dispose()
     {
         _dbContext?.Dispose();

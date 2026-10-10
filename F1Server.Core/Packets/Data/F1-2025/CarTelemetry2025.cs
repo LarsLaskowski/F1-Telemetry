@@ -35,19 +35,13 @@ public class CarTelemetry2025 : ICarTelemetry2025
 
     #region ICarTelemetry2024
 
-    /// <summary>
-    /// Index of MFD panel open - 255 = closed
-    /// </summary>
+    /// <inheritdoc/>
     public ushort MfdPanelIndex { get; set; }
 
-    /// <summary>
-    /// Index of MFD panel open (second player)
-    /// </summary>
+    /// <inheritdoc/>
     public ushort MfdPanelIndexSecondary { get; set; }
 
-    /// <summary>
-    /// Suggested gear
-    /// </summary>
+    /// <inheritdoc/>
     public ushort SuggestedGear { get; set; }
 
     #endregion // ICarTelemetry2024

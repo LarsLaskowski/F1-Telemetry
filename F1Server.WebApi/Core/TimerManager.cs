@@ -96,9 +96,7 @@ public class TimerManager : IDisposable
 
     #region IDisposable
 
-    /// <summary>
-    /// Dispose method
-    /// </summary>
+    /// <inheritdoc/>
     public void Dispose()
     {
         Dispose(true);

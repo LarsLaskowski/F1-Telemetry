@@ -10,79 +10,49 @@ internal class EventDataDetails2022 : EventDataDetails2019, IEventDataDetails202
 {
     #region IEventDataDetails2022
 
-    /// <summary>
-    /// Type of penalty
-    /// </summary>
+    /// <inheritdoc/>
     public PenaltyType PenaltyType { get; set; }
 
-    /// <summary>
-    /// Type of infringement
-    /// </summary>
+    /// <inheritdoc/>
     public InfringementType PenaltyInfringementType { get; set; }
 
-    /// <summary>
-    /// Other vehicle index
-    /// </summary>
+    /// <inheritdoc/>
     public ushort PenaltyOtherVehicleIndex { get; set; }
 
-    /// <summary>
-    /// Time gained or time spent doing action in seconds
-    /// </summary>
+    /// <inheritdoc/>
     public ushort PenaltyTimeGained { get; set; }
 
-    /// <summary>
-    /// Lap of penalty occurred on
-    /// </summary>
+    /// <inheritdoc/>
     public ushort PenaltyLapNumber { get; set; }
 
-    /// <summary>
-    /// Number of places gained by this penalty
-    /// </summary>
+    /// <inheritdoc/>
     public ushort PenaltyPlacesGained { get; set; }
 
-    /// <summary>
-    /// Top speed achieved in km/h
-    /// </summary>
+    /// <inheritdoc/>
     public float TopSpeed { get; set; }
 
-    /// <summary>
-    /// Overall fastest speed in session
-    /// </summary>
+    /// <inheritdoc/>
     public bool IsOverallFastestInSession { get; set; }
 
-    /// <summary>
-    /// Fastest speed for driver in session
-    /// </summary>
+    /// <inheritdoc/>
     public bool IsDriverFastestInSession { get; set; }
 
-    /// <summary>
-    /// Fastest id of car in session
-    /// </summary>
+    /// <inheritdoc/>
     public ushort FastestVehicleIndexInSession { get; set; }
 
-    /// <summary>
-    /// Speed of the vehicle that is the fastest in session
-    /// </summary>
+    /// <inheritdoc/>
     public float FastestSpeedInSession { get; set; }
 
-    /// <summary>
-    /// Number of lights showing
-    /// </summary>
+    /// <inheritdoc/>
     public ushort StartLightsNumbers { get; set; }
 
-    /// <summary>
-    /// Frame identifier flashed back
-    /// </summary>
+    /// <inheritdoc/>
     public uint FlashbackFrame { get; set; }
 
-    /// <summary>
-    /// Session time flashed back
-    /// </summary>
+    /// <inheritdoc/>
     public float FlashbackSessionTime { get; set; }
 
-    /// <summary>
-    /// Bit flags specifying which buttons are being pressed
-    /// </summary>
+    /// <inheritdoc/>
     public uint ButtonsTriggered { get; set; }
 
     #endregion // IEventDataDetails2022

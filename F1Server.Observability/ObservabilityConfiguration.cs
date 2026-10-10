@@ -212,9 +212,7 @@ public sealed class ObservabilityConfiguration : IDisposable
 
     #region IDisposable
 
-    /// <summary>
-    /// Releases the resources used by the current instance of the class
-    /// </summary>
+    /// <inheritdoc/>
     public void Dispose()
     {
         _traceProvider?.ForceFlush();

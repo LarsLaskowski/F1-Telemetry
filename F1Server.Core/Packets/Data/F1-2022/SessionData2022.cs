@@ -23,236 +23,148 @@ public class SessionData2022 : ISessionData2022
 
     #region ISessionDataBase
 
-    /// <summary>
-    /// Is session recordable? Network games or time trial are not
-    /// </summary>
+    /// <inheritdoc/>
     public bool IsRecordable { get; set; }
 
-    /// <summary>
-    /// Weather condition
-    /// </summary>
+    /// <inheritdoc/>
     public WeatherCondition Weather { get; set; }
 
-    /// <summary>
-    /// Track temperature
-    /// </summary>
+    /// <inheritdoc/>
     public short TrackTemperature { get; set; }
 
-    /// <summary>
-    /// Air temperature
-    /// </summary>
+    /// <inheritdoc/>
     public short AirTemperature { get; set; }
 
-    /// <summary>
-    /// Total laps
-    /// </summary>
+    /// <inheritdoc/>
     public ushort TotalLaps { get; set; }
 
-    /// <summary>
-    /// Length of track
-    /// </summary>
+    /// <inheritdoc/>
     public int TrackLength { get; set; }
 
-    /// <summary>
-    /// Session type
-    /// </summary>
+    /// <inheritdoc/>
     public SessionType SessionType { get; set; }
 
-    /// <summary>
-    /// Track id, -1 when unknown
-    /// </summary>
+    /// <inheritdoc/>
     public short TrackId { get; set; }
 
-    /// <summary>
-    /// Name of the track
-    /// </summary>
+    /// <inheritdoc/>
     public string TrackName { get; set; }
 
-    /// <summary>
-    /// Formula type - F1 and so on
-    /// </summary>
+    /// <inheritdoc/>
     public Formula FormulaType { get; set; }
 
-    /// <summary>
-    /// Session time left in seconds
-    /// </summary>
+    /// <inheritdoc/>
     public int SessionTimeLeft { get; set; }
 
-    /// <summary>
-    /// Duration of current session
-    /// </summary>
+    /// <inheritdoc/>
     public int SessionDuration { get; set; }
 
-    /// <summary>
-    /// Pit speed limit
-    /// </summary>
+    /// <inheritdoc/>
     public ushort PitSpeedLimit { get; set; }
 
-    /// <summary>
-    /// Flag if game is paused
-    /// </summary>
+    /// <inheritdoc/>
     public bool IsGamePaused { get; set; }
 
-    /// <summary>
-    /// Flag if user is spectating
-    /// </summary>
+    /// <inheritdoc/>
     public bool IsSpectating { get; set; }
 
-    /// <summary>
-    /// Car index spectating
-    /// </summary>
+    /// <inheritdoc/>
     public ushort SpectatorCarIndex { get; set; }
 
-    /// <summary>
-    /// SLI Pro support
-    /// </summary>
+    /// <inheritdoc/>
     public bool IsSliProNativeSupport { get; set; }
 
-    /// <summary>
-    /// Number of marshal zones
-    /// </summary>
+    /// <inheritdoc/>
     public ushort NumberOfMarshalZones { get; set; }
 
-    /// <summary>
-    /// Marshal zone data
-    /// </summary>
+    /// <inheritdoc/>
     public MarshalZone[] MarshalZones { get; set; }
 
-    /// <summary>
-    /// Safety car status
-    /// </summary>
+    /// <inheritdoc/>
     public SafetyCarStatus SafetyCar { get; set; }
 
-    /// <summary>
-    /// Online or offline
-    /// </summary>
+    /// <inheritdoc/>
     public bool IsNetworkGame { get; set; }
 
     #endregion // ISessionDataBase
 
     #region ISessionData2020
 
-    /// <summary>
-    /// Number of weather samples to follow
-    /// </summary>
+    /// <inheritdoc/>
     public ushort NumberWeatherForecastSamples { get; set; }
 
-    /// <summary>
-    /// Weather forecast data
-    /// </summary>
+    /// <inheritdoc/>
     public WeatherForecastSample[] WeatherForecastSamples { get; }
 
     #endregion // ISessionData2020
 
     #region ISessionData2021
 
-    /// <summary>
-    /// Forecast accuracy
-    /// </summary>
+    /// <inheritdoc/>
     public ForecastAccuracy ForecastAccuracy { get; set; }
 
-    /// <summary>
-    /// AI difficulty rating (0 - 110)
-    /// </summary>
+    /// <inheritdoc/>
     public ushort AiDifficulty { get; set; }
 
-    /// <summary>
-    /// Identifier for season - persists across saves
-    /// </summary>
+    /// <inheritdoc/>
     public uint SeasonLinkIdentifier { get; set; }
 
-    /// <summary>
-    /// Identifier for weekend - persists across saves
-    /// </summary>
+    /// <inheritdoc/>
     public uint WeekendLinkIdentifier { get; set; }
 
-    /// <summary>
-    /// Identifier for session - persists across saves
-    /// </summary>
+    /// <inheritdoc/>
     public uint SessionLinkIdentifier { get; set; }
 
-    /// <summary>
-    /// Ideal lap to pit on current strategy
-    /// </summary>
+    /// <inheritdoc/>
     public ushort PitStopWindowIdealLap { get; set; }
 
-    /// <summary>
-    /// Latest lap to pit on current strategy
-    /// </summary>
+    /// <inheritdoc/>
     public ushort PitStopWindowLatestLap { get; set; }
 
-    /// <summary>
-    /// Predicted position to rejoin at
-    /// </summary>
+    /// <inheritdoc/>
     public ushort PitStopRejoinPosition { get; set; }
 
-    /// <summary>
-    /// Steering assist is on or off
-    /// </summary>
+    /// <inheritdoc/>
     public bool IsSteeringAssist { get; set; }
 
-    /// <summary>
-    /// Braking assist setting
-    /// </summary>
+    /// <inheritdoc/>
     public BrakingAssist BrakingAssist { get; set; }
 
-    /// <summary>
-    /// Gearbox assist setting
-    /// </summary>
+    /// <inheritdoc/>
     public GearboxAssist GearboxAssist { get; set; }
 
-    /// <summary>
-    /// Pit assist on or off
-    /// </summary>
+    /// <inheritdoc/>
     public bool IsPitAssist { get; set; }
 
-    /// <summary>
-    /// Pit release assist on or off
-    /// </summary>
+    /// <inheritdoc/>
     public bool IsPitReleaseAssist { get; set; }
 
-    /// <summary>
-    /// ERS assist on or off
-    /// </summary>
+    /// <inheritdoc/>
     public bool IsERSAssist { get; set; }
 
-    /// <summary>
-    /// DRS assist on or off
-    /// </summary>
+    /// <inheritdoc/>
     public bool IsDRSAssist { get; set; }
 
-    /// <summary>
-    /// Dynamic race line settings
-    /// </summary>
+    /// <inheritdoc/>
     public DynamicRaceLine DynamicRaceLine { get; set; }
 
-    /// <summary>
-    /// Type of dynamic race line
-    /// </summary>
+    /// <inheritdoc/>
     public DynamicRaceLineType DynamicRaceLineType { get; set; }
 
     #endregion // ISessionData2021
 
     #region ISessionData2022
 
-    /// <summary>
-    /// Game mode
-    /// </summary>
+    /// <inheritdoc/>
     public GameMode GameMode { get; set; }
 
-    /// <summary>
-    /// Ruleset
-    /// </summary>
+    /// <inheritdoc/>
     public RuleSet RuleSet { get; set; }
 
-    /// <summary>
-    /// Local time of day - minutes since midnight
-    /// </summary>
+    /// <inheritdoc/>
     public uint LocalTimeOfDay { get; set; }
 
-    /// <summary>
-    /// Length of session
-    /// </summary>
+    /// <inheritdoc/>
     public SessionLength SessionLength { get; set; }
 
     #endregion // ISessionData2022

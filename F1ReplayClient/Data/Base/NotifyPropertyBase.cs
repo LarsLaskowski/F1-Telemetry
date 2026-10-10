@@ -22,9 +22,7 @@ internal class NotifyPropertyBase : INotifyPropertyChanged
 
     #region INotifyPropertyChanged
 
-    /// <summary>
-    /// PropertyChanged event
-    /// </summary>
+    /// <inheritdoc/>
     public event PropertyChangedEventHandler? PropertyChanged;
 
     #endregion // INotifyPropertyChanged

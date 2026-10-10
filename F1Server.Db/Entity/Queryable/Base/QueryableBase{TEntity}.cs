@@ -33,38 +33,26 @@ public class QueryableBase<TEntity> : IQueryable<TEntity>
 
     #region IQueryable
 
-    /// <summary>
-    /// Element type
-    /// </summary>
+    /// <inheritdoc/>
     public Type ElementType => QueryableInternal.ElementType;
 
-    /// <summary>
-    /// Expression
-    /// </summary>
+    /// <inheritdoc/>
     public Expression Expression => QueryableInternal.Expression;
 
-    /// <summary>
-    /// Provider
-    /// </summary>
+    /// <inheritdoc/>
     public IQueryProvider Provider => QueryableInternal.Provider;
 
     #endregion // IQueryable
 
     #region IEnumerable
 
-    /// <summary>
-    /// Returns an enumerator
-    /// </summary>
-    /// <returns>Enumerator</returns>
+    /// <inheritdoc/>
     public IEnumerator<TEntity> GetEnumerator()
     {
         return QueryableInternal.GetEnumerator();
     }
 
-    /// <summary>
-    /// Returns an enumerator
-    /// </summary>
-    /// <returns>Enumerator</returns>
+    /// <inheritdoc/>
     IEnumerator IEnumerable.GetEnumerator()
     {
         return ((IEnumerable)QueryableInternal).GetEnumerator();

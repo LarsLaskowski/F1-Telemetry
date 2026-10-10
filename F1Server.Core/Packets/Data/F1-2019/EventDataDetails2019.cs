@@ -10,19 +10,13 @@ internal class EventDataDetails2019 : IEventDataDetailsBase
 {
     #region IEventDataDetailsBase
 
-    /// <summary>
-    /// Type of event
-    /// </summary>
+    /// <inheritdoc/>
     public EventType EventType { get; set; }
 
-    /// <summary>
-    /// Car number
-    /// </summary>
+    /// <inheritdoc/>
     public ushort VehicleIndex { get; set; }
 
-    /// <summary>
-    /// Fastest lap in seconds
-    /// </summary>
+    /// <inheritdoc/>
     public float FastestLap { get; set; }
 
     #endregion // IEventDataDetailsBase

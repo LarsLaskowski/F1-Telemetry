@@ -575,18 +575,10 @@ internal class ContextViewData : NotifyPropertyBase, IDataErrorInfo
 
     #region IDataErrorInfo
 
-    /// <summary>
-    /// Returns the error text for the object as a whole. This type validates per property only,
-    /// so the value is never assigned and stays null. WPF binding ignores an object level error
-    /// and evaluates the indexer instead, which is the supported usage of IDataErrorInfo here
-    /// </summary>
+    /// <inheritdoc/>
     public string Error { get; }
 
-    /// <summary>
-    /// Check content
-    /// </summary>
-    /// <param name="columnName">Name of field</param>
-    /// <returns>Error</returns>
+    /// <inheritdoc/>
     public string this[string columnName] => CheckFieldContent(columnName);
 
     /// <summary>

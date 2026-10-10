@@ -9,19 +9,13 @@ internal class SessionHistoryTyreStintData2022 : ITyreStintHistoryDataBase
 {
     #region ITyreStintHistoryDataBase
 
-    /// <summary>
-    /// Lap the tyre usage ends on (255 of current tyre)
-    /// </summary>
+    /// <inheritdoc/>
     public ushort EndLap { get; set; }
 
-    /// <summary>
-    /// Actual tyres used by this driver
-    /// </summary>
+    /// <inheritdoc/>
     public ushort TyreActualCompound { get; set; }
 
-    /// <summary>
-    /// Visual tyres used by this driver
-    /// </summary>
+    /// <inheritdoc/>
     public ushort TyreVisualCompound { get; set; }
 
     #endregion // ITyreStintHistoryDataBase
