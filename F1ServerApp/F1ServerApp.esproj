@@ -4,7 +4,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <StartupCommand>npm start</StartupCommand>
-    <JavaScriptTestFramework>Jasmine</JavaScriptTestFramework>
+    <JavaScriptTestFramework>Vitest</JavaScriptTestFramework>
     <!-- Command to run on project build -->
     <BuildCommand>
     </BuildCommand>

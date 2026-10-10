@@ -206,6 +206,6 @@ jobs:
         run: npm run build
 
       # No spec files exist yet. Enable this step once tests are added; the
-      # ubuntu runners ship google-chrome-stable for the ChromeHeadless target.
+      # unit tests run with Vitest in jsdom, so no browser is required.
       # - name: Test
-      #   run: npm test -- --watch=false --browsers=ChromeHeadless
+      #   run: npm test -- --watch=false

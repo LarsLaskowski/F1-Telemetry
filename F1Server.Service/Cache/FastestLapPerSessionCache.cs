@@ -243,8 +243,7 @@ public static class FastestLapPerSessionCache
                                                    && l.Sector3Time > 0
                                                    && l.DbIsCompleted == 1
                                                    && l.DbIsInvalidLapTime == 0)
-                                       .Include(l => l.Participant)
-                                       .ThenInclude(p => p.Driver)
+                                       .Include(l => l.Participant.Driver)
                                        .ToListAsync(cancellationToken)
                                        .ConfigureAwait(false);
 
