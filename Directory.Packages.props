@@ -27,9 +27,9 @@
     <PackageVersion Include="Reihitsu.Analyzer" Version="1.1.0" />
     <PackageVersion Include="SonarAnalyzer.CSharp" Version="10.35.0.4138" />
     <!-- API Documentation & Swagger -->
-    <PackageVersion Include="Swashbuckle.AspNetCore.Swagger" Version="10.3.0" />
-    <PackageVersion Include="Swashbuckle.AspNetCore.SwaggerGen" Version="10.3.0" />
-    <PackageVersion Include="Swashbuckle.AspNetCore.SwaggerUI" Version="10.3.0" />
+    <PackageVersion Include="Swashbuckle.AspNetCore.Swagger" Version="10.3.1" />
+    <PackageVersion Include="Swashbuckle.AspNetCore.SwaggerGen" Version="10.3.1" />
+    <PackageVersion Include="Swashbuckle.AspNetCore.SwaggerUI" Version="10.3.1" />
     <!-- Diagnostics - using 10.x to match OpenTelemetry requirements -->
     <PackageVersion Include="System.Diagnostics.DiagnosticSource" Version="10.0.5" />
     <!-- Telemetry / InfluxDB -->
@@ -37,16 +37,16 @@
     <!-- OpenTelemetry - the EntityFrameworkCore, EventCounters and Process instrumentation packages
          have no stable release upstream and are kept in step with the stable SDK version above,
          see docs/dependency-decisions.md -->
-    <PackageVersion Include="OpenTelemetry" Version="1.20.0" />
-    <PackageVersion Include="OpenTelemetry.Exporter.Console" Version="1.20.0" />
-    <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.20.0" />
+    <PackageVersion Include="OpenTelemetry" Version="1.20.1" />
+    <PackageVersion Include="OpenTelemetry.Exporter.Console" Version="1.20.1" />
+    <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.20.1" />
     <PackageVersion Include="OpenTelemetry.Instrumentation.EntityFrameworkCore" Version="1.17.0-beta.1" />
-    <PackageVersion Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.20.0" />
+    <PackageVersion Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.20.1" />
     <PackageVersion Include="OpenTelemetry.Instrumentation.EventCounters" Version="1.17.0-alpha.1" />
     <PackageVersion Include="OpenTelemetry.Instrumentation.Process" Version="1.17.0-rc.1" />
-    <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="1.20.0" />
-    <PackageVersion Include="OpenTelemetry.Instrumentation.Runtime" Version="1.20.0" />
-    <PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="1.20.0" />
+    <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="1.20.1" />
+    <PackageVersion Include="OpenTelemetry.Instrumentation.Runtime" Version="1.20.1" />
+    <PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="1.20.1" />
     <!-- WPF / UI -->
     <PackageVersion Include="Ookii.Dialogs.Wpf" Version="5.0.1" />
   </ItemGroup>
