@@ -27,6 +27,7 @@
          tracks new EF Core releases faster than Pomelo. Re-evaluate against Pomelo if this fork's
          maintenance/security update cadence falls behind. -->
     <PackageReference Include="Microting.EntityFrameworkCore.MySql" />
+    <PackageReference Include="System.Security.Cryptography.Pkcs" />
   </ItemGroup>
 
   <ItemGroup>

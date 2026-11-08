@@ -24,7 +24,7 @@
     <PackageVersion Include="MSTest.TestFramework" Version="4.5.2" />
     <PackageVersion Include="coverlet.collector" Version="10.1.0" />
     <!-- Code Analysis - build-time only, rc1 is the latest release - see docs/dependency-decisions.md -->
-    <PackageVersion Include="Reihitsu.Analyzer" Version="1.1.0" />
+    <PackageVersion Include="Reihitsu.Analyzer" Version="1.2.0" />
     <PackageVersion Include="SonarAnalyzer.CSharp" Version="10.35.0.4138" />
     <!-- API Documentation & Swagger -->
     <PackageVersion Include="Swashbuckle.AspNetCore.Swagger" Version="10.3.1" />
@@ -41,7 +41,7 @@
     <PackageVersion Include="OpenTelemetry.Exporter.Console" Version="1.20.1" />
     <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.20.1" />
     <PackageVersion Include="OpenTelemetry.Instrumentation.EntityFrameworkCore" Version="1.17.0-beta.1" />
-    <PackageVersion Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.20.1" />
+    <PackageVersion Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.20.2" />
     <PackageVersion Include="OpenTelemetry.Instrumentation.EventCounters" Version="1.17.0-alpha.1" />
     <PackageVersion Include="OpenTelemetry.Instrumentation.Process" Version="1.17.0-rc.1" />
     <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="1.20.2" />
@@ -49,5 +49,6 @@
     <PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="1.20.1" />
     <!-- WPF / UI -->
     <PackageVersion Include="Ookii.Dialogs.Wpf" Version="5.0.1" />
+    <PackageVersion Include="System.Security.Cryptography.Pkcs" Version="10.0.14" />
   </ItemGroup>
 </Project>
