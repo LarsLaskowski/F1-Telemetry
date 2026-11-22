@@ -553,7 +553,10 @@ The following rules are intentionally disabled in `.editorconfig`:
 | CA2254 | silent | Logger template warning disabled |
 | RH0396 | none | Reihitsu rule disabled project-wide |
 | RH0428 | none | Reihitsu rule disabled project-wide |
+| RH2008 | none | Method line limit (Reihitsu 1.5.0), disabled until the existing oversized methods are refactored; permanently disabled for `**/Migrations/*.cs` and `**/Seed/*.cs` |
+| RH2009 | none | Method cognitive complexity limit (Reihitsu 1.5.0), disabled until the existing complex methods are refactored; permanently disabled for `**/Migrations/*.cs` and `**/Seed/*.cs` |
 | RH2102 | none | Reihitsu rule disabled project-wide |
+| RH2111 | none | Type line limit (Reihitsu 1.5.0), disabled until the existing oversized types are refactored; permanently disabled for `**/Migrations/*.cs` and `**/Seed/*.cs` |
 | RH4119 | none | Reihitsu rule disabled project-wide |
 | RH4124 | none | Reihitsu rule disabled project-wide |
 | RH7004 | none | Reihitsu rule disabled project-wide |

@@ -56,7 +56,7 @@ These documents are binding project conventions, not optional background reading
 F1-Telemetry is a multi-project .NET and Angular solution for receiving, processing, storing,
 and visualizing telemetry data from EA F1 games.
 
-- Backend: .NET 10 (`net10.0`)
+- Backend: .NET 11 (`net11.0`)
 - Frontend: Angular 22, TypeScript 6.x
 - Databases: Microsoft SQL Server, MySQL/MariaDB, PostgreSQL
 - Observability: OpenTelemetry, metrics, tracing, structured logging
@@ -97,7 +97,7 @@ and visualizing telemetry data from EA F1 games.
 
 ### Project configuration
 
-- Target framework `net10.0`; nullable reference types and implicit usings enabled.
+- Target framework `net11.0`; nullable reference types and implicit usings enabled.
 - XML documentation files are generated.
 - Central package management via `Directory.Packages.props`.
 - Shared files (`GlobalSuppressions.cs`, `SharedAssemblyInfo.cs`) are linked across projects.
@@ -222,8 +222,11 @@ private readonly ILogger<MyClass> _logger;
   any other `RH` diagnostic unresolved. Always run a full rebuild (delete `obj`/`bin` if in
   doubt, since Roslyn does not always re-emit analyzer warnings for unchanged files) before
   declaring a change warning-free.
-- `.editorconfig` disables exactly eight `RH####` rules (RH0396, RH0428, RH2102, RH4119, RH4124,
-  RH7004, RH8027, RH8306). Every other `RH` rule is active project-wide and must build warning-free.
+- `.editorconfig` disables eleven `RH####` rules project-wide (RH0396, RH0428, RH2008, RH2009,
+  RH2102, RH2111, RH4119, RH4124, RH7004, RH8027, RH8306). The size and complexity limits RH2008,
+  RH2009 and RH2111 are only disabled until the existing oversized members are refactored; for
+  `**/Migrations/*.cs` and `**/Seed/*.cs` they stay disabled permanently. Every other `RH` rule is
+  active project-wide and must build warning-free.
 - The `reihitsu-format` global dotnet tool auto-fixes layout-only findings (chain alignment,
   initializer formatting, spacing, etc.). Prefer it over hand-formatting:
 
@@ -358,7 +361,7 @@ transformation logic close to the feature component → keep contract names sync
 
 StyleCop is **not** referenced by the solution, so no `SA####` rule is active or suppressed.
 `.editorconfig` disables CS8618, IDE0076, IDE0290, CA1822, CA2254 and the Reihitsu rules RH0396, RH0428,
-RH2102, RH4119, RH4124, RH7004, RH8027 and RH8306 — see
+RH2008, RH2009, RH2102, RH2111, RH4119, RH4124, RH7004, RH8027 and RH8306 — see
 `.github/instructions/csharp.instructions.md` for the rationale of each. Every other `RH####`
 rule is active. `GlobalSuppressions.cs` suppresses a set of SonarQube rules, each with its own
 justification.

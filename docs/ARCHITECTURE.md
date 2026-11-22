@@ -247,7 +247,7 @@ tooling workaround.
 - The service and the web app ship as **two separate Docker images**, each
   built from its own multi-stage Dockerfile (`Dockerfile` at the repo root, and
   `F1ServerApp/Dockerfile`):
-  - Service: `dotnet/sdk:10.0-alpine` build → publish → `dotnet/aspnet:10.0-alpine`
+  - Service: `dotnet/sdk:11.0-alpine` build → publish → `dotnet/aspnet:11.0-alpine`
     runtime. Exposes the telemetry UDP port, the replay TCP port, and the HTTP
     API/SignalR port; health-checked via `GET /api/serverhealth`.
   - Web app: `node:26-alpine` build (`npm ci && npm run build`) → `nginx:1-alpine`
@@ -301,7 +301,7 @@ tooling workaround.
   (`networlddev/f1-telemetry`) and web app (`networlddev/f1-telemetry-app`) — each
   tagged with both the version derived from the tag (`v1.2.3` → `1.2.3`) and
   `latest`. The workflow pins each image's base layer by resolving
-  `mcr.microsoft.com/dotnet/aspnet:10.0-alpine` and `nginx:1-alpine` to their current
+  `mcr.microsoft.com/dotnet/aspnet:11.0-alpine` and `nginx:1-alpine` to their current
   digest and passing it in as a `BASE_*_DIGEST` build arg, so a release records the
   exact base image it was built against rather than floating on a mutable tag. The
   job finishes by creating a GitHub Release for the tag with auto-generated release

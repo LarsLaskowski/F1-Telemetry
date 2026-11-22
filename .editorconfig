@@ -249,6 +249,12 @@ dotnet_diagnostic.RH7004.severity = none
 dotnet_diagnostic.RH8027.severity = none
 dotnet_diagnostic.RH8306.severity = none
 
+# Reihitsu size and complexity limits (introduced with Reihitsu.Analyzer 1.5.0), disabled until the
+# existing oversized members are refactored. Migrations and seed data stay excluded permanently below.
+dotnet_diagnostic.RH2008.severity = none
+dotnet_diagnostic.RH2009.severity = none
+dotnet_diagnostic.RH2111.severity = none
+
 # MSTEST analyzer rules enforcement
 dotnet_diagnostic.MSTEST0037.severity = error
 dotnet_diagnostic.MSTEST0038.severity = error
@@ -256,3 +262,14 @@ dotnet_diagnostic.MSTEST0039.severity = error
 dotnet_diagnostic.MSTEST0049.severity = error
 dotnet_diagnostic.MSTEST0065.severity = error
 dotnet_diagnostic.MSTEST0068.severity = error
+
+# Generated EF Core migrations and seed data tables are exempt from the Reihitsu size and complexity limits
+[**/Migrations/*.cs]
+dotnet_diagnostic.RH2008.severity = none
+dotnet_diagnostic.RH2009.severity = none
+dotnet_diagnostic.RH2111.severity = none
+
+[**/Seed/*.cs]
+dotnet_diagnostic.RH2008.severity = none
+dotnet_diagnostic.RH2009.severity = none
+dotnet_diagnostic.RH2111.severity = none

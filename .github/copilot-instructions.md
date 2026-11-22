@@ -54,7 +54,7 @@ These documents are binding project conventions, not optional background reading
 
 F1-Telemetry is a multi-project .NET and Angular solution for receiving, processing, storing, and visualizing telemetry data from EA F1 games.
 
-- Backend: .NET 10
+- Backend: .NET 11
 - Frontend: Angular 22
 - Databases: Microsoft SQL Server, MySQL/MariaDB, PostgreSQL
 - Observability: OpenTelemetry, metrics, tracing, structured logging
@@ -94,7 +94,7 @@ F1-Telemetry is a multi-project .NET and Angular solution for receiving, process
 
 ### Project configuration
 
-- Target framework is `net10.0`
+- Target framework is `net11.0`
 - Nullable reference types are enabled
 - Implicit usings are enabled in the solution
 - XML documentation files are generated
@@ -162,9 +162,11 @@ F1-Telemetry is a multi-project .NET and Angular solution for receiving, process
 
 - The `Reihitsu.Analyzer` NuGet package runs during every build. A clean build must show **0
   warnings** from any `RH####` rule (chain alignment `RH5201`, initializer formatting
-  `RH5301`/`RH5410`, member naming `RH4103`, etc.) — `.editorconfig` disables exactly eight
-  `RH####` rules (RH0396, RH0428, RH2102, RH4119, RH4124, RH7004, RH8027, RH8306), every other
-  rule is active project-wide
+  `RH5301`/`RH5410`, member naming `RH4103`, etc.) — `.editorconfig` disables eleven
+  `RH####` rules (RH0396, RH0428, RH2008, RH2009, RH2102, RH2111, RH4119, RH4124, RH7004, RH8027,
+  RH8306; the size and complexity limits RH2008/RH2009/RH2111 only until the existing oversized
+  members are refactored, permanently for migrations and seed data), every other rule is active
+  project-wide
 - Rebuild fully (delete `obj`/`bin` if in doubt) before concluding a change is warning-free, since
   Roslyn does not always re-emit analyzer warnings for unchanged files
 - Use the `reihitsu-format` global dotnet tool (`reihitsu-format --check|--dry-run|<path>`) to

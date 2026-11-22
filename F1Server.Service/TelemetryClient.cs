@@ -48,6 +48,7 @@ public sealed class TelemetryClient : ITelemetryClient, IDisposable
     private int _packetWorkerStarted;
     private int _loggingWorkerStarted;
     private bool _statisticsTimerRunning;
+    private bool _isDisposed;
     private long _queuedPackets;
     private long _lastPacketReceivedTicks;
 
@@ -469,7 +470,15 @@ public sealed class TelemetryClient : ITelemetryClient, IDisposable
     /// <param name="result">Async result</param>
     private void ReceiveCallback(IAsyncResult result)
     {
-        if (_udpClient == null || _ipEndpoint == null)
+        // Closing the UDP client during disposal completes the pending receive, so this callback runs one last time
+        if (Volatile.Read(ref _isDisposed))
+        {
+            return;
+        }
+
+        var udpClient = _udpClient;
+
+        if (udpClient == null || _ipEndpoint == null)
         {
             Logger?.LogError("Error receiving UDP packet: UDP client or endpoint is not initialized!");
 
@@ -489,17 +498,11 @@ public sealed class TelemetryClient : ITelemetryClient, IDisposable
 
         Volatile.Write(ref _lastPacketReceivedTicks, DateTime.UtcNow.Ticks);
 
-        if (_statisticsTimerRunning == false
-            && _statisticsTimer != null)
-        {
-            _statisticsTimerRunning = true;
-
-            _statisticsTimer.Start();
-        }
-
         try
         {
-            byte[] recvData = _udpClient.EndReceive(result, ref _ipEndpoint);
+            StartStatisticsTimer();
+
+            byte[] recvData = udpClient.EndReceive(result, ref _ipEndpoint);
 
             Interlocked.Increment(ref _queuedPackets);
 
@@ -521,13 +524,52 @@ public sealed class TelemetryClient : ITelemetryClient, IDisposable
 
             _applicationData.AppMetrics?.PacketsInQueue.Record(Interlocked.Read(ref _queuedPackets));
         }
+        catch (ObjectDisposedException)
+        {
+            // The client is being disposed concurrently, so there is nothing left to receive
+            return;
+        }
         catch (Exception ex)
         {
             Logger?.LogError(ex, "Error receiving UDP packet!");
         }
 
-        // Start receiving new data
-        _udpClient.BeginReceive(new AsyncCallback(ReceiveCallback), null);
+        ContinueReceiving(udpClient);
+    }
+
+    /// <summary>
+    /// Starts the statistics timer with the first received packet
+    /// </summary>
+    private void StartStatisticsTimer()
+    {
+        if (_statisticsTimerRunning == false
+            && _statisticsTimer != null)
+        {
+            _statisticsTimerRunning = true;
+
+            _statisticsTimer.Start();
+        }
+    }
+
+    /// <summary>
+    /// Starts receiving the next UDP packet unless the client is being disposed
+    /// </summary>
+    /// <param name="udpClient">UDP client to receive the next packet with</param>
+    private void ContinueReceiving(UdpClient udpClient)
+    {
+        if (Volatile.Read(ref _isDisposed))
+        {
+            return;
+        }
+
+        try
+        {
+            udpClient.BeginReceive(new AsyncCallback(ReceiveCallback), null);
+        }
+        catch (ObjectDisposedException ex)
+        {
+            Logger?.LogDebug(ex, "UDP client was disposed, stopped receiving packets");
+        }
     }
 
     /// <summary>
@@ -1109,6 +1151,15 @@ public sealed class TelemetryClient : ITelemetryClient, IDisposable
     /// <inheritdoc/>
     public void Dispose()
     {
+        Volatile.Write(ref _isDisposed, true);
+
+        // Close the UDP client before the timers, the pending receive callback still runs once
+        var udpClient = _udpClient;
+
+        _udpClient = null;
+
+        udpClient?.Dispose();
+
         if (_applicationData != null)
         {
             if (_applicationData.TelemetryWriter is TelemetryWriter telemetryWriter)
@@ -1148,9 +1199,6 @@ public sealed class TelemetryClient : ITelemetryClient, IDisposable
 
         _webHosting?.StopWebHosting();
         _webHosting?.Dispose();
-
-        _udpClient?.Dispose();
-        _udpClient = null;
     }
 
     #endregion // IDisposable
