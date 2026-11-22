@@ -2,7 +2,7 @@
 
 F1-Telemetry is a service that receives UDP telemetry data from EA's F1 games
 (F1 2019 and newer) and stores it in a relational database. A companion Angular
-web interface visualizes the collected data. The service is built on .NET 10 and
+web interface visualizes the collected data. The service is built on .NET 11 and
 ships as two Docker images:
 
 | Image | Docker Hub | Purpose |
@@ -118,7 +118,7 @@ Both images define a Docker `HEALTHCHECK`. The service reports on
 
 ## Technical overview
 
-F1-Telemetry is a multi-project .NET 10 solution. Incoming UDP packets are
+F1-Telemetry is a multi-project .NET 11 solution. Incoming UDP packets are
 parsed against the F1 packet contracts, dispatched by analyzers/factories to
 specialized processors, and persisted through repositories. Multi-database
 support is provided by provider-specific EF Core migration projects

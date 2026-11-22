@@ -12,7 +12,7 @@ already installed it, you can download it [here](https://git-scm.com/downloads) 
 if you prefer a GUI-based approach, try [GitHub Desktop](https://desktop.github.com/).
 
 Once Git is installed, you'll also need the .NET SDK matching the version targeted by
-the solution (currently `net10.0`). Instructions and downloads for your preferred OS
+the solution (currently `net11.0`). Instructions and downloads for your preferred OS
 can be found [here](https://dotnet.microsoft.com/download).
 
 The service connects to a relational database at runtime (PostgreSQL, MariaDB/MySQL or
